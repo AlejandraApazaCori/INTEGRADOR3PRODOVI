@@ -22,7 +22,8 @@ class Pago extends Model
         'estado',
         'aprobado_por',
         'fecha_aprobacion',
-        'fecha_pago'
+        'fecha_pago',
+        'visto'
     ];
 
     protected $casts = [

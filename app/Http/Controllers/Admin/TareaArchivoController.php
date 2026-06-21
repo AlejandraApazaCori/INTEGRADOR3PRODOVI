@@ -44,8 +44,15 @@ class TareaArchivoController extends Controller
         return redirect()->route('administrador.tareas.show', $tarea->id)
             ->with('success', 'Archivo(s) subido(s) correctamente');
     }
-        public function show(Tarea $tarea)
+    public function show(Tarea $tarea)
     {
+        // Marcar como vistos los archivos pendientes de esta tarea, 
+        // EXCEPTO los que el propio usuario actual acaba de subir (para que otros admins reciban la noti)
+        $tarea->archivos()
+            ->where('estado', 'pendiente')
+            ->where('user_id', '!=', Auth::id())
+            ->update(['visto' => true]);
+
         // Cargar relaciones necesarias
         $tarea->load([
             'creador',

@@ -19,6 +19,7 @@ class TareaArchivo extends Model
         'tamanio',
         'descripcion',
         'estado',
+        'visto',
     ];
 
     protected $casts = [

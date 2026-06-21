@@ -16,7 +16,7 @@ class CampañasController extends Controller
     public function index()
 {
     // 1. Obtener usuarios con suscripción activa que no tienen campaña activa
-    $clientesSinCampania = Pago::with(['usuario', 'suscripcion', 'plan'])
+    $clientesSinCampania = Pago::with(['usuario.empresas', 'suscripcion', 'plan'])
         ->where('estado', 'completado')
         ->whereHas('suscripcion', function($query) {
             $query->where('estado', 'activa')
@@ -28,22 +28,25 @@ class CampañasController extends Controller
         })
         ->get()
         ->map(function($pago) {
+            $empresa = $pago->usuario->empresas->first();
             return [
                 'id' => $pago->usuario->id,
                 'nombre' => $pago->usuario->name,
                 'email' => $pago->usuario->email,
                 'plan' => $pago->plan->nombre ?? 'Sin plan',
                 'fecha_fin_suscripcion' => optional($pago->suscripcion)->fecha_fin ? $pago->suscripcion->fecha_fin->format('d/m/Y') : 'Sin fecha',
+                'tiene_empresa' => $pago->usuario->empresas->isNotEmpty(),
+                'empresa_id' => $empresa ? $empresa->id : null,
             ];
         });
 
-    // 2. Obtener campañas activas
+    // 2. Obtener campaÃ±as activas
     $campaniasActivas = Campania::with(['cliente', 'communityManager'])
         ->where('fecha_fin', '>', now())
         ->whereIn('estado', ['activa', 'pausada'])
         ->get();
 
-    // 3. Obtener campañas finalizadas
+    // 3. Obtener campaÃ±as finalizadas
     $campaniasFinalizadas = Campania::with(['cliente', 'communityManager'])
         ->where(function($query) {
             $query->where('fecha_fin', '<=', now())
@@ -54,7 +57,7 @@ class CampañasController extends Controller
 
     // 4. Obtener community managers para el formulario
     $communityManagers = User::whereHas('roles', function($query) {
-        $query->where('nombre_rol', 'community_manager');
+        $query->where('nombre_rol', 'Community Manager');
     })->get();
 
     return view('administrador.campañas.index', [
@@ -77,7 +80,7 @@ class CampañasController extends Controller
             'community_manager_id' => 'required|exists:users,id',
         ]);
 
-        // Obtener la suscripción del cliente para las fechas
+        // Obtener la suscripciÃ³n del cliente para las fechas
         $pago = Pago::with('suscripcion')
             ->where('usuario_id', $request->usuario_cliente_id)
             ->where('estado', 'completado')
@@ -93,8 +96,8 @@ class CampañasController extends Controller
                 ->withInput();
         }
 
-        // Añade esto antes de crear la campaña
-        \Log::info('Datos de la campaña a crear:', [
+        // AÃ±ade esto antes de crear la campaÃ±a
+        \Log::info('Datos de la campaÃ±a a crear:', [
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
             'usuario_cliente_id' => $request->usuario_cliente_id,
@@ -102,7 +105,7 @@ class CampañasController extends Controller
             'usuario_creador_id' => Auth::id(),
         ]);
 
-        // Crear la campaña
+        // Crear la campaÃ±a
         $campania = Campania::create([
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
@@ -129,7 +132,7 @@ class CampañasController extends Controller
 
     public function activar(Campania $campania)
 {
-    // Verificar que el cliente tenga suscripción activa
+    // Verificar que el cliente tenga suscripciÃ³n activa
     $tieneSuscripcionActiva = $campania->cliente->suscripciones()
         ->where('estado', 'activa')
         ->where('fecha_fin', '>', now())
@@ -137,10 +140,10 @@ class CampañasController extends Controller
 
     if (!$tieneSuscripcionActiva) {
         return redirect()->back()
-            ->with('error', 'El cliente no tiene una suscripción activa para reactivar la campaña');
+            ->with('error', 'El cliente no tiene una suscripciÃ³n activa para reactivar la campaÃ±a');
     }
 
-    // Actualizar la campaña
+    // Actualizar la campaÃ±a
     $campania->update([
         'estado' => 'activa',
         'fecha_fin' => $campania->cliente->suscripciones()->where('estado', 'activa')->first()->fecha_fin
@@ -149,26 +152,26 @@ class CampañasController extends Controller
     return redirect()->back()
         ->with('success', 'Campaña reactivada exitosamente');
 }
-    // Mostrar detalles de una campaña
+    // Mostrar detalles de una campaÃ±a
     public function show(Campania $campania)
     {
-        return view('administrador.campañas.show', compact('campania'));
+        return view('administrador.campaÃ±as.show', compact('campania'));
     }
 
-    // Mostrar formulario de edición
+    // Mostrar formulario de ediciÃ³n
     public function edit(Campania $campania)
     {
         $communityManagers = User::whereHas('roles', function($query) {
-            $query->where('nombre_rol', 'community_manager');
+            $query->where('nombre_rol', 'Community Manager');
         })->get();
 
-        return view('administrador.campañas.edit', [
+        return view('administrador.campaÃ±as.edit', [
             'campania' => $campania,
             'communityManagers' => $communityManagers
         ]);
     }
 
-    // Actualizar campaña
+    // Actualizar campaÃ±a
     public function update(Request $request, Campania $campania)
     {
         $validated = $request->validate([
@@ -200,18 +203,18 @@ class CampañasController extends Controller
                 ->first();
 
             if (!$plan) {
-                return response()->json(['error' => 'No se encontró un plan de marketing para este cliente.'], 404);
+                return response()->json(['error' => 'No se encontrÃ³ un plan de marketing para este cliente.'], 404);
             }
 
             $contenido = $plan->contenido;
             
-            // Extraer Objetivos SMART (Sección 3)
+            // Extraer Objetivos SMART (SecciÃ³n 3)
             $objetivos = '';
             if (preg_match('/##\s+3\s+Objetivos SMART(.*?)(?=##|$)/si', $contenido, $matches)) {
                 $objetivos = trim($matches[1]);
             }
 
-            // Extraer Conclusiones (Sección 7) para la "mini descripción"
+            // Extraer Conclusiones (SecciÃ³n 7) para la "mini descripciÃ³n"
             $miniDescripcion = '';
             if (preg_match('/##\s+7[#\s]+Conclusiones(.*?)(?=##|$)/si', $contenido, $matches)) {
                 $miniDescripcion = trim($matches[1]);
@@ -225,7 +228,7 @@ class CampañasController extends Controller
             
             $descripcion .= "OBJETIVOS:\n" . $objetivos;
             
-            // Eliminar líneas de separación y etiquetas HTML residuales
+            // Eliminar lÃ­neas de separaciÃ³n y etiquetas HTML residuales
             $descripcion = str_replace('---', '', $descripcion);
             $descripcion = strip_tags($descripcion);
             $descripcion = trim($descripcion);

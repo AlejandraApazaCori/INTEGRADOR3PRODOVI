@@ -18,7 +18,7 @@ class EmpresaAdminController extends Controller
      */
     public function index(Request $request)
     {
-        // 1. Verificar si el usuario está autenticado
+        // 1. Verificar si el usuario estÃ¡ autenticado
         if (!Auth::check()) {
             return redirect()->route('login');
         }
@@ -27,8 +27,8 @@ class EmpresaAdminController extends Controller
         $user = Auth::user();
 
         // 3. Verificar si el usuario tiene el rol de "Administrador"
-        if (!$user->roles()->where('nombre_rol', 'Administrador')->exists()) {
-            abort(403, 'No tienes permisos para acceder a esta página.');
+        if (!$user->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+            abort(403, 'No tienes permisos para acceder a esta pÃ¡gina.');
         }
 
         // 4. Obtener todos los usuarios para el filtro
@@ -76,7 +76,7 @@ class EmpresaAdminController extends Controller
      */
     public function show($id)
     {
-        // 1. Verificar si el usuario está autenticado
+        // 1. Verificar si el usuario estÃ¡ autenticado
         if (!Auth::check()) {
             return redirect()->route('login');
         }
@@ -85,8 +85,8 @@ class EmpresaAdminController extends Controller
         $user = Auth::user();
 
         // 3. Verificar si el usuario tiene el rol de "Administrador"
-        if (!$user->roles()->where('nombre_rol', 'Administrador')->exists()) {
-            abort(403, 'No tienes permisos para acceder a esta página.');
+        if (!$user->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+            abort(403, 'No tienes permisos para acceder a esta pÃ¡gina.');
         }
 
         // 4. Obtener la empresa con sus relaciones
@@ -95,12 +95,60 @@ class EmpresaAdminController extends Controller
             'planesMarketing.suscripcion.plan'
         ])->findOrFail($id);
         
-        // 5. Obtener la suscripción activa del usuario
+        // 5. Obtener la suscripciÃ³n activa del usuario
         $suscripcionActiva = Suscripcion::with('plan.caracteristicas')
             ->where('usuario_id', $empresa->usuario_id)
             ->where('estado', 'activa')
             ->first();
             
         return view('administrador.empresas.show', compact('empresa', 'suscripcionActiva'));
+    }
+
+    /**
+     * Mostrar formulario para crear empresa para un usuario especÃ­fico
+     */
+    public function crearParaUsuario($usuario_id)
+    {
+        $user = User::findOrFail($usuario_id);
+        $temas = \App\Models\TemaCuestionario::with('preguntas')->orderBy('orden')->get();
+        return view('administrador.empresas.crear-para-usuario', compact('user', 'temas'));
+    }
+
+    /**
+     * Guardar empresa y respuestas del cuestionario
+     */
+    public function guardarParaUsuario(Request $request)
+    {
+        $request->validate([
+            'usuario_id' => 'required|exists:users,id',
+            'nombre_empresa' => 'required|string|max:255',
+            'tipo_empresa' => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
+        ]);
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($request) {
+            $empresa = Empresa::create([
+                'usuario_id' => $request->usuario_id,
+                'nombre_empresa' => $request->nombre_empresa,
+                'tipo_empresa' => $request->tipo_empresa,
+                'descripcion' => $request->descripcion,
+                'cuestionario_completado' => true,
+            ]);
+
+            $preguntas = \App\Models\PreguntaCuestionario::all();
+            foreach ($preguntas as $pregunta) {
+                $respuestaTexto = $request->input("respuesta_{$pregunta->id}");
+                if ($respuestaTexto) {
+                    \App\Models\RespuestaCuestionario::create([
+                        'empresa_id' => $empresa->id,
+                        'pregunta_id' => $pregunta->id,
+                        'respuesta' => $respuestaTexto
+                    ]);
+                }
+            }
+        });
+
+        return redirect()->route('administrador.campañas.index')
+            ->with('success', 'Empresa creada y cuestionario guardado correctamente.');
     }
 }

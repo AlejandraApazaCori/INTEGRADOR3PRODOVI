@@ -138,6 +138,43 @@
     </div>
 </div>
 
+    <!-- Modal para ver comprobante -->
+    <div id="modalComprobante" 
+         class="fixed inset-0 z-50 overflow-y-auto hidden"
+         aria-labelledby="modal-title" 
+         role="dialog" 
+         aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="cerrarModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full"
+                 id="modalContentPanel">
+                <header class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xl font-semibold text-gray-800" id="modal-title">
+                            <i class="fas fa-file-invoice-dollar mr-2 text-blue-600"></i>
+                            Comprobante de Pago
+                        </h3>
+                        <button onclick="cerrarModal()" type="button" class="text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="fas fa-times text-2xl"></i>
+                        </button>
+                    </div>
+                </header>
+                <main id="contenidoComprobante" class="bg-white px-6 py-4 max-h-[70vh] overflow-y-auto">
+                    <!-- Contenido AJAX -->
+                </main>
+                <footer class="bg-gray-50 px-6 py-3 border-t border-gray-200">
+                    <div class="flex justify-end">
+                        <button onclick="cerrarModal()" type="button"
+                            class="inline-flex justify-center px-6 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 transition-colors">
+                            Cerrar
+                        </button>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
 <script>
 // Función debounce para el input de búsqueda
 let debounceTimer;
@@ -147,6 +184,45 @@ function debounceFilter() {
         document.getElementById('filterForm').submit();
     }, 500); // 500ms de retraso después de que el usuario deja de escribir
 }
+
+// Funciones para el comprobante
+function verComprobante(pagoId) {
+    const modal = document.getElementById('modalComprobante');
+    const contenidoComprobante = document.getElementById('contenidoComprobante');
+
+    modal.classList.remove('hidden');
+    
+    contenidoComprobante.innerHTML = `
+        <div class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+    `;
+
+    fetch(`/administrador/pagos/ver-recibo/${pagoId}`)
+        .then(response => response.json())
+        .then(data => {
+            contenidoComprobante.innerHTML = data.html;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            contenidoComprobante.innerHTML = '<p class="text-red-500">Error al cargar el comprobante.</p>';
+        });
+}
+
+function descargarComprobante(pagoId) {
+    window.location.href = `/administrador/pagos/descargar-recibo/${pagoId}`;
+}
+
+function cerrarModal() {
+    document.getElementById('modalComprobante').classList.add('hidden');
+}
+
+// Cerrar con Escape
+document.addEventListener('keydown', function(event) {
+    if (event.key === "Escape") {
+        cerrarModal();
+    }
+});
 
 // Opcional: Si prefieres usar AJAX para una experiencia más fluida
 function filterResultsWithAjax() {

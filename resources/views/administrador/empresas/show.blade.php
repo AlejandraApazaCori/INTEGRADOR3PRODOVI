@@ -17,12 +17,12 @@
         <!-- Header de navegación -->
         <div class="mb-6 flex items-center justify-between">
             <h1 class="text-2xl font-bold text-gray-800">Detalles de la Empresa</h1>
-            <a href="{{ route('administrador.usuarios.view', $empresa->usuario_id) }}" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+            <button onclick="goBack()" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
-                Volver al Perfil del Usuario
-            </a>
+                Atrás
+            </button>
         </div>
 
         <!-- Tarjeta principal de la empresa -->
@@ -319,4 +319,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endif
+<script>
+function goBack() {
+    window.history.back();
+}
+</script>
 @endsection

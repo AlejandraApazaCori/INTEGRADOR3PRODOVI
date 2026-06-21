@@ -13,7 +13,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div class="col-span-1">
-                    <label for="titulo" class="block text-sm font-medium text-gray-700 mb-1">Título *</label>
+                    <label for="titulo" class="block text-sm font-medium text-gray-700 mb-1">TÃ­tulo *</label>
                     <input type="text" name="titulo" id="titulo" value="{{ $tarea->titulo }}" required
                         class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 </div>
@@ -38,7 +38,7 @@
                 </div>
 
                 <div class="col-span-1">
-                    <label for="fecha_limite" class="block text-sm font-medium text-gray-700 mb-1">Fecha Límite *</label>
+                    <label for="fecha_limite" class="block text-sm font-medium text-gray-700 mb-1">Fecha LÃ­mite *</label>
                     <input type="date" name="fecha_limite" id="fecha_limite" value="{{ $tarea->fecha_limite->format('Y-m-d') }}" required
                         class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                         min="{{ \Carbon\Carbon::parse($tarea->campania->fecha_inicio)->format('Y-m-d') }}"
@@ -53,10 +53,10 @@
                             <select id="filtro_rol" 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Todos los roles</option>
+                                <option value="Super Administrador">Super Administrador</option>
                                 <option value="Administrador">Administrador</option>
-                                <option value="community_manager">Community Manager</option>
-                                <option value="diseñador">Diseñador</option>
-                                <option value="productor">Productor</option>
+                                <option value="Community Manager">Community Manager</option>
+                                <option value="Diseñador">Diseñador</option>
                             </select>
                         </div>
                         <div class="md:col-span-2">
@@ -79,14 +79,14 @@
                 </div>
 
                 <div class="col-span-1 md:col-span-2">
-                    <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción *</label>
+                    <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">DescripciÃ³n *</label>
                     <textarea name="descripcion" id="descripcion" rows="4" required
                         class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">{{ $tarea->descripcion }}</textarea>
                 </div>
             </div>
 
             <div class="flex justify-end space-x-4">
-                <a href="{{ route('administrador.campañas.show', $tarea->campania_id) }}"
+                <a href="{{ route('administrador.campaÃ±as.show', $tarea->campania_id) }}"
                     class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">
                     Cancelar
                 </a>

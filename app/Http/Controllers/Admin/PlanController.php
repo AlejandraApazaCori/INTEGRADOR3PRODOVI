@@ -28,28 +28,29 @@ class PlanController extends Controller
 
     public function store(Request $request)
     {
-        // Validación corregida
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
             'subtitulo' => 'nullable|string|max:255',
             'precio' => 'required|numeric|min:0',
             'moneda' => 'required|in:BS,USD',
-            'periodo_facturacion' => 'required|in:mes,trimestre,semestre,año',
-            'orden' => 'nullable|integer',
+            'periodo_facturacion' => 'required|in:mes,trimestre,semestre,a�o',
+            'orden' => 'nullable|integer|min:0',
             'activo' => 'nullable|boolean',
             'descripcion' => 'nullable|string',
             'caracteristicas' => 'required|array|min:1',
-            'caracteristicas.*.id' => 'required|exists:caracteristica,id',
+            'caracteristicas.*.id' => 'required|distinct|exists:caracteristica,id',
             'caracteristicas.*.cantidad' => 'nullable|integer|min:1',
             'caracteristicas.*.frecuencia' => 'nullable|string|max:255',
-            'caracteristicas.*.orden' => 'nullable|integer',
             'caracteristicas.*.es_destacado' => 'nullable|boolean',
+        ], [
+            'caracteristicas.*.id.distinct' => 'No puedes repetir la misma caracteristica dentro del plan.',
+            'caracteristicas.*.id.required' => 'Debes seleccionar una caracteristica.',
+            'caracteristicas.*.id.exists' => 'La caracteristica seleccionada no es valida.',
         ]);
 
         try {
             DB::beginTransaction();
 
-            // Crear el plan con todos los campos necesarios
             $plan = Plan::create([
                 'nombre' => $validated['nombre'],
                 'subtitulo' => $validated['subtitulo'] ?? null,
@@ -63,14 +64,13 @@ class PlanController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Asociar características
-            foreach ($validated['caracteristicas'] as $caracteristica) {
+            foreach (array_values($validated['caracteristicas']) as $index => $caracteristica) {
                 PlanCaracteristica::create([
                     'plan_id' => $plan->id,
                     'caracteristica_id' => $caracteristica['id'],
                     'cantidad' => $caracteristica['cantidad'] ?? 1,
                     'frecuencia' => $caracteristica['frecuencia'] ?? null,
-                    'orden' => $caracteristica['orden'] ?? 0,
+                    'orden' => $index + 1,
                     'es_destacado' => $caracteristica['es_destacado'] ?? false,
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -92,13 +92,11 @@ class PlanController extends Controller
     public function destroy($id)
     {
         try {
-            // Primero eliminamos las características asociadas
             PlanCaracteristica::where('plan_id', $id)->delete();
-            
-            // Luego eliminamos el plan
+
             $plan = Plan::findOrFail($id);
             $plan->delete();
-            
+
             return redirect()->route('administrador.planes.index')
                             ->with('success', 'Plan eliminado correctamente');
         } catch (\Exception $e) {
@@ -108,76 +106,120 @@ class PlanController extends Controller
     }
 
     public function edit($id)
-{
-    $plan = Plan::with('planCaracteristicas')->findOrFail($id);
-    $caracteristicas = Caracteristica::orderBy('nombre')->get();
-    
-    return view('administrador.planes.edit', compact('plan', 'caracteristicas'));
-}
+    {
+        $plan = Plan::with('planCaracteristicas')->findOrFail($id);
+        $caracteristicas = Caracteristica::orderBy('nombre')->get();
 
-public function update(Request $request, $id)
-{
-    // Validación (similar a store)
-    $validated = $request->validate([
-        'nombre' => 'required|string|max:255',
-        'subtitulo' => 'nullable|string|max:255',
-        'precio' => 'required|numeric|min:0',
-        'moneda' => 'required|in:BS,USD',
-        'periodo_facturacion' => 'required|in:mes,trimestre,semestre,año',
-        'orden' => 'nullable|integer',
-        'activo' => 'nullable|boolean',
-        'descripcion' => 'nullable|string',
-        'caracteristicas' => 'required|array|min:1',
-        'caracteristicas.*.id' => 'required|exists:caracteristica,id',
-        'caracteristicas.*.cantidad' => 'nullable|integer|min:1',
-        'caracteristicas.*.frecuencia' => 'nullable|string|max:255',
-        'caracteristicas.*.orden' => 'nullable|integer',
-        'caracteristicas.*.es_destacado' => 'nullable|boolean',
-    ]);
+        return view('administrador.planes.edit', compact('plan', 'caracteristicas'));
+    }
 
-    try {
-        DB::beginTransaction();
-
-        // Actualizar el plan
-        $plan = Plan::findOrFail($id);
-        $plan->update([
-            'nombre' => $validated['nombre'],
-            'subtitulo' => $validated['subtitulo'] ?? null,
-            'precio' => $validated['precio'],
-            'moneda' => $validated['moneda'],
-            'periodo_facturacion' => $validated['periodo_facturacion'],
-            'orden' => $validated['orden'] ?? 0,
-            'activo' => $validated['activo'] ?? true,
-            'descripcion' => $validated['descripcion'] ?? null,
-            'updated_at' => now(),
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'subtitulo' => 'nullable|string|max:255',
+            'precio' => 'required|numeric|min:0',
+            'moneda' => 'required|in:BS,USD',
+            'periodo_facturacion' => 'required|in:mes,trimestre,semestre,a�o',
+            'orden' => 'nullable|integer|min:0',
+            'activo' => 'nullable|boolean',
+            'descripcion' => 'nullable|string',
+            'caracteristicas' => 'required|array|min:1',
+            'caracteristicas.*.id' => 'required|distinct|exists:caracteristica,id',
+            'caracteristicas.*.cantidad' => 'nullable|integer|min:1',
+            'caracteristicas.*.frecuencia' => 'nullable|string|max:255',
+            'caracteristicas.*.es_destacado' => 'nullable|boolean',
+        ], [
+            'caracteristicas.*.id.distinct' => 'No puedes repetir la misma caracteristica dentro del plan.',
+            'caracteristicas.*.id.required' => 'Debes seleccionar una caracteristica.',
+            'caracteristicas.*.id.exists' => 'La caracteristica seleccionada no es valida.',
         ]);
 
-        // Eliminar características antiguas
-        PlanCaracteristica::where('plan_id', $plan->id)->delete();
+        try {
+            DB::beginTransaction();
 
-        // Asociar nuevas características
-        foreach ($validated['caracteristicas'] as $caracteristica) {
-            PlanCaracteristica::create([
-                'plan_id' => $plan->id,
-                'caracteristica_id' => $caracteristica['id'],
-                'cantidad' => $caracteristica['cantidad'] ?? 1,
-                'frecuencia' => $caracteristica['frecuencia'] ?? null,
-                'orden' => $caracteristica['orden'] ?? 0,
-                'es_destacado' => $caracteristica['es_destacado'] ?? false,
-                'created_at' => now(),
+            $plan = Plan::findOrFail($id);
+            $plan->update([
+                'nombre' => $validated['nombre'],
+                'subtitulo' => $validated['subtitulo'] ?? null,
+                'precio' => $validated['precio'],
+                'moneda' => $validated['moneda'],
+                'periodo_facturacion' => $validated['periodo_facturacion'],
+                'orden' => $validated['orden'] ?? 0,
+                'activo' => $validated['activo'] ?? true,
+                'descripcion' => $validated['descripcion'] ?? null,
                 'updated_at' => now(),
             ]);
+
+            PlanCaracteristica::where('plan_id', $plan->id)->delete();
+
+            foreach (array_values($validated['caracteristicas']) as $index => $caracteristica) {
+                PlanCaracteristica::create([
+                    'plan_id' => $plan->id,
+                    'caracteristica_id' => $caracteristica['id'],
+                    'cantidad' => $caracteristica['cantidad'] ?? 1,
+                    'frecuencia' => $caracteristica['frecuencia'] ?? null,
+                    'orden' => $index + 1,
+                    'es_destacado' => $caracteristica['es_destacado'] ?? false,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('administrador.planes.index')
+                             ->with('success', 'Plan actualizado exitosamente');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()
+                         ->with('error', 'Error al actualizar el plan: ' . $e->getMessage())
+                         ->withErrors(['exception' => $e->getMessage()]);
         }
+    }
 
-        DB::commit();
+    public function updateCaracteristica(Request $request, Caracteristica $caracteristica)
+    {
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255|unique:caracteristica,nombre,' . $caracteristica->id,
+        ]);
 
-        return redirect()->route('administrador.planes.index')
-                         ->with('success', 'Plan actualizado exitosamente');
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return back()->withInput()
-                     ->with('error', 'Error al actualizar el plan: ' . $e->getMessage())
-                     ->withErrors(['exception' => $e->getMessage()]);
+        $caracteristica->update([
+            'nombre' => $validated['nombre'],
+        ]);
+
+        return response()->json([
+            'message' => 'Caracteristica actualizada exitosamente',
+            'caracteristica' => [
+                'id' => $caracteristica->id,
+                'nombre' => $caracteristica->nombre,
+            ],
+        ]);
+    }
+
+    public function storeCaracteristica(Request $request)
+    {
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255|unique:caracteristica,nombre',
+        ]);
+
+        $caracteristica = Caracteristica::create([
+            'nombre' => $validated['nombre'],
+        ]);
+
+        return response()->json([
+            'message' => 'Caracteristica creada exitosamente',
+            'caracteristica' => [
+                'id' => $caracteristica->id,
+                'nombre' => $caracteristica->nombre,
+            ],
+        ], 201);
     }
 }
-}
+
+
+
+
+
+
+

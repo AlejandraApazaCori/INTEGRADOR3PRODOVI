@@ -159,15 +159,13 @@
 <div class="mb-6">
     <div class="flex justify-between items-center mb-2">
         <label for="content" class="block text-sm font-medium text-gray-700">Texto de la Publicación</label>
-        {{-- NUEVO BOTÓN --}}
-        @if($tarea->archivos->count() > 0 && in_array(strtolower($tarea->archivos->first()->extension), ['jpg', 'jpeg', 'png', 'gif', 'webp']))
-            <button type="button" id="generate-copy-btn" data-tarea-id="{{ $tarea->id }}" class="px-3 py-1 text-xs font-medium text-white bg-gradient-to-r from-purple-500 to-indigo-500 rounded-md hover:from-purple-600 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                </svg>
-                Generar Copy con IA
-            </button>
-        @endif
+        {{-- BOTÓN ACTUALIZADO PARA PLAN DE MARKETING --}}
+        <button type="button" id="generate-copy-btn" data-tarea-id="{{ $tarea->id }}" class="px-3 py-1 text-xs font-medium text-white bg-gradient-to-r from-purple-500 to-indigo-500 rounded-md hover:from-purple-600 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+            </svg>
+            Generar Copy con IA
+        </button>
     </div>
     <textarea id="content" rows="5" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="Escribe el mensaje que acompañará a tu publicación..."></textarea>
 </div>
@@ -302,13 +300,38 @@
 </div>
 
 <script>
-    const recommendations = [
-    { time: "16:25 AM", tip: "Publicar con emojis en el texto" },
-    { time: "17:00 AM", tip: "Incluir pregunta para aumentar comentarios" },
-    { time: "15:40 PM", tip: "Etiquetar a colaboradores relevantes" }
-];
-const randomRec = recommendations[Math.floor(Math.random() * recommendations.length)];
-    // En el script de la vista
+const RECOMMENDED_HOUR = 11;
+const RECOMMENDED_MINUTE = 0;
+const RECOMMENDED_TIME_LABEL = '11:00 AM';
+
+function getRecommendedScheduleDate() {
+    const now = new Date();
+    const recommendedDate = new Date(now);
+    recommendedDate.setHours(RECOMMENDED_HOUR, RECOMMENDED_MINUTE, 0, 0);
+
+    if (recommendedDate <= now) {
+        recommendedDate.setDate(recommendedDate.getDate() + 1);
+    }
+
+    return recommendedDate;
+}
+
+function toLocalDatetimeValue(date) {
+    const timezoneOffset = date.getTimezoneOffset() * 60000;
+    return new Date(date - timezoneOffset).toISOString().slice(0, 16);
+}
+
+function applyRecommendedSchedule() {
+    const scheduleLater = document.getElementById('schedule-later');
+    const datetimeContainer = document.getElementById('schedule-datetime-container');
+    const datetimeInput = document.getElementById('schedule-datetime');
+
+    scheduleLater.checked = true;
+    datetimeContainer.classList.remove('hidden');
+    datetimeInput.min = toLocalDatetimeValue(new Date());
+    datetimeInput.value = toLocalDatetimeValue(getRecommendedScheduleDate());
+}
+
 document.getElementById('use-optimization').addEventListener('change', function() {
     if (this.checked) {
         simulateOptimization();
@@ -336,11 +359,8 @@ function simulateOptimization() {
     // Simular tiempo de análisis (2 segundos)
     setTimeout(() => {
         // Mostrar resultado "automático"
-        const isMorning = new Date().getHours() < 12;
-        const optimizedTime = isMorning ? "4:00 PM" : "4:50 PM";
-        
         optimizationBox.innerHTML = `
-            <div class="p-4">
+            <div id="optimization-result" class="p-4 rounded-lg cursor-pointer transition hover:bg-blue-100" title="Aplicar horario recomendado">
                 <div class="flex items-start">
                     <svg class="h-5 w-5 text-green-500 mt-0.5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
@@ -350,9 +370,10 @@ function simulateOptimization() {
                         <div class="mt-2 text-sm text-blue-700">
                             <p class="font-semibold">Recomendación del sistema:</p>
                             <ul class="list-disc pl-5 mt-1">
-                                <li>Publicar hoy a las <strong>${optimizedTime}</strong> (mayor engagement)</li>
+                                <li>Publicar hoy a las <strong>${RECOMMENDED_TIME_LABEL}</strong> (mayor engagement)</li>
                                 <li>Incluir 2 hashtags para mayor alcance</li>
                             </ul>
+                            <p class="mt-2 text-xs font-medium text-blue-800">Haz clic aquí para llenar automáticamente "Programar para más tarde".</p>
                         </div>
                     </div>
                 </div>
@@ -366,15 +387,11 @@ function simulateOptimization() {
         `;
         
         // Actualizar el selector de fecha automáticamente
-        if (document.getElementById('schedule-later').checked) {
-            const today = new Date();
-            const optimizedDate = new Date(today);
-            optimizedDate.setHours(isMorning ? 10 : 16, isMorning ? 30 : 15, 0, 0);
-            
-            const timezoneOffset = optimizedDate.getTimezoneOffset() * 60000;
-            const localISOTime = new Date(optimizedDate - timezoneOffset).toISOString().slice(0, 16);
-            document.getElementById('schedule-datetime').value = localISOTime;
-        }
+        document.getElementById('optimization-result').addEventListener('click', function(event) {
+            if (event.target.id !== 'use-optimization') {
+                applyRecommendedSchedule();
+            }
+        });
         
         // Re-asignar el event listener al nuevo checkbox
         document.getElementById('use-optimization').addEventListener('change', function() {
@@ -407,14 +424,12 @@ function simulateOptimization() {
                 
                 // Establecer fecha mínima como ahora
                 const now = new Date();
-                const timezoneOffset = now.getTimezoneOffset() * 60000;
-                const localISOTime = (new Date(now - timezoneOffset)).toISOString().slice(0, 16);
+                const localISOTime = toLocalDatetimeValue(now);
                 document.getElementById('schedule-datetime').min = localISOTime;
-                
-                // Establecer valor por defecto (ahora + 1 hora)
-                const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
-                const oneHourLaterISOTime = (new Date(oneHourLater - timezoneOffset)).toISOString().slice(0, 16);
-                document.getElementById('schedule-datetime').value = oneHourLaterISOTime;
+
+                if (!document.getElementById('schedule-datetime').value) {
+                    document.getElementById('schedule-datetime').value = toLocalDatetimeValue(getRecommendedScheduleDate());
+                }
             } else {
                 datetimeContainer.classList.add('hidden');
             }
@@ -561,7 +576,7 @@ document.getElementById('generate-copy-btn')?.addEventListener('click', async fu
             <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
             </svg>
-            Generar Copy con IA
+            Generar Copy (Plan de Marketing)
         `;
     }
 });

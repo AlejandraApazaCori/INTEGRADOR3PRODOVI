@@ -38,55 +38,66 @@
                     @endif
                 </div>
                 
-                <!-- Preguntas del cuestionario (SOLO LECTURA) -->
-                @foreach($temas as $tema)
-                    <div class="mb-8">
-                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                            <span class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-3">
-                                <span class="text-indigo-600 font-semibold">{{ $loop->iteration }}</span>
-                            </span>
-                            {{ $tema->nombre_tema }}
-                        </h2>
-                        
-                        @if($tema->descripcion_tema)
-                            <p class="text-gray-600 mb-4">{{ $tema->descripcion_tema }}</p>
-                        @endif
-                        
-                        <div class="space-y-6">
-                            @foreach($tema->preguntas as $pregunta)
-                                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                                    <div class="block text-gray-800 font-medium mb-2">
-                                        {{ $pregunta->pregunta }}
-                                        @if($pregunta->requerido)
-                                            <span class="text-red-500">*</span>
+                <form action="{{ route('administrador.empresas.cuestionario.update', $empresa->id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    
+                    <!-- Preguntas del cuestionario -->
+                    @foreach($temas as $tema)
+                        <div class="mb-12">
+                            <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                                <span class="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mr-3 text-sm">
+                                    {{ $loop->iteration }}
+                                </span>
+                                {{ $tema->nombre_tema }}
+                            </h2>
+                            
+                            @if($tema->descripcion_tema)
+                                <p class="text-sm text-gray-500 mb-6 italic">{{ $tema->descripcion_tema }}</p>
+                            @endif
+                            
+                            <div class="space-y-8">
+                                @foreach($tema->preguntas as $pregunta)
+                                    <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100 shadow-sm">
+                                        <label class="block text-gray-800 font-bold mb-3">
+                                            {{ $pregunta->pregunta }}
+                                            @if($pregunta->requerido)
+                                                <span class="text-red-500">*</span>
+                                            @endif
+                                        </label>
+                                        
+                                        @if($pregunta->ayuda)
+                                            <p class="text-xs text-gray-500 mb-4">{{ $pregunta->ayuda }}</p>
+                                        @endif
+                                        
+                                        @if($pregunta->tipo_respuesta === 'texto_largo')
+                                            <textarea name="respuesta_{{ $pregunta->id }}" rows="4" {{ $pregunta->requerido ? 'required' : '' }}
+                                                      class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-none"
+                                                      placeholder="Escribe la respuesta aquí...">{{ $respuestasExistentes[$pregunta->id] ?? '' }}</textarea>
+                                        @else
+                                            <input type="text" name="respuesta_{{ $pregunta->id }}" value="{{ $respuestasExistentes[$pregunta->id] ?? '' }}" {{ $pregunta->requerido ? 'required' : '' }}
+                                                   class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                                                   placeholder="Escribe la respuesta aquí...">
                                         @endif
                                     </div>
-                                    
-                                    @if($pregunta->ayuda)
-                                        <p class="text-sm text-gray-600 mb-3">{{ $pregunta->ayuda }}</p>
-                                    @endif
-                                    
-                                    @if($pregunta->tipo_respuesta === 'texto_largo')
-                                        <div class="bg-white p-3 rounded-lg border border-gray-200">
-                                            <p class="whitespace-pre-wrap">{{ $respuestasExistentes[$pregunta->id] ?? 'No respondida' }}</p>
-                                        </div>
-                                    @else
-                                        <div class="bg-white p-3 rounded-lg border border-gray-200">
-                                            <p>{{ $respuestasExistentes[$pregunta->id] ?? 'No respondida' }}</p>
-                                        </div>
-                                    @endif
-                                </div>
-                            @endforeach
+                                @endforeach
+                            </div>
                         </div>
+                        @if(!$loop->last)
+                            <hr class="my-12 border-gray-100">
+                        @endif
+                    @endforeach
+                    
+                    <!-- Botones de acción -->
+                    <div class="flex items-center justify-end space-x-4 mt-12 pt-8 border-t border-gray-100">
+                        <a href="{{ route('administrador.empresas.show', $empresa->id) }}" class="px-6 py-3 text-gray-600 font-medium hover:text-gray-800 transition-colors">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1">
+                            Guardar Cambios del Cuestionario
+                        </button>
                     </div>
-                @endforeach
-                
-                <!-- Botón de acción -->
-                <div class="flex justify-end mt-8">
-                    <a href="{{ route('administrador.empresas.show', $empresa->id) }}" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-                        Volver a detalles de la empresa
-                    </a>
-                </div>
+                </form>
             </div>
         </div>
     </div>

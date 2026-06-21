@@ -5,7 +5,7 @@ namespace App\Services;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class OllamaService
+class GroqService
 {
     /**
      * Genera un resumen ejecutivo basado en las respuestas de un cuestionario.
@@ -69,34 +69,35 @@ class OllamaService
         - El resumen completo no debe superar las 1,000 palabras.
         EOT;
 
-        // 3. Preparar y hacer la llamada a la API de Ollama
+        // 3. Preparar y hacer la llamada a la API de Groq
         $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . config('services.ollama.key'),
+                'Authorization' => 'Bearer ' . config('services.groq.key'),
                 'Content-Type' => 'application/json',
             ])
             ->withOptions([
-                'verify' => false, // Mantenemos esto para el entorno local
+                'verify' => false,
             ])
-            // --> LÍNEA AÑADIDA PARA AUMENTAR EL TIMEOUT <--
             ->timeout(120)
-            ->post(config('services.ollama.url'), [
-                'model' => config('services.ollama.model'),
+            ->post(config('services.groq.url'), [
+                'model' => config('services.groq.model'),
                 'messages' => [
                     [
                         'role' => 'user',
                         'content' => $prompt,
                     ],
                 ],
+                'temperature' => 0.3,
                 'stream' => false,
             ]);
 
         // 4. Procesar la respuesta
         if ($response->successful()) {
             $data = $response->json();
-            return $data['message']['content'] ?? 'No se pudo generar el resumen.';
+            // Groq devuelve la respuesta en choices[0][message][content]
+            return $data['choices'][0]['message']['content'] ?? 'No se pudo generar el resumen.';
         } else {
-            Log::error('Error en la API de Ollama: ' . $response->body());
-            return 'Hubo un error.';
+            Log::error('Error en la API de Groq: ' . $response->body());
+            return 'Hubo un error al generar el resumen.';
         }
     }
 }

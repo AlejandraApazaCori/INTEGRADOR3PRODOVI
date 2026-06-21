@@ -48,7 +48,7 @@
                 </div>
             </div>
 
-            <!-- CAMPAÑAS -->
+            <!-- CAMPAÑAS 
             <div class="menu-item">
                 <a href="#" class="menu-link">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -59,7 +59,7 @@
                 </a>
             </div>
 
-            <!-- RECURSOS -->
+            <!-- RECURSOS 
             <div class="menu-item">
                 <a href="#" class="menu-link">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -68,6 +68,7 @@
                     <span class="menu-text">Recursos</span>
                 </a>
             </div>
+            -->
 
             <!-- ANALÍTICAS -->
             <div class="menu-item">

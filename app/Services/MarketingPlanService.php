@@ -88,32 +88,33 @@ class MarketingPlanService
         - El plan completo no debe superar las 1,500 palabras.
         EOT;
 
-        // 3. Preparar y hacer la llamada a la API de Ollama
+        // 3. Preparar y hacer la llamada a la API de Groq
         $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . config('services.ollama.key'),
+                'Authorization' => 'Bearer ' . config('services.groq.key'),
                 'Content-Type' => 'application/json',
             ])
             ->withOptions([
                 'verify' => false,
             ])
-            ->timeout(180) // Aumentamos el timeout ya que el plan es más complejo
-            ->post(config('services.ollama.url'), [
-                'model' => config('services.ollama.model'),
+            ->timeout(180)
+            ->post(config('services.groq.url'), [
+                'model' => config('services.groq.model'),
                 'messages' => [
                     [
                         'role' => 'user',
                         'content' => $prompt,
                     ],
                 ],
+                'temperature' => 0.3,
                 'stream' => false,
             ]);
 
         // 4. Procesar la respuesta
         if ($response->successful()) {
             $data = $response->json();
-            return $data['message']['content'] ?? 'No se pudo generar el plan de marketing.';
+            return $data['choices'][0]['message']['content'] ?? 'No se pudo generar el plan de marketing.';
         } else {
-            Log::error('Error en la API de Ollama al generar plan de marketing: ' . $response->body());
+            Log::error('Error en la API de Groq al generar plan de marketing: ' . $response->body());
             return 'Hubo un error e inténtalo nuevamente.';
         }
     }

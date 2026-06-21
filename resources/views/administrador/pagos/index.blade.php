@@ -3,15 +3,12 @@
 @section('title', 'Gestión de Pagos')
 
 @section('content')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
-    <div class="min-h-screen bg-gray-50 py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <!-- Alerts -->
+    <div class="min-h-screen" style="background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 50%, #F5F3FF 100%);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             @if(session('success'))
-                <div
-                    class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-lg shadow-md flex items-center justify-between">
+                <div class="mb-6 flex items-center justify-between rounded-xl border-l-4 border-green-500 bg-green-50 p-4 text-green-700 shadow-sm animate-slideIn">
                     <div class="flex items-center">
                         <i class="fas fa-check-circle mr-3 text-xl"></i>
                         <span>{{ session('success') }}</span>
@@ -23,8 +20,7 @@
             @endif
 
             @if(session('error'))
-                <div
-                    class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg shadow-md flex items-center justify-between">
+                <div class="mb-6 flex items-center justify-between rounded-xl border-l-4 border-red-500 bg-red-50 p-4 text-red-700 shadow-sm animate-slideIn">
                     <div class="flex items-center">
                         <i class="fas fa-exclamation-circle mr-3 text-xl"></i>
                         <span>{{ session('error') }}</span>
@@ -35,87 +31,100 @@
                 </div>
             @endif
 
-            <!-- Header Section -->
-            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-800 flex items-center">
-                            <i class="fas fa-credit-card mr-3 text-indigo-600"></i>
-                            Gestión de Pagos
-                        </h1>
-                        <p class="text-gray-600 mt-2">Administra y monitorea el estado de todas las suscripciones</p>
-                    </div>
+            <div class="flex flex-wrap gap-3 pb-6">
+                <a href="{{ route('administrador.pagos.index') }}" class="btn-action btn-blue">
+                    <i class="fas fa-table-columns"></i>
+                    General
+                    <span class="btn-action__mark" aria-hidden="true">
+                        <svg viewBox="0 0 392.94 418.13">
+                            <path d="M243.7,418.13C198.37,312.3,118.14,268.5,0,294.73,135.19,238.54,203.38,148.99,149.24,0c49.45,103.91,130.68,145.05,243.7,123.4-127.69,63.18-168.91,165.26-149.24,294.73Z"></path>
+                        </svg>
+                    </span>
+                </a>
+                <a href="{{ route('administrador.pagos.analiticas') }}" class="btn-action btn-indigo">
+                    <i class="fas fa-chart-line"></i>
+                    Analíticas
+                    <span class="btn-action__mark" aria-hidden="true">
+                        <svg viewBox="0 0 392.94 418.13">
+                            <path d="M243.7,418.13C198.37,312.3,118.14,268.5,0,294.73,135.19,238.54,203.38,148.99,149.24,0c49.45,103.91,130.68,145.05,243.7,123.4-127.69,63.18-168.91,165.26-149.24,294.73Z"></path>
+                        </svg>
+                    </span>
+                </a>
+                <button type="button" id="abrirReporteMensual" class="btn-action btn-purple">
+                    <i class="fas fa-file-pdf"></i>
+                    Reporte mensual
+                    <span class="btn-action__mark" aria-hidden="true">
+                        <svg viewBox="0 0 392.94 418.13">
+                            <path d="M243.7,418.13C198.37,312.3,118.14,268.5,0,294.73,135.19,238.54,203.38,148.99,149.24,0c49.45,103.91,130.68,145.05,243.7,123.4-127.69,63.18-168.91,165.26-149.24,294.73Z"></path>
+                        </svg>
+                    </span>
+                </button>
+            </div>
+
+            <!-- Header con botones mejorados -->
+            <div class="page-header">
+                <div class="header-content">
+                    <h1><i class="fas fa-credit-card"></i> GestiÃ³n de Pagos</h1>
+                    <p class="subtitle">Administra y monitorea el estado de todas las suscripciones</p>
                 </div>
             </div>
-          
-          
-            @include('administrador.pagos.filtroPagos')
 
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- Suscripciones Activas -->
-                <div
-                    class="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1">
-                    <div class="bg-gradient-to-r from-green-500 to-green-600 h-2"></div>
+            <!-- Tarjetas de estadÃ­sticas -->
+            <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+                <div class="overflow-hidden rounded-2xl bg-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl border border-gray-100">
+                    <div class="h-2 bg-gradient-to-r from-green-500 to-green-600"></div>
                     <div class="p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="bg-green-100 rounded-full p-3">
-                                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        <div class="mb-4 flex items-center justify-between">
+                            <div class="rounded-xl bg-green-100 p-3">
+                                <i class="fas fa-check-circle text-xl text-green-600"></i>
                             </div>
                             <div class="text-right">
                                 <div class="text-3xl font-bold text-gray-800">{{ $countActivos }}</div>
                             </div>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Suscripciones Activas</h3>
-                        <p class="text-gray-600 text-sm mb-4">Usuarios con pagos al día</p>
-                        <a href="{{ route('administrador.pagos.realizados') }}"
-                            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors duration-200">
+                        <h3 class="mb-2 text-lg font-semibold text-gray-800">Suscripciones Activas</h3>
+                        <p class="mb-4 text-sm text-gray-600">Usuarios con pagos al dÃ­a</p>
+                        <a href="{{ route('administrador.pagos.realizados') }}" class="inline-flex items-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-indigo-700 shadow-md hover:shadow-indigo-200/50">
                             <i class="fas fa-eye mr-2"></i>
                             Ver detalles
                         </a>
                     </div>
                 </div>
 
-                <!-- Pagos Pendientes -->
-                <div
-                    class="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1">
-                    <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 h-2"></div>
+                <div class="overflow-hidden rounded-2xl bg-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl border border-gray-100">
+                    <div class="h-2 bg-gradient-to-r from-yellow-500 to-yellow-600"></div>
                     <div class="p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="bg-yellow-100 rounded-full p-3">
-                                <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                        <div class="mb-4 flex items-center justify-between">
+                            <div class="rounded-xl bg-yellow-100 p-3">
+                                <i class="fas fa-clock text-xl text-yellow-600"></i>
                             </div>
                             <div class="text-right">
                                 <div class="text-3xl font-bold text-gray-800">{{ $countPendientes }}</div>
                             </div>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Pagos Pendientes</h3>
-                        <p class="text-gray-600 text-sm mb-4">Requieren atención inmediata</p>
-                        <a href="{{ route('administrador.pagos.pendientes-fisicos') }}"
-                            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors duration-200">
+                        <h3 class="mb-2 text-lg font-semibold text-gray-800">Pagos Pendientes</h3>
+                        <p class="mb-4 text-sm text-gray-600">Requieren atenciÃ³n inmediata</p>
+                        <a href="{{ route('administrador.pagos.pendientes-fisicos') }}" class="inline-flex items-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-indigo-700 shadow-md hover:shadow-indigo-200/50">
                             <i class="fas fa-clock mr-2"></i>
                             Ver detalles
                         </a>
                     </div>
                 </div>
 
-                <!-- Finalizados/Cancelados -->
-                <div
-                    class="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1">
-                    <div class="bg-gradient-to-r from-gray-500 to-gray-600 h-2"></div>
+                <div class="overflow-hidden rounded-2xl bg-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl border border-gray-100">
+                    <div class="h-2 bg-gradient-to-r from-gray-500 to-gray-600"></div>
                     <div class="p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="bg-gray-100 rounded-full p-3">
-                                <i class="fas fa-archive text-gray-600 text-xl"></i>
+                        <div class="mb-4 flex items-center justify-between">
+                            <div class="rounded-xl bg-gray-100 p-3">
+                                <i class="fas fa-archive text-xl text-gray-600"></i>
                             </div>
                             <div class="text-right">
                                 <div class="text-3xl font-bold text-gray-800">{{ $countFinalizados }}</div>
                             </div>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Finalizados/Cancelados</h3>
-                        <p class="text-gray-600 text-sm mb-4">Suscripciones completadas</p>
-                        <a href="{{ route('administrador.pagos.finalizados') }}"
-                            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors duration-200">
+                        <h3 class="mb-2 text-lg font-semibold text-gray-800">Finalizados/Cancelados</h3>
+                        <p class="mb-4 text-sm text-gray-600">Suscripciones completadas</p>
+                        <a href="{{ route('administrador.pagos.finalizados') }}" class="inline-flex items-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-indigo-700 shadow-md hover:shadow-indigo-200/50">
                             <i class="fas fa-archive mr-2"></i>
                             Ver detalles
                         </a>
@@ -123,116 +132,376 @@
                 </div>
             </div>
 
-            <!-- Quick Actions Section -->
-            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-                <div class="flex items-center mb-6">
-                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-3 mr-4">
-                        <i class="fas fa-bolt text-white text-xl"></i>
-                    </div>
+            <!-- Tabla de pagos mejorada -->
+            <div class="mb-8 rounded-2xl bg-white shadow-xl p-6 border border-gray-100">
+                <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h2 class="text-xl font-bold text-gray-800">Acciones Rápidas</h2>
-                        <p class="text-gray-600">Herramientas esenciales para la gestión de pagos</p>
+                        <h2 class="text-xl font-bold text-gray-800">Todos los registros de pagos</h2>
+                        <p class="text-gray-600 text-sm">Se muestran del Ãºltimo al primero</p>
+                    </div>
+                    <div class="text-sm text-gray-600 font-medium">
+                        Mostrando {{ $pagos->firstItem() ?? 0 }} a {{ $pagos->lastItem() ?? 0 }} de {{ $pagos->total() }} registros
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div
-                        class="bg-blue-50 border border-blue-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-blue-300">
-                        <div class="flex items-center mb-3">
-                            <div class="bg-blue-500 rounded-md p-2 mr-3">
-                                <i class="fas fa-plus text-white"></i>
-                            </div>
-                            <span class="font-semibold text-gray-800">Nuevo Pago</span>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-3">Registrar un nuevo pago manualmente</p>
-                        <span
-                            class="inline-flex items-center text-xs font-medium text-blue-700 bg-blue-100 rounded-full px-2.5 py-0.5">
-                            <i class="fas fa-mouse-pointer mr-1"></i> Click para acceder
-                        </span>
-                    </div>
+                <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
+                            <tr>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">ID</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Cliente</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Plan</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">MÃ©todo</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Monto</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Estado del pago</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Estado de suscripciÃ³n</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fecha de pago</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Inicio</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fin</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider">Comprobante</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100">
+                            @forelse($pagos as $index => $pago)
+                                @php
+                                    $estadoPagoClase = match($pago->estado) {
+                                        'completado' => 'bg-green-100 text-green-800 border-green-200',
+                                        'pendiente' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                                        'cancelado' => 'bg-red-100 text-red-800 border-red-200',
+                                        default => 'bg-gray-100 text-gray-800 border-gray-200',
+                                    };
 
-                    <div
-                        class="bg-purple-50 border border-purple-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-purple-300">
-                        <div class="flex items-center mb-3">
-                            <div class="bg-purple-500 rounded-md p-2 mr-3">
-                                <i class="fas fa-chart-bar text-white"></i>
-                            </div>
-                            <span class="font-semibold text-gray-800">Reporte Mensual</span>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-3">Descarga el reporte mensual de pagos</p>
-                        <span
-                            class="inline-flex items-center text-xs font-medium text-purple-700 bg-purple-100 rounded-full px-2.5 py-0.5">
-                            <i class="fas fa-mouse-pointer mr-1"></i> Click para acceder
-                        </span>
+                                    $estadoSuscripcion = optional($pago->suscripcion)->estado;
+                                    $estadoSuscripcionClase = match($estadoSuscripcion) {
+                                        'activa' => 'bg-green-100 text-green-800 border-green-200',
+                                        'finalizada' => 'bg-gray-100 text-gray-800 border-gray-200',
+                                        'cancelada' => 'bg-red-100 text-red-800 border-red-200',
+                                        default => 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                                    };
+                                    
+                                    $rowClass = $index % 2 === 0 ? 'bg-white' : 'bg-indigo-50/20';
+                                @endphp
+                                <tr class="{{ $rowClass }} hover:bg-indigo-50/50 transition-colors duration-150">
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-indigo-600 border-r border-gray-100">#{{ $pago->id }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-medium border-r border-gray-100">{{ optional($pago->usuario)->name ?? 'N/A' }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-100">{{ optional($pago->plan)->nombre ?? 'N/A' }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-100">{{ ucfirst($pago->metodo ?? 'N/A') }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-100">{{ number_format((float) $pago->monto, 2, ',', '.') }} {{ $pago->moneda }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap border-r border-gray-100">
+                                        <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold border {{ $estadoPagoClase }}">{{ ucfirst($pago->estado ?? 'N/A') }}</span>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap border-r border-gray-100">
+                                        <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold border {{ $estadoSuscripcionClase }}">{{ $estadoSuscripcion ? ucfirst($estadoSuscripcion) : 'N/A' }}</span>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 border-r border-gray-100">{{ $pago->fecha_pago ? $pago->fecha_pago->format('d/m/Y H:i') : 'N/A' }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 border-r border-gray-100">{{ optional($pago->suscripcion)->fecha_inicio ? $pago->suscripcion->fecha_inicio->format('d/m/Y') : 'N/A' }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 border-r border-gray-100">{{ optional($pago->suscripcion)->fecha_fin ? $pago->suscripcion->fecha_fin->format('d/m/Y') : 'N/A' }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm">
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" onclick="verComprobante({{ $pago->id }})" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors duration-200">
+                                                <i class="fas fa-file-invoice mr-1.5"></i>Ver
+                                            </button>
+                                            <a href="{{ route('administrador.pagos.descargar-recibo', $pago->id) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-green-700 bg-green-50 hover:bg-green-100 transition-colors duration-200">
+                                                <i class="fas fa-download mr-1.5"></i>Descargar
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="11" class="px-4 py-6 text-center text-sm text-gray-500">No hay registros de pagos para mostrar.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <form method="GET" action="{{ route('administrador.pagos.index') }}" class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <label for="per_page" class="text-sm font-medium text-gray-700">Registros por pÃ¡gina</label>
+                        <input
+                            type="number"
+                            min="1"
+                            max="100"
+                            name="per_page"
+                            id="per_page"
+                            value="{{ $perPage }}"
+                            class="w-28 rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                        <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors shadow-md hover:shadow-indigo-200/50">
+                            Aplicar
+                        </button>
+                    </form>
+
+                    <div>
+                        {{ $pagos->onEachSide(1)->links() }}
                     </div>
                 </div>
             </div>
-
-            <!-- Modal para Reporte Mensual -->
-<div id="reporteMensualModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3 text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-purple-100">
-                <i class="fas fa-chart-bar text-purple-600 text-xl"></i>
-            </div>
-            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Reporte Mensual</h3>
-            <div class="mt-2 px-7 py-3">
-                <p class="text-sm text-gray-500">
-                    Se generará un reporte con todas las transacciones del mes actual.
-                    Elige el formato que prefieres:
-                </p>
-            </div>
-            <div class="flex justify-center space-x-4 mt-4">
-                <button id="btnPdfMensual" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
-                    <i class="fas fa-file-pdf mr-2"></i> Descargar PDF
-                </button>
-                <button id="btnExcelMensual" class="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
-                    <i class="fas fa-file-excel mr-2"></i> Descargar Excel
-                </button>
-            </div>
-            <div class="items-center px-4 py-3">
-                <button id="cerrarModal" class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300">
-                    Cancelar
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
         </div>
     </div>
 
-<script>
-    // Evento para abrir el modal de reporte mensual
-document.addEventListener('DOMContentLoaded', function() {
-    // ... tu código existente ...
+    <!-- Modal Reporte Mensual -->
+    <div id="reporteMensualModal" class="fixed inset-0 z-50 hidden h-full w-full overflow-y-auto bg-gray-600 bg-opacity-50">
+        <div class="relative top-20 mx-auto w-96 rounded-2xl border bg-white p-5 shadow-2xl">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-purple-100">
+                    <i class="fas fa-chart-bar text-2xl text-purple-600"></i>
+                </div>
+                <h3 class="mt-4 text-lg font-medium leading-6 text-gray-900">Reporte mensual</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">
+                        Se generarÃ¡ un reporte con todas las transacciones del mes actual.
+                        Elige el formato que prefieres:
+                    </p>
+                </div>
+                <div class="mt-4 flex justify-center space-x-4">
+                    <button id="btnPdfMensual" class="rounded-xl bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors">
+                        Descargar PDF
+                    </button>
+                    <button id="btnExcelMensual" class="rounded-xl bg-green-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors">
+                        Descargar Excel
+                    </button>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="cerrarModalReporte" class="w-full rounded-xl bg-gray-200 px-4 py-2 text-base font-medium text-gray-800 shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    // Agregar evento click a la tarjeta de Reporte Mensual
-    const reporteMensualCard = document.querySelector('.bg-purple-50.border.border-purple-200');
-    if (reporteMensualCard) {
-        reporteMensualCard.addEventListener('click', function() {
-            document.getElementById('reporteMensualModal').classList.remove('hidden');
+    <!-- Modal Comprobante -->
+    <div id="comprobanteModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-600 bg-opacity-50 px-4 py-8">
+        <div class="mx-auto max-w-4xl rounded-2xl bg-white shadow-2xl">
+            <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-t-2xl">
+                <h3 class="text-lg font-semibold text-gray-900">Comprobante de pago</h3>
+                <button type="button" onclick="cerrarComprobanteModal()" class="rounded-xl border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                    Cerrar
+                </button>
+            </div>
+            <div id="comprobanteModalBody" class="max-h-[70vh] overflow-y-auto px-6 py-4"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const abrirReporteMensual = document.getElementById('abrirReporteMensual');
+            const reporteMensualModal = document.getElementById('reporteMensualModal');
+            const cerrarModalReporte = document.getElementById('cerrarModalReporte');
+            const btnPdfMensual = document.getElementById('btnPdfMensual');
+            const btnExcelMensual = document.getElementById('btnExcelMensual');
+
+            if (abrirReporteMensual) {
+                abrirReporteMensual.addEventListener('click', function () {
+                    reporteMensualModal.classList.remove('hidden');
+                });
+            }
+
+            if (cerrarModalReporte) {
+                cerrarModalReporte.addEventListener('click', function () {
+                    reporteMensualModal.classList.add('hidden');
+                });
+            }
+
+            if (btnPdfMensual) {
+                btnPdfMensual.addEventListener('click', function () {
+                    reporteMensualModal.classList.add('hidden');
+                    window.open('/administrador/pagos/reporte-mensual/pdf', '_blank');
+                });
+            }
+
+            if (btnExcelMensual) {
+                btnExcelMensual.addEventListener('click', function () {
+                    reporteMensualModal.classList.add('hidden');
+                    window.open('/administrador/pagos/reporte-mensual/excel', '_blank');
+                });
+            }
         });
-    }
 
-    // Evento para cerrar el modal
-    document.getElementById('cerrarModal').addEventListener('click', function() {
-        document.getElementById('reporteMensualModal').classList.add('hidden');
-    });
+        function verComprobante(pagoId) {
+            fetch(`/administrador/pagos/ver-recibo/${pagoId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('comprobanteModalBody').innerHTML = data.html;
+                    document.getElementById('comprobanteModal').classList.remove('hidden');
+                })
+                .catch(() => {
+                    alert('No se pudo cargar el comprobante.');
+                });
+        }
 
-    // Evento para descargar PDF mensual
-    document.getElementById('btnPdfMensual').addEventListener('click', function() {
-        document.getElementById('reporteMensualModal').classList.add('hidden');
-        window.open('/administrador/pagos/reporte-mensual/pdf', '_blank');
-    });
+        function cerrarComprobanteModal() {
+            document.getElementById('comprobanteModal').classList.add('hidden');
+        }
+    </script>
 
-    // Evento para descargar Excel mensual
-    document.getElementById('btnExcelMensual').addEventListener('click', function() {
-        document.getElementById('reporteMensualModal').classList.add('hidden');
-        window.open('/administrador/pagos/reporte-mensual/excel', '_blank');
-    });
-});
-</script>
+    <style>
+        /* Estilos del page-header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem 2rem;
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(79, 70, 229, 0.1);
+        }
+        
+        .header-content h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 0;
+        }
+        
+        .header-content h1 i {
+            color: #4F46E5;
+            font-size: 1.75rem;
+        }
+        
+        .header-content .subtitle {
+            margin-top: 0.25rem;
+            font-size: 0.95rem;
+            color: #6B7280;
+            margin-bottom: 0;
+        }
 
+        /* Estilos de los botones de acciÃ³n */
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 0.625rem 1.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            border-radius: 999px;
+            border: 1.5px solid transparent;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 200ms cubic-bezier(0.22, 0.61, 0.36, 1);
+            text-decoration: none;
+            color: white;
+            position: relative;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            text-decoration: none;
+            color: white;
+        }
+
+        .btn-action:active {
+            transform: translateY(1px);
+        }
+
+        .btn-action i {
+            font-size: 0.875rem;
+        }
+
+        .btn-action__mark {
+            display: inline-grid;
+            place-items: center;
+            width: 16px;
+            height: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            transform: rotate(-14deg);
+            transition: transform 600ms cubic-bezier(0.22, 0.61, 0.36, 1);
+        }
+
+        .btn-action__mark svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+            display: block;
+        }
+
+        .btn-action:hover .btn-action__mark {
+            transform: rotate(18deg);
+        }
+
+        /* Colores de los botones */
+        .btn-blue {
+            background: #2563EB;
+            border-color: #2563EB;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-blue:hover {
+            background: #1D4ED8;
+            border-color: #1D4ED8;
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-indigo {
+            background: #4F46E5;
+            border-color: #4F46E5;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.25);
+        }
+
+        .btn-indigo:hover {
+            background: #4338CA;
+            border-color: #4338CA;
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.35);
+        }
+
+        .btn-purple {
+            background: #7C3AED;
+            border-color: #7C3AED;
+            box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.25);
+        }
+
+        .btn-purple:hover {
+            background: #6D28D9;
+            border-color: #6D28D9;
+            box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.35);
+        }
+
+        /* AnimaciÃ³n */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .page-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+                padding: 1.25rem;
+            }
+            
+            .header-content h1 {
+                font-size: 1.5rem;
+            }
+
+            .btn-action {
+                justify-content: center;
+                width: 100%;
+                padding: 0.75rem 1.25rem;
+            }
+
+            .btn-action__mark {
+                display: none;
+            }
+        }
+    </style>
 @endsection

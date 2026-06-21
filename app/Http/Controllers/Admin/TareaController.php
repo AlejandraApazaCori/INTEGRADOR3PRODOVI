@@ -15,16 +15,16 @@ public function create(Campania $campania)
 {
     // Obtener usuarios con roles asignables (incluyendo administradores)
     $asignables = User::whereHas('roles', function($query) {
-        $query->whereIn('nombre_rol', ['diseñador', 'productor', 'community_manager', 'Administrador']);
+        $query->whereIn('nombre_rol', ['Diseñador', 'Community Manager', 'Administrador', 'Super Administrador']);
     })->get();
 
-    // Asegurarse de incluir al CM de la campaña aunque no tenga el rol
+    // Asegurarse de incluir al CM de la campaÃ±a aunque no tenga el rol
     $cm = User::find($campania->community_manager_id);
     if ($cm && !$asignables->contains($cm)) {
         $asignables->push($cm);
     }
 
-    // Incluir también al administrador actual si no está ya en la lista
+    // Incluir tambiÃ©n al administrador actual si no estÃ¡ ya en la lista
     $adminActual = Auth::user();
     if (!in_array($adminActual->id, $asignables->pluck('id')->toArray())) {
         $asignables->push($adminActual);
@@ -54,7 +54,7 @@ public function create(Campania $campania)
             'asignado_id' => $request->asignado_id,
         ]);
 
-        return redirect()->route('administrador.campañas.show', $campania->id)
+        return redirect()->route('administrador.campaÃ±as.show', $campania->id)
             ->with('success', 'Tarea creada exitosamente');
     }
     public function show(Tarea $tarea)
@@ -64,18 +64,18 @@ public function create(Campania $campania)
 
     public function edit(Tarea $tarea)
 {
-    // Obtener usuarios con roles asignables (similar al método create)
+    // Obtener usuarios con roles asignables (similar al mÃ©todo create)
     $asignables = User::whereHas('roles', function($query) {
-        $query->whereIn('nombre_rol', ['diseñador', 'productor', 'community_manager', 'Administrador']);
+        $query->whereIn('nombre_rol', ['Diseñador', 'Community Manager', 'Administrador', 'Super Administrador']);
     })->get();
 
-    // Asegurarse de incluir al CM de la campaña aunque no tenga el rol
+    // Asegurarse de incluir al CM de la campaÃ±a aunque no tenga el rol
     $cm = User::find($tarea->campania->community_manager_id);
     if ($cm && !$asignables->contains($cm)) {
         $asignables->push($cm);
     }
 
-    // Incluir también al administrador actual si no está ya en la lista
+    // Incluir tambiÃ©n al administrador actual si no estÃ¡ ya en la lista
     $adminActual = Auth::user();
     if (!in_array($adminActual->id, $asignables->pluck('id')->toArray())) {
         $asignables->push($adminActual);
@@ -104,7 +104,7 @@ public function update(Request $request, Tarea $tarea)
         'asignado_id' => $request->asignado_id,
     ]);
 
-    return redirect()->route('administrador.campañas.show', $tarea->campania_id)
+    return redirect()->route('administrador.campaÃ±as.show', $tarea->campania_id)
         ->with('success', 'Tarea actualizada exitosamente');
 }
     public function calendario(Campania $campania)
@@ -132,7 +132,7 @@ public function update(Request $request, Tarea $tarea)
         ];
     }
     
-    return view('administrador.campañas.calendario', [
+    return view('administrador.campaÃ±as.calendario', [
         'campania' => $campania,
         'eventos' => $eventos
     ]);

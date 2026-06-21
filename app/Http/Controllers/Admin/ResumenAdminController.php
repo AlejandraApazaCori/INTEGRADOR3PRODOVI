@@ -6,18 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\Empresa;
 use App\Models\TemaCuestionario;
 use App\Models\RespuestaCuestionario;
-use App\Services\OllamaService;
+use App\Services\GroqService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ResumenAdminController extends Controller
 {
-    protected $ollamaService;
+    protected $groqService;
 
-    // Inyectamos el servicio de Ollama a través del constructor
-    public function __construct(OllamaService $ollamaService)
+    // Inyectamos el servicio de Groq a travÃ©s del constructor
+    public function __construct(GroqService $groqService)
     {
-        $this->ollamaService = $ollamaService;
+        $this->groqService = $groqService;
     }
 
     /**
@@ -26,8 +26,8 @@ class ResumenAdminController extends Controller
     public function edit($id)
     {
         // 1. Verificar si el usuario es administrador
-        if (!auth()->check() || !auth()->user()->roles()->where('nombre_rol', 'Administrador')->exists()) {
-            abort(403, 'No tienes permisos para acceder a esta página.');
+        if (!auth()->check() || !auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+            abort(403, 'No tienes permisos para acceder a esta pÃ¡gina.');
         }
 
         // 2. Obtener la empresa
@@ -49,8 +49,8 @@ class ResumenAdminController extends Controller
     public function update(Request $request, $id)
     {
         // 1. Verificar si el usuario es administrador
-        if (!auth()->check() || !auth()->user()->roles()->where('nombre_rol', 'Administrador')->exists()) {
-            abort(403, 'No tienes permisos para realizar esta acción.');
+        if (!auth()->check() || !auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+            abort(403, 'No tienes permisos para realizar esta acciÃ³n.');
         }
 
         // 2. Validar la solicitud
@@ -68,7 +68,7 @@ class ResumenAdminController extends Controller
         $empresa->resumen_ejecutivo = $request->input('resumen_ejecutivo');
         $empresa->save();
 
-        // 5. Redirigir con mensaje de éxito
+        // 5. Redirigir con mensaje de Ã©xito
         return redirect()->route('administrador.empresas.show', $empresa->id)
             ->with('success', 'Resumen ejecutivo actualizado correctamente.');
     }
@@ -79,8 +79,8 @@ class ResumenAdminController extends Controller
     public function destroy($id)
     {
         // 1. Verificar si el usuario es administrador
-        if (!auth()->check() || !auth()->user()->roles()->where('nombre_rol', 'Administrador')->exists()) {
-            abort(403, 'No tienes permisos para realizar esta acción.');
+        if (!auth()->check() || !auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+            abort(403, 'No tienes permisos para realizar esta acciÃ³n.');
         }
 
         // 2. Obtener la empresa
@@ -90,7 +90,7 @@ class ResumenAdminController extends Controller
         $empresa->resumen_ejecutivo = null;
         $empresa->save();
 
-        // 4. Redirigir con mensaje de éxito
+        // 4. Redirigir con mensaje de Ã©xito
         return redirect()->route('administrador.empresas.show', $empresa->id)
             ->with('success', 'Resumen ejecutivo eliminado correctamente.');
     }

@@ -36,10 +36,10 @@ return [
     ],
 
 
-    'ollama' => [
-        'key' => env('OLLAMA_API_KEY'),
-        'url' => env('OLLAMA_URL'),
-        'model' => env('OLLAMA_MODEL'),
+    'groq' => [
+        'key' => env('GROQ_API_KEY'),
+        'url' => env('GROQ_URL'),
+        'model' => env('GROQ_MODEL'),
     ],
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),

@@ -5,17 +5,17 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tarea;
-use App\Services\OllamaImageService; // <-- IMPORTAR EL NUEVO SERVICIO
+use App\Services\GroqImageService; // <-- IMPORTAR EL NUEVO SERVICIO
 use Illuminate\Http\Request;
 
 class PublicacionController extends Controller
 {
     // Inyectamos el servicio para usarlo
-    protected $ollamaImageService;
+    protected $groqImageService;
 
-    public function __construct(OllamaImageService $ollamaImageService)
+    public function __construct(GroqImageService $groqImageService)
     {
-        $this->ollamaImageService = $ollamaImageService;
+        $this->groqImageService = $groqImageService;
     }
 
     public function index(Request $request)
@@ -45,7 +45,7 @@ class PublicacionController extends Controller
             'tarea_id' => 'required|integer|exists:tareas,id',
         ]);
 
-        $copy = $this->ollamaImageService->generateCopyFromImage($request->tarea_id);
+        $copy = $this->groqImageService->generateCopyFromImage($request->tarea_id);
 
         return response()->json([
             'success' => true,

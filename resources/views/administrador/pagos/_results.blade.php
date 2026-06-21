@@ -1,3 +1,5 @@
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
     
     
@@ -129,16 +131,33 @@
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <form action="{{ route('administrador.pagos.cancelar', ['pago' => $pago['id']]) }}" method="POST">
-                            @csrf
-                            @method('PUT')
-                            <button type="submit" class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition duration-200 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                                <span>Cancelar</span>
+                        <div class="flex items-center space-x-2">
+                            <!-- Botón Ver Recibo -->
+                            <button onclick="verComprobante({{ $pago['id'] }})" 
+                                class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-3 py-2 rounded-xl text-sm font-semibold transition duration-200 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center space-x-1"
+                                title="Ver Recibo">
+                                <i class="fas fa-eye"></i>
+                                <span>Recibo</span>
                             </button>
-                        </form>
+
+                            <!-- Botón Descargar Recibo -->
+                            <button onclick="descargarComprobante({{ $pago['id'] }})" 
+                                class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-3 py-2 rounded-xl text-sm font-semibold transition duration-200 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center space-x-1"
+                                title="Descargar Recibo">
+                                <i class="fas fa-download"></i>
+                            </button>
+
+                            <form action="{{ route('administrador.pagos.cancelar', ['pago' => $pago['id']]) }}" method="POST" class="inline">
+                                @csrf
+                                @method('PUT')
+                                <button type="submit" class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-3 py-2 rounded-xl text-sm font-semibold transition duration-200 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center space-x-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    <span>Cancelar</span>
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 @endif

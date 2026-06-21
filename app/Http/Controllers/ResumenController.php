@@ -3,18 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Empresa;
-use App\Services\OllamaService;
+use App\Services\GroqService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class ResumenController extends Controller
 {
-    protected $ollamaService;
+    protected $groqService;
 
     // Inyectamos el servicio para no crear una instancia manualmente
-    public function __construct(OllamaService $ollamaService)
+    public function __construct(GroqService $groqService)
     {
-        $this->ollamaService = $ollamaService;
+        $this->groqService = $groqService;
     }
 
     /**
@@ -36,8 +36,8 @@ class ResumenController extends Controller
             ];
         })->toArray();
 
-        // 3. Llamar al servicio de Ollama para generar el resumen
-        $resumen = $this->ollamaService->generateSummary($empresa->nombre_empresa, $datosParaIa);
+        // 3. Llamar al servicio de Groq para generar el resumen
+        $resumen = $this->groqService->generateSummary($empresa->nombre_empresa, $datosParaIa);
 
         // 4. Guardar el resumen en la base de datos
         $empresa->resumen_ejecutivo = $resumen;

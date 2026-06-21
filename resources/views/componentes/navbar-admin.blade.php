@@ -1,4 +1,4 @@
-@include('a.css.componentes.navbar-admin')
+﻿@include('a.css.componentes.navbar-admin')
 </head>
 <body>
     <!-- Sidebar -->
@@ -12,7 +12,7 @@
             </a>
         </div>
 
-        <!-- Menú de navegación -->
+        <!-- MenÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âº de navegaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n -->
         <div class="sidebar-menu">
             <div class="menu-label">MENU</div>
             
@@ -83,14 +83,31 @@
             </div>
 
             <!-- Pagos -->
+            @php
+                $pagosMenuOpen = request()->routeIs('administrador.pagos.*') || request()->routeIs('admin.analiticas.*');
+            @endphp
             <div class="menu-item">
-                <a href="{{ route('administrador.pagos.index') }}" class="menu-link">
+                <a href="#" class="menu-link {{ $pagosMenuOpen ? 'active' : '' }}" onclick="toggleSubmenu(this); return false;">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
                         <line x1="1" y1="10" x2="23" y2="10"></line>
                     </svg>
                     <span class="menu-text">Pagos</span>
+                    <svg class="menu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="{{ $pagosMenuOpen ? 'transform: rotate(180deg);' : '' }}">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
                 </a>
+                <div class="submenu {{ $pagosMenuOpen ? 'open' : '' }}">
+                    <div class="submenu-item">
+                        <a href="{{ route('administrador.pagos.analiticas') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.analiticas') ? 'active' : '' }}">Analíticas</a>
+                    </div>
+                    <div class="submenu-item">
+                        <a href="{{ route('administrador.pagos.index') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.index') ? 'active' : '' }}">General</a>
+                    </div>
+                    <div class="submenu-item">
+                        <a href="{{ route('administrador.pagos.manual.crear') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.manual.*') ? 'active' : '' }}">Registrar pago</a>
+                    </div>
+                </div>
             </div>
 
             <!-- Campañas -->
@@ -104,17 +121,6 @@
                 </a>
             </div>
 
-            <!-- Analiticas de Rendimiento -->
-            <div class="menu-item">
-                <a href="{{ route('admin.analiticas.index') }}" class="menu-link">
-                    <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="20" x2="18" y2="10"/>
-                        <line x1="12" y1="20" x2="12" y2="4"/>
-                        <line x1="6" y1="20" x2="6" y2="14"/>
-                    </svg>
-                    <span class="menu-text">Analiticas de Rendimiento</span>
-                </a>
-            </div>  
 
             <!-- Logs -->
             <div class="menu-item">
@@ -144,7 +150,7 @@
                     </div>
                     <div class="user-details">
                         <div class="user-name">{{ auth()->user()->name }}</div>
-                        <div class="user-status">En línea</div>
+                        <div class="user-status">En linea</div>
                     </div>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="6 9 12 15 18 9"/>
@@ -207,3 +213,4 @@
     </div>
 </body>
 </html>
+

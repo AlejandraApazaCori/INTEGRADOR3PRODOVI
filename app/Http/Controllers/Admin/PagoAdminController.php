@@ -8,6 +8,7 @@ use App\Models\Suscripcion;
 use App\Models\ComprobantePago;
 use App\Models\Plan;
 use App\Models\User;
+use App\Models\Role;
 use App\Exports\PagosExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,48 +19,43 @@ use Barryvdh\DomPDF\Facade\PDF;
 
 class PagoAdminController extends Controller
 {
-    // Pagos realizados (todos los completados)
-
     public function pagosRealizados(Request $request)
     {
         $search = $request->input('search');
         $planId = $request->input('plan');
-
-        // Obtener todos los planes para el select
         $planes = Plan::all();
 
-        $query = Pago::with(['usuario', 'plan', 'suscripcion'])
+        $query = Pago::has('usuario')
+            ->has('plan')
+            ->has('suscripcion')
+            ->with(['usuario', 'plan', 'suscripcion'])
             ->where('estado', 'completado')
             ->orderBy('fecha_pago', 'desc');
 
-        // Filtro por nombre de usuario
         if ($search) {
             $query->whereHas('usuario', function ($userQuery) use ($search) {
                 $userQuery->where('name', 'like', "%{$search}%");
             });
         }
 
-        // Filtro por plan seleccionado
         if ($planId) {
             $query->whereHas('plan', function ($planQuery) use ($planId) {
                 $planQuery->where('id', $planId);
             });
         }
-
         $pagos = $query->paginate(10)->through(function ($pago) {
             return [
                 'id' => $pago->id,
-                'usuario' => $pago->usuario->name,
+                'usuario' => optional($pago->usuario)->name ?? 'N/A',
                 'tipo_pago' => $pago->metodo,
-                'plan' => $pago->plan->nombre,
+                'plan' => optional($pago->plan)->nombre ?? 'N/A',
                 'monto' => $pago->monto . ' ' . $pago->moneda,
-                'fecha_inicio' => $pago->suscripcion->fecha_inicio->format('d/m/Y'),
-                'fecha_fin' => $pago->suscripcion->fecha_fin->format('d/m/Y'),
-                'estado' => $pago->suscripcion->estado,
+                'fecha_inicio' => optional($pago->suscripcion)->fecha_inicio ? $pago->suscripcion->fecha_inicio->format('d/m/Y') : 'N/A',
+                'fecha_fin' => optional($pago->suscripcion)->fecha_fin ? $pago->suscripcion->fecha_fin->format('d/m/Y') : 'N/A',
+                'estado' => optional($pago->suscripcion)->estado ?? 'N/A',
             ];
         });
 
-        // Si es una petición AJAX, devolver solo la tabla
         if ($request->ajax()) {
             return view('administrador.pagos._results', compact('pagos'))->render();
         }
@@ -67,8 +63,6 @@ class PagoAdminController extends Controller
         return view('administrador.pagos.realizados', compact('pagos', 'planes'));
     }
 
-    // Pagos pendientes físicos
-    // Pagos pendientes físicos
     public function pagosPendientesFisicos(Request $request)
     {
         $search = $request->input('search');
@@ -82,69 +76,69 @@ class PagoAdminController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->whereHas('usuario', function ($userQuery) use ($search) {
                     $userQuery->where('name', 'like', "%{$search}%");
-                })
-                    ->orWhereHas('codigoPago', function ($codigoQuery) use ($search) {
-                        $codigoQuery->where('codigo', 'like', "%{$search}%");
-                    });
+                })->orWhereHas('codigoPago', function ($codigoQuery) use ($search) {
+                    $codigoQuery->where('codigo', 'like', "%{$search}%");
+                });
             });
         }
 
-        $pagos = $query->paginate(10); // Paginación con 10 elementos por página
+        $pagos = $query->paginate(10);
+
+        foreach ($pagos as $pago) {
+            $pago->update(['visto' => true]);
+        }
 
         return view('administrador.pagos.pendientes-fisicos', compact('pagos'));
     }
 
-    // Pagos finalizados sin renovación
     public function pagosFinalizadosSinRenovacion(Request $request)
     {
-        // Actualizar cualquier suscripción vencida
         Suscripcion::where('estado', 'activa')
             ->where('fecha_fin', '<', now())
             ->update([
                 'estado' => 'finalizada',
-                'fecha_cancelacion' => now()
+                'fecha_cancelacion' => now(),
             ]);
 
         $search = $request->input('search');
 
-        $query = Pago::with(['usuario', 'plan', 'suscripcion'])
+        $query = Pago::has('usuario')
+            ->has('plan')
+            ->has('suscripcion')
+            ->with(['usuario', 'plan', 'suscripcion'])
             ->whereHas('suscripcion', function ($query) {
                 $query->whereIn('estado', ['finalizada', 'cancelada']);
             })
             ->where('estado', 'completado')
             ->orderBy('fecha_pago', 'desc');
 
-        // Aplicar filtro de búsqueda si existe
         if ($search) {
             $query->whereHas('usuario', function ($userQuery) use ($search) {
                 $userQuery->where('name', 'like', "%{$search}%");
             });
         }
 
-        $pagos = $query->get()
-            ->map(function ($pago) {
-                return [
-                    'id' => $pago->id,
-                    'usuario' => $pago->usuario->name,
-                    'tipo_pago' => $pago->metodo,
-                    'plan' => $pago->plan->nombre,
-                    'monto' => $pago->monto . ' ' . $pago->moneda,
-                    'fecha_inicio' => $pago->suscripcion->fecha_inicio->format('d/m/Y'),
-                    'fecha_fin' => $pago->suscripcion->fecha_fin->format('d/m/Y'),
-                    'fecha_cancelacion' => $pago->suscripcion->fecha_cancelacion ?
-                        $pago->suscripcion->fecha_cancelacion->format('d/m/Y H:i') : null,
-                    'estado' => $pago->suscripcion->estado,
-                ];
-            });
+        $pagos = $query->get()->map(function ($pago) {
+            return [
+                'id' => $pago->id,
+                'usuario' => optional($pago->usuario)->name ?? 'N/A',
+                'tipo_pago' => $pago->metodo,
+                'plan' => optional($pago->plan)->nombre ?? 'N/A',
+                'monto' => $pago->monto . ' ' . $pago->moneda,
+                'fecha_inicio' => optional($pago->suscripcion)->fecha_inicio ? $pago->suscripcion->fecha_inicio->format('d/m/Y') : 'N/A',
+                'fecha_fin' => optional($pago->suscripcion)->fecha_fin ? $pago->suscripcion->fecha_fin->format('d/m/Y') : 'N/A',
+                'fecha_cancelacion' => optional($pago->suscripcion)->fecha_cancelacion ? $pago->suscripcion->fecha_cancelacion->format('d/m/Y H:i') : null,
+                'estado' => optional($pago->suscripcion)->estado ?? 'N/A',
+            ];
+        });
 
-        // Si es una petición AJAX, devolver solo la tabla
         if ($request->ajax()) {
             return view('administrador.pagos._finalizados_results', compact('pagos'))->render();
         }
 
         return view('administrador.pagos.finalizados-sin-renovacion', compact('pagos'));
     }
-    // Aprobar pago físico
+
     public function aprobarPagoFisico($pagoId)
     {
         DB::beginTransaction();
@@ -163,7 +157,7 @@ class PagoAdminController extends Controller
             if ($pago->codigoPago) {
                 $pago->codigoPago->update([
                     'utilizado' => true,
-                    'fecha_utilizacion' => now()
+                    'fecha_utilizacion' => now(),
                 ]);
             }
 
@@ -174,7 +168,6 @@ class PagoAdminController extends Controller
             DB::commit();
 
             return back()->with('success', 'Pago aprobado y comprobante generado correctamente.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Error al aprobar pago físico: ' . $e->getMessage());
@@ -183,26 +176,144 @@ class PagoAdminController extends Controller
         }
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        // Suscripciones activas (estado 'activa' y fecha_fin en el futuro)
         $countActivos = Suscripcion::where('estado', 'activa')
             ->where('fecha_fin', '>', now())
             ->count();
 
-        // Pagos pendientes físicos
         $countPendientes = Pago::where('estado', 'pendiente')
             ->where('metodo', 'fisico')
             ->count();
 
-        // Suscripciones finalizadas o canceladas
         $countFinalizados = Suscripcion::whereIn('estado', ['finalizada', 'cancelada'])
             ->count();
 
-        // Obtener todos los planes para el filtro
         $planes = Plan::where('activo', true)->get();
+        $perPage = (int) $request->input('per_page', 10);
+        $perPage = $perPage > 0 ? min($perPage, 100) : 10;
 
-        return view('administrador.pagos.index', compact('countActivos', 'countPendientes', 'countFinalizados', 'planes'));
+        $pagos = Pago::with(['usuario', 'plan', 'suscripcion', 'comprobantePago'])
+            ->orderByDesc('id')
+            ->paginate($perPage)
+            ->appends($request->query());
+
+        return view('administrador.pagos.index', compact(
+            'countActivos',
+            'countPendientes',
+            'countFinalizados',
+            'planes',
+            'pagos',
+            'perPage'
+        ));
+    }
+
+    public function analiticas()
+    {
+        $planes = Plan::where('activo', true)->get();
+        $defaultStartDate = Carbon::now()->startOfMonth()->toDateString();
+        $defaultEndDate = Carbon::now()->endOfMonth()->toDateString();
+
+        return view('administrador.pagos.analiticas', compact('planes', 'defaultStartDate', 'defaultEndDate'));
+    }
+
+    public function createManual()
+    {
+        $planes = Plan::where('activo', true)->get();
+        $usuarios = User::whereHas('roles', function ($q) {
+            $q->where('nombre_rol', 'Cliente');
+        })->get();
+
+        return view('administrador.pagos.create_manual', compact('planes', 'usuarios'));
+    }
+
+    public function storeManual(Request $request)
+    {
+        $rules = [
+            'create_new_user' => 'required|in:0,1',
+            'plan_id' => 'required|exists:plan,id',
+            'metodo' => 'required|in:fisico,qr',
+            'monto' => 'required|numeric|min:0',
+            'fecha_inicio' => 'required|date',
+        ];
+
+        if ($request->create_new_user == '1') {
+            $rules['name'] = 'required|string|max:255';
+            $rules['email'] = 'required|string|email|max:255|unique:users';
+            $rules['password'] = 'required|string|min:8|confirmed';
+            $rules['phone'] = 'nullable|string|max:20';
+        } else {
+            $rules['usuario_id'] = 'required|exists:users,id';
+        }
+
+        $request->validate($rules);
+
+        DB::beginTransaction();
+        try {
+            $usuarioId = $request->usuario_id;
+
+            if ($request->create_new_user == '1') {
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'password' => \Hash::make($request->password),
+                    'phone' => $request->phone,
+                ]);
+
+                $rolCliente = Role::where('nombre_rol', 'Cliente')->first();
+                if ($rolCliente) {
+                    $user->roles()->attach($rolCliente->id);
+                }
+
+                $usuarioId = $user->id;
+            }
+
+            $plan = Plan::findOrFail($request->plan_id);
+            $fechaInicio = Carbon::parse($request->fecha_inicio);
+            $fechaFin = $fechaInicio->copy()->addMonth();
+
+            if ($plan->periodo_facturacion === 'anual') {
+                $fechaFin = $fechaInicio->copy()->addYear();
+            } elseif ($plan->periodo_facturacion === 'trimestral') {
+                $fechaFin = $fechaInicio->copy()->addMonths(3);
+            } elseif ($plan->periodo_facturacion === 'semestral') {
+                $fechaFin = $fechaInicio->copy()->addMonths(6);
+            }
+
+            $suscripcion = Suscripcion::create([
+                'usuario_id' => $usuarioId,
+                'plan_id' => $request->plan_id,
+                'estado' => 'activa',
+                'fecha_inicio' => $fechaInicio,
+                'fecha_fin' => $fechaFin,
+                'metodo_pago' => $request->metodo,
+            ]);
+
+            $pago = Pago::create([
+                'usuario_id' => $usuarioId,
+                'suscripcion_id' => $suscripcion->id,
+                'plan_id' => $request->plan_id,
+                'monto' => $request->monto,
+                'moneda' => $plan->moneda ?? 'BS',
+                'metodo' => $request->metodo,
+                'estado' => 'completado',
+                'aprobado_por' => Auth::id(),
+                'fecha_aprobacion' => now(),
+                'fecha_pago' => now(),
+            ]);
+
+            ComprobantePago::create([
+                'pago_id' => $pago->id,
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('administrador.pagos.index')->with('success', 'Pago manual registrado correctamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error al registrar pago manual: ' . $e->getMessage());
+            return back()->with('error', 'Error al registrar el pago: ' . $e->getMessage())->withInput();
+        }
     }
 
     public function cancelarSuscripcion($pagoId)
@@ -210,13 +321,14 @@ class PagoAdminController extends Controller
         $pago = Pago::findOrFail($pagoId);
 
         $pago->suscripcion->update([
-            'estado' => 'cancelada', // Cambiado a 'cancelada' para mejor tracking
+            'estado' => 'cancelada',
             'fecha_fin' => now(),
-            'fecha_cancelacion' => now()
+            'fecha_cancelacion' => now(),
         ]);
 
         return back()->with('success', 'Suscripción cancelada correctamente');
     }
+
     public function reactivarSuscripcion($pagoId)
     {
         $pago = Pago::findOrFail($pagoId);
@@ -224,16 +336,13 @@ class PagoAdminController extends Controller
         $pago->suscripcion->update([
             'estado' => 'activa',
             'fecha_inicio' => now(),
-            'fecha_fin' => now()->addMonth(), // Un mes desde ahora
-            'fecha_cancelacion' => null // Limpia la fecha de cancelación al reactivar
+            'fecha_fin' => now()->addMonth(),
+            'fecha_cancelacion' => null,
         ]);
 
         return back()->with('success', 'Suscripción reactivada correctamente');
     }
 
-    /**
-     * Obtiene los pagos filtrados para reportes (método reutilizable)
-     */
     private function getFilteredPaymentsForReport(Request $request)
     {
         $filters = [
@@ -241,123 +350,35 @@ class PagoAdminController extends Controller
             'plan' => $request->input('plan'),
             'subscriptionStatus' => $request->input('subscriptionStatus'),
             'startDate' => $request->input('startDate'),
-            'endDate' => $request->input('endDate')
+            'endDate' => $request->input('endDate'),
         ];
 
-        $query = Pago::with(['usuario', 'plan', 'suscripcion']);
-
-        if ($filters['clientName']) {
-            $query->whereHas('usuario', function ($userQuery) use ($filters) {
-                $userQuery->where('name', 'like', "%{$filters['clientName']}%");
-            });
-        }
-
-        if ($filters['plan']) {
-            $query->where('plan_id', $filters['plan']);
-        }
-
-        if ($filters['subscriptionStatus']) {
-            switch ($filters['subscriptionStatus']) {
-                case 'active':
-                    $query->whereHas('suscripcion', function ($susQuery) {
-                        $susQuery->where('estado', 'activa');
-                    });
-                    break;
-                case 'completed':
-                    $query->whereHas('suscripcion', function ($susQuery) {
-                        $susQuery->where('estado', 'finalizada');
-                    });
-                    break;
-                case 'cancelled':
-                    $query->whereHas('suscripcion', function ($susQuery) {
-                        $susQuery->where('estado', 'cancelada');
-                    });
-                    break;
-            }
-        }
-
-        if ($filters['startDate']) {
-            $query->whereHas('suscripcion', function ($susQuery) use ($filters) {
-                $susQuery->whereDate('fecha_inicio', '>=', $filters['startDate']);
-            });
-        }
-
-        if ($filters['endDate']) {
-            $query->whereHas('suscripcion', function ($susQuery) use ($filters) {
-                $susQuery->whereDate('fecha_fin', '<=', $filters['endDate']);
-            });
-        }
-
-        return $query->orderBy('created_at', 'desc')->get();
+        return $this->buildAnalyticsQuery($filters)
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
-    /**
-     * Buscar pagos con métricas y datos para gráficos
-     */
     public function buscarPagos(Request $request)
     {
         try {
-            $clientName = $request->input('clientName');
-            $planId = $request->input('plan');
-            $subscriptionStatus = $request->input('subscriptionStatus');
-            $startDate = $request->input('startDate');
-            $endDate = $request->input('endDate');
-            $page = $request->input('page', 1);
+            $filters = [
+                'clientName' => $request->input('clientName'),
+                'plan' => $request->input('plan'),
+                'subscriptionStatus' => $request->input('subscriptionStatus'),
+                'startDate' => $request->input('startDate'),
+                'endDate' => $request->input('endDate'),
+            ];
+            $page = (int) $request->input('page', 1);
             $perPage = 10;
 
-            $query = Pago::with(['usuario', 'plan', 'suscripcion']);
+            $allPagos = $this->buildAnalyticsQuery($filters)->get();
 
-            if ($clientName) {
-                $query->whereHas('usuario', function ($userQuery) use ($clientName) {
-                    $userQuery->where('name', 'like', "%{$clientName}%");
-                });
-            }
-
-            if ($planId) {
-                $query->where('plan_id', $planId);
-            }
-
-            if ($subscriptionStatus) {
-                switch ($subscriptionStatus) {
-                    case 'active':
-                        $query->whereHas('suscripcion', function ($susQuery) {
-                            $susQuery->where('estado', 'activa');
-                        });
-                        break;
-                    case 'completed':
-                        $query->whereHas('suscripcion', function ($susQuery) {
-                            $susQuery->where('estado', 'finalizada');
-                        });
-                        break;
-                    case 'cancelled':
-                        $query->whereHas('suscripcion', function ($susQuery) {
-                            $susQuery->where('estado', 'cancelada');
-                        });
-                        break;
-                }
-            }
-
-            if ($startDate) {
-                $query->whereHas('suscripcion', function ($susQuery) use ($startDate) {
-                    $susQuery->whereDate('fecha_inicio', '>=', $startDate);
-                });
-            }
-
-            if ($endDate) {
-                $query->whereHas('suscripcion', function ($susQuery) use ($endDate) {
-                    $susQuery->whereDate('fecha_fin', '<=', $endDate);
-                });
-            }
-
-            $allPagos = $query->get();
-
-            // --- CÁLCULO DE MÉTRICAS ---
             $totalIncome = $allPagos->where('estado', 'completado')->sum('monto');
             $moneda = $allPagos->first()->moneda ?? 'BS';
-
             $planCounts = $allPagos->map(function ($pago) {
                 return $pago->plan ? $pago->plan->nombre : 'N/A';
             })->countBy()->sortDesc();
+
             $mostHiredPlan = $planCounts->isNotEmpty() ? $planCounts->keys()->first() : 'N/A';
             $mostHiredPlanCount = $planCounts->isNotEmpty() ? $planCounts->first() : 0;
 
@@ -371,22 +392,26 @@ class PagoAdminController extends Controller
 
             $monthlyIncome = $allPagos->where('estado', 'completado')
                 ->groupBy(function ($pago) {
-                    return $pago->fecha_pago ? $pago->fecha_pago->format('Y-m') : null;
+                    if ($pago->fecha_pago) {
+                        return $pago->fecha_pago->format('Y-m');
+                    }
+
+                    return $pago->created_at ? $pago->created_at->format('Y-m') : null;
                 })
                 ->map(function ($monthPayments) {
                     return $monthPayments->sum('monto');
                 })
+                ->filter(function ($value, $key) {
+                    return !is_null($key);
+                })
                 ->sortKeys()
                 ->all();
-            // --- FIN DE MÉTRICAS ---
 
             $total = $allPagos->count();
-            $totalPages = ceil($total / $perPage);
+            $totalPages = max(1, (int) ceil(max($total, 1) / $perPage));
             $offset = ($page - 1) * $perPage;
 
-            $paginatedResults = $allPagos->slice($offset, $perPage)->values();
-
-            $results = $paginatedResults->map(function ($pago) {
+            $results = $allPagos->slice($offset, $perPage)->values()->map(function ($pago) {
                 return [
                     'id' => $pago->id,
                     'usuario' => $pago->usuario ? $pago->usuario->name : 'N/A',
@@ -413,25 +438,22 @@ class PagoAdminController extends Controller
                     'monthly_income' => $monthlyIncome,
                 ],
                 'pagination' => [
-                    'current_page' => (int) $page,
+                    'current_page' => $page,
                     'total_pages' => $totalPages,
                     'total' => $total,
-                    'per_page' => $perPage
-                ]
+                    'per_page' => $perPage,
+                ],
+                'filters' => $filters,
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Error en buscarPagos: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error al procesar la búsqueda: ' . $e->getMessage()
+                'message' => 'Error al procesar la búsqueda: ' . $e->getMessage(),
             ], 500);
         }
     }
 
-    /**
-     * Descargar PDF con resumen
-     */
     public function descargarPDF(Request $request)
     {
         try {
@@ -443,28 +465,22 @@ class PagoAdminController extends Controller
             $planCounts = $pagos->map(function ($pago) {
                 return $pago->plan ? $pago->plan->nombre : 'N/A';
             })->countBy()->sortDesc();
-            $mostHiredPlan = $planCounts->isNotEmpty() ? $planCounts->keys()->first() : 'N/A';
-            $mostHiredPlanCount = $planCounts->isNotEmpty() ? $planCounts->first() : 0;
 
             $summary = [
                 'total_income' => number_format($totalIncome, 2, ',', '.') . ' ' . $moneda,
-                'most_hired_plan' => $mostHiredPlan,
-                'most_hired_plan_count' => $mostHiredPlanCount,
+                'most_hired_plan' => $planCounts->isNotEmpty() ? $planCounts->keys()->first() : 'N/A',
+                'most_hired_plan_count' => $planCounts->isNotEmpty() ? $planCounts->first() : 0,
                 'total_records' => $pagos->count(),
             ];
 
             $pdf = PDF::loadView('administrador.pagos.pdf', compact('pagos', 'filters', 'summary'));
             return $pdf->download('reporte_pagos_' . date('d_m_Y_H_i_s') . '.pdf');
-
         } catch (\Exception $e) {
             \Log::error('Error al generar PDF: ' . $e->getMessage());
             return back()->with('error', 'Error al generar el PDF: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Descargar Excel con resumen
-     */
     public function descargarExcel(Request $request)
     {
         try {
@@ -476,107 +492,188 @@ class PagoAdminController extends Controller
             $planCounts = $pagos->map(function ($pago) {
                 return $pago->plan ? $pago->plan->nombre : 'N/A';
             })->countBy()->sortDesc();
-            $mostHiredPlan = $planCounts->isNotEmpty() ? $planCounts->keys()->first() : 'N/A';
-            $mostHiredPlanCount = $planCounts->isNotEmpty() ? $planCounts->first() : 0;
 
             $summary = [
                 'total_income' => number_format($totalIncome, 2, ',', '.') . ' ' . $moneda,
-                'most_hired_plan' => $mostHiredPlan,
-                'most_hired_plan_count' => $mostHiredPlanCount,
+                'most_hired_plan' => $planCounts->isNotEmpty() ? $planCounts->keys()->first() : 'N/A',
+                'most_hired_plan_count' => $planCounts->isNotEmpty() ? $planCounts->first() : 0,
                 'total_records' => $pagos->count(),
             ];
 
             return Excel::download(new PagosExport($pagos, $filters, $summary), 'reporte_pagos_' . date('d_m_Y_H_i_s') . '.xlsx');
-
         } catch (\Exception $e) {
             \Log::error('Error al generar Excel: ' . $e->getMessage());
             return back()->with('error', 'Error al generar el Excel: ' . $e->getMessage());
         }
     }
 
-
-    /**
-     * Obtiene los pagos del mes actual para reportes
-     */
     private function getMonthlyPaymentsForReport()
     {
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
 
         return Pago::with(['usuario', 'plan', 'suscripcion'])
-            ->whereMonth('created_at', $currentMonth)
-            ->whereYear('created_at', $currentYear)
+            ->where(function ($query) use ($currentMonth, $currentYear) {
+                $query->where(function ($dateQuery) use ($currentMonth, $currentYear) {
+                    $dateQuery->whereNotNull('fecha_pago')
+                        ->whereMonth('fecha_pago', $currentMonth)
+                        ->whereYear('fecha_pago', $currentYear);
+                })->orWhere(function ($dateQuery) use ($currentMonth, $currentYear) {
+                    $dateQuery->whereNull('fecha_pago')
+                        ->whereMonth('created_at', $currentMonth)
+                        ->whereYear('created_at', $currentYear);
+                });
+            })
             ->orderBy('created_at', 'desc')
             ->get();
     }
 
-    /**
-     * Descargar PDF mensual
-     */
     public function descargarPDFMensual()
     {
         try {
             $pagos = $this->getMonthlyPaymentsForReport();
             $filters = ['monthly_report' => true];
 
-            // Calcular métricas
             $totalIncome = $pagos->where('estado', 'completado')->sum('monto');
             $moneda = $pagos->first()->moneda ?? 'BS';
             $planCounts = $pagos->map(function ($pago) {
                 return $pago->plan ? $pago->plan->nombre : 'N/A';
             })->countBy()->sortDesc();
-            $mostHiredPlan = $planCounts->isNotEmpty() ? $planCounts->keys()->first() : 'N/A';
-            $mostHiredPlanCount = $planCounts->isNotEmpty() ? $planCounts->first() : 0;
 
             $summary = [
                 'total_income' => number_format($totalIncome, 2, ',', '.') . ' ' . $moneda,
-                'most_hired_plan' => $mostHiredPlan,
-                'most_hired_plan_count' => $mostHiredPlanCount,
+                'most_hired_plan' => $planCounts->isNotEmpty() ? $planCounts->keys()->first() : 'N/A',
+                'most_hired_plan_count' => $planCounts->isNotEmpty() ? $planCounts->first() : 0,
                 'total_records' => $pagos->count(),
                 'monthly_report' => Carbon::now()->format('F Y'),
             ];
 
             $pdf = PDF::loadView('administrador.pagos.pdf', compact('pagos', 'filters', 'summary'));
             return $pdf->download('reporte_mensual_pagos_' . date('d_m_Y_H_i_s') . '.pdf');
-
         } catch (\Exception $e) {
             \Log::error('Error al generar PDF mensual: ' . $e->getMessage());
             return back()->with('error', 'Error al generar el PDF mensual: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Descargar Excel mensual
-     */
     public function descargarExcelMensual()
     {
         try {
             $pagos = $this->getMonthlyPaymentsForReport();
             $filters = ['monthly_report' => true];
 
-            // Calcular métricas
             $totalIncome = $pagos->where('estado', 'completado')->sum('monto');
             $moneda = $pagos->first()->moneda ?? 'BS';
             $planCounts = $pagos->map(function ($pago) {
                 return $pago->plan ? $pago->plan->nombre : 'N/A';
             })->countBy()->sortDesc();
-            $mostHiredPlan = $planCounts->isNotEmpty() ? $planCounts->keys()->first() : 'N/A';
-            $mostHiredPlanCount = $planCounts->isNotEmpty() ? $planCounts->first() : 0;
 
             $summary = [
                 'total_income' => number_format($totalIncome, 2, ',', '.') . ' ' . $moneda,
-                'most_hired_plan' => $mostHiredPlan,
-                'most_hired_plan_count' => $mostHiredPlanCount,
+                'most_hired_plan' => $planCounts->isNotEmpty() ? $planCounts->keys()->first() : 'N/A',
+                'most_hired_plan_count' => $planCounts->isNotEmpty() ? $planCounts->first() : 0,
                 'total_records' => $pagos->count(),
                 'monthly_report' => Carbon::now()->format('F Y'),
             ];
 
             return Excel::download(new PagosExport($pagos, $filters, $summary), 'reporte_mensual_pagos_' . date('d_m_Y_H_i_s') . '.xlsx');
-
         } catch (\Exception $e) {
             \Log::error('Error al generar Excel mensual: ' . $e->getMessage());
             return back()->with('error', 'Error al generar el Excel mensual: ' . $e->getMessage());
         }
     }
 
+    private function buildAnalyticsQuery(array $filters)
+    {
+        $query = Pago::with(['usuario', 'plan', 'suscripcion']);
+
+        if (!empty($filters['clientName'])) {
+            $query->whereHas('usuario', function ($userQuery) use ($filters) {
+                $userQuery->where('name', 'like', "%{$filters['clientName']}%");
+            });
+        }
+
+        if (!empty($filters['plan'])) {
+            $query->where('plan_id', $filters['plan']);
+        }
+
+        if (!empty($filters['subscriptionStatus']) && $filters['subscriptionStatus'] !== 'all') {
+            switch ($filters['subscriptionStatus']) {
+                case 'active':
+                    $query->whereHas('suscripcion', function ($susQuery) {
+                        $susQuery->where('estado', 'activa');
+                    });
+                    break;
+                case 'completed':
+                    $query->whereHas('suscripcion', function ($susQuery) {
+                        $susQuery->where('estado', 'finalizada');
+                    });
+                    break;
+                case 'cancelled':
+                    $query->whereHas('suscripcion', function ($susQuery) {
+                        $susQuery->where('estado', 'cancelada');
+                    });
+                    break;
+            }
+        }
+
+        if (!empty($filters['startDate'])) {
+            $query->where(function ($dateQuery) use ($filters) {
+                $dateQuery->whereDate('fecha_pago', '>=', $filters['startDate'])
+                    ->orWhere(function ($fallbackQuery) use ($filters) {
+                        $fallbackQuery->whereNull('fecha_pago')
+                            ->whereDate('created_at', '>=', $filters['startDate']);
+                    });
+            });
+        }
+
+        if (!empty($filters['endDate'])) {
+            $query->where(function ($dateQuery) use ($filters) {
+                $dateQuery->whereDate('fecha_pago', '<=', $filters['endDate'])
+                    ->orWhere(function ($fallbackQuery) use ($filters) {
+                        $fallbackQuery->whereNull('fecha_pago')
+                            ->whereDate('created_at', '<=', $filters['endDate']);
+                    });
+            });
+        }
+
+        return $query;
+    }
+
+    public function verComprobante($id)
+    {
+        $pago = Pago::with(['plan', 'suscripcion', 'usuario', 'comprobantePago'])
+            ->where('id', $id)
+            ->firstOrFail();
+
+        $html = view('clientes.comprobante-pago', compact('pago'))->render();
+
+        return response()->json(['html' => $html]);
+    }
+
+    public function descargarComprobante($id)
+    {
+        $pago = Pago::with(['plan', 'suscripcion', 'usuario', 'comprobantePago'])
+            ->where('id', $id)
+            ->firstOrFail();
+
+        $comprobante = $pago->comprobantePago;
+        if (!$comprobante) {
+            $comprobante = ComprobantePago::create([
+                'pago_id' => $pago->id,
+            ]);
+        }
+
+        $rutaRelativa = 'comprobantes_pago/comprobante-' . $comprobante->numero_formateado . '.pdf';
+
+        if (!\Storage::disk('public')->exists($rutaRelativa)) {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('clientes.comprobante-pago-pdf', compact('pago', 'comprobante'));
+            \Storage::disk('public')->put($rutaRelativa, $pdf->output());
+        }
+
+        $rutaCompletaParaDescarga = \Storage::disk('public')->path($rutaRelativa);
+        $nombreDescarga = 'comprobante-' . $comprobante->numero_formateado . '.pdf';
+
+        return response()->download($rutaCompletaParaDescarga, $nombreDescarga);
+    }
 }

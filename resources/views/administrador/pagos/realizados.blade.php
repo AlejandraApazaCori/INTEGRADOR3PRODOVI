@@ -3,32 +3,32 @@
 @section('title', 'Pagos Realizados')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+<div class="min-h-screen" style="background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 50%, #F5F3FF 100%);">
     <div class="container mx-auto px-4 py-8">
         <!-- Header con título y decoración -->
-<div class="relative mb-8">
-    <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl opacity-5"></div>
-    <div class="relative bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-        <div class="flex items-center space-x-4">
-            <!-- Botón de Atrás -->
-            <a href="{{ route('administrador.pagos.index') }}" class="text-gray-500 hover:text-gray-700 transition duration-200">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                </svg>
-            </a>
-            
-            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-            </div>
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Pagos Realizados</h1>
-                <p class="text-gray-600 mt-1">Gestiona y consulta todos los pagos activos</p>
+        <div class="relative mb-8">
+            <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl opacity-5"></div>
+            <div class="relative bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                <div class="flex items-center space-x-4">
+                    <!-- Botón de Atrás -->
+                    <a href="{{ route('administrador.pagos.index') }}" class="text-gray-500 hover:text-gray-700 transition duration-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                    </a>
+                    
+                    <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900">Pagos Realizados</h1>
+                        <p class="text-gray-600 mt-1">Gestiona y consulta todos los pagos activos</p>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
         
         <!-- Formulario de búsqueda mejorado -->
         <div class="mb-8">
@@ -138,7 +138,7 @@
             </div>
         </div>
 
-        <!-- Tabla de resultados -->
+        <!-- Tabla de resultados mejorada -->
         <div id="resultsContainer" class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
             <div class="p-6 border-b border-gray-100">
                 <div class="flex items-center space-x-3">
@@ -151,8 +151,102 @@
                 </div>
             </div>
             <div class="overflow-hidden">
-                @include('administrador.pagos._results', ['pagos' => $pagos])
+                <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
+                            <tr>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">ID</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Usuario</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Plan</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Método</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Monto</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Estado</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fecha de Pago</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Inicio</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fin</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider">Comprobante</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100">
+                            @forelse($pagos as $index => $pago)
+                                @php
+                                    $estadoClase = match($pago['estado']) {
+                                        'completado' => 'bg-green-100 text-green-800 border-green-200',
+                                        'pendiente' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                                        'cancelado' => 'bg-red-100 text-red-800 border-red-200',
+                                        default => 'bg-gray-100 text-gray-800 border-gray-200',
+                                    };
+                                    $rowClass = $index % 2 === 0 ? 'bg-white' : 'bg-indigo-50/20';
+                                @endphp
+                                <tr class="{{ $rowClass }} hover:bg-indigo-50/50 transition-colors duration-150">
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-indigo-600 border-r border-gray-100">#{{ $pago['id'] }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-medium border-r border-gray-100">{{ $pago['usuario'] ?? 'N/A' }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-100">{{ $pago['plan'] ?? 'N/A' }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-100">{{ ucfirst($pago['tipo_pago'] ?? 'N/A') }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-100">{{ $pago['monto'] ?? 'N/A' }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap border-r border-gray-100">
+                                        <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold border {{ $estadoClase }}">{{ ucfirst($pago['estado'] ?? 'N/A') }}</span>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 border-r border-gray-100">{{ $pago['fecha_pago'] ?? 'N/A' }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 border-r border-gray-100">{{ $pago['fecha_inicio'] ?? 'N/A' }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 border-r border-gray-100">{{ $pago['fecha_fin'] ?? 'N/A' }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm">
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" onclick="verComprobante({{ $pago['id'] }})" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors duration-200">
+                                                <i class="fas fa-file-invoice mr-1.5"></i>Ver
+                                            </button>
+                                            <button type="button" onclick="descargarComprobante({{ $pago['id'] }})" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-green-700 bg-green-50 hover:bg-green-100 transition-colors duration-200">
+                                                <i class="fas fa-download mr-1.5"></i>Descargar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="10" class="px-4 py-6 text-center text-sm text-gray-500">No hay registros de pagos realizados para mostrar.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para ver comprobante -->
+<div id="modalComprobante" 
+     class="fixed inset-0 z-50 overflow-y-auto hidden"
+     aria-labelledby="modal-title" 
+     role="dialog" 
+     aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="cerrarModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full"
+             id="modalContentPanel">
+            <header class="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold text-gray-800" id="modal-title">
+                        <i class="fas fa-file-invoice-dollar mr-2 text-indigo-600"></i>
+                        Comprobante de Pago
+                    </h3>
+                    <button onclick="cerrarModal()" type="button" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+            </header>
+            <main id="contenidoComprobante" class="bg-white px-6 py-4 max-h-[70vh] overflow-y-auto">
+                <!-- Contenido AJAX -->
+            </main>
+            <footer class="bg-gray-50 px-6 py-3 border-t border-gray-200">
+                <div class="flex justify-end">
+                    <button onclick="cerrarModal()" type="button"
+                        class="inline-flex justify-center px-6 py-2 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-gray-600 hover:bg-gray-700 transition-colors">
+                        Cerrar
+                    </button>
+                </div>
+            </footer>
         </div>
     </div>
 </div>
@@ -169,26 +263,64 @@ function debounceFilter() {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
         filterResults();
-    }, 500); // 500ms de retraso después de que el usuario deja de escribir
+    }, 500);
 }
 
-// Opcional: Si prefieres usar AJAX para una experiencia más fluida
-function filterResultsWithAjax() {
-    const form = document.getElementById('filterForm');
-    const formData = new FormData(form);
+// Funciones para el comprobante
+function verComprobante(pagoId) {
+    const modal = document.getElementById('modalComprobante');
+    const contenidoComprobante = document.getElementById('contenidoComprobante');
+
+    modal.classList.remove('hidden');
     
-    fetch(form.action + '?ajax=1', {
-        method: 'GET',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: new URLSearchParams(formData)
-    })
-    .then(response => response.text())
-    .then(html => {
-        document.getElementById('resultsContainer').innerHTML = html;
-    })
-    .catch(error => console.error('Error:', error));
+    contenidoComprobante.innerHTML = `
+        <div class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        </div>
+    `;
+
+    fetch(`/administrador/pagos/ver-recibo/${pagoId}`)
+        .then(response => response.json())
+        .then(data => {
+            contenidoComprobante.innerHTML = data.html;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            contenidoComprobante.innerHTML = '<p class="text-red-500 text-center">Error al cargar el comprobante.</p>';
+        });
 }
+
+function descargarComprobante(pagoId) {
+    window.location.href = `/administrador/pagos/descargar-recibo/${pagoId}`;
+}
+
+function cerrarModal() {
+    document.getElementById('modalComprobante').classList.add('hidden');
+}
+
+// Cerrar con Escape
+document.addEventListener('keydown', function(event) {
+    if (event.key === "Escape") {
+        cerrarModal();
+    }
+});
 </script>
+
+<style>
+    /* Animación para los modales */
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .animate-slideIn {
+        animation: slideIn 0.3s ease-out;
+    }
+</style>
 @endsection

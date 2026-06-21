@@ -67,7 +67,7 @@
                             <p class="text-sm font-medium text-gray-600">Administradores</p>
                             <p class="text-2xl font-bold text-purple-600">
                                 {{ $users->filter(function($user) { 
-                                    return $user->roles->where('nombre_rol', 'Administrador')->isNotEmpty(); 
+                                    return $user->roles->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->isNotEmpty(); 
                                 })->count() }}
                             </p>
                         </div>
@@ -85,7 +85,7 @@
                             <p class="text-sm font-medium text-gray-600">Sin Plan</p>
                             <p class="text-2xl font-bold text-gray-600">
                                 {{ $users->filter(function($user) { 
-                                    return $user->suscripciones->isEmpty() && $user->roles->where('nombre_rol', 'Administrador')->isEmpty(); 
+                                    return $user->suscripciones->isEmpty() && $user->roles->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->isEmpty(); 
                                 })->count() }}
                             </p>
                         </div>

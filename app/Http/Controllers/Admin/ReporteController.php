@@ -15,8 +15,8 @@ class ReporteController extends Controller
     public function show($id)
     {
         // 1. Verificar si el usuario es administrador
-        if (!auth()->check() || !auth()->user()->roles()->where('nombre_rol', 'Administrador')->exists()) {
-            abort(403, 'No tienes permisos para acceder a esta página.');
+        if (!auth()->check() || !auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+            abort(403, 'No tienes permisos para acceder a esta pÃ¡gina.');
         }
 
         // 2. Obtener la empresa
@@ -43,8 +43,8 @@ class ReporteController extends Controller
     public function downloadPdf($id)
 {
     // Verificar si el usuario es administrador
-    if (!auth()->check() || !auth()->user()->roles()->where('nombre_rol', 'Administrador')->exists()) {
-        abort(403, 'No tienes permisos para acceder a esta página.');
+    if (!auth()->check() || !auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+        abort(403, 'No tienes permisos para acceder a esta pÃ¡gina.');
     }
 
     // Obtener la empresa
@@ -80,9 +80,9 @@ class ReporteController extends Controller
         $contenidoActual = [];
 
         foreach ($lineas as $linea) {
-            // Detectar encabezados de sección (##)
+            // Detectar encabezados de secciÃ³n (##)
             if (preg_match('/^##\s+(.+)$/', $linea, $matches)) {
-                // Guardar la sección anterior si existe
+                // Guardar la secciÃ³n anterior si existe
                 if ($seccionActual) {
                     $secciones[] = [
                         'titulo' => $seccionActual,
@@ -90,18 +90,18 @@ class ReporteController extends Controller
                     ];
                 }
 
-                // Iniciar nueva sección
+                // Iniciar nueva secciÃ³n
                 $seccionActual = $matches[1];
                 $contenidoActual = [];
             } else {
-                // Añadir línea al contenido de la sección actual
+                // AÃ±adir lÃ­nea al contenido de la secciÃ³n actual
                 if ($seccionActual) {
                     $contenidoActual[] = $linea;
                 }
             }
         }
 
-        // Guardar la última sección
+        // Guardar la Ãºltima secciÃ³n
         if ($seccionActual) {
             $secciones[] = [
                 'titulo' => $seccionActual,

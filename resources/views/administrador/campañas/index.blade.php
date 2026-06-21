@@ -49,7 +49,7 @@
                     <p class="text-gray-500 text-lg">¡Excelente! Todos los clientes tienen campañas activas</p>
                 </div>
             @else
-                <div class="overflow-hidden rounded-xl border border-gray-200">
+                <div class="overflow-x-auto rounded-xl border border-gray-200 custom-scrollbar">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -70,6 +70,29 @@
                                             </div>
                                             <div class="ml-4">
                                                 <div class="text-sm font-semibold text-gray-900">{{ $cliente['nombre'] }}</div>
+                                                @if(!$cliente['tiene_empresa'])
+                                                    <div class="relative group mt-1">
+                                                        <a href="{{ route('administrador.empresas.crear-con-cuestionario', $cliente['id']) }}" 
+                                                           class="text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100 flex items-center w-max cursor-pointer hover:bg-amber-100 transition-colors">
+                                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                                            </svg>
+                                                            Sin Empresa Registrada
+                                                        </a>
+                                                        <div class="absolute left-0 top-full mt-2 hidden group-hover:block z-50">
+                                                            <div class="bg-gray-900 text-white p-3 rounded-xl shadow-2xl min-w-[200px]">
+                                                                <p class="text-xs mb-3 text-gray-300">Este cliente no ha completado la información de su empresa.</p>
+                                                                <a href="{{ route('administrador.empresas.crear-con-cuestionario', $cliente['id']) }}" 
+                                                                   class="inline-flex items-center w-full justify-center px-3 py-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 transition-colors">
+                                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                                                    </svg>
+                                                                    CREAR EMPRESA
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
                                             </div>
                                         </div>
                                     </td>
@@ -82,13 +105,44 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $cliente['fecha_fin_suscripcion'] }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center space-x-2">
-                                            <button onclick="llenarConIA('{{ $cliente['id'] }}', this)" 
-                                                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow-md">
-                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                                </svg>
-                                                CREAR CON IA
-                                            </button>
+                                            @if(!$cliente['tiene_empresa'])
+                                                <div class="relative group">
+                                                    <button type="button" 
+                                                            class="inline-flex items-center px-4 py-2 bg-gray-400 text-white text-sm font-medium rounded-lg cursor-not-allowed transition-all duration-200 shadow-sm">
+                                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                                        </svg>
+                                                        CREAR CON IA
+                                                    </button>
+                                                    
+                                                    <!-- Hover Tooltip -->
+                                                    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+                                                        <div class="bg-gray-900 text-white p-4 rounded-xl shadow-2xl min-w-[220px] text-center">
+                                                            <p class="text-xs font-bold text-amber-400 mb-1">SIN EMPRESA REGISTRADA</p>
+                                                            <p class="text-[10px] text-gray-400 mb-3">Se requiere información de la empresa para usar la IA.</p>
+                                                            <a href="{{ route('administrador.empresas.crear-con-cuestionario', $cliente['id']) }}" 
+                                                               class="inline-flex items-center justify-center w-full px-3 py-2 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 transition-colors">
+                                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                                                </svg>
+                                                                CREAR EMPRESA AHORA
+                                                            </a>
+                                                            <!-- Flecha del tooltip -->
+                                                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                                                                <div class="border-8 border-transparent border-t-gray-900"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <button onclick="llenarConIA('{{ $cliente['id'] }}', this)" 
+                                                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow-md">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                                    </svg>
+                                                    CREAR CON IA
+                                                </button>
+                                            @endif
 
                                             <button onclick="mostrarFormulario('{{ $cliente['id'] }}')" 
                                                     class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-sm hover:shadow-md">
@@ -324,7 +378,7 @@
                     <p class="text-gray-500 text-lg">No hay campañas finalizadas</p>
                 </div>
             @else
-                <div class="overflow-hidden rounded-xl border border-gray-200">
+                <div class="overflow-x-auto rounded-xl border border-gray-200 custom-scrollbar">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -594,6 +648,27 @@
     /* Mejoras en la tipografía */
     .text-3xl {
         letter-spacing: -0.025em;
+    }
+
+    /* Scrollbar personalizada para el "Slider" de tablas */
+    .custom-scrollbar::-webkit-scrollbar {
+        height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+    
+    /* Asegurar que el contenido no se corte */
+    .min-w-full {
+        min-width: 900px;
     }
     
     /* Efectos de hover mejorados para botones */

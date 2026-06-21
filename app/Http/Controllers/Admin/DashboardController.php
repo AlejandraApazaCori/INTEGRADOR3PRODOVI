@@ -16,8 +16,10 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Obtener el número de campañas activas
-        $activeCampaigns = Campania::where('estado', 'activa')->count();
+        // Obtener el número de campañas activas (Sincronizado con CampañasController)
+        $activeCampaigns = Campania::whereIn('estado', ['activa', 'pausada'])
+                                   ->where('fecha_fin', '>', now())
+                                   ->count();
         
         // Obtener el total de usuarios registrados
         $totalUsers = User::count();
@@ -42,15 +44,25 @@ class DashboardController extends Controller
             $monthlyIncomeChangePercentage = (($currentMonthIncome - $previousMonthIncome) / $previousMonthIncome) * 100;
         }                        
         
-        // Obtener el plan más contratado
-        $mostContractedPlan = Plan::withCount('suscripciones')
-                                  ->orderBy('suscripciones_count', 'desc')
+        // Obtener el plan más contratado (Basado solo en suscripciones ACTIVAS)
+        $mostContractedPlan = Plan::withCount(['suscripciones as activas_count' => function($query) {
+                                    $query->where('estado', 'activa')
+                                          ->where('fecha_fin', '>', now());
+                                  }])
+                                  ->orderBy('activas_count', 'desc')
                                   ->first();
         
-        // Contar suscripciones por estado
-        $countActivos = Pago::where('estado', 'completado')->count();
-        $countPendientes = Pago::where('estado', 'pendiente')->count();
-        $countFinalizados = Pago::where('estado', 'rechazado')->count();
+        // Contar suscripciones por estado (Garantizando consistencia con PagoAdminController)
+        $countActivos = Suscripcion::where('estado', 'activa')
+                                   ->where('fecha_fin', '>', now())
+                                   ->count();
+                                   
+        $countPendientes = Pago::where('estado', 'pendiente')
+                                ->where('metodo', 'fisico')
+                                ->count();
+                                
+        $countFinalizados = Suscripcion::whereIn('estado', ['finalizada', 'cancelada'])
+                                     ->count();
         
         // Obtener datos para el gráfico mensual (últimos 6 meses)
         $monthlyIncome = Pago::select(

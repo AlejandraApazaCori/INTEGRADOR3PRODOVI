@@ -41,19 +41,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/clientes/dashboard', [ClienteController::class, 'dashboard'])->name('clientes.dashboard');
     Route::get('/clientes/micuenta', [ClienteController::class, 'miCuenta'])->name('clientes.micuenta');
     Route::get('/clientes/brief', [ClienteController::class, 'brief'])->name('clientes.brief');
-    Route::get('/clientes/analiticas', [App\Http\Controllers\Cliente\ClienteAnaliticasController::class, 'index'])
+    Route::get('/clientes/analíticas', [App\Http\Controllers\Cliente\ClienteAnaliticasController::class, 'index'])
         ->name('clientes.analiticas');
-    Route::get('/clientes/analiticas/exportar-pdf', [App\Http\Controllers\Cliente\ClienteAnaliticasController::class, 'exportarPDF'])
+    Route::get('/clientes/analíticas/exportar-pdf', [App\Http\Controllers\Cliente\ClienteAnaliticasController::class, 'exportarPDF'])
         ->name('clientes.analiticas.exportar-pdf');
-    Route::get('/clientes/analiticas/reporte-engagement', [App\Http\Controllers\Cliente\ClienteAnaliticasController::class, 'exportarReporteEngagement'])
+    Route::get('/clientes/analíticas/reporte-engagement', [App\Http\Controllers\Cliente\ClienteAnaliticasController::class, 'exportarReporteEngagement'])
         ->name('clientes.analiticas.reporte-engagement');
-    Route::get('/clientes/analiticas/reporte-alcance', [App\Http\Controllers\Cliente\ClienteAnaliticasController::class, 'exportarReporteAlcance'])
+    Route::get('/clientes/analíticas/reporte-alcance', [App\Http\Controllers\Cliente\ClienteAnaliticasController::class, 'exportarReporteAlcance'])
         ->name('clientes.analiticas.reporte-alcance');
-    Route::get('/clientes/analiticas/reporte-seguidores', [App\Http\Controllers\Cliente\ClienteAnaliticasController::class, 'exportarReporteSeguidores'])
+    Route::get('/clientes/analíticas/reporte-seguidores', [App\Http\Controllers\Cliente\ClienteAnaliticasController::class, 'exportarReporteSeguidores'])
         ->name('clientes.analiticas.reporte-seguidores');
-    Route::get('/clientes/analiticas/reporte-ctr', [App\Http\Controllers\Cliente\ClienteAnaliticasController::class, 'exportarReporteCTR'])
+    Route::get('/clientes/analíticas/reporte-ctr', [App\Http\Controllers\Cliente\ClienteAnaliticasController::class, 'exportarReporteCTR'])
         ->name('clientes.analiticas.reporte-ctr');
-    Route::get('/clientes/analiticas/load-view', [App\Http\Controllers\Cliente\ClienteAnaliticasController::class, 'loadView'])
+    Route::get('/clientes/analíticas/load-view', [App\Http\Controllers\Cliente\ClienteAnaliticasController::class, 'loadView'])
         ->name('clientes.analiticas.load-view');
     
     // Rutas de pago del cliente
@@ -73,11 +73,11 @@ Route::post('/facebook/post', [FacebookPostController::class, 'postToPage'])->na
 // Rutas de administrador
 Route::prefix('administrador')->middleware('auth')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('administrador.dashboard');
-    Route::get('/analiticas', [AdminAnaliticasController::class, 'index'])
+    Route::get('/analíticas', [AdminAnaliticasController::class, 'index'])
         ->name('admin.analiticas.index');
-    Route::post('/analiticas/store-campania', [AdminAnaliticasController::class, 'storeCampania'])
+    Route::post('/analíticas/store-campania', [AdminAnaliticasController::class, 'storeCampania'])
         ->name('admin.analiticas.storeCampania');
-    Route::get('/analiticas/export-campanias', [AdminAnaliticasController::class, 'exportCampanias'])
+    Route::get('/analíticas/export-campanias', [AdminAnaliticasController::class, 'exportCampanias'])
         ->name('admin.analiticas.exportCampanias');
     Route::get('/admin/generar-reporte-campanas', [AdminAnaliticasController::class, 'generarReporteCampanas'])
         ->name('admin.generar.reporte.campanas');
@@ -98,6 +98,7 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
             ->name('administrador.pagos.cancelar');
         Route::put('/reactivar/{pago}', [PagoAdminController::class, 'reactivarSuscripcion'])
             ->name('administrador.pagos.reactivar');
+        Route::get('/analíticas', [PagoAdminController::class, 'analiticas'])->name('administrador.pagos.analiticas');
         Route::get('/buscar', [PagoAdminController::class, 'buscarPagos'])->name('administrador.pagos.buscar');
         Route::post('/cancelar/{pagoId}', [PagoAdminController::class, 'cancelarSuscripcionApi'])->name('administrador.pagos.cancelar.api');
         Route::post('/reactivar/{pagoId}', [PagoAdminController::class, 'reactivarSuscripcionApi'])->name('administrador.pagos.reactivar.api');
@@ -105,6 +106,10 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
         Route::get('/descargar-excel', [PagoAdminController::class, 'descargarExcel'])->name('administrador.pagos.descargar.excel');
         Route::get('/reporte-mensual/pdf', [PagoAdminController::class, 'descargarPDFMensual'])->name('administrador.pagos.mensual.pdf');
         Route::get('/reporte-mensual/excel', [PagoAdminController::class, 'descargarExcelMensual'])->name('administrador.pagos.mensual.excel');
+        Route::get('/manual/crear', [PagoAdminController::class, 'createManual'])->name('administrador.pagos.manual.crear');
+        Route::post('/manual', [PagoAdminController::class, 'storeManual'])->name('administrador.pagos.manual.store');
+        Route::get('/ver-recibo/{id}', [PagoAdminController::class, 'verComprobante'])->name('administrador.pagos.ver-recibo');
+        Route::get('/descargar-recibo/{id}', [PagoAdminController::class, 'descargarComprobante'])->name('administrador.pagos.descargar-recibo');
     });
 
     // Gestión de planes
@@ -118,8 +123,11 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
             'update' => 'administrador.planes.update',
             'destroy' => 'administrador.planes.destroy'
         ]);
-    Route::get('/planes/caracteristica-form', [\App\Http\Controllers\Admin\PlanController::class, 'caracteristicaForm'])
-        ->name('administrador.planes.caracteristica-form');
+    
+    Route::post('/planes/caracteristicas', [\App\Http\Controllers\Admin\PlanController::class, 'storeCaracteristica'])
+        ->name('administrador.planes.caracteristicas.store');
+    Route::put('/planes/caracteristicas/{caracteristica}', [\App\Http\Controllers\Admin\PlanController::class, 'updateCaracteristica'])
+        ->name('administrador.planes.caracteristicas.update');
 
     // Logs
     Route::get('/logs', [\App\Http\Controllers\Admin\LogController::class, 'index'])->name('administrador.logs.index');
@@ -209,6 +217,8 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
     Route::prefix('empresas')->name('administrador.empresas.')->group(function () {
       // Rutas para mostrar y gestionar la empresa
 Route::get('/', [App\Http\Controllers\Admin\EmpresaAdminController::class, 'index'])->name('index');
+Route::get('/crear-para-usuario/{usuario_id}', [App\Http\Controllers\Admin\EmpresaAdminController::class, 'crearParaUsuario'])->name('crear-con-cuestionario');
+Route::post('/guardar-para-usuario', [App\Http\Controllers\Admin\EmpresaAdminController::class, 'guardarParaUsuario'])->name('guardar-con-cuestionario');
 Route::get('/{id}', [App\Http\Controllers\Admin\EmpresaAdminController::class, 'show'])->name('show');
         // Rutas para el cuestionario
         Route::get('/{id}/cuestionario', [App\Http\Controllers\Admin\CuestionarioAdminController::class, 'show'])->name('cuestionario.show');
@@ -290,3 +300,6 @@ Route::prefix('administrador/cuestionario/estructura')->name('administrador.cues
     Route::delete('/{tema}', [App\Http\Controllers\Admin\CuestionarioEstructuraController::class, 'destroy'])->name('destroy');
     Route::post('/reorder', [App\Http\Controllers\Admin\CuestionarioEstructuraController::class, 'reorder'])->name('reorder');
 });
+
+
+
