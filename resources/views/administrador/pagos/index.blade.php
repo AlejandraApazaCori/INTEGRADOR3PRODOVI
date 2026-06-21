@@ -64,12 +64,12 @@
             <!-- Header con botones mejorados -->
             <div class="page-header">
                 <div class="header-content">
-                    <h1><i class="fas fa-credit-card"></i> GestiÃ³n de Pagos</h1>
+                    <h1><i class="fas fa-credit-card"></i> Gestión de Pagos</h1>
                     <p class="subtitle">Administra y monitorea el estado de todas las suscripciones</p>
                 </div>
             </div>
 
-            <!-- Tarjetas de estadÃ­sticas -->
+            <!-- Tarjetas de estadísticas -->
             <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
                 <div class="overflow-hidden rounded-2xl bg-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl border border-gray-100">
                     <div class="h-2 bg-gradient-to-r from-green-500 to-green-600"></div>
@@ -83,7 +83,7 @@
                             </div>
                         </div>
                         <h3 class="mb-2 text-lg font-semibold text-gray-800">Suscripciones Activas</h3>
-                        <p class="mb-4 text-sm text-gray-600">Usuarios con pagos al dÃ­a</p>
+                        <p class="mb-4 text-sm text-gray-600">Usuarios con pagos al día</p>
                         <a href="{{ route('administrador.pagos.realizados') }}" class="inline-flex items-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-indigo-700 shadow-md hover:shadow-indigo-200/50">
                             <i class="fas fa-eye mr-2"></i>
                             Ver detalles
@@ -103,7 +103,7 @@
                             </div>
                         </div>
                         <h3 class="mb-2 text-lg font-semibold text-gray-800">Pagos Pendientes</h3>
-                        <p class="mb-4 text-sm text-gray-600">Requieren atenciÃ³n inmediata</p>
+                        <p class="mb-4 text-sm text-gray-600">Requieren atención inmediata</p>
                         <a href="{{ route('administrador.pagos.pendientes-fisicos') }}" class="inline-flex items-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-indigo-700 shadow-md hover:shadow-indigo-200/50">
                             <i class="fas fa-clock mr-2"></i>
                             Ver detalles
@@ -137,7 +137,7 @@
                 <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h2 class="text-xl font-bold text-gray-800">Todos los registros de pagos</h2>
-                        <p class="text-gray-600 text-sm">Se muestran del Ãºltimo al primero</p>
+                        <p class="text-gray-600 text-sm">Se muestran del último al primero</p>
                     </div>
                     <div class="text-sm text-gray-600 font-medium">
                         Mostrando {{ $pagos->firstItem() ?? 0 }} a {{ $pagos->lastItem() ?? 0 }} de {{ $pagos->total() }} registros
@@ -151,10 +151,10 @@
                                 <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">ID</th>
                                 <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Cliente</th>
                                 <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Plan</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">MÃ©todo</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Método</th>
                                 <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Monto</th>
                                 <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Estado del pago</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Estado de suscripciÃ³n</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Estado de suscripción</th>
                                 <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fecha de pago</th>
                                 <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Inicio</th>
                                 <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fin</th>
@@ -218,7 +218,7 @@
 
                 <div class="mt-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <form method="GET" action="{{ route('administrador.pagos.index') }}" class="flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <label for="per_page" class="text-sm font-medium text-gray-700">Registros por pÃ¡gina</label>
+                        <label for="per_page" class="text-sm font-medium text-gray-700">Registros por página</label>
                         <input
                             type="number"
                             min="1"
@@ -251,7 +251,7 @@
                 <h3 class="mt-4 text-lg font-medium leading-6 text-gray-900">Reporte mensual</h3>
                 <div class="mt-2 px-7 py-3">
                     <p class="text-sm text-gray-500">
-                        Se generarÃ¡ un reporte con todas las transacciones del mes actual.
+                        Se generará un reporte con todas las transacciones del mes actual.
                         Elige el formato que prefieres:
                     </p>
                 </div>
@@ -373,7 +373,7 @@
             margin-bottom: 0;
         }
 
-        /* Estilos de los botones de acciÃ³n */
+        /* Estilos de los botones de acción */
         .btn-action {
             display: inline-flex;
             align-items: center;
@@ -464,7 +464,7 @@
             box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.35);
         }
 
-        /* AnimaciÃ³n */
+        /* Animación */
         @keyframes slideIn {
             from {
                 opacity: 0;

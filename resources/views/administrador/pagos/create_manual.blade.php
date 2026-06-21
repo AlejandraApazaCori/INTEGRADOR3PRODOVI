@@ -381,7 +381,7 @@
       </a>
       <a href="{{ route('administrador.pagos.analiticas') }}" class="btn-action btn-indigo">
         <i class="fas fa-chart-line"></i>
-        AnalÃ­ticas
+        Analíticas
         <span class="btn-action__mark" aria-hidden="true">
           <svg viewBox="0 0 392.94 418.13">
             <path d="M243.7,418.13C198.37,312.3,118.14,268.5,0,294.73,135.19,238.54,203.38,148.99,149.24,0c49.45,103.91,130.68,145.05,243.7,123.4-127.69,63.18-168.91,165.26-149.24,294.73Z"></path>
@@ -408,7 +408,7 @@
     <div class="pwiz-banner-icon"><i class="fas fa-credit-card"></i></div>
     <div class="pwiz-banner-text">
       <h1>Registrar pago manual</h1>
-      <p>Registra una suscripciÃ³n y pago para un cliente en pocos pasos.</p>
+      <p>Registra una suscripción y pago para un cliente en pocos pasos.</p>
     </div>
     <a href="{{ route('administrador.pagos.index') }}" class="pwiz-banner-back">
       <i class="fas fa-arrow-left"></i> Volver
@@ -464,7 +464,7 @@
   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
   <div class="pwiz-panel" id="panel-step1">
     <p class="pwiz-panel-title">Selecciona el tipo de pago</p>
-    <p class="pwiz-panel-subtitle">Elige cÃ³mo se realizarÃ¡ el cobro al cliente.</p>
+    <p class="pwiz-panel-subtitle">Elige cómo se realizará el cobro al cliente.</p>
     <div class="pwiz-choices">
       <div class="pwiz-choice-card" onclick="pwizSelectMethod('fisico')">
         <div class="pwiz-choice-icon"><i class="fas fa-money-bill-wave"></i></div>
@@ -485,24 +485,24 @@
        PASO 2 â€” Â¿El cliente existe?
   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
   <div class="pwiz-panel pwiz-hidden" id="panel-step2">
-    <p class="pwiz-panel-title">Â¿El cliente ya estÃ¡ registrado?</p>
+    <p class="pwiz-panel-title">¿El cliente ya está registrado?</p>
     <p class="pwiz-panel-subtitle">Indica si el cliente tiene una cuenta en el sistema.</p>
     <div class="pwiz-choices">
       <div class="pwiz-choice-card" onclick="pwizSelectClient(true)">
         <div class="pwiz-choice-icon"><i class="fas fa-user-check"></i></div>
-        <div class="pwiz-choice-title">SÃ­, ya existe</div>
-        <div class="pwiz-choice-desc">BuscarÃ© al cliente en el sistema para asignar la suscripciÃ³n.</div>
+        <div class="pwiz-choice-title">Sí, ya existe</div>
+        <div class="pwiz-choice-desc">Buscaré al cliente en el sistema para asignar la suscripción.</div>
         <div class="pwiz-choice-arrow"><i class="fas fa-arrow-right"></i> Continuar</div>
       </div>
       <a href="{{ url('/administrador/usuarios/create') }}" class="pwiz-choice-card danger">
         <div class="pwiz-choice-icon"><i class="fas fa-user-plus"></i></div>
-        <div class="pwiz-choice-title">No existe aÃºn</div>
+        <div class="pwiz-choice-title">No existe aún</div>
         <div class="pwiz-choice-desc">Ir a crear el cliente antes de registrar el pago.</div>
         <div class="pwiz-choice-arrow"><i class="fas fa-external-link-alt"></i> Crear cliente</div>
       </a>
     </div>
     <button type="button" class="pwiz-back-btn" onclick="pwizGoTo(1)">
-      <i class="fas fa-arrow-left"></i> AtrÃ¡s
+      <i class="fas fa-arrow-left"></i> Atrás
     </button>
   </div>
 
@@ -521,7 +521,7 @@
       {{-- Method badge --}}
       <div id="methodBadge" class="pwiz-method-badge fisico">
         <i class="fas fa-money-bill-wave"></i>
-        <span id="methodBadgeText">Pago FÃ­sico</span>
+        <span id="methodBadgeText">Pago Físico</span>
       </div>
 
       {{-- â”€â”€ Buscar cliente â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
@@ -566,7 +566,7 @@
       <div class="pwiz-grid-2">
         <div>
           <div class="pwiz-section-label" style="margin-bottom:8px;">
-            <i class="fas fa-box" style="color:#2563eb;"></i> Plan de suscripciÃ³n
+            <i class="fas fa-box" style="color:#2563eb;"></i> Plan de suscripción
           </div>
           <div class="pwiz-field">
             <select name="plan_id" id="selectPlan" class="pwiz-input" required>
@@ -638,7 +638,7 @@
       {{-- â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
       <div class="pwiz-form-footer">
         <button type="button" class="pwiz-back-btn" onclick="pwizGoTo(2)" style="margin-top:0;">
-          <i class="fas fa-arrow-left"></i> AtrÃ¡s
+          <i class="fas fa-arrow-left"></i> Atrás
         </button>
         <button type="submit" class="pwiz-submit-btn" id="btnConfirmar">
           <i class="fas fa-check-circle"></i>
@@ -657,7 +657,7 @@
   <div class="pwiz-success-modal">
     <div class="pwiz-success-check"><i class="fas fa-check"></i></div>
     <h2>Â¡Pago registrado!</h2>
-    <p>El pago se registrÃ³ exitosamente en el sistema.</p>
+    <p>El pago se registró exitosamente en el sistema.</p>
     <div class="pwiz-progress-bar">
       <div class="pwiz-progress-fill" id="progressFill"></div>
     </div>
@@ -712,7 +712,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const badgeText = document.getElementById('methodBadgeText');
     if (method === 'fisico') {
       badge.className  = 'pwiz-method-badge fisico';
-      badgeText.innerHTML = '<i class="fas fa-money-bill-wave"></i> Pago FÃ­sico';
+      badgeText.innerHTML = '<i class="fas fa-money-bill-wave"></i> Pago Físico';
     } else {
       badge.className  = 'pwiz-method-badge qr';
       badgeText.innerHTML = '<i class="fas fa-qrcode"></i> Pago QR';
