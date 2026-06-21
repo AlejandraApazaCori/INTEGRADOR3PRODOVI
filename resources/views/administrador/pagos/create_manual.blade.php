@@ -468,14 +468,14 @@
     <div class="pwiz-choices">
       <div class="pwiz-choice-card" onclick="pwizSelectMethod('fisico')">
         <div class="pwiz-choice-icon"><i class="fas fa-money-bill-wave"></i></div>
-        <div class="pwiz-choice-title">Pago FÃ­sico</div>
+        <div class="pwiz-choice-title">Pago Físico</div>
         <div class="pwiz-choice-desc">El cliente paga en efectivo de forma presencial.</div>
         <div class="pwiz-choice-arrow"><i class="fas fa-arrow-right"></i> Seleccionar</div>
       </div>
       <div class="pwiz-choice-card" onclick="pwizSelectMethod('qr')">
         <div class="pwiz-choice-icon"><i class="fas fa-qrcode"></i></div>
         <div class="pwiz-choice-title">Pago QR</div>
-        <div class="pwiz-choice-desc">El cliente paga escaneando un cÃ³digo QR bancario.</div>
+        <div class="pwiz-choice-desc">El cliente paga escaneando un código QR bancario.</div>
         <div class="pwiz-choice-arrow"><i class="fas fa-arrow-right"></i> Seleccionar</div>
       </div>
     </div>
@@ -532,7 +532,7 @@
         <div class="pwiz-input-wrap" style="position:relative;" id="searchWrap">
           <i class="pi-icon fas fa-search"></i>
           <input type="text" id="userSearch" class="pwiz-input"
-                 placeholder="Escribe el nombre o correo del clienteâ€¦" autocomplete="off">
+                 placeholder="Escribe el nombre o correo del cliente..." autocomplete="off">
           <div id="userDropdown" class="pwiz-dropdown pwiz-hidden">
             @foreach($usuarios as $usuario)
               <div class="pwiz-user-opt"
@@ -549,8 +549,8 @@
           <div class="pwiz-user-chip">
             <div class="pwiz-user-avatar" id="userInitial">U</div>
             <div class="pwiz-user-chip-info">
-              <div class="pwiz-user-chip-name" id="selectedUserName">â€”</div>
-              <div class="pwiz-user-chip-email" id="selectedUserEmail">â€”</div>
+              <div class=”pwiz-user-chip-name” id=”selectedUserName”>-</div>
+              <div class=”pwiz-user-chip-email” id=”selectedUserEmail”>-</div>
             </div>
             <button type="button" class="pwiz-chip-remove" id="btnRemoveUser" title="Quitar">
               <i class="fas fa-times"></i>
@@ -570,13 +570,13 @@
           </div>
           <div class="pwiz-field">
             <select name="plan_id" id="selectPlan" class="pwiz-input" required>
-              <option value="">â€” Elige un plan â€”</option>
+              <option value=””>- Elige un plan -</option>
               @foreach($planes as $plan)
                 <option value="{{ $plan->id }}"
                         data-precio="{{ $plan->precio }}"
                         data-moneda="{{ $plan->moneda ?? 'BS' }}"
                         {{ old('plan_id') == $plan->id ? 'selected' : '' }}>
-                  {{ $plan->nombre }} â€” {{ $plan->precio }} {{ $plan->moneda ?? 'BS' }}
+                  {{ $plan->nombre }} - {{ $plan->precio }} {{ $plan->moneda ?? 'BS' }}
                 </option>
               @endforeach
             </select>
@@ -620,14 +620,14 @@
       {{-- â”€â”€ QR: Generar cÃ³digo QR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
       <div id="qrSection" class="pwiz-hidden">
         <div class="pwiz-section-label">
-          <i class="fas fa-qrcode" style="color:#2563eb;"></i> CÃ³digo QR de pago
+          <i class="fas fa-qrcode" style="color:#2563eb;"></i> Código QR de pago
         </div>
         <div class="pwiz-qr-box">
           <div class="pwiz-qr-placeholder" id="qrPlaceholder">
             <i class="fas fa-qrcode"></i>
           </div>
           <p style="font-size:0.82rem; color:#64748b; margin:0;" id="qrHint">
-            Genera el cÃ³digo QR para que el cliente realice el pago.
+            Genera el código QR para que el cliente realice el pago.
           </p>
           <button type="button" class="btn-gen-qr" id="btnGenQr" onclick="pwizGenerateQR()">
             <i class="fas fa-qrcode"></i> Generar QR
@@ -656,12 +656,12 @@
 <div class="pwiz-overlay pwiz-hidden" id="successOverlay">
   <div class="pwiz-success-modal">
     <div class="pwiz-success-check"><i class="fas fa-check"></i></div>
-    <h2>Â¡Pago registrado!</h2>
+    <h2>¡Pago registrado!</h2>
     <p>El pago se registró exitosamente en el sistema.</p>
     <div class="pwiz-progress-bar">
       <div class="pwiz-progress-fill" id="progressFill"></div>
     </div>
-    <div class="pwiz-redirect-label">Redirigiendo a pagosâ€¦</div>
+    <div class="pwiz-redirect-label">Redirigiendo a pagos...</div>
   </div>
 </div>
 
@@ -847,7 +847,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const placeholder = document.getElementById('qrPlaceholder');
     const hint        = document.getElementById('qrHint');
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generandoâ€¦';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
     setTimeout(() => {
       placeholder.classList.add('ok');
       placeholder.innerHTML = '<i class="fas fa-check-circle" style="font-size:40px;"></i>';
@@ -863,7 +863,7 @@ document.addEventListener('DOMContentLoaded', function () {
     e.preventDefault();
     const btn = document.getElementById('btnConfirmar');
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesandoâ€¦';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
 
     // Sync monto final
     montoFinal.value = inputMontoCobrar.value;
