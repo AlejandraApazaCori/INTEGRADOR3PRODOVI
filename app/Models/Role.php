@@ -33,7 +33,7 @@ class Role extends Model
     ];
 
     /**
-     * Define la relación muchos a muchos con los usuarios.
+     * Define la relacion muchos a muchos con los usuarios.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
@@ -42,8 +42,14 @@ class Role extends Model
         return $this->belongsToMany('App\Models\User');
     }
 
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'permission_role', 'role_id', 'permission_id')
+            ->withTimestamps();
+    }
+
     /**
-     * Define la relación uno a muchos con los roles de usuario.
+     * Define la relacion uno a muchos con los roles de usuario.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */

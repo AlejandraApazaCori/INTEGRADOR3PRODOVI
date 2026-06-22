@@ -307,7 +307,7 @@
         }
         
         // Hacer la petición al servidor
-        fetch(`/clientes/analiticas/reporte-engagement?view=${viewName}`, {
+        fetch(`{{ route('clientes.analiticas.reporte-engagement') }}?view=${viewName}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/pdf',
@@ -348,7 +348,7 @@
             }
         }
         
-        fetch(`/clientes/analiticas/reporte-alcance?view=${viewName}`, {
+        fetch(`{{ route('clientes.analiticas.reporte-alcance') }}?view=${viewName}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/pdf',
@@ -388,7 +388,7 @@
             }
         }
         
-        fetch(`/clientes/analiticas/reporte-seguidores?view=${viewName}`, {
+        fetch(`{{ route('clientes.analiticas.reporte-seguidores') }}?view=${viewName}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/pdf',
@@ -429,7 +429,7 @@
         }
         
         // Mostrar feedback de carga si fuera necesario, similar a los otros reportes
-        fetch(`/clientes/analiticas/reporte-ctr?view=${viewName}`, {
+        fetch(`{{ route('clientes.analiticas.reporte-ctr') }}?view=${viewName}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/pdf',
@@ -455,3 +455,5 @@
         });
     }
 </script>
+
+

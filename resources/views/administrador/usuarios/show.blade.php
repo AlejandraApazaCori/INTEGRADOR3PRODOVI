@@ -101,8 +101,37 @@
                         </div>
                     </div>
                 </div>
-            </div>
             
+                <div class="mt-8 bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-white/30 overflow-hidden hover:shadow-3xl transition-all duration-300">
+                    <div class="px-8 py-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+                        <h2 class="text-2xl font-bold">Campaña Activa</h2>
+                        <p class="text-indigo-100 mt-1">Resumen rápido de la campaña del usuario</p>
+                    </div>
+
+                    <div class="p-8">
+                        @if($campaniaActual)
+                            <div class="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-5">
+                                <p class="text-sm font-medium text-gray-500">Campaña actual</p>
+                                <div class="mt-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-900">{{ $campaniaActual->nombre }}</h3>
+                                        <p class="mt-1 text-sm text-gray-600">Estado: {{ ucfirst($campaniaActual->estado) }}</p>
+                                    </div>
+                                    <a href="{{ route('administrador.usuarios.analiticas-campania', $user->id) }}" class="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-3 text-sm font-medium text-white shadow-lg transition-all duration-300 hover:from-indigo-700 hover:to-purple-700 hover:shadow-xl">
+                                        Ver analíticas de campaña
+                                    </a>
+                                </div>
+                            </div>
+                        @else
+                            <div class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-5 py-6 text-center">
+                                <p class="text-base font-semibold text-gray-700">Aún no existe una campaña activa.</p>
+                                <p class="mt-2 text-sm text-gray-500">Cuando el usuario tenga una campaña activa, aparecerá aquí junto al acceso a sus analíticas.</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+            </div>
             <!-- Columna derecha - Plan contratado -->
             <div class="lg:col-span-2">
                 <!-- Plan Contratado Section -->
@@ -302,6 +331,15 @@
                             </div>
                             <h3 class="text-xl font-semibold text-gray-900 mb-2">Este usuario no tiene empresas registradas</h3>
                             <p class="text-gray-600 mb-8 max-w-md mx-auto">Aún no hay empresas asociadas a este usuario.</p>
+                            <a href="{{ route('administrador.empresas.crear', $user->id) }}" class="group relative overflow-hidden inline-flex items-center px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                                <div class="absolute inset-0 bg-white/20 translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+                                <div class="relative flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    Crear empresa
+                                </div>
+                            </a>
                         </div>
                     @endif
                 </div>
@@ -464,3 +502,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endpush
 @endsection
+

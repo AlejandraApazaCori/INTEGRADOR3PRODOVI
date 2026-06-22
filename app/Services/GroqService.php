@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 class GroqService
 {
     /**
-     * Genera un resumen ejecutivo basado en las respuestas de un cuestionario.
+     * Genera un brief estrategico ejecutivo basado en las respuestas de un cuestionario.
      *
      * @param string $nombreEmpresa
      * @param array $respuestas Formato: [['pregunta' => '...', 'respuesta' => '...'], ...]
@@ -16,58 +16,122 @@ class GroqService
      */
     public function generateSummary(string $nombreEmpresa, array $respuestas): ?string
     {
-        // 1. Construir el contexto para la IA
-        $contextoCuestionario = "";
+        // 1. Construir el contexto para la IA con datos limpios y solo respuestas utiles.
+        $bloquesContexto = [];
+
         foreach ($respuestas as $item) {
-            $contextoCuestionario .= "Pregunta: {$item['pregunta']}\n";
-            $contextoCuestionario .= "Respuesta: {$item['respuesta']}\n\n";
+            $pregunta = trim((string) ($item['pregunta'] ?? ''));
+            $respuesta = trim((string) ($item['respuesta'] ?? ''));
+
+            if ($pregunta === '' && $respuesta === '') {
+                continue;
+            }
+
+            if ($pregunta === '') {
+                $pregunta = 'Pregunta no especificada';
+            }
+
+            if ($respuesta === '') {
+                continue;
+            }
+
+            $bloquesContexto[] = "Pregunta: {$pregunta}\nRespuesta: {$respuesta}";
         }
 
-        // 2. Construir el prompt (la instrucción detallada para el modelo)
+        $contextoCuestionario = implode("\n\n", $bloquesContexto);
+
+        if ($contextoCuestionario === '') {
+            $contextoCuestionario = 'No se recibieron respuestas validas del cuestionario.';
+        }
+
+        // 2. Construir el prompt preciso para generar un brief ejecutivo.
         $prompt = <<<EOT
-        Actúa como un experto en marketing digital y estrategia de negocios. Tu tarea es crear un resumen ejecutivo detallado, profesional y persuasivo para una empresa llamada "{$nombreEmpresa}".
+Actua como un consultor senior de marketing estrategico y analisis comercial. Tu tarea es redactar un "Brief estrategico ejecutivo" para la empresa "{$nombreEmpresa}" a partir de un cuestionario tipo brief.
 
-        El resumen debe seguir la siguiente estructura y formato exacto. Utiliza los encabezados (##) como se indica a continuación. La respuesta final debe estar en español.
+OBJETIVO DEL DOCUMENTO:
+- Este documento NO es un plan de marketing completo.
+- Este documento debe servir como base para un generador posterior de plan de marketing.
+- Debe resumir con claridad la situacion del negocio, sus recursos, su publico, sus objetivos y los vacios de informacion.
+- Debe ser fiel al cuestionario y no inventar datos.
 
-        ## Introducción
-        (De dos a tres frases)
-        Descripción general del proyecto, propósito del plan de marketing y beneficios clave para el cliente.
+REGLA PRINCIPAL:
+- Basate estrictamente en la informacion proporcionada en el cuestionario.
+- Si un dato no fue proporcionado, no lo inventes.
+- Si necesitas inferir algo menor para mantener coherencia, debes marcarlo claramente como "Supuesto".
 
-        ## Perfil de la empresa
-        (Un párrafo corto)
-        Historia de la empresa, estructura, base de clientes, cifras de ventas (si están disponibles), miembros del equipo y sus roles, y ubicación.
+FORMATO DE SALIDA:
+- Responde en espanol.
+- Usa Markdown.
+- Manten un tono profesional, claro, sobrio y ejecutivo.
+- Maximo 1,200 palabras.
 
-        ## Oportunidad de mercado
-        (Un párrafo corto)
-        Descripción general de la industria, tendencias del mercado, panorama competitivo, factores del mercado e innovaciones relevantes.
+ESTRUCTURA OBLIGATORIA:
 
-        ## Productos y servicios
-        (Un párrafo corto)
-        Descripción del producto o servicio principal, características y beneficios clave, y propuesta de venta única (USP).
+## 1 Resumen general de la empresa
+Describe brevemente que hace la empresa, a quien atiende y cual es su proposito principal.
 
-        ## Objetivos y estrategia
-        (Un párrafo)
-        Demografía del público objetivo, estrategia promocional, prioridades de marketing, cronogramas y métodos de distribución propuestos.
+## 2 Perfil del negocio
+Incluye historia breve, ubicacion si fue mencionada, etapa actual del negocio, equipo si fue mencionado y situacion general.
 
-        ## Presupuesto y KPI
-        (De tres a cinco puntos en formato de lista)
-        Proyecciones financieras (si es posible estimarlas), desglose presupuestario por actividad de marketing y métricas clave de éxito (KPIs) para medir el rendimiento.
+## 3 Productos y servicios
+Enumera los productos o servicios ofrecidos y senala cuales parecen ser los mas importantes segun el cuestionario.
 
-        ## Conclusión
-        (De dos a tres frases)
-        Resumen de los objetivos principales, estrategias de implementación y un llamado a la acción (CTA) para revisar el plan de marketing completo.
+## 4 Publico objetivo
+Describe el cliente ideal usando solo los datos proporcionados: edad, tipo de persona, necesidades, motivaciones y dudas frecuentes.
 
-        ---
-        DATOS DE LA EMPRESA PARA BASAR EL RESUMEN:
-        {$contextoCuestionario}
-        ---
+## 5 Propuesta de valor y diferenciadores
+Explica por que los clientes eligen la empresa y que la diferencia frente a la competencia.
 
-        INSTRUCCIONES ADICIONALES:
-        - Genera el contenido para cada sección basándote estrictamente en la información proporcionada en los "DATOS DE LA EMPRESA".
-        - Si falta información crucial para alguna sección (especialmente para "Presupuesto y KPI"), indícalo de manera profesional y sugiere cómo se podría obtener o estimar.
-        - El tono debe ser profesional, optimista y enfocado en soluciones.
-        - El resumen completo no debe superar las 1,000 palabras.
-        EOT;
+## 6 Competencia y contexto de mercado
+Resume unicamente lo que el cliente indico sobre sus competidores, mercado o contexto. No inventes nombres de competidores ni datos externos.
+
+## 7 Marketing y ventas actuales
+Describe los canales actuales, contenidos que publican, que les funciona mejor, como llegan los clientes y si hacen publicidad pagada.
+
+## 8 Problemas y oportunidades detectadas
+Enumera los principales problemas actuales y oportunidades de mejora detectadas en el brief.
+
+## 9 Objetivos declarados por el cliente
+Resume las metas de 6 a 12 meses usando las palabras del cliente cuando sea posible. No conviertas estos objetivos en metricas numericas si el cliente no dio cifras.
+
+## 10 Recursos disponibles
+Resume presupuesto, equipo actual y recursos mencionados. No hagas distribucion porcentual del presupuesto.
+
+## 11 Informacion faltante o por validar
+Lista la informacion que hace falta o que conviene validar antes de crear un plan de marketing mas preciso.
+Incluye solo vacios realmente relevantes detectados a partir del cuestionario.
+Si corresponde, puedes mencionar ejemplos como:
+- ubicacion exacta o zona de atencion;
+- ticket promedio real;
+- capacidad maxima de atencion;
+- calendario de inscripciones;
+- testimonios disponibles;
+- presupuesto mensual exacto;
+- restricciones legales o de privacidad.
+
+## 12 Conclusion ejecutiva
+Cierra con un resumen breve de la situacion actual y de la direccion estrategica general recomendada, sin entrar todavia en calendario, tacticas detalladas ni plan de accion completo.
+
+INSTRUCCIONES ESTRICTAS:
+- No inventes cifras.
+- No inventes porcentajes.
+- No inventes presupuesto ni distribuciones presupuestarias.
+- No inventes ROI.
+- No inventes competidores especificos.
+- No inventes resultados esperados.
+- No inventes datos de mercado externos.
+- No propongas un calendario de contenido.
+- No generes un plan de marketing completo.
+- No desarrolles tacticas demasiado detalladas.
+- No recomiendes acciones que dependan de recursos no confirmados.
+- Diferencia claramente entre "Dato proporcionado" y "Supuesto" cuando aplique.
+- Si una respuesta del cuestionario esta vacia o no aporta informacion, ignorala o reflejala en "Informacion faltante o por validar".
+- Si el cuestionario no contiene datos suficientes para una seccion, indicalo de forma profesional.
+- El contenido debe ser util como insumo para un servicio posterior que generara el plan de marketing.
+
+DATOS DEL CUESTIONARIO:
+{$contextoCuestionario}
+EOT;
 
         // 3. Preparar y hacer la llamada a la API de Groq
         $response = Http::withHeaders([
@@ -86,17 +150,18 @@ class GroqService
                         'content' => $prompt,
                     ],
                 ],
-                'temperature' => 0.3,
+                'temperature' => 0.2,
                 'stream' => false,
             ]);
 
         // 4. Procesar la respuesta
         if ($response->successful()) {
             $data = $response->json();
-            // Groq devuelve la respuesta en choices[0][message][content]
+
             return $data['choices'][0]['message']['content'] ?? 'No se pudo generar el resumen.';
         } else {
             Log::error('Error en la API de Groq: ' . $response->body());
+
             return 'Hubo un error al generar el resumen.';
         }
     }

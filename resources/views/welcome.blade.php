@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PRODOVI</title>
+    <link rel="icon" type="image/png" href="{{ asset('imagenes/iconoweb.png') }}">
      <link rel="stylesheet" href="{{ asset('css/welcome.css') }}">
      <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,3 +28,5 @@
     
 </body>
 </html>
+
+

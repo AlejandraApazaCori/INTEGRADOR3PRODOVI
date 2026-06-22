@@ -6,62 +6,78 @@ use Illuminate\Support\ServiceProvider;
 use App\Services\FacebookService;
 use Illuminate\Support\Facades\Schema;
 
-
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
-   public function register()
-{
-    $this->app->singleton(FacebookService::class, function ($app) {
-        return new FacebookService();
-    });
-}
+    public function register()
+    {
+        $this->app->singleton(FacebookService::class, function ($app) {
+            return new FacebookService();
+        });
+    }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         Schema::defaultStringLength(191);
 
-        // Compartir conteos de notificaciones con la barra superior
         \Illuminate\Support\Facades\View::composer('layouts.app', function ($view) {
             $user = \Illuminate\Support\Facades\Auth::user();
             if ($user && $user->hasAnyRole(['Super Administrador', 'Administrador', 'Community Manager'])) {
-                // Pagos pendientes fÃ­sicos NO VISTOS
-                $countPagos = \App\Models\Pago::where('estado', 'pendiente')
-                    ->where('metodo', 'fisico')
+
+                // ── NO VISTAS (generan el badge rojo) ──────────────────────────
+                $pagosNoVistos = \App\Models\Pago::with(['usuario', 'plan'])
                     ->where('visto', false)
-                    ->count();
-                
-                $latestPagos = \App\Models\Pago::with(['usuario', 'plan'])
-                    ->where('estado', 'pendiente')
-                    ->where('metodo', 'fisico')
                     ->orderBy('created_at', 'desc')
-                    ->orderBy('id', 'desc')
+                    ->take(5)
+                    ->get();
+
+                $campaniasNoVistas = \App\Models\Campania::with(['creador', 'cliente'])
+                    ->where('visto', false)
+                    ->orderBy('created_at', 'desc')
+                    ->take(5)
+                    ->get();
+
+                $tareasNoVistas = \App\Models\TareaArchivo::with(['tarea', 'user'])
+                    ->where('visto', false)
+                    ->orderBy('created_at', 'desc')
+                    ->take(5)
+                    ->get();
+
+                $notificationCount = $pagosNoVistos->count()
+                    + $campaniasNoVistas->count()
+                    + $tareasNoVistas->count();
+
+                // ── YA VISTAS (sección inferior del dropdown) ──────────────────
+                $pagosVistos = \App\Models\Pago::with(['usuario', 'plan'])
+                    ->where('visto', true)
+                    ->orderBy('created_at', 'desc')
                     ->take(3)
                     ->get();
 
-                // Tareas con archivos pendientes de revisiÃ³n NO VISTOS
-                $countTareas = \App\Models\TareaArchivo::where('estado', 'pendiente')
-                    ->where('visto', false)
-                    ->count();
-
-                $latestTareas = \App\Models\TareaArchivo::with(['tarea.campania', 'user'])
-                    ->where('estado', 'pendiente')
+                $campaniasVistas = \App\Models\Campania::with(['creador', 'cliente'])
+                    ->where('visto', true)
                     ->orderBy('created_at', 'desc')
-                    ->orderBy('id', 'desc')
+                    ->take(3)
+                    ->get();
+
+                $tareasVistas = \App\Models\TareaArchivo::with(['tarea', 'user'])
+                    ->where('visto', true)
+                    ->orderBy('created_at', 'desc')
                     ->take(3)
                     ->get();
 
                 $view->with([
-                    'notificationCount' => $countPagos + $countTareas,
-                    'pendingPaymentsCount' => $countPagos,
-                    'pendingTasksCount' => $countTareas,
-                    'latestPendingPayments' => $latestPagos,
-                    'latestPendingTasks' => $latestTareas
+                    'notificationCount'    => $notificationCount,
+                    'pagosNoVistos'        => $pagosNoVistos,
+                    'campaniasNoVistas'    => $campaniasNoVistas,
+                    'tareasNoVistas'       => $tareasNoVistas,
+                    'pagosVistos'          => $pagosVistos,
+                    'campaniasVistas'      => $campaniasVistas,
+                    'tareasVistas'         => $tareasVistas,
+                    // compatibilidad con código anterior
+                    'latestPendingPayments' => $pagosNoVistos,
+                    'latestPendingTasks'    => $tareasNoVistas,
+                    'pendingPaymentsCount'  => $pagosNoVistos->count(),
+                    'pendingTasksCount'     => $tareasNoVistas->count(),
                 ]);
             }
         });

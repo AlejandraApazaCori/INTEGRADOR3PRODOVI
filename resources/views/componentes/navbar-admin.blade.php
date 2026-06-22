@@ -1,4 +1,4 @@
-﻿@include('a.css.componentes.navbar-admin')
+@include('a.css.componentes.navbar-admin')
 </head>
 <body>
     <!-- Sidebar -->
@@ -12,7 +12,7 @@
             </a>
         </div>
 
-        <!-- MenÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âº de navegaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n -->
+        <!-- Menú de navegación -->
         <div class="sidebar-menu">
             <div class="menu-label">MENU</div>
             
@@ -29,9 +29,12 @@
                 </a>
             </div>
 
-            <!-- Usuarios -->
+            <!-- Usuarios con submenú -->
+            @php
+                $usuariosMenuOpen = request()->routeIs('administrador.usuarios.*') || request()->routeIs('administrador.roles.*') || request()->routeIs('administrador.permisos.*') || request()->routeIs('administrador.usuarios.eliminados');
+            @endphp
             <div class="menu-item">
-                <a href="{{ route('administrador.usuarios.index') }}" class="menu-link">
+                <a href="#" class="menu-link {{ $usuariosMenuOpen ? 'active' : '' }}" onclick="toggleSubmenu(this); return false;">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                         <circle cx="9" cy="7" r="4"></circle>
@@ -39,7 +42,21 @@
                         <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                     </svg>
                     <span class="menu-text">Usuarios</span>
+                    <svg class="menu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="{{ $usuariosMenuOpen ? 'transform: rotate(180deg);' : '' }}">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
                 </a>
+                <div class="submenu {{ $usuariosMenuOpen ? 'open' : '' }}">
+                    <div class="submenu-item">
+                        <a href="{{ route('administrador.usuarios.index') }}" class="submenu-link {{ request()->routeIs('administrador.usuarios.index') ? 'active' : '' }}">General</a>
+                    </div>
+                    <div class="submenu-item">
+                        <a href="{{ route('administrador.roles.index') }}" class="submenu-link {{ request()->routeIs('administrador.roles.*') || request()->routeIs('administrador.permisos.*') ? 'active' : '' }}">Roles y Permisos</a>
+                    </div>
+                    <div class="submenu-item">
+                        <a href="{{ route('administrador.usuarios.eliminados') }}" class="submenu-link {{ request()->routeIs('administrador.usuarios.eliminados') ? 'active' : '' }}">Usuarios Eliminados</a>
+                    </div>
+                </div>
             </div>
 
             <!-- Empresas -->
@@ -108,19 +125,33 @@
                         <a href="{{ route('administrador.pagos.manual.crear') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.manual.*') ? 'active' : '' }}">Registrar pago</a>
                     </div>
                 </div>
-            </div>
-
-            <!-- Campañas -->
+            </div>            <!-- Campañas -->
+            @php
+                $currentRouteName = (string) (request()->route()?->getName() ?? '');
+                $campanasMenuOpen = str_starts_with($currentRouteName, 'administrador.camp') || str_starts_with($currentRouteName, 'administrador.tareas.');
+                $campanasIndexActive = str_starts_with($currentRouteName, 'administrador.camp') && str_ends_with($currentRouteName, '.index');
+                $campanasAnaliticasActive = str_starts_with($currentRouteName, 'administrador.camp') && str_contains($currentRouteName, '.analiticas');
+            @endphp
             <div class="menu-item">
-                <a href="{{ route('administrador.campañas.index') }}" class="menu-link">
+                <a href="#" class="menu-link {{ $campanasMenuOpen ? 'active' : '' }}" onclick="toggleSubmenu(this); return false;">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                         <rect x="9" y="9" width="6" height="6"/>
                     </svg>
                     <span class="menu-text">Campañas</span>
+                    <svg class="menu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="{{ $campanasMenuOpen ? 'transform: rotate(180deg);' : '' }}">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
                 </a>
+                <div class="submenu {{ $campanasMenuOpen ? 'open' : '' }}">
+                    <div class="submenu-item">
+                        <a href="{{ route('administrador.campañas.index') }}" class="submenu-link {{ $campanasIndexActive ? 'active' : '' }}">General</a>
+                    </div>
+                    <div class="submenu-item">
+                        <a href="{{ route('administrador.campañas.analiticas') }}" class="submenu-link {{ $campanasAnaliticasActive ? 'active' : '' }}">Analíticas</a>
+                    </div>
+                </div>
             </div>
-
 
             <!-- Logs -->
             <div class="menu-item">
@@ -165,7 +196,7 @@
                                 <circle cx="12" cy="7" r="4"/>
                             </svg>
                         </div>
-                         <div class="dropdown-user-info">
+                        <div class="dropdown-user-info">
                             <span class="dropdown-user-name">{{ auth()->user()->name }}</span>
                             <span class="dropdown-user-email">{{ auth()->user()->email ?? 'usuario@prodovi.com' }}</span>
                         </div>
@@ -211,6 +242,66 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Función para toggle submenús
+        function toggleSubmenu(element) {
+            const menuItem = element.closest('.menu-item');
+            const submenu = menuItem.querySelector('.submenu');
+            const arrow = element.querySelector('.menu-arrow');
+            
+            // Cerrar otros submenús abiertos
+            document.querySelectorAll('.menu-item .submenu.open').forEach(openSubmenu => {
+                if (openSubmenu !== submenu) {
+                    openSubmenu.classList.remove('open');
+                    const parentMenuItem = openSubmenu.closest('.menu-item');
+                    const parentArrow = parentMenuItem.querySelector('.menu-arrow');
+                    if (parentArrow) {
+                        parentArrow.style.transform = 'rotate(0deg)';
+                    }
+                    const parentLink = parentMenuItem.querySelector('.menu-link');
+                    if (parentLink) {
+                        parentLink.classList.remove('active');
+                    }
+                }
+            });
+            
+            // Toggle el submenú actual
+            submenu.classList.toggle('open');
+            if (arrow) {
+                arrow.style.transform = submenu.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+            }
+            element.classList.toggle('active');
+        }
+
+        // Función para toggle el menú de usuario
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userDropdownMenu');
+            dropdown.classList.toggle('show');
+        }
+
+        // Cerrar el menú de usuario al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            const userDropdown = document.querySelector('.user-dropdown');
+            if (userDropdown && !userDropdown.contains(event.target)) {
+                const dropdown = document.getElementById('userDropdownMenu');
+                if (dropdown) {
+                    dropdown.classList.remove('show');
+                }
+            }
+        });
+
+        // Mostrar popup de confirmación
+        function showLogoutConfirmation() {
+            document.getElementById('logoutConfirmationPopup').classList.add('show');
+            document.getElementById('userDropdownMenu').classList.remove('show');
+        }
+
+        // Ocultar popup de confirmación
+        function hideLogoutConfirmation() {
+            document.getElementById('logoutConfirmationPopup').classList.remove('show');
+        }
+    </script>
 </body>
 </html>
 

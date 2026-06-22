@@ -4,25 +4,37 @@
 
 @section('content')
 <style>
-/* â”€â”€ Page wrapper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Page wrapper ────────────────────────────────────────────── */
 .pwiz-page-wrapper {
   min-height: 100vh;
   background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 50%, #F5F3FF 100%);
   padding: 2rem 0;
 }
 
-/* â”€â”€ Container â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Container ────────────────────────────────────────────────── */
 .pwiz-container { max-width: 1280px; margin: 0 auto; padding: 0 1rem; }
 
-/* â”€â”€ Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Banner con fondo geométrico ──────────────────────────────── */
 .pwiz-banner {
-  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #3b82f6 100%);
-  border-radius: 20px; padding: 2rem 2.5rem;
-  display: flex; align-items: center; gap: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, #4f46e5 25%, transparent 25%) -50px 0,
+    linear-gradient(225deg, #4f46e5 25%, transparent 25%) -50px 0,
+    linear-gradient(315deg, #4f46e5 25%, transparent 25%),
+    linear-gradient(45deg,  #4f46e5 25%, transparent 25%),
+    linear-gradient(to bottom, #3b82f6 0%, #2563eb 100%);
+  background-size: 100px 100px, 100px 100px, 100px 100px, 100px 100px, 100% 100%;
+  background-color: #1d4ed8;
+  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.18);
+  padding: 2rem 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
   margin-bottom: 1.75rem;
-  box-shadow: 0 12px 32px rgba(37,99,235,0.28);
-  position: relative; overflow: hidden;
 }
+
 .pwiz-banner::before {
   content: ''; position: absolute; right: -50px; top: -50px;
   width: 200px; height: 200px; background: rgba(255,255,255,0.06); border-radius: 50%;
@@ -31,6 +43,20 @@
   content: ''; position: absolute; right: 80px; bottom: -70px;
   width: 240px; height: 240px; background: rgba(255,255,255,0.04); border-radius: 50%;
 }
+
+.pwiz-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255,255,255,0.2) 0%, transparent 50%),
+    radial-gradient(circle at 100% 0%, rgba(255,255,255,0.2) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(255,255,255,0.2) 0%, transparent 50%),
+    radial-gradient(circle at 0% 100%, rgba(255,255,255,0.2) 0%, transparent 50%);
+  background-size: 50% 50%;
+  background-position: 0 0, 100% 0, 100% 100%, 0 100%;
+  background-repeat: no-repeat;
+}
+
 .pwiz-banner-icon {
   width: 58px; height: 58px; background: rgba(255,255,255,0.18);
   border-radius: 16px; display: flex; align-items: center; justify-content: center;
@@ -47,7 +73,7 @@
 }
 .pwiz-banner-back:hover { background: rgba(255,255,255,0.28); }
 
-/* â”€â”€ Stepper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Stepper ──────────────────────────────────────────────────── */
 .pwiz-stepper {
   display: flex; align-items: center; background: white;
   border-radius: 16px; padding: 1.25rem 2rem;
@@ -77,7 +103,7 @@
 .pwiz-step-line.done { background: #10b981; }
 .pwiz-step-line.active { background: linear-gradient(90deg, #10b981, #2563eb); }
 
-/* â”€â”€ Panels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Panels ───────────────────────────────────────────────────── */
 .pwiz-panel {
   background: white; border-radius: 20px; border: 1px solid #e8edf3;
   padding: 2rem; box-shadow: 0 4px 16px rgba(0,0,0,0.06);
@@ -90,7 +116,7 @@
 .pwiz-panel-title { font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
 .pwiz-panel-subtitle { font-size: 0.8rem; color: #64748b; margin-bottom: 1.75rem; }
 
-/* â”€â”€ Choice cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Choice cards ────────────────────────────────────────────── */
 .pwiz-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .pwiz-choice-card {
   display: flex; flex-direction: column; align-items: center;
@@ -120,7 +146,7 @@
 .pwiz-choice-arrow { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; }
 .pwiz-choice-card.danger .pwiz-choice-arrow { color: #ef4444; }
 
-/* â”€â”€ Back button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Back button ──────────────────────────────────────────────── */
 .pwiz-back-btn {
   display: inline-flex; align-items: center; gap: 7px;
   margin-top: 1.25rem; padding: 9px 18px;
@@ -131,7 +157,7 @@
 }
 .pwiz-back-btn:hover { color: #374151; background: #f8fafc; }
 
-/* â”€â”€ Form fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Form fields ──────────────────────────────────────────────── */
 .pwiz-field { margin-bottom: 1rem; }
 .pwiz-field label { display: block; font-size: 0.78rem; font-weight: 600; color: #374151; margin-bottom: 5px; }
 .pwiz-input {
@@ -147,7 +173,7 @@
 .pwiz-input-wrap .pi-icon ~ .pwiz-input,
 .pwiz-input-wrap .pi-prefix ~ .pwiz-input { padding-left: 36px; }
 
-/* â”€â”€ Search dropdown â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Search dropdown ──────────────────────────────────────────── */
 .pwiz-dropdown {
   position: absolute; top: calc(100% + 4px); left: 0; right: 0;
   background: white; border: 1px solid #e2e8f0; border-radius: 12px;
@@ -160,7 +186,7 @@
 .pwiz-user-opt .n { font-size: 0.85rem; font-weight: 600; color: #0f172a; }
 .pwiz-user-opt .e { font-size: 0.75rem; color: #94a3b8; margin-top: 1px; }
 
-/* â”€â”€ User chip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── User chip ────────────────────────────────────────────────── */
 .pwiz-user-chip {
   display: flex; align-items: center; gap: 12px;
   padding: 10px 14px; background: #eff6ff;
@@ -177,7 +203,7 @@
 .pwiz-chip-remove { background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 16px; padding: 4px; border-radius: 6px; transition: all 0.15s; }
 .pwiz-chip-remove:hover { color: #ef4444; background: #fef2f2; }
 
-/* â”€â”€ Method badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Method badge ────────────────────────────────────────────── */
 .pwiz-method-badge {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 6px 14px; border-radius: 20px;
@@ -186,17 +212,17 @@
 .pwiz-method-badge.fisico { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
 .pwiz-method-badge.qr { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
 
-/* â”€â”€ Section label â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Section label ────────────────────────────────────────────── */
 .pwiz-section-label {
   font-size: 0.75rem; font-weight: 700; color: #374151;
   text-transform: uppercase; letter-spacing: 0.05em;
   display: flex; align-items: center; gap: 7px; margin-bottom: 10px;
 }
 
-/* â”€â”€ Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Grid ─────────────────────────────────────────────────────── */
 .pwiz-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
-/* â”€â”€ Cambio box â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Cambio box ───────────────────────────────────────────────── */
 .pwiz-cambio-box {
   background: #f0fdf4; border: 1px solid #bbf7d0;
   border-radius: 12px; padding: 1rem 1.25rem; margin-top: 0.5rem;
@@ -205,7 +231,7 @@
 .pwiz-cambio-value { font-size: 1.5rem; font-weight: 800; color: #16a34a; }
 .pwiz-cambio-value.neg { font-size: 0.95rem; color: #dc2626; }
 
-/* â”€â”€ QR box â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── QR box ───────────────────────────────────────────────────── */
 .pwiz-qr-box {
   border: 2px dashed #c7d2fe; border-radius: 16px;
   padding: 2rem 1.5rem; text-align: center;
@@ -228,10 +254,10 @@
 .btn-gen-qr:hover { background: #1d4ed8; transform: translateY(-1px); }
 .btn-gen-qr:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
-/* â”€â”€ Divider â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Divider ──────────────────────────────────────────────────── */
 .pwiz-hr { border: none; border-top: 1px solid #f1f5f9; margin: 1.5rem 0; }
 
-/* â”€â”€ Form footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Form footer ──────────────────────────────────────────────── */
 .pwiz-form-footer {
   display: flex; justify-content: space-between; align-items: center;
   margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #f1f5f9;
@@ -246,7 +272,7 @@
 .pwiz-submit-btn:active { transform: none; }
 .pwiz-submit-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
 
-/* â”€â”€ Success overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Success overlay ──────────────────────────────────────────── */
 .pwiz-overlay {
   position: fixed; inset: 0; background: rgba(15,23,42,0.55);
   backdrop-filter: blur(5px); z-index: 9999;
@@ -279,10 +305,10 @@
 .pwiz-progress-fill { height: 100%; background: linear-gradient(90deg, #10b981, #059669); border-radius: 4px; width: 0%; transition: width 2.6s linear; }
 .pwiz-redirect-label { font-size: 0.75rem; color: #94a3b8; }
 
-/* â”€â”€ Hidden â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Hidden ───────────────────────────────────────────────────── */
 .pwiz-hidden { display: none !important; }
 
-/* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Responsive ────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .pwiz-choices, .pwiz-grid-2 { grid-template-columns: 1fr; }
   .pwiz-banner { flex-wrap: wrap; padding: 1.5rem 1.25rem; }
@@ -292,7 +318,7 @@
   .btn-action { flex: 1; min-width: 120px; }
 }
 
-/* â”€â”€ Action buttons styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Action buttons styles ───────────────────────────────────── */
 .btn-action {
   position: relative;
   display: inline-flex;
@@ -399,260 +425,253 @@
       </button>
     </div>
 
-    <div class="pwiz-container" style="max-width: 800px; margin: 0 auto;">
+    <div style="max-width: 800px; margin: 0 auto;">
 
-<div class="pwiz-container">
-
-  {{-- â”€â”€ Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
-  <div class="pwiz-banner">
-    <div class="pwiz-banner-icon"><i class="fas fa-credit-card"></i></div>
-    <div class="pwiz-banner-text">
-      <h1>Registrar pago manual</h1>
-      <p>Registra una suscripción y pago para un cliente en pocos pasos.</p>
-    </div>
-    <a href="{{ route('administrador.pagos.index') }}" class="pwiz-banner-back">
-      <i class="fas fa-arrow-left"></i> Volver
-    </a>
-  </div>
-
-  {{-- â”€â”€ Stepper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
-  <div class="pwiz-stepper">
-    <div class="pwiz-step active" id="step-ind-1">
-      <div class="pwiz-step-circle" id="step-circle-1">1</div>
-      <div class="pwiz-step-label">Tipo de pago</div>
-    </div>
-    <div class="pwiz-step-line" id="step-line-1"></div>
-    <div class="pwiz-step" id="step-ind-2">
-      <div class="pwiz-step-circle" id="step-circle-2">2</div>
-      <div class="pwiz-step-label">Cliente</div>
-    </div>
-    <div class="pwiz-step-line" id="step-line-2"></div>
-    <div class="pwiz-step" id="step-ind-3">
-      <div class="pwiz-step-circle" id="step-circle-3">3</div>
-      <div class="pwiz-step-label">Datos del pago</div>
-    </div>
-  </div>
-
-  {{-- â”€â”€ Validation errors (returning from failed submit) â”€â”€ --}}
-  @if ($errors->any())
-  <div style="margin-bottom:1.25rem;">
-    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg flex gap-3">
-      <i class="fas fa-exclamation-circle text-red-400 mt-0.5 flex-shrink-0"></i>
-      <div>
-        <p class="text-sm font-semibold text-red-700">Corrige los siguientes errores:</p>
-        <ul class="mt-1 list-disc list-inside text-sm text-red-600">
-          @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
-        </ul>
-      </div>
-    </div>
-  </div>
-  @endif
-
-  {{-- â”€â”€ AJAX error container â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
-  <div id="ajaxErrors" class="pwiz-hidden" style="margin-bottom:1.25rem;">
-    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg flex gap-3">
-      <i class="fas fa-exclamation-circle text-red-400 mt-0.5 flex-shrink-0"></i>
-      <div>
-        <p class="text-sm font-semibold text-red-700">Corrige los siguientes errores:</p>
-        <ul id="ajaxErrorList" class="mt-1 list-disc list-inside text-sm text-red-600"></ul>
-      </div>
-    </div>
-  </div>
-
-  {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-       PASO 1 â€” Tipo de pago
-  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
-  <div class="pwiz-panel" id="panel-step1">
-    <p class="pwiz-panel-title">Selecciona el tipo de pago</p>
-    <p class="pwiz-panel-subtitle">Elige cómo se realizará el cobro al cliente.</p>
-    <div class="pwiz-choices">
-      <div class="pwiz-choice-card" onclick="pwizSelectMethod('fisico')">
-        <div class="pwiz-choice-icon"><i class="fas fa-money-bill-wave"></i></div>
-        <div class="pwiz-choice-title">Pago Físico</div>
-        <div class="pwiz-choice-desc">El cliente paga en efectivo de forma presencial.</div>
-        <div class="pwiz-choice-arrow"><i class="fas fa-arrow-right"></i> Seleccionar</div>
-      </div>
-      <div class="pwiz-choice-card" onclick="pwizSelectMethod('qr')">
-        <div class="pwiz-choice-icon"><i class="fas fa-qrcode"></i></div>
-        <div class="pwiz-choice-title">Pago QR</div>
-        <div class="pwiz-choice-desc">El cliente paga escaneando un código QR bancario.</div>
-        <div class="pwiz-choice-arrow"><i class="fas fa-arrow-right"></i> Seleccionar</div>
-      </div>
-    </div>
-  </div>
-
-  {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-       PASO 2 â€” Â¿El cliente existe?
-  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
-  <div class="pwiz-panel pwiz-hidden" id="panel-step2">
-    <p class="pwiz-panel-title">¿El cliente ya está registrado?</p>
-    <p class="pwiz-panel-subtitle">Indica si el cliente tiene una cuenta en el sistema.</p>
-    <div class="pwiz-choices">
-      <div class="pwiz-choice-card" onclick="pwizSelectClient(true)">
-        <div class="pwiz-choice-icon"><i class="fas fa-user-check"></i></div>
-        <div class="pwiz-choice-title">Sí, ya existe</div>
-        <div class="pwiz-choice-desc">Buscaré al cliente en el sistema para asignar la suscripción.</div>
-        <div class="pwiz-choice-arrow"><i class="fas fa-arrow-right"></i> Continuar</div>
-      </div>
-      <a href="{{ url('/administrador/usuarios/create') }}" class="pwiz-choice-card danger">
-        <div class="pwiz-choice-icon"><i class="fas fa-user-plus"></i></div>
-        <div class="pwiz-choice-title">No existe aún</div>
-        <div class="pwiz-choice-desc">Ir a crear el cliente antes de registrar el pago.</div>
-        <div class="pwiz-choice-arrow"><i class="fas fa-external-link-alt"></i> Crear cliente</div>
-      </a>
-    </div>
-    <button type="button" class="pwiz-back-btn" onclick="pwizGoTo(1)">
-      <i class="fas fa-arrow-left"></i> Atrás
-    </button>
-  </div>
-
-  {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-       PASO 3 â€” Datos del pago
-  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
-  <div class="pwiz-panel pwiz-hidden" id="panel-step3">
-
-    <form action="{{ route('administrador.pagos.manual.store') }}" method="POST" id="pagoForm">
-      @csrf
-      <input type="hidden" name="metodo"          id="metodoInput"   value="{{ old('metodo', 'fisico') }}">
-      <input type="hidden" name="create_new_user"                     value="0">
-      <input type="hidden" name="fecha_inicio"                        value="{{ date('Y-m-d') }}">
-      <input type="hidden" name="monto"           id="montoFinal"     value="{{ old('monto') }}">
-
-      {{-- Method badge --}}
-      <div id="methodBadge" class="pwiz-method-badge fisico">
-        <i class="fas fa-money-bill-wave"></i>
-        <span id="methodBadgeText">Pago Físico</span>
+      {{-- ── Banner ─────────────────────────────────────────────────── --}}
+      <div class="pwiz-banner">
+        <div class="pwiz-banner-overlay"></div>
+        <div class="pwiz-banner-icon"><i class="fas fa-credit-card"></i></div>
+        <div class="pwiz-banner-text">
+          <h1>Registrar pago manual</h1>
+          <p>Registra una suscripción y pago para un cliente en pocos pasos.</p>
+        </div>
+        <a href="{{ route('administrador.pagos.index') }}" class="pwiz-banner-back">
+          <i class="fas fa-arrow-left"></i> Volver
+        </a>
       </div>
 
-      {{-- â”€â”€ Buscar cliente â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
-      <div class="pwiz-section-label">
-        <i class="fas fa-user" style="color:#2563eb;"></i> Buscar cliente
+      {{-- ── Stepper ───────────────────────────────────────────────── --}}
+      <div class="pwiz-stepper">
+        <div class="pwiz-step active" id="step-ind-1">
+          <div class="pwiz-step-circle" id="step-circle-1">1</div>
+          <div class="pwiz-step-label">Tipo de pago</div>
+        </div>
+        <div class="pwiz-step-line" id="step-line-1"></div>
+        <div class="pwiz-step" id="step-ind-2">
+          <div class="pwiz-step-circle" id="step-circle-2">2</div>
+          <div class="pwiz-step-label">Cliente</div>
+        </div>
+        <div class="pwiz-step-line" id="step-line-2"></div>
+        <div class="pwiz-step" id="step-ind-3">
+          <div class="pwiz-step-circle" id="step-circle-3">3</div>
+          <div class="pwiz-step-label">Datos del pago</div>
+        </div>
       </div>
-      <div class="pwiz-field">
-        <div class="pwiz-input-wrap" style="position:relative;" id="searchWrap">
-          <i class="pi-icon fas fa-search"></i>
-          <input type="text" id="userSearch" class="pwiz-input"
-                 placeholder="Escribe el nombre o correo del cliente..." autocomplete="off">
-          <div id="userDropdown" class="pwiz-dropdown pwiz-hidden">
-            @foreach($usuarios as $usuario)
-              <div class="pwiz-user-opt"
-                   data-id="{{ $usuario->id }}"
-                   data-name="{{ $usuario->name }}"
-                   data-email="{{ $usuario->email }}">
-                <div class="n">{{ $usuario->name }}</div>
-                <div class="e">{{ $usuario->email }}</div>
-              </div>
-            @endforeach
+
+      {{-- ── Validation errors (returning from failed submit) ── --}}
+      @if ($errors->any())
+      <div style="margin-bottom:1.25rem;">
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg flex gap-3">
+          <i class="fas fa-exclamation-circle text-red-400 mt-0.5 flex-shrink-0"></i>
+          <div>
+            <p class="text-sm font-semibold text-red-700">Corrige los siguientes errores:</p>
+            <ul class="mt-1 list-disc list-inside text-sm text-red-600">
+              @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+            </ul>
           </div>
         </div>
-        <div id="selectedUserChip" class="pwiz-hidden">
-          <div class="pwiz-user-chip">
-            <div class="pwiz-user-avatar" id="userInitial">U</div>
-            <div class="pwiz-user-chip-info">
-              <div class=”pwiz-user-chip-name” id=”selectedUserName”>-</div>
-              <div class=”pwiz-user-chip-email” id=”selectedUserEmail”>-</div>
-            </div>
-            <button type="button" class="pwiz-chip-remove" id="btnRemoveUser" title="Quitar">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-        </div>
-        <input type="hidden" name="usuario_id" id="usuario_id" value="{{ old('usuario_id') }}">
       </div>
+      @endif
 
-      <hr class="pwiz-hr">
-
-      {{-- â”€â”€ Plan + Monto â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
-      <div class="pwiz-grid-2">
-        <div>
-          <div class="pwiz-section-label" style="margin-bottom:8px;">
-            <i class="fas fa-box" style="color:#2563eb;"></i> Plan de suscripción
-          </div>
-          <div class="pwiz-field">
-            <select name="plan_id" id="selectPlan" class="pwiz-input" required>
-              <option value=””>- Elige un plan -</option>
-              @foreach($planes as $plan)
-                <option value="{{ $plan->id }}"
-                        data-precio="{{ $plan->precio }}"
-                        data-moneda="{{ $plan->moneda ?? 'BS' }}"
-                        {{ old('plan_id') == $plan->id ? 'selected' : '' }}>
-                  {{ $plan->nombre }} - {{ $plan->precio }} {{ $plan->moneda ?? 'BS' }}
-                </option>
-              @endforeach
-            </select>
-          </div>
-        </div>
-        <div>
-          <div class="pwiz-section-label" style="margin-bottom:8px;">
-            <i class="fas fa-tag" style="color:#2563eb;"></i> Monto a cobrar
-          </div>
-          <div class="pwiz-field">
-            <div class="pwiz-input-wrap">
-              <span class="pi-prefix" id="monedaSymbol">Bs</span>
-              <input type="number" step="0.01" id="inputMontoCobrar" class="pwiz-input"
-                     placeholder="0.00" value="{{ old('monto') }}"
-                     style="font-weight:700; color:#1d4ed8; font-size:1.05rem;">
-            </div>
+      {{-- ── AJAX error container ───────────────────────────────── --}}
+      <div id="ajaxErrors" class="pwiz-hidden" style="margin-bottom:1.25rem;">
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg flex gap-3">
+          <i class="fas fa-exclamation-circle text-red-400 mt-0.5 flex-shrink-0"></i>
+          <div>
+            <p class="text-sm font-semibold text-red-700">Corrige los siguientes errores:</p>
+            <ul id="ajaxErrorList" class="mt-1 list-disc list-inside text-sm text-red-600"></ul>
           </div>
         </div>
       </div>
 
-      <hr class="pwiz-hr">
-
-      {{-- â”€â”€ FÃSICO: Monto entregado + Cambio â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
-      <div id="fisicoSection">
-        <div class="pwiz-section-label">
-          <i class="fas fa-money-bill-wave" style="color:#16a34a;"></i> Efectivo recibido
-        </div>
-        <div class="pwiz-field" style="max-width:260px;">
-          <label>Monto entregado por el cliente</label>
-          <div class="pwiz-input-wrap">
-            <span class="pi-prefix" id="monedaSymbolEnt">Bs</span>
-            <input type="number" step="0.01" id="montoEntregado" class="pwiz-input" placeholder="0.00">
+      {{-- ═══ PASO 1 — Tipo de pago ═══ --}}
+      <div class="pwiz-panel" id="panel-step1">
+        <p class="pwiz-panel-title">Selecciona el tipo de pago</p>
+        <p class="pwiz-panel-subtitle">Elige cómo se realizará el cobro al cliente.</p>
+        <div class="pwiz-choices">
+          <div class="pwiz-choice-card" onclick="pwizSelectMethod('fisico')">
+            <div class="pwiz-choice-icon"><i class="fas fa-money-bill-wave"></i></div>
+            <div class="pwiz-choice-title">Pago Físico</div>
+            <div class="pwiz-choice-desc">El cliente paga en efectivo de forma presencial.</div>
+            <div class="pwiz-choice-arrow"><i class="fas fa-arrow-right"></i> Seleccionar</div>
           </div>
-        </div>
-        <div id="cambioBox" class="pwiz-cambio-box pwiz-hidden">
-          <div class="pwiz-cambio-label"><i class="fas fa-exchange-alt"></i> Cambio a devolver</div>
-          <div class="pwiz-cambio-value" id="cambioValue">Bs 0.00</div>
+          <div class="pwiz-choice-card" onclick="pwizSelectMethod('qr')">
+            <div class="pwiz-choice-icon"><i class="fas fa-qrcode"></i></div>
+            <div class="pwiz-choice-title">Pago QR</div>
+            <div class="pwiz-choice-desc">El cliente paga escaneando un código QR bancario.</div>
+            <div class="pwiz-choice-arrow"><i class="fas fa-arrow-right"></i> Seleccionar</div>
+          </div>
         </div>
       </div>
 
-      {{-- â”€â”€ QR: Generar cÃ³digo QR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
-      <div id="qrSection" class="pwiz-hidden">
-        <div class="pwiz-section-label">
-          <i class="fas fa-qrcode" style="color:#2563eb;"></i> Código QR de pago
-        </div>
-        <div class="pwiz-qr-box">
-          <div class="pwiz-qr-placeholder" id="qrPlaceholder">
-            <i class="fas fa-qrcode"></i>
+      {{-- ═══ PASO 2 — ¿El cliente existe? ═══ --}}
+      <div class="pwiz-panel pwiz-hidden" id="panel-step2">
+        <p class="pwiz-panel-title">¿El cliente ya está registrado?</p>
+        <p class="pwiz-panel-subtitle">Indica si el cliente tiene una cuenta en el sistema.</p>
+        <div class="pwiz-choices">
+          <div class="pwiz-choice-card" onclick="pwizSelectClient(true)">
+            <div class="pwiz-choice-icon"><i class="fas fa-user-check"></i></div>
+            <div class="pwiz-choice-title">Sí, ya existe</div>
+            <div class="pwiz-choice-desc">Buscaré al cliente en el sistema para asignar la suscripción.</div>
+            <div class="pwiz-choice-arrow"><i class="fas fa-arrow-right"></i> Continuar</div>
           </div>
-          <p style="font-size:0.82rem; color:#64748b; margin:0;" id="qrHint">
-            Genera el código QR para que el cliente realice el pago.
-          </p>
-          <button type="button" class="btn-gen-qr" id="btnGenQr" onclick="pwizGenerateQR()">
-            <i class="fas fa-qrcode"></i> Generar QR
-          </button>
+          <a href="{{ url('/administrador/usuarios/create') }}" class="pwiz-choice-card danger">
+            <div class="pwiz-choice-icon"><i class="fas fa-user-plus"></i></div>
+            <div class="pwiz-choice-title">No existe aún</div>
+            <div class="pwiz-choice-desc">Ir a crear el cliente antes de registrar el pago.</div>
+            <div class="pwiz-choice-arrow"><i class="fas fa-external-link-alt"></i> Crear cliente</div>
+          </a>
         </div>
-      </div>
-
-      {{-- â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
-      <div class="pwiz-form-footer">
-        <button type="button" class="pwiz-back-btn" onclick="pwizGoTo(2)" style="margin-top:0;">
+        <button type="button" class="pwiz-back-btn" onclick="pwizGoTo(1)">
           <i class="fas fa-arrow-left"></i> Atrás
         </button>
-        <button type="submit" class="pwiz-submit-btn" id="btnConfirmar">
-          <i class="fas fa-check-circle"></i>
-          <span id="submitBtnText">Confirmar registro</span>
-        </button>
       </div>
-    </form>
 
-  </div>{{-- /panel-step3 --}}
-    </div> {{-- /pwiz-container inner --}}
-  </div> {{-- /pwiz-page-wrapper --}}
-</div>
+      {{-- ═══ PASO 3 — Datos del pago ═══ --}}
+      <div class="pwiz-panel pwiz-hidden" id="panel-step3">
 
-{{-- â”€â”€ Success overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        <form action="{{ route('administrador.pagos.manual.store') }}" method="POST" id="pagoForm">
+          @csrf
+          <input type="hidden" name="metodo"          id="metodoInput"   value="{{ old('metodo', 'fisico') }}">
+          <input type="hidden" name="create_new_user"                     value="0">
+          <input type="hidden" name="fecha_inicio"                        value="{{ date('Y-m-d') }}">
+          <input type="hidden" name="monto"           id="montoFinal"     value="{{ old('monto') }}">
+
+          {{-- Method badge --}}
+          <div id="methodBadge" class="pwiz-method-badge fisico">
+            <i class="fas fa-money-bill-wave"></i>
+            <span id="methodBadgeText">Pago Físico</span>
+          </div>
+
+          {{-- ── Buscar cliente ───────────────────────────────────── --}}
+          <div class="pwiz-section-label">
+            <i class="fas fa-user" style="color:#2563eb;"></i> Buscar cliente
+          </div>
+          <div class="pwiz-field">
+            <div class="pwiz-input-wrap" style="position:relative;" id="searchWrap">
+              <i class="pi-icon fas fa-search"></i>
+              <input type="text" id="userSearch" class="pwiz-input"
+                     placeholder="Escribe el nombre o correo del cliente..." autocomplete="off">
+              <div id="userDropdown" class="pwiz-dropdown pwiz-hidden">
+                @foreach($usuarios as $usuario)
+                  <div class="pwiz-user-opt"
+                       data-id="{{ $usuario->id }}"
+                       data-name="{{ $usuario->name }}"
+                       data-email="{{ $usuario->email }}">
+                    <div class="n">{{ $usuario->name }}</div>
+                    <div class="e">{{ $usuario->email }}</div>
+                  </div>
+                @endforeach
+              </div>
+            </div>
+            <div id="selectedUserChip" class="pwiz-hidden">
+              <div class="pwiz-user-chip">
+                <div class="pwiz-user-avatar" id="userInitial">U</div>
+                <div class="pwiz-user-chip-info">
+                  <div class="pwiz-user-chip-name" id="selectedUserName">-</div>
+                  <div class="pwiz-user-chip-email" id="selectedUserEmail">-</div>
+                </div>
+                <button type="button" class="pwiz-chip-remove" id="btnRemoveUser" title="Quitar">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+            <input type="hidden" name="usuario_id" id="usuario_id" value="{{ old('usuario_id') }}">
+          </div>
+
+          <hr class="pwiz-hr">
+
+          {{-- ── Plan + Monto ─────────────────────────────────────── --}}
+          <div class="pwiz-grid-2">
+            <div>
+              <div class="pwiz-section-label" style="margin-bottom:8px;">
+                <i class="fas fa-box" style="color:#2563eb;"></i> Plan de suscripción
+              </div>
+              <div class="pwiz-field">
+                <select name="plan_id" id="selectPlan" class="pwiz-input" required>
+                  <option value="">- Elige un plan -</option>
+                  @foreach($planes as $plan)
+                    <option value="{{ $plan->id }}"
+                            data-precio="{{ $plan->precio }}"
+                            data-moneda="{{ $plan->moneda ?? 'BS' }}"
+                            {{ old('plan_id') == $plan->id ? 'selected' : '' }}>
+                      {{ $plan->nombre }} - {{ $plan->precio }} {{ $plan->moneda ?? 'BS' }}
+                    </option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+            <div>
+              <div class="pwiz-section-label" style="margin-bottom:8px;">
+                <i class="fas fa-tag" style="color:#2563eb;"></i> Monto a cobrar
+              </div>
+              <div class="pwiz-field">
+                <div class="pwiz-input-wrap">
+                  <span class="pi-prefix" id="monedaSymbol">Bs</span>
+                  <input type="number" step="0.01" id="inputMontoCobrar" class="pwiz-input"
+                         placeholder="0.00" value="{{ old('monto') }}"
+                         style="font-weight:700; color:#1d4ed8; font-size:1.05rem;">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <hr class="pwiz-hr">
+
+          {{-- ── FÍSICO: Monto entregado + Cambio ────────────────── --}}
+          <div id="fisicoSection">
+            <div class="pwiz-section-label">
+              <i class="fas fa-money-bill-wave" style="color:#16a34a;"></i> Efectivo recibido
+            </div>
+            <div class="pwiz-field" style="max-width:260px;">
+              <label>Monto entregado por el cliente</label>
+              <div class="pwiz-input-wrap">
+                <span class="pi-prefix" id="monedaSymbolEnt">Bs</span>
+                <input type="number" step="0.01" id="montoEntregado" class="pwiz-input" placeholder="0.00">
+              </div>
+            </div>
+            <div id="cambioBox" class="pwiz-cambio-box pwiz-hidden">
+              <div class="pwiz-cambio-label"><i class="fas fa-exchange-alt"></i> Cambio a devolver</div>
+              <div class="pwiz-cambio-value" id="cambioValue">Bs 0.00</div>
+            </div>
+          </div>
+
+          {{-- ── QR: Generar código QR ─────────────────────────────── --}}
+          <div id="qrSection" class="pwiz-hidden">
+            <div class="pwiz-section-label">
+              <i class="fas fa-qrcode" style="color:#2563eb;"></i> Código QR de pago
+            </div>
+            <div class="pwiz-qr-box">
+              <div class="pwiz-qr-placeholder" id="qrPlaceholder">
+                <i class="fas fa-qrcode"></i>
+              </div>
+              <p style="font-size:0.82rem; color:#64748b; margin:0;" id="qrHint">
+                Genera el código QR para que el cliente realice el pago.
+              </p>
+              <button type="button" class="btn-gen-qr" id="btnGenQr" onclick="pwizGenerateQR()">
+                <i class="fas fa-qrcode"></i> Generar QR
+              </button>
+            </div>
+          </div>
+
+          {{-- ── Footer ───────────────────────────────────────────── --}}
+          <div class="pwiz-form-footer">
+            <button type="button" class="pwiz-back-btn" onclick="pwizGoTo(2)" style="margin-top:0;">
+              <i class="fas fa-arrow-left"></i> Atrás
+            </button>
+            <button type="submit" class="pwiz-submit-btn" id="btnConfirmar">
+              <i class="fas fa-check-circle"></i>
+              <span id="submitBtnText">Confirmar registro</span>
+            </button>
+          </div>
+        </form>
+
+      </div>{{-- /panel-step3 --}}
+    </div>{{-- /inner container --}}
+  </div>{{-- /pwiz-container --}}
+</div>{{-- /pwiz-page-wrapper --}}
+
+{{-- ── Success overlay ─────────────────────────────────────────── --}}
 <div class="pwiz-overlay pwiz-hidden" id="successOverlay">
   <div class="pwiz-success-modal">
     <div class="pwiz-success-check"><i class="fas fa-check"></i></div>
@@ -668,10 +687,10 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-  /* â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── State ───────────────────────────────────────────────────── */
   let selectedMethod = '{{ old("metodo", "fisico") }}';
 
-  /* â”€â”€ Stepper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── Stepper ─────────────────────────────────────────────────── */
   function updateStepper(step) {
     [1, 2, 3].forEach(i => {
       const ind    = document.getElementById('step-ind-' + i);
@@ -703,7 +722,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   window.pwizGoTo = pwizGoTo;
 
-  /* â”€â”€ Step 1: choose method â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── Step 1: choose method ───────────────────────────────────── */
   window.pwizSelectMethod = function (method) {
     selectedMethod = method;
     document.getElementById('metodoInput').value = method;
@@ -720,13 +739,13 @@ document.addEventListener('DOMContentLoaded', function () {
     pwizGoTo(2);
   };
 
-  /* â”€â”€ Step 2: client exists? â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── Step 2: client exists? ──────────────────────────────────── */
   window.pwizSelectClient = function (exists) {
     if (exists) {
       applyMethodSections(selectedMethod);
       pwizGoTo(3);
     }
-    /* if !exists â€” the card is an <a> that navigates to create user */
+    /* if !exists — the card is an <a> that navigates to create user */
   };
 
   function applyMethodSections(method) {
@@ -741,7 +760,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  /* â”€â”€ User search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── User search ─────────────────────────────────────────────── */
   const userSearch       = document.getElementById('userSearch');
   const userDropdown     = document.getElementById('userDropdown');
   const selectedUserChip = document.getElementById('selectedUserChip');
@@ -788,7 +807,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!searchWrap.contains(e.target)) userDropdown.classList.add('pwiz-hidden');
   });
 
-  /* â”€â”€ Plan selection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── Plan selection ──────────────────────────────────────────── */
   const selectPlan     = document.getElementById('selectPlan');
   const inputMontoCobrar = document.getElementById('inputMontoCobrar');
   const monedaSymbol   = document.getElementById('monedaSymbol');
@@ -817,7 +836,7 @@ document.addEventListener('DOMContentLoaded', function () {
     calculateCambio();
   });
 
-  /* â”€â”€ Cambio calculation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── Cambio calculation ──────────────────────────────────────── */
   const montoEntregado = document.getElementById('montoEntregado');
   const cambioBox      = document.getElementById('cambioBox');
   const cambioValue    = document.getElementById('cambioValue');
@@ -841,7 +860,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   montoEntregado.addEventListener('input', calculateCambio);
 
-  /* â”€â”€ QR generation (visual) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── QR generation (visual) ──────────────────────────────────── */
   window.pwizGenerateQR = function () {
     const btn         = document.getElementById('btnGenQr');
     const placeholder = document.getElementById('qrPlaceholder');
@@ -858,7 +877,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 1200);
   };
 
-  /* â”€â”€ Form submit via AJAX â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── Form submit via AJAX ────────────────────────────────────── */
   document.getElementById('pagoForm').addEventListener('submit', async function (e) {
     e.preventDefault();
     const btn = document.getElementById('btnConfirmar');
@@ -908,7 +927,7 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.innerHTML = '<i class="fas fa-check-circle"></i> <span id="submitBtnText">Confirmar registro</span>';
       }
     } catch (err) {
-      /* Network issue â€” submit normally */
+      /* Network issue — submit normally */
       this.submit();
     }
   });
@@ -924,7 +943,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 2800);
   }
 
-  /* â”€â”€ Init: returning from validation error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── Init: returning from validation error ──────────────────── */
   @if ($errors->any())
     selectedMethod = '{{ old("metodo", "fisico") }}';
     document.getElementById('metodoInput').value = selectedMethod;

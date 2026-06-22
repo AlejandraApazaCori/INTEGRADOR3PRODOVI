@@ -1,25 +1,67 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Gestión de Campañas')
 
-@section('content')
-<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-8">
-    <div class="container mx-auto px-4 max-w-7xl">
-        <!-- Header con estadísticas -->
-        <div class="mb-8">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Gestión de Campañas</h1>
-                    <p class="text-gray-600">Administra y supervisa todas las campañas de marketing</p>
-                </div>
-                <div class="flex items-center space-x-4 mt-4 lg:mt-0">
-                    <div class="bg-white rounded-xl px-4 py-2 shadow-sm border">
-                        <span class="text-sm text-gray-500">Total Activas</span>
-                        <div class="text-2xl font-bold text-blue-600">{{ $campaniasActivas->count() }}</div>
+@section('content') 
+<div class="min-h-screen" style="background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 50%, #F5F3FF 100%);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Banner -->
+        <div class="mb-8 rounded-2xl overflow-hidden relative rp-banner">
+            <div class="rp-banner-overlay absolute inset-0"></div>
+            <div class="relative z-10 px-8 py-8">
+                <div class="flex flex-col lg:flex-row justify-between items-center gap-4 sm:gap-6 mb-6">
+                    <div class="flex items-center gap-4">
+                        <div class="flex h-14 w-14 items-center justify-center rounded-2xl flex-shrink-0" style="background: rgba(255,255,255,0.2);">
+                            <i class="fas fa-bullhorn text-white text-2xl"></i>
+                        </div>
+                        <div class="flex-1 text-center sm:text-left">
+                            <h1 class="text-3xl font-bold text-white mb-1">Gestión de Campañas</h1>
+                            <p style="color: #bfdbfe; font-size: 0.9rem;">Administra y supervisa todas las campañas de marketing</p>
+                        </div>
                     </div>
-                    <div class="bg-white rounded-xl px-4 py-2 shadow-sm border">
-                        <span class="text-sm text-gray-500">Sin Campaña</span>
-                        <div class="text-2xl font-bold text-orange-600">{{ $clientesSinCampania->count() }}</div>
+                    <a href="{{ route('administrador.dashboard') }}"
+                       class="inline-flex items-center px-4 py-2.5 rounded-xl font-semibold text-white transition-all hover:-translate-y-0.5 flex-shrink-0"
+                       style="background: linear-gradient(to right, #3b82f6, #2563eb); box-shadow: 0 4px 14px rgba(59,130,246,0.35);">
+                        <i class="fas fa-arrow-left mr-2 text-sm"></i>
+                        Volver al Panel
+                    </a>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="rounded-2xl p-5 hover:scale-[1.02] transition-all duration-300" style="background: #ea9f21; border: 1px solid rgba(255,255,255,0.2);">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wide" style="color: rgba(255,255,255,0.8);">Sin Campaña</p>
+                                <p class="text-3xl font-bold text-white mt-1">{{ $clientesSinCampania->count() }}</p>
+                            </div>
+                            <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background: rgba(255,255,255,0.2);">
+                                <i class="fas fa-user-clock text-white text-base"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-2xl p-5 hover:scale-[1.02] transition-all duration-300" style="background: #a7b838; border: 1px solid rgba(255,255,255,0.2);">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wide" style="color: rgba(255,255,255,0.8);">Campañas Activas</p>
+                                <p class="text-3xl font-bold text-white mt-1">{{ $campaniasActivas->count() }}</p>
+                            </div>
+                            <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background: rgba(255,255,255,0.2);">
+                                <i class="fas fa-bolt text-white text-base"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-2xl p-5 hover:scale-[1.02] transition-all duration-300" style="background: #475569; border: 1px solid rgba(255,255,255,0.2);">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wide" style="color: rgba(255,255,255,0.8);">Finalizadas</p>
+                                <p class="text-3xl font-bold text-white mt-1">{{ $campaniasFinalizadas->count() }}</p>
+                            </div>
+                            <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background: rgba(255,255,255,0.2);">
+                                <i class="fas fa-check-circle text-white text-base"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -28,8 +70,8 @@
         <!-- Sección de clientes sin campaña -->
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
             <div class="flex items-center mb-6">
-                <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center mr-4">
-                    <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center mr-4" style="background: #ea9f21;">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
@@ -49,6 +91,11 @@
                     <p class="text-gray-500 text-lg">¡Excelente! Todos los clientes tienen campañas activas</p>
                 </div>
             @else
+                <div class="mb-4">
+                    <input type="text" id="filtro-clientes-sin-campania"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                           placeholder="Buscar por cliente, email o plan">
+                </div>
                 <div class="overflow-x-auto rounded-xl border border-gray-200 custom-scrollbar">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -60,9 +107,15 @@
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody id="tabla-clientes-sin-campania" class="bg-white divide-y divide-gray-200">
                             @foreach($clientesSinCampania as $cliente)
-                                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                <tr class="hover:bg-gray-50 transition-colors duration-200 fila-cliente-sin-campania"
+                                    data-item-id="{{ $cliente['id'] }}"
+                                    data-nombre="{{ mb_strtolower($cliente['nombre']) }}"
+                                    data-email="{{ mb_strtolower($cliente['email']) }}"
+                                    data-plan="{{ mb_strtolower($cliente['plan']) }}"
+                                    data-fecha="{{ $cliente['fecha_fin_suscripcion_raw'] ?? '' }}">
+
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
@@ -169,11 +222,11 @@
                                             </div>
                                             
                                             <form id="crear-campania-form-{{ $cliente['id'] }}" 
-      action="{{ route('administrador.campañas.guardar') }}" 
-      method="POST" 
-      class="space-y-6"
-      onsubmit="return validarFormulario({{ $cliente['id'] }})">
-    @csrf
+                                                  action="{{ route('administrador.campañas.guardar') }}" 
+                                                  method="POST" 
+                                                  class="space-y-6"
+                                                  onsubmit="return validarFormulario({{ $cliente['id'] }})">
+                                                @csrf
                                                 <input type="hidden" name="usuario_cliente_id" value="{{ $cliente['id'] }}">
                                                 
                                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -198,7 +251,7 @@
                                                         </label>
                                                         <select name="community_manager_id" id="cm-{{ $cliente['id'] }}" 
                                                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
-                                                            <option value="">Seleccione un Community Manager</option>
+                                                            <option value=">Seleccione un Community Manager</option>
                                                             @foreach($communityManagers as $cm)
                                                                 <option value="{{ $cm->id }}">{{ $cm->name }}</option>
                                                             @endforeach
@@ -247,14 +300,15 @@
                         </tbody>
                     </table>
                 </div>
+                <div id="paginacion-clientes-sin-campania" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"></div>
             @endif
         </div>
         
         <!-- Sección de campañas activas -->
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
             <div class="flex items-center mb-6">
-                <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mr-4">
-                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center mr-4" style="background: #a7b838;">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
                 </div>
@@ -274,6 +328,11 @@
                     <p class="text-gray-500 text-lg">No hay campañas activas en este momento</p>
                 </div>
             @else
+                <div class="mb-4">
+                    <input type="text" id="filtro-campanias-activas"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                           placeholder="Buscar por cliente, campaña o community manager">
+                </div>
                 <div class="overflow-x-auto rounded-xl border border-gray-200">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -286,9 +345,13 @@
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody id="tabla-campanias-activas" class="bg-white divide-y divide-gray-200">
                             @foreach($campaniasActivas as $campania)
-                                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                <tr class="hover:bg-gray-50 transition-colors duration-200 fila-campania-activa"
+                                    data-campania="{{ mb_strtolower($campania->nombre) }}"
+                                    data-cliente="{{ mb_strtolower($campania->cliente->name) }}"
+                                    data-community-manager="{{ mb_strtolower($campania->communityManager->name) }}"
+                                    data-fecha="{{ \Carbon\Carbon::parse($campania->fecha_fin)->format('Y-m-d') }}">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center text-white font-semibold">
@@ -351,14 +414,15 @@
                         </tbody>
                     </table>
                 </div>
+                <div id="paginacion-campanias-activas" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"></div>
             @endif
         </div>
         
         <!-- Sección de campañas finalizadas -->
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
             <div class="flex items-center mb-6">
-                <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mr-4">
-                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center mr-4" style="background: #475569;">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
@@ -378,6 +442,25 @@
                     <p class="text-gray-500 text-lg">No hay campañas finalizadas</p>
                 </div>
             @else
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <input type="text" id="filtro-campanias-finalizadas"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                           placeholder="Buscar por cliente, campaña o community manager">
+                    <select id="filtro-mes-campanias-finalizadas"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                        <option value=">Todos los meses</option>
+                        @foreach($mesesFinalizadasDisponibles as $mes)
+                            <option value="{{ str_pad($mes['numero'], 2, '0', STR_PAD_LEFT) }}">{{ $mes['nombre'] }}</option>
+                        @endforeach
+                    </select>
+                    <select id="filtro-anio-campanias-finalizadas"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                        <option value=">Todos los años</option>
+                        @foreach($aniosFinalizadasDisponibles as $anio)
+                            <option value="{{ $anio }}">{{ $anio }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="overflow-x-auto rounded-xl border border-gray-200 custom-scrollbar">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -390,9 +473,12 @@
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody id="tabla-campanias-finalizadas" class="bg-white divide-y divide-gray-200">
                             @foreach($campaniasFinalizadas as $campania)
-                                <tr class="{{ $loop->even ? 'bg-gray-50' : 'bg-white' }} hover:bg-gray-100 transition-colors duration-200">
+                                @php
+                                    $estadoMostrado = \Carbon\Carbon::parse($campania->fecha_fin)->isPast() ? 'Inactiva' : ucfirst($campania->estado);
+                                @endphp
+                                <tr class="{{ $loop->even ? 'bg-gray-50' : 'bg-white' }} hover:bg-gray-100 transition-colors duration-200 fila-campania-finalizada" data-campania="{{ mb_strtolower($campania->nombre) }}" data-cliente="{{ mb_strtolower($campania->cliente->name) }}" data-community-manager="{{ mb_strtolower($campania->communityManager->name) }}" data-mes="{{ \Carbon\Carbon::parse($campania->fecha_fin)->format('m') }}" data-anio="{{ \Carbon\Carbon::parse($campania->fecha_fin)->format('Y') }}" data-fecha="{{ \Carbon\Carbon::parse($campania->fecha_fin)->format('Y-m-d') }}">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="w-10 h-10 bg-gradient-to-r from-gray-400 to-gray-500 rounded-lg flex items-center justify-center text-white font-semibold">
@@ -408,9 +494,10 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $campania->cliente->name }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $campania->communityManager->name }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                            <div class="w-2 h-2 rounded-full mr-2 bg-gray-400"></div>
-                                            {{ ucfirst($campania->estado) }}
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white"
+                                              style="background-color: {{ $estadoMostrado === 'Inactiva' ? '#ed0551' : '#a7b838' }};">
+                                            <div class="w-2 h-2 rounded-full mr-2 bg-white"></div>
+                                            {{ $estadoMostrado }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
@@ -447,13 +534,60 @@
                         </tbody>
                     </table>
                 </div>
+                <div id="paginacion-campanias-finalizadas" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"></div>
             @endif
         </div>
     </div>
 </div>
 
+<div id="mensaje-modal" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+    <div class="absolute inset-0 bg-slate-900/60" onclick="cerrarModalMensaje()"></div>
+    <div class="relative flex min-h-full items-center justify-center p-4">
+        <div class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div class="px-6 py-5 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-7.938 4h15.876c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L2.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Aviso</h3>
+                        <p class="text-sm text-gray-500">No fue posible completar la accion.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-5">
+                <p id="mensaje-modal-texto" class="text-sm leading-6 text-gray-700"></p>
+            </div>
+            <div class="flex justify-end gap-3 px-6 py-4 bg-gray-50">
+                <button type="button"
+                        onclick="cerrarModalMensaje()"
+                        class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Scripts mejorados -->
 <script>
+    function mostrarModalMensaje(mensaje) {
+        const modal = document.getElementById('mensaje-modal');
+        const texto = document.getElementById('mensaje-modal-texto');
+        if (!modal || !texto) return;
+        texto.textContent = mensaje || 'Ocurrio un error inesperado.';
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('overflow-hidden');
+    }
+    function cerrarModalMensaje() {
+        const modal = document.getElementById('mensaje-modal');
+        if (!modal) return;
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('overflow-hidden');
+    }
     // Función para mostrar formulario con animación suave
     function mostrarFormulario(clienteId) {
         const form = document.getElementById('form-' + clienteId);
@@ -523,7 +657,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert(error.message || 'Hubo un error al procesar la solicitud');
+                mostrarModalMensaje(error.message || 'Hubo un error al procesar la solicitud');
             })
             .finally(() => {
                 btn.disabled = false;
@@ -553,6 +687,129 @@
         }, 300);
     }
     
+
+    function normalizarTexto(valor) {
+        return (valor || '')
+            .toString()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[̀-ͯ]/g, '')
+            .trim();
+    }
+
+    function inicializarTablaFiltrable(config) {
+        const tbody = document.getElementById(config.tableBodyId);
+        if (!tbody) return;
+
+        const filas = Array.from(tbody.querySelectorAll(config.rowSelector));
+        const buscador = config.searchInputId ? document.getElementById(config.searchInputId) : null;
+        const selectorMes = config.monthSelectId ? document.getElementById(config.monthSelectId) : null;
+        const selectorAnio = config.yearSelectId ? document.getElementById(config.yearSelectId) : null;
+        const paginacion = document.getElementById(config.paginationId);
+        const filasPorPagina = config.pageSize || 5;
+        let paginaActual = 1;
+
+        function textoFila(fila) {
+            return normalizarTexto([
+                fila.dataset.nombre,
+                fila.dataset.email,
+                fila.dataset.plan,
+                fila.dataset.campania,
+                fila.dataset.cliente,
+                fila.dataset.communityManager,
+                fila.dataset.fecha,
+            ].filter(Boolean).join(' '));
+        }
+
+        function filasFiltradas() {
+            const termino = normalizarTexto(buscador ? buscador.value : '');
+            const mes = selectorMes ? selectorMes.value : '';
+            const anio = selectorAnio ? selectorAnio.value : '';
+
+            return filas.filter((fila) => {
+                const coincideBusqueda = !termino || textoFila(fila).includes(termino);
+                const coincideMes = !mes || fila.dataset.mes === mes;
+                const coincideAnio = !anio || fila.dataset.anio === anio;
+                return coincideBusqueda && coincideMes && coincideAnio;
+            });
+        }
+
+        function renderizar(total, paginas) {
+            if (!paginacion) return;
+            paginacion.innerHTML = '';
+
+            const resumen = document.createElement('div');
+            resumen.className = 'text-sm text-gray-600';
+            if (total === 0) {
+                resumen.textContent = 'No hay resultados para mostrar.';
+            } else {
+                const inicio = ((paginaActual - 1) * filasPorPagina) + 1;
+                const fin = Math.min(paginaActual * filasPorPagina, total);
+                resumen.textContent = `Mostrando ${inicio}-${fin} de ${total} registros`;
+            }
+
+            const controles = document.createElement('div');
+            controles.className = 'flex flex-wrap items-center gap-2';
+
+            const crearBoton = (texto, pagina, disabled = false, activo = false) => {
+                const boton = document.createElement('button');
+                boton.type = 'button';
+                boton.textContent = texto;
+                boton.disabled = disabled;
+                boton.className = `px-3 py-1.5 rounded-lg border text-sm transition-colors ${activo ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'} ${disabled ? 'opacity-50 cursor-not-allowed hover:bg-white' : ''}`;
+                if (!disabled) {
+                    boton.addEventListener('click', () => {
+                        paginaActual = pagina;
+                        aplicar();
+                    });
+                }
+                return boton;
+            };
+
+            controles.appendChild(crearBoton('Anterior', paginaActual - 1, paginaActual === 1));
+            for (let pagina = 1; pagina <= paginas; pagina++) {
+                controles.appendChild(crearBoton(String(pagina), pagina, false, pagina === paginaActual));
+            }
+            controles.appendChild(crearBoton('Siguiente', paginaActual + 1, paginaActual === paginas));
+
+            paginacion.appendChild(resumen);
+            paginacion.appendChild(controles);
+        }
+
+        function aplicar() {
+            const filtradas = filasFiltradas();
+            const paginas = Math.max(1, Math.ceil(filtradas.length / filasPorPagina));
+            if (paginaActual > paginas) paginaActual = paginas;
+
+            const inicio = (paginaActual - 1) * filasPorPagina;
+            const visibles = new Set(filtradas.slice(inicio, inicio + filasPorPagina));
+
+            filas.forEach((fila) => {
+                const mostrar = visibles.has(fila);
+                fila.style.display = mostrar ? '' : 'none';
+                if (config.linkedRowAttribute) {
+                    const relacionada = tbody.querySelector(`[${config.linkedRowAttribute}="${fila.dataset.itemId}"]`);
+                    if (relacionada) {
+                        if (mostrar) {
+                            relacionada.style.display = '';
+                        } else {
+                            relacionada.classList.add('hidden');
+                            relacionada.style.display = 'none';
+                        }
+                    }
+                }
+            });
+
+            renderizar(filtradas.length, paginas);
+        }
+
+        if (buscador) buscador.addEventListener('input', () => { paginaActual = 1; aplicar(); });
+        if (selectorMes) selectorMes.addEventListener('change', () => { paginaActual = 1; aplicar(); });
+        if (selectorAnio) selectorAnio.addEventListener('change', () => { paginaActual = 1; aplicar(); });
+
+        aplicar();
+    }
+
     // Mejorar experiencia de usuario con efectos hover
     document.addEventListener('DOMContentLoaded', function() {
         // Añadir efecto de hover a las tarjetas principales
@@ -588,13 +845,11 @@
     
     // Función para confirmar reactivación de campañas
     document.addEventListener('DOMContentLoaded', function() {
-        const reactivateButtons = document.querySelectorAll('button[type="submit"]:contains("Reactivar")');
-        reactivateButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                if (confirm('¿Está seguro de que desea reactivar esta campaña? Esto la moverá de nuevo a campañas activas.')) {
-                    this.closest('form').submit();
+        const reactivateForms = document.querySelectorAll('form[action*="activar"]');
+        reactivateForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!confirm('¿Está seguro de que desea reactivar esta campaña? Esto la moverá de nuevo a campañas activas.')) {
+                    e.preventDefault();
                 }
             });
         });
@@ -631,10 +886,78 @@
         // y se realice el submit natural
         return true;
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        inicializarTablaFiltrable({
+            tableBodyId: 'tabla-clientes-sin-campania',
+            rowSelector: '.fila-cliente-sin-campania',
+            searchInputId: 'filtro-clientes-sin-campania',
+            paginationId: 'paginacion-clientes-sin-campania',
+            linkedRowAttribute: 'data-form-for',
+            pageSize: 5,
+        });
+
+        inicializarTablaFiltrable({
+            tableBodyId: 'tabla-campanias-activas',
+            rowSelector: '.fila-campania-activa',
+            searchInputId: 'filtro-campanias-activas',
+            paginationId: 'paginacion-campanias-activas',
+            pageSize: 5,
+        });
+
+        inicializarTablaFiltrable({
+            tableBodyId: 'tabla-campanias-finalizadas',
+            rowSelector: '.fila-campania-finalizada',
+            searchInputId: 'filtro-campanias-finalizadas',
+            monthSelectId: 'filtro-mes-campanias-finalizadas',
+            yearSelectId: 'filtro-anio-campanias-finalizadas',
+            paginationId: 'paginacion-campanias-finalizadas',
+            pageSize: 5,
+        });
+
+        const reactivateForms = document.querySelectorAll('form[action*="activar"]');
+        reactivateForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!confirm('¿Está seguro de que desea reactivar esta campaña? Esto la moverá de nuevo a campañas activas.')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    });
+
 </script>
 
 <!-- Estilos adicionales para mejorar la experiencia -->
 <style>
+    /* Banner geométrico */
+    .rp-banner {
+        background:
+            linear-gradient(135deg, #4f46e5 25%, transparent 25%) -50px 0,
+            linear-gradient(225deg, #4f46e5 25%, transparent 25%) -50px 0,
+            linear-gradient(315deg, #4f46e5 25%, transparent 25%),
+            linear-gradient(45deg,  #4f46e5 25%, transparent 25%),
+            linear-gradient(to bottom, #3b82f6 0%, #2563eb 100%);
+        background-size:
+            100px 100px,
+            100px 100px,
+            100px 100px,
+            100px 100px,
+            100% 100%;
+        background-color: #1d4ed8;
+        position: relative;
+    }
+
+    .rp-banner-overlay {
+        background:
+            radial-gradient(circle at 0%   0%,   rgba(255,255,255,0.2) 0%, transparent 50%),
+            radial-gradient(circle at 100% 0%,   rgba(255,255,255,0.2) 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(255,255,255,0.2) 0%, transparent 50%),
+            radial-gradient(circle at 0%   100%, rgba(255,255,255,0.2) 0%, transparent 50%);
+        background-size:     50% 50%;
+        background-position: 0 0, 100% 0, 100% 100%, 0 100%;
+        background-repeat:   no-repeat;
+    }
+
     /* Animación para las estadísticas del header */
     @keyframes countUp {
         from { opacity: 0; transform: translateY(10px); }
@@ -732,3 +1055,5 @@
     }
 </style>
 @endsection
+
+

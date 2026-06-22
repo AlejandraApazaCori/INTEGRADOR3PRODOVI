@@ -9,7 +9,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f1f5f9;
             margin-left: 280px;
-            margin-top: 60px;
+           
             transition: margin-left 0.3s ease, margin-top 0.3s ease;
         }
 

@@ -17,6 +17,7 @@ class Campania extends Model
         'fecha_inicio',
         'fecha_fin',
         'estado',
+        'visto',
         'usuario_creador_id',
         'community_manager_id',
         'usuario_cliente_id'

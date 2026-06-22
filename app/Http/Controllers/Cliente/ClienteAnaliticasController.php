@@ -5,11 +5,18 @@ namespace App\Http\Controllers\Cliente;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
 
 class ClienteAnaliticasController extends Controller
 {
     public function index()
     {
+        $campaniaActual = Auth::user()
+            ->campaniasCliente()
+            ->whereIn('estado', ['activa', 'pausada'])
+            ->latest('fecha_inicio')
+            ->first();
+
         $jsonPath = resource_path('data/analiticas.json');
         if (file_exists($jsonPath)) {
             $jsonString = file_get_contents($jsonPath);
@@ -19,7 +26,7 @@ class ClienteAnaliticasController extends Controller
             $data = [];
         }
 
-        return view('clientes.analiticas', compact('data'));
+        return view('clientes.analiticas', compact('data', 'campaniaActual'));
     }
 
     public function loadView(Request $request)

@@ -3,130 +3,431 @@
 @section('title', 'Crear Nueva Tarea')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h1 class="text-2xl font-semibold mb-6">Crear Nueva Tarea para: {{ $campania->nombre }}</h1>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-        <form action="{{ route('administrador.tareas.store', $campania->id) }}" method="POST">
-            @csrf
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div class="col-span-1">
-                    <label for="titulo" class="block text-sm font-medium text-gray-700 mb-1">TÃ­tulo *</label>
-                    <input type="text" name="titulo" id="titulo" required
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+<div class="min-h-screen" style="background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 50%, #F5F3FF 100%);">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Banner con fondo geométrico -->
+        <div class="mb-8 mt-10 rounded-2xl overflow-hidden relative rp-banner">
+            <div class="rp-banner-overlay absolute inset-0"></div>
+            <div class="relative z-10 px-8 py-8">
+                <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                    <div class="flex h-14 w-14 items-center justify-center rounded-2xl flex-shrink-0" style="background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-tasks text-white text-2xl"></i>
+                    </div>
+                    <div class="flex-1 text-center sm:text-left">
+                        <h1 class="text-3xl font-bold text-white mb-1">Crear Nueva Tarea</h1>
+                        <p style="color: #bfdbfe; font-size: 0.9rem;">Para la campaña: <strong style="color: white;">{{ $campania->nombre }}</strong></p>
+                    </div>
+                    <a href="{{ route('administrador.campañas.show', $campania->id) }}" 
+                       class="inline-flex items-center px-4 py-2.5 rounded-xl font-semibold text-white transition-all hover:-translate-y-0.5 flex-shrink-0" 
+                       style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(4px);">
+                        <i class="fas fa-arrow-left mr-2 text-sm"></i>
+                        Volver
+                    </a>
                 </div>
+            </div>
+        </div>
 
-                <div class="col-span-1">
-                    <label for="prioridad" class="block text-sm font-medium text-gray-700 mb-1">Prioridad *</label>
-                    <select name="prioridad" id="prioridad" required
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        <option value="media">Media</option>
-                        <option value="baja">Baja</option>
-                        <option value="alta">Alta</option>
-                        <option value="urgente">Urgente</option>
-                    </select>
-                </div>
-
-                <div class="col-span-1">
-                    <label for="fecha_inicio" class="block text-sm font-medium text-gray-700 mb-1">Fecha de Inicio *</label>
-                    <input type="date" name="fecha_inicio" id="fecha_inicio" required
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        min="{{ \Carbon\Carbon::parse($campania->fecha_inicio)->format('Y-m-d') }}"
-                        max="{{ \Carbon\Carbon::parse($campania->fecha_fin)->format('Y-m-d') }}">
-                </div>
-
-                <div class="col-span-1">
-                    <label for="fecha_limite" class="block text-sm font-medium text-gray-700 mb-1">Fecha LÃ­mite *</label>
-                    <input type="date" name="fecha_limite" id="fecha_limite" required
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        min="{{ \Carbon\Carbon::parse($campania->fecha_inicio)->format('Y-m-d') }}"
-                        max="{{ \Carbon\Carbon::parse($campania->fecha_fin)->format('Y-m-d') }}">
-                </div>
-
-                <div class="col-span-1 md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Filtrar usuarios</label>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div>
-                            <label for="filtro_rol" class="block text-xs font-medium text-gray-500 mb-1">Por rol</label>
-                            <select id="filtro_rol" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">Todos los roles</option>
-                                <option value="Super Administrador">Super Administrador</option>
-                                <option value="Administrador">Administrador</option>
-                                <option value="Community Manager">Community Manager</option>
-                                <option value="Diseñador">Diseñador</option>
-                            </select>
+        <!-- Formulario mejorado -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="px-8 py-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-indigo-100">
+                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: #ea9f21;">
+                            <i class="fas fa-plus-circle text-white text-sm"></i>
                         </div>
-                        <div class="md:col-span-2">
-                            <label for="filtro_nombre" class="block text-xs font-medium text-gray-500 mb-1">Por nombre</label>
-                            <input type="text" id="filtro_nombre" placeholder="Buscar por nombre..."
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Nueva Tarea</h2>
+                            <p class="text-gray-600 text-sm mt-0.5">Completa los detalles para asignar una nueva tarea</p>
                         </div>
                     </div>
+                    <div class="flex flex-col items-start gap-2 md:items-end">
+                        <button type="button" id="btn-recomendacion-ia"
+                            class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+                            style="background: linear-gradient(135deg, #4f46e5, #7c3aed);">
+                            <i class="fas fa-wand-magic-sparkles text-sm"></i>
+                            Recomendacion con IA
+                        </button>
+                        <p id="estado-recomendacion-ia" class="text-xs text-gray-500"></p>
+                    </div>
+                </div>
+            </div>
+
+            <form action="{{ route('administrador.tareas.store', $campania->id) }}" method="POST" class="p-8">
+                @csrf
+
+                <!-- BLOQUE 1: Título y Prioridad -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Título -->
+                    <div class="md:col-span-2">
+                        <label for="titulo" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-heading mr-2 text-gray-400"></i>
+                            Título <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="titulo" id="titulo" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white"
+                            placeholder="Ej: Diseñar post para redes sociales">
+                    </div>
+
+                    <!-- Prioridad -->
+                    <div>
+                        <label for="prioridad" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-flag mr-2 text-gray-400"></i>
+                            Prioridad <span class="text-red-500">*</span>
+                        </label>
+                        <select name="prioridad" id="prioridad" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white">
+                            <option value="baja">Baja</option>
+                            <option value="media" selected>Media</option>
+                            <option value="alta">Alta</option>
+                            <option value="urgente">Urgente</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- SEPARADOR NARANJA -->
+                <div class="my-8 flex items-center gap-4">
+                    <div class="flex-1 h-0.5" style="background: #ea9f21;"></div>
+                    <div class="flex h-8 w-8 items-center justify-center rounded-full" style="background: #ea9f21;">
+                        <i class="fas fa-calendar-alt text-white text-xs"></i>
+                    </div>
+                    <div class="flex-1 h-0.5" style="background: #ea9f21;"></div>
+                </div>
+
+                <!-- BLOQUE 2: Fechas -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Fecha Inicio -->
+                    <div>
+                        <label for="fecha_inicio" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-calendar-plus mr-2 text-gray-400"></i>
+                            Fecha de Inicio <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="date" name="fecha_inicio" id="fecha_inicio" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white date-input"
+                                min="{{ \Carbon\Carbon::parse($campania->fecha_inicio)->format('Y-m-d') }}"
+                                max="{{ \Carbon\Carbon::parse($campania->fecha_fin)->format('Y-m-d') }}">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <i class="fas fa-calendar-day text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fecha Límite -->
+                    <div>
+                        <label for="fecha_limite" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-calendar-check mr-2 text-gray-400"></i>
+                            Fecha Límite <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="date" name="fecha_limite" id="fecha_limite" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white date-input"
+                                min="{{ \Carbon\Carbon::parse($campania->fecha_inicio)->format('Y-m-d') }}"
+                                max="{{ \Carbon\Carbon::parse($campania->fecha_fin)->format('Y-m-d') }}">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <i class="fas fa-calendar-day text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEPARADOR NARANJA -->
+                <div class="my-8 flex items-center gap-4">
+                    <div class="flex-1 h-0.5" style="background: #ea9f21;"></div>
+                    <div class="flex h-8 w-8 items-center justify-center rounded-full" style="background: #ea9f21;">
+                        <i class="fas fa-user-check text-white text-xs"></i>
+                    </div>
+                    <div class="flex-1 h-0.5" style="background: #ea9f21;"></div>
+                </div>
+
+                <!-- BLOQUE 3: Asignar a -->
+                <div class="grid grid-cols-1 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-user-check mr-2 text-gray-400"></i>
+                            Asignar a <span class="text-red-500">*</span>
+                        </label>
+                        
+                        <!-- Filtros -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="filtro_rol" class="block text-xs font-medium text-gray-500 mb-1">
+                                    <i class="fas fa-users mr-1"></i> Filtrar por rol
+                                </label>
+                                <select id="filtro_rol" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white text-sm">
+                                    <option value="">Todos los roles</option>
+                                    <option value="Super Administrador">Super Administrador</option>
+                                    <option value="Administrador">Administrador</option>
+                                    <option value="Community Manager">Community Manager</option>
+                                    <option value="Diseñador">Diseñador</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="filtro_nombre" class="block text-xs font-medium text-gray-500 mb-1">
+                                    <i class="fas fa-search mr-1"></i> Buscar por nombre
+                                </label>
+                                <input type="text" id="filtro_nombre" placeholder="Escribe el nombre..."
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white text-sm">
+                            </div>
+                        </div>
+                        
+                        <select name="asignado_id" id="asignado_id" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white">
+                            @foreach($asignables as $user)
+                                @php
+                                    $rolesUsuario = $user->roles->pluck('nombre_rol')->filter()->values();
+                                    $rolesTexto = $rolesUsuario->isNotEmpty() ? $rolesUsuario->implode(', ') : 'Sin rol';
+                                @endphp
+                                <option value="{{ $user->id }}" data-rol="{{ $rolesTexto }}">
+                                    {{ $user->name }} ({{ $rolesTexto }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="text-xs text-gray-400 mt-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Usa los filtros para encontrar rápidamente al responsable
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SEPARADOR NARANJA -->
+                <div class="my-8 flex items-center gap-4">
+                    <div class="flex-1 h-0.5" style="background: #ea9f21;"></div>
+                    <div class="flex h-8 w-8 items-center justify-center rounded-full" style="background: #ea9f21;">
+                        <i class="fas fa-align-left text-white text-xs"></i>
+                    </div>
+                    <div class="flex-1 h-0.5" style="background: #ea9f21;"></div>
+                </div>
+
+                <!-- BLOQUE 4: Descripción -->
+                <div class="grid grid-cols-1 gap-6">
+                    <div>
+                        <label for="descripcion" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-align-left mr-2 text-gray-400"></i>
+                            Descripción <span class="text-red-500">*</span>
+                        </label>
+                        <textarea name="descripcion" id="descripcion" rows="4" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white resize-none"
+                            placeholder="Describe detalladamente la tarea, objetivos y entregables esperados..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8 pt-6 border-t border-gray-200">
+                    <a href="{{ route('administrador.campañas.show', $campania->id) }}"
+                        class="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all duration-200 font-medium">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancelar
+                    </a>
                     
-                    <label for="asignado_id" class="block text-sm font-medium text-gray-700 mb-1">Asignar a *</label>
-                    <select name="asignado_id" id="asignado_id" required
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        @foreach($asignables as $user)
-                            <option value="{{ $user->id }}" data-rol="{{ $user->roles->first()->nombre_rol ?? 'Sin rol' }}">
-                                {{ $user->name }} ({{ $user->roles->first()->nombre_rol ?? 'Sin rol' }})
-                            </option>
-                        @endforeach
-                    </select>
+                    <button type="submit"
+                        class="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 rounded-xl text-white font-semibold shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5" style="background: #a7b838;">
+                        <i class="fas fa-save mr-2"></i>
+                        Crear Tarea
+                    </button>
                 </div>
-
-                <div class="col-span-1 md:col-span-2">
-                    <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">DescripciÃ³n *</label>
-                    <textarea name="descripcion" id="descripcion" rows="4" required
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
-                </div>
-            </div>
-
-            <div class="flex justify-end space-x-4">
-                <a href="{{ route('administrador.campaÃ±as.show', $campania->id) }}"
-                    class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">
-                    Cancelar
-                </a>
-                <button type="submit"
-                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                    Crear Tarea
-                </button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
+
+<style>
+    /* Banner geométrico */
+    .rp-banner {
+        background:
+            linear-gradient(135deg, #4f46e5 25%, transparent 25%) -50px 0,
+            linear-gradient(225deg, #4f46e5 25%, transparent 25%) -50px 0,
+            linear-gradient(315deg, #4f46e5 25%, transparent 25%),
+            linear-gradient(45deg,  #4f46e5 25%, transparent 25%),
+            linear-gradient(to bottom, #3b82f6 0%, #2563eb 100%);
+        background-size:
+            100px 100px,
+            100px 100px,
+            100px 100px,
+            100px 100px,
+            100% 100%;
+        background-color: #1d4ed8;
+        position: relative;
+    }
+
+    .rp-banner-overlay {
+        background:
+            radial-gradient(circle at 0%   0%,   rgba(255,255,255,0.2) 0%, transparent 50%),
+            radial-gradient(circle at 100% 0%,   rgba(255,255,255,0.2) 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(255,255,255,0.2) 0%, transparent 50%),
+            radial-gradient(circle at 0%   100%, rgba(255,255,255,0.2) 0%, transparent 50%);
+        background-size:     50% 50%;
+        background-position: 0 0, 100% 0, 100% 100%, 0 100%;
+        background-repeat:   no-repeat;
+    }
+
+    /* Estilo para inputs de fecha personalizados */
+    input[type="date"] {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: textfield;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        opacity: 0;
+        position: absolute;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .date-input {
+        position: relative;
+    }
+
+    .date-input:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    @media (max-width: 640px) {
+        .rp-banner .px-8 { 
+            padding-left: 1.25rem; 
+            padding-right: 1.25rem; 
+        }
+        .rp-banner .flex.flex-col.sm\:flex-row {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .rp-banner a {
+            justify-content: center;
+            width: 100%;
+        }
+        .my-8 {
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+    }
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const filtroRol = document.getElementById('filtro_rol');
     const filtroNombre = document.getElementById('filtro_nombre');
     const selectAsignado = document.getElementById('asignado_id');
+    const btnRecomendacion = document.getElementById('btn-recomendacion-ia');
+    const estadoRecomendacion = document.getElementById('estado-recomendacion-ia');
     const options = Array.from(selectAsignado.options);
-    
+
     function filtrarUsuarios() {
         const rolSeleccionado = filtroRol.value.toLowerCase();
         const nombreBusqueda = filtroNombre.value.toLowerCase();
-        
+
         options.forEach(option => {
-            const rol = option.getAttribute('data-rol').toLowerCase();
+            const rol = (option.getAttribute('data-rol') || '').toLowerCase();
             const nombre = option.text.toLowerCase();
-            
+
             const coincideRol = rolSeleccionado === '' || rol.includes(rolSeleccionado);
             const coincideNombre = nombre.includes(nombreBusqueda);
-            
+
             option.style.display = (coincideRol && coincideNombre) ? '' : 'none';
         });
-        
-        // Seleccionar la primera opciÃ³n visible
+
         const visibleOptions = Array.from(selectAsignado.options).filter(opt => opt.style.display !== 'none');
         if (visibleOptions.length > 0) {
             selectAsignado.value = visibleOptions[0].value;
         }
     }
-    
+
+    function ajustarFechaAlRango(input) {
+        if (!input || !input.value) return;
+        const min = input.min || input.value;
+        const max = input.max || input.value;
+
+        if (input.value < min) {
+            input.value = min;
+        }
+        if (input.value > max) {
+            input.value = max;
+        }
+    }
+
+    async function cargarRecomendacionIA() {
+        if (!btnRecomendacion) return;
+
+        const originalHtml = btnRecomendacion.innerHTML;
+        btnRecomendacion.disabled = true;
+        btnRecomendacion.classList.add('opacity-75', 'cursor-not-allowed');
+        btnRecomendacion.innerHTML = '<i class="fas fa-spinner fa-spin text-sm"></i> Generando...';
+        if (estadoRecomendacion) {
+            estadoRecomendacion.textContent = 'Analizando el calendario operativo mensual del plan de marketing...';
+        }
+
+        try {
+            const response = await fetch('{{ route('administrador.tareas.recomendacion-ia', $campania->id) }}');
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'No se pudo generar la recomendacion con IA.');
+            }
+
+            const titulo = document.getElementById('titulo');
+            const descripcion = document.getElementById('descripcion');
+            const prioridad = document.getElementById('prioridad');
+            const fechaInicio = document.getElementById('fecha_inicio');
+            const fechaLimite = document.getElementById('fecha_limite');
+
+            if (titulo) titulo.value = data.titulo || '';
+            if (descripcion) descripcion.value = data.descripcion || '';
+            if (prioridad && data.prioridad) prioridad.value = data.prioridad;
+            if (fechaInicio && data.fecha_inicio) fechaInicio.value = data.fecha_inicio;
+            if (fechaLimite && data.fecha_limite) fechaLimite.value = data.fecha_limite;
+
+            ajustarFechaAlRango(fechaInicio);
+            ajustarFechaAlRango(fechaLimite);
+
+            if (data.rol_sugerido && filtroRol) {
+                filtroRol.value = data.rol_sugerido;
+                filtrarUsuarios();
+            }
+
+            if (estadoRecomendacion) {
+                estadoRecomendacion.textContent = 'Recomendacion aplicada. Revisa y ajusta antes de guardar.';
+            }
+        } catch (error) {
+            if (estadoRecomendacion) {
+                estadoRecomendacion.textContent = error.message || 'Ocurrio un error al generar la recomendacion.';
+            }
+            alert(error.message || 'Ocurrio un error al generar la recomendacion con IA.');
+        } finally {
+            btnRecomendacion.disabled = false;
+            btnRecomendacion.classList.remove('opacity-75', 'cursor-not-allowed');
+            btnRecomendacion.innerHTML = originalHtml;
+        }
+    }
+
     filtroRol.addEventListener('change', filtrarUsuarios);
     filtroNombre.addEventListener('input', filtrarUsuarios);
+    if (btnRecomendacion) {
+        btnRecomendacion.addEventListener('click', cargarRecomendacionIA);
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    const fechaInicio = document.getElementById('fecha_inicio');
+    const fechaLimite = document.getElementById('fecha_limite');
+
+    if (fechaInicio && !fechaInicio.value) {
+        fechaInicio.value = today;
+        ajustarFechaAlRango(fechaInicio);
+    }
+    if (fechaLimite && !fechaLimite.value) {
+        fechaLimite.value = today;
+        ajustarFechaAlRango(fechaLimite);
+    }
 });
 </script>
 @endsection

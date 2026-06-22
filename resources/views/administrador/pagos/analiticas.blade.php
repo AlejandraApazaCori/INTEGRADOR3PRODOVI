@@ -39,16 +39,24 @@
                 </button>
             </div>
 
-            <!-- Header mejorado -->
-            <div class="page-header">
-                <div class="header-content">
-                    <h1><i class="fas fa-chart-line"></i> Analíticas de Pagos</h1>
-                    <p class="subtitle">Visualiza y analiza los pagos realizados en tu plataforma</p>
+            <!-- Banner con fondo geométrico -->
+            <div class="mb-8 rounded-2xl overflow-hidden relative rp-banner">
+                <div class="rp-banner-overlay absolute inset-0"></div>
+                <div class="relative z-10 px-8 py-8">
+                    <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                        <div class="flex h-14 w-14 items-center justify-center rounded-2xl flex-shrink-0" style="background: rgba(255,255,255,0.2);">
+                            <i class="fas fa-chart-line text-white text-2xl"></i>
+                        </div>
+                        <div class="flex-1 text-center sm:text-left">
+                            <h1 class="text-3xl font-bold text-white mb-1">Analíticas de Pagos</h1>
+                            <p style="color: #bfdbfe; font-size: 0.9rem;">Visualiza y analiza los pagos realizados en tu plataforma</p>
+                        </div>
+                        <a href="{{ route('administrador.pagos.index') }}" class="inline-flex items-center px-4 py-2.5 rounded-xl font-semibold text-white transition-all hover:-translate-y-0.5 flex-shrink-0" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(4px);">
+                            <i class="fas fa-arrow-left mr-2 text-sm"></i>
+                            Volver a Pagos
+                        </a>
+                    </div>
                 </div>
-                <a href="{{ route('administrador.pagos.index') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Volver a Pagos
-                </a>
             </div>
 
             <!-- Filtros -->
@@ -191,20 +199,43 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Gráficas -->
-                <div id="chartsSection" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-gray-50 p-4 rounded-2xl shadow-md border border-gray-100">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-3 text-center">Distribución por Plan</h3>
-                        <div style="height: 300px;">
-                            <canvas id="planChart"></canvas>
-                        </div>
+                <!-- Gr?ficas -->
+                <div id="chartsSection" class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+                    <div class="chart-card">
+                        <h3 class="chart-card__title">Distribución por plan</h3>
+                        <div class="chart-card__canvas"><canvas id="planChart"></canvas></div>
                     </div>
-                    <div class="bg-gray-50 p-4 rounded-2xl shadow-md border border-gray-100">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-3 text-center">Distribución por Estado</h3>
-                        <div style="height: 300px;">
-                            <canvas id="statusChart"></canvas>
-                        </div>
+                    <div class="chart-card">
+                        <h3 class="chart-card__title">Pagos por estado</h3>
+                        <div class="chart-card__canvas"><canvas id="paymentStatusChart"></canvas></div>
+                    </div>
+                    <div class="chart-card xl:col-span-2">
+                        <h3 class="chart-card__title">Ingresos por mes</h3>
+                        <div class="chart-card__canvas chart-card__canvas--wide"><canvas id="monthlyIncomeChart"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-card__title">Ingresos por plan</h3>
+                        <div class="chart-card__canvas"><canvas id="incomeByPlanChart"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-card__title">Evolución de suscripciones activas</h3>
+                        <div class="chart-card__canvas"><canvas id="activeSubscriptionsChart"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-card__title">Top 5 clientes que más pagaron</h3>
+                        <div class="chart-card__canvas"><canvas id="topClientsChart"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-card__title">Comparación mensual de ingresos</h3>
+                        <div class="chart-card__canvas"><canvas id="incomeComparisonChart"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-card__title">Método de pago más usado</h3>
+                        <div class="chart-card__canvas"><canvas id="paymentMethodChart"></canvas></div>
+                    </div>
+                    <div class="chart-card xl:col-span-2">
+                        <h3 class="chart-card__title">Pagos por día del mes</h3>
+                        <div class="chart-card__canvas chart-card__canvas--wide"><canvas id="incomeByDayChart"></canvas></div>
                     </div>
                 </div>
 
@@ -274,8 +305,7 @@
             const defaultEndDate = @json($defaultEndDate);
             let currentPage = 1;
             let totalPages = 1;
-            let planChartInstance = null;
-            let statusChartInstance = null;
+            let chartInstances = {};
 
             filterForm.addEventListener('submit', function (e) {
                 e.preventDefault();
@@ -437,58 +467,300 @@
             }
 
             function renderCharts(charts) {
-                if (planChartInstance) {
-                    planChartInstance.destroy();
-                }
+                destroyCharts();
 
-                if (statusChartInstance) {
-                    statusChartInstance.destroy();
-                }
-
-                const planCtx = document.getElementById('planChart').getContext('2d');
-                planChartInstance = new Chart(planCtx, {
+                renderChart('planChart', {
                     type: 'doughnut',
                     data: {
-                        labels: Object.keys(charts.plan_distribution),
+                        labels: Object.keys(charts.plan_distribution || {}),
                         datasets: [{
-                            data: Object.values(charts.plan_distribution),
-                            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF'],
-                            hoverOffset: 4
+                            data: Object.values(charts.plan_distribution || {}),
+                            backgroundColor: ['#4F46E5', '#22C55E', '#F59E0B', '#06B6D4', '#EC4899', '#8B5CF6', '#F97316'],
+                            borderWidth: 0,
+                            hoverOffset: 8
                         }]
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom' }
-                        }
-                    }
+                    options: buildCircularOptions()
                 });
 
-                const statusCtx = document.getElementById('statusChart').getContext('2d');
-                statusChartInstance = new Chart(statusCtx, {
+                renderChart('paymentStatusChart', {
                     type: 'pie',
                     data: {
-                        labels: Object.keys(charts.status_distribution).map(key => ({
-                            activa: 'Activa',
-                            finalizada: 'Finalizada',
-                            cancelada: 'Cancelada',
-                            pendiente: 'Pendiente'
-                        }[key] || key)),
+                        labels: Object.keys(charts.payment_status_distribution || {}).map(formatPaymentStatusLabel),
                         datasets: [{
-                            data: Object.values(charts.status_distribution),
-                            backgroundColor: ['#10B981', '#6B7280', '#EF4444', '#F59E0B'],
-                            hoverOffset: 4
+                            data: Object.values(charts.payment_status_distribution || {}),
+                            backgroundColor: ['#F59E0B', '#10B981', '#EF4444', '#6B7280'],
+                            borderWidth: 0,
+                            hoverOffset: 8
                         }]
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom' }
+                    options: buildCircularOptions()
+                });
+
+                renderChart('monthlyIncomeChart', {
+                    type: 'line',
+                    data: {
+                        labels: charts.monthly_income?.labels || [],
+                        datasets: [{
+                            label: 'Ingresos',
+                            data: charts.monthly_income?.values || [],
+                            borderColor: '#2563EB',
+                            backgroundColor: 'rgba(37, 99, 235, 0.18)',
+                            fill: true,
+                            tension: 0.35,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: buildCartesianOptions({ currency: true })
+                });
+
+                renderChart('incomeByPlanChart', {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(charts.income_by_plan || {}),
+                        datasets: [{
+                            label: 'Ingresos por plan',
+                            data: Object.values(charts.income_by_plan || {}),
+                            backgroundColor: ['#4F46E5', '#7C3AED', '#2563EB', '#0891B2', '#0F766E', '#65A30D'],
+                            borderRadius: 12,
+                            maxBarThickness: 46
+                        }]
+                    },
+                    options: buildCartesianOptions({ currency: true, legend: false })
+                });
+
+                renderChart('activeSubscriptionsChart', {
+                    type: 'line',
+                    data: {
+                        labels: charts.active_subscriptions_evolution?.labels || [],
+                        datasets: [{
+                            label: 'Suscripciones activas',
+                            data: charts.active_subscriptions_evolution?.values || [],
+                            borderColor: '#7C3AED',
+                            backgroundColor: 'rgba(124, 58, 237, 0.15)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: buildCartesianOptions({ integer: true })
+                });
+
+                renderChart('topClientsChart', {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(charts.top_clients || {}),
+                        datasets: [{
+                            label: 'Total pagado',
+                            data: Object.values(charts.top_clients || {}),
+                            backgroundColor: ['#0EA5E9', '#22C55E', '#F59E0B', '#EC4899', '#8B5CF6'],
+                            borderRadius: 12,
+                            maxBarThickness: 34
+                        }]
+                    },
+                    options: buildCartesianOptions({ currency: true, indexAxis: 'y', legend: false })
+                });
+
+                renderChart('incomeComparisonChart', {
+                    type: 'bar',
+                    data: {
+                        labels: charts.income_comparison?.labels || [],
+                        datasets: [{
+                            label: 'Ingresos',
+                            data: charts.income_comparison?.values || [],
+                            backgroundColor: ['#CBD5F5', '#4F46E5'],
+                            borderRadius: 14,
+                            maxBarThickness: 56
+                        }]
+                    },
+                    options: buildCartesianOptions({ currency: true, legend: false })
+                });
+
+                renderChart('paymentMethodChart', {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(charts.payment_method_distribution || {}),
+                        datasets: [{
+                            label: 'Cantidad de pagos',
+                            data: Object.values(charts.payment_method_distribution || {}),
+                            backgroundColor: ['#14B8A6', '#2563EB', '#F97316', '#A855F7', '#EAB308'],
+                            borderRadius: 12,
+                            maxBarThickness: 48
+                        }]
+                    },
+                    options: buildCartesianOptions({ integer: true, legend: false })
+                });
+
+                renderChart('incomeByDayChart', {
+                    type: 'bar',
+                    data: {
+                        labels: charts.income_by_day?.labels || [],
+                        datasets: [{
+                            label: 'Ingresos por d?a',
+                            data: charts.income_by_day?.values || [],
+                            backgroundColor: '#93C5FD',
+                            borderColor: '#2563EB',
+                            borderWidth: 1,
+                            borderRadius: 8,
+                            maxBarThickness: 22
+                        }]
+                    },
+                    options: buildCartesianOptions({ currency: true, legend: false })
+                });
+            }
+
+            function destroyCharts() {
+                Object.values(chartInstances).forEach(instance => instance.destroy());
+                chartInstances = {};
+            }
+
+            function renderChart(canvasId, config) {
+                const canvas = document.getElementById(canvasId);
+                if (!canvas) {
+                    return;
+                }
+
+                const container = canvas.parentElement;
+                if (container) {
+                    const emptyState = container.querySelector('.chart-card__empty');
+                    if (emptyState) {
+                        emptyState.remove();
+                    }
+                }
+
+                const labels = config?.data?.labels || [];
+                const datasets = config?.data?.datasets || [];
+                const hasData = datasets.some(dataset => Array.isArray(dataset.data) && dataset.data.some(value => Number(value) > 0));
+
+                if (!labels.length || !hasData) {
+                    renderEmptyChartState(canvas, 'Sin datos para este gr?fico con los filtros actuales');
+                    return;
+                }
+
+                chartInstances[canvasId] = new Chart(canvas.getContext('2d'), config);
+            }
+
+            function renderEmptyChartState(canvas, message) {
+                const container = canvas.parentElement;
+                if (!container) {
+                    return;
+                }
+
+                let emptyState = container.querySelector('.chart-card__empty');
+                if (!emptyState) {
+                    emptyState = document.createElement('div');
+                    emptyState.className = 'chart-card__empty';
+                    container.appendChild(emptyState);
+                }
+                emptyState.textContent = message;
+            }
+
+            function buildCircularOptions() {
+                return {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 16
+                            }
                         }
                     }
-                });
+                };
+            }
+
+            function buildCartesianOptions({ currency = false, integer = false, legend = true, indexAxis = 'x' } = {}) {
+                return {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis,
+                    plugins: {
+                        legend: {
+                            display: legend,
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 16
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label(context) {
+                                    const value = context.parsed[indexAxis === 'y' ? 'x' : 'y'];
+                                    if (currency) {
+                                        return `${context.dataset.label || 'Monto'}: ${formatCurrency(value)}`;
+                                    }
+
+                                    return `${context.dataset.label || 'Valor'}: ${value}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: indexAxis !== 'y'
+                            },
+                            ticks: {
+                                maxRotation: 0,
+                                autoSkip: true,
+                                callback(value) {
+                                    if (indexAxis === 'y' && currency) {
+                                        return compactCurrency(value);
+                                    }
+
+                                    return this.getLabelForValue ? this.getLabelForValue(value) : value;
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(148, 163, 184, 0.18)'
+                            },
+                            ticks: {
+                                precision: integer ? 0 : undefined,
+                                callback(value) {
+                                    if (currency && indexAxis !== 'y') {
+                                        return compactCurrency(value);
+                                    }
+
+                                    return value;
+                                }
+                            }
+                        }
+                    }
+                };
+            }
+
+            function formatPaymentStatusLabel(status) {
+                return ({
+                    pendiente: 'Pendiente',
+                    aprobado: 'Aprobado',
+                    rechazado: 'Rechazado',
+                    cancelado: 'Cancelado'
+                }[status] || status);
+            }
+
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('es-BO', {
+                    style: 'currency',
+                    currency: 'BOB',
+                    minimumFractionDigits: 2
+                }).format(Number(value || 0));
+            }
+
+            function compactCurrency(value) {
+                const amount = Number(value || 0);
+                if (Math.abs(amount) >= 1000) {
+                    return `${(amount / 1000).toFixed(1)}k`;
+                }
+
+                return amount.toFixed(0);
             }
 
             function renderPagination(pagination) {
@@ -577,7 +849,36 @@
     </script>
 
     <style>
-        /* Estilos del page-header */
+        /* Banner geométrico - Mismo estilo que las otras vistas */
+        .rp-banner {
+            background:
+                linear-gradient(135deg, #4f46e5 25%, transparent 25%) -50px 0,
+                linear-gradient(225deg, #4f46e5 25%, transparent 25%) -50px 0,
+                linear-gradient(315deg, #4f46e5 25%, transparent 25%),
+                linear-gradient(45deg,  #4f46e5 25%, transparent 25%),
+                linear-gradient(to bottom, #3b82f6 0%, #2563eb 100%);
+            background-size:
+                100px 100px,
+                100px 100px,
+                100px 100px,
+                100px 100px,
+                100% 100%;
+            background-color: #1d4ed8;
+            position: relative;
+        }
+
+        .rp-banner-overlay {
+            background:
+                radial-gradient(circle at 0%   0%,   rgba(255,255,255,0.2) 0%, transparent 50%),
+                radial-gradient(circle at 100% 0%,   rgba(255,255,255,0.2) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(255,255,255,0.2) 0%, transparent 50%),
+                radial-gradient(circle at 0%   100%, rgba(255,255,255,0.2) 0%, transparent 50%);
+            background-size:     50% 50%;
+            background-position: 0 0, 100% 0, 100% 100%, 0 100%;
+            background-repeat:   no-repeat;
+        }
+
+        /* Estilos del page-header (legacy) */
         .page-header {
             display: flex;
             justify-content: space-between;
@@ -636,22 +937,32 @@
         }
 
         @media (max-width: 640px) {
+            .rp-banner .px-8 { 
+                padding-left: 1.25rem; 
+                padding-right: 1.25rem; 
+            }
+            .rp-banner .flex.flex-col.sm\:flex-row {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .rp-banner a {
+                justify-content: center;
+                width: 100%;
+            }
             .page-header {
                 flex-direction: column;
                 align-items: stretch;
                 gap: 1rem;
                 padding: 1.25rem;
             }
-
             .header-content h1 {
                 font-size: 1.5rem;
             }
-
             .btn-secondary {
                 justify-content: center;
                 width: 100%;
             }
-
             .btn-action {
                 flex: 1;
                 min-width: 120px;
@@ -725,9 +1036,48 @@
             background: linear-gradient(135deg, #a855f7, #9333ea);
             color: white;
         }
-
         .btn-purple:hover {
             background: linear-gradient(135deg, #9333ea, #7e22ce);
         }
-    </style>
+
+        .chart-card {
+            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+            padding: 1rem;
+            border-radius: 1rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+
+        .chart-card__title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 0.85rem;
+            text-align: center;
+        }
+
+        .chart-card__canvas {
+            position: relative;
+            height: 320px;
+        }
+
+        .chart-card__canvas--wide {
+            height: 360px;
+        }
+
+        .chart-card__empty {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.95rem;
+            background: linear-gradient(180deg, rgba(255,255,255,0.75) 0%, rgba(248,250,252,0.95) 100%);
+            border: 1px dashed #cbd5e1;
+            border-radius: 0.9rem;
+        }
+</style>
 @endsection

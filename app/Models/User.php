@@ -2,47 +2,31 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\Auditable;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 
 class User extends Authenticatable
 {
     use SoftDeletes, HasFactory, Notifiable, Auditable;
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    // The original `use HasFactory, Notifiable;` line is merged into the one above.
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
         'phone',
-        'google_id'
+        'google_id',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -50,30 +34,43 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'role_user', 'user_id', 'role_id');
     }
 
-    /**
-     * Verifica si el usuario tiene alguno de los roles especificados.
-     */
     public function hasAnyRole($roles)
     {
         if (is_array($roles)) {
             return $this->roles()->whereIn('nombre_rol', $roles)->exists();
         }
+
         return $this->roles()->where('nombre_rol', $roles)->exists();
     }
 
+    public function permissions(): Collection
+    {
+        return $this->roles
+            ->loadMissing('permissions')
+            ->pluck('permissions')
+            ->flatten()
+            ->unique('id')
+            ->values();
+    }
 
-    // app/Models/User.php
+    public function hasPermission($permission): bool
+    {
+        $field = str_contains($permission, ' ') ? 'nombre_permiso' : 'slug';
+
+        return $this->permissions()->contains($field, $permission);
+    }
 
     public function suscripciones()
     {
         return $this->hasMany(Suscripcion::class, 'usuario_id');
     }
-    //CAMPAÑAS
+
     public function campaniasCreadas()
     {
         return $this->hasMany(Campania::class, 'usuario_creador_id');
@@ -94,15 +91,41 @@ class User extends Authenticatable
         return $this->hasMany(Empresa::class, 'usuario_id');
     }
 
-    // En app/Models/User.php
+    public function pagos()
+    {
+        return $this->hasMany(Pago::class);
+    }
 
+    public function socialAccounts()
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
 
-public function pagos()
-{
-    return $this->hasMany(Pago::class);
+    public function socialAccountsTableExists(): bool
+    {
+        static $exists;
+
+        return $exists ??= Schema::hasTable('social_accounts');
+    }
+
+    public function linkedSocialAccounts(): Collection
+    {
+        if (! $this->socialAccountsTableExists()) {
+            return collect();
+        }
+
+        return $this->socialAccounts()->get()->keyBy('provider');
+    }
+
+    public function hasLinkedSocialAccount(string $provider): bool
+    {
+        if (! $this->socialAccountsTableExists()) {
+            return false;
+        }
+
+        return $this->socialAccounts()
+            ->where('provider', $provider)
+            ->whereNotNull('provider_user_id')
+            ->exists();
+    }
 }
-
-
-
-}
-

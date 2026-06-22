@@ -37,6 +37,9 @@ class EmpresaAdminController extends Controller
         // 5. Obtener todos los planes para el filtro
         $planes = Plan::orderBy('nombre')->get();
 
+        $perPage = (int) $request->input('per_page', 6);
+        $perPage = $perPage > 0 ? min($perPage, 100) : 6;
+
         // 6. Construir la consulta de empresas con filtros
         $empresasQuery = Empresa::with(['usuario', 'usuario.suscripciones.plan']);
 
@@ -65,10 +68,24 @@ class EmpresaAdminController extends Controller
             }
         }
 
-        // Paginar los resultados
-        $empresas = $empresasQuery->orderBy('created_at', 'desc')->paginate(12);
+        $empresasFiltradas = (clone $empresasQuery)->count();
 
-        return view('administrador.empresas.index', compact('empresas', 'usuarios', 'planes'));
+        $stats = [
+            'total' => Empresa::count(),
+            'filtradas' => $empresasFiltradas,
+            'cuestionario_completado' => Empresa::where('cuestionario_completado', true)->count(),
+            'sin_suscripcion_activa' => Empresa::whereDoesntHave('usuario.suscripciones', function ($query) {
+                $query->where('estado', 'activa');
+            })->count(),
+        ];
+
+        // Paginar los resultados
+        $empresas = $empresasQuery
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return view('administrador.empresas.index', compact('empresas', 'usuarios', 'planes', 'perPage', 'stats'));
     }
 
     /**
@@ -115,6 +132,70 @@ class EmpresaAdminController extends Controller
     }
 
     /**
+     * Mostrar formulario simple para crear empresa para un usuario espec�fico
+     */
+    public function crearEmpresa($usuario_id)
+    {
+        $user = User::findOrFail($usuario_id);
+
+        return view('administrador.empresas.crearempresa', compact('user'));
+    }
+
+    /**
+     * Guardar empresa simple para un usuario espec�fico
+     */
+    public function guardarEmpresa(Request $request, $usuario_id)
+    {
+        $user = User::findOrFail($usuario_id);
+
+        $request->validate([
+            'nombre_empresa' => 'required|string|max:255',
+            'tipo_empresa' => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $empresa = new Empresa();
+        $empresa->usuario_id = $user->id;
+        $empresa->nombre_empresa = $request->nombre_empresa;
+        $empresa->tipo_empresa = $request->tipo_empresa;
+        $empresa->descripcion = $request->descripcion;
+
+        if ($request->hasFile('logo')) {
+            $logoPath = $request->file('logo')->store('logos', 'public');
+            $empresa->logo = $logoPath;
+        }
+
+        $empresa->save();
+
+        return redirect()->route('administrador.empresas.show', $empresa->id)
+            ->with('success', 'Empresa creada correctamente.');
+    }
+
+    /**
+     * Eliminar empresa
+     */
+    public function destroy($id)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $user = Auth::user();
+
+        if (!$user->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+            abort(403, 'No tienes permisos para realizar esta acción.');
+        }
+
+        $empresa = Empresa::findOrFail($id);
+        $usuario_id = $empresa->usuario_id;
+        $empresa->delete();
+
+        return redirect()->route('administrador.usuarios.view', $usuario_id)
+            ->with('success', 'Empresa eliminada correctamente.');
+    }
+
+    /**
      * Guardar empresa y respuestas del cuestionario
      */
     public function guardarParaUsuario(Request $request)
@@ -152,3 +233,7 @@ class EmpresaAdminController extends Controller
             ->with('success', 'Empresa creada y cuestionario guardado correctamente.');
     }
 }
+
+
+
+

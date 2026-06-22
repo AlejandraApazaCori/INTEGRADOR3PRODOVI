@@ -61,11 +61,19 @@
                 </button>
             </div>
 
-            <!-- Header con botones mejorados -->
-            <div class="page-header">
-                <div class="header-content">
-                    <h1><i class="fas fa-credit-card"></i> Gestión de Pagos</h1>
-                    <p class="subtitle">Administra y monitorea el estado de todas las suscripciones</p>
+            <!-- Banner con fondo geométrico -->
+            <div class="mb-8 rounded-2xl overflow-hidden relative rp-banner">
+                <div class="rp-banner-overlay absolute inset-0"></div>
+                <div class="relative z-10 px-8 py-8">
+                    <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                        <div class="flex h-14 w-14 items-center justify-center rounded-2xl flex-shrink-0" style="background: rgba(255,255,255,0.2);">
+                            <i class="fas fa-credit-card text-white text-2xl"></i>
+                        </div>
+                        <div class="flex-1 text-center sm:text-left">
+                            <h1 class="text-3xl font-bold text-white mb-1">Gestión de Pagos</h1>
+                            <p style="color: #bfdbfe; font-size: 0.9rem;">Administra y monitorea el estado de todas las suscripciones</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -338,39 +346,33 @@
     </script>
 
     <style>
-        /* Estilos del page-header */
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding: 1.5rem 2rem;
-            background: white;
-            border-radius: 1.5rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            border: 1px solid rgba(79, 70, 229, 0.1);
+        /* Banner geométrico - Mismo estilo que las otras vistas */
+        .rp-banner {
+            background:
+                linear-gradient(135deg, #4f46e5 25%, transparent 25%) -50px 0,
+                linear-gradient(225deg, #4f46e5 25%, transparent 25%) -50px 0,
+                linear-gradient(315deg, #4f46e5 25%, transparent 25%),
+                linear-gradient(45deg,  #4f46e5 25%, transparent 25%),
+                linear-gradient(to bottom, #3b82f6 0%, #2563eb 100%);
+            background-size:
+                100px 100px,
+                100px 100px,
+                100px 100px,
+                100px 100px,
+                100% 100%;
+            background-color: #1d4ed8;
+            position: relative;
         }
-        
-        .header-content h1 {
-            font-size: 1.875rem;
-            font-weight: 700;
-            color: #111827;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin: 0;
-        }
-        
-        .header-content h1 i {
-            color: #4F46E5;
-            font-size: 1.75rem;
-        }
-        
-        .header-content .subtitle {
-            margin-top: 0.25rem;
-            font-size: 0.95rem;
-            color: #6B7280;
-            margin-bottom: 0;
+
+        .rp-banner-overlay {
+            background:
+                radial-gradient(circle at 0%   0%,   rgba(255,255,255,0.2) 0%, transparent 50%),
+                radial-gradient(circle at 100% 0%,   rgba(255,255,255,0.2) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(255,255,255,0.2) 0%, transparent 50%),
+                radial-gradient(circle at 0%   100%, rgba(255,255,255,0.2) 0%, transparent 50%);
+            background-size:     50% 50%;
+            background-position: 0 0, 100% 0, 100% 100%, 0 100%;
+            background-repeat:   no-repeat;
         }
 
         /* Estilos de los botones de acción */
@@ -480,19 +482,17 @@
             animation: slideIn 0.3s ease-out;
         }
 
-        /* Responsive */
         @media (max-width: 640px) {
-            .page-header {
+            .rp-banner .px-8 { 
+                padding-left: 1.25rem; 
+                padding-right: 1.25rem; 
+            }
+            .rp-banner .flex.flex-col.sm\:flex-row {
                 flex-direction: column;
-                align-items: stretch;
-                gap: 1rem;
-                padding: 1.25rem;
+                align-items: center;
+                text-align: center;
             }
             
-            .header-content h1 {
-                font-size: 1.5rem;
-            }
-
             .btn-action {
                 justify-content: center;
                 width: 100%;

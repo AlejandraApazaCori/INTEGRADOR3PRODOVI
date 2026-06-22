@@ -382,7 +382,7 @@ class PagoAdminController extends Controller
             $mostHiredPlan = $planCounts->isNotEmpty() ? $planCounts->keys()->first() : 'N/A';
             $mostHiredPlanCount = $planCounts->isNotEmpty() ? $planCounts->first() : 0;
 
-            $statusDistribution = $allPagos->map(function ($pago) {
+            $subscriptionStatusDistribution = $allPagos->map(function ($pago) {
                 return $pago->suscripcion ? $pago->suscripcion->estado : 'N/A';
             })->countBy()->all();
 
@@ -390,22 +390,7 @@ class PagoAdminController extends Controller
                 return $pago->plan ? $pago->plan->nombre : 'N/A';
             })->countBy()->all();
 
-            $monthlyIncome = $allPagos->where('estado', 'completado')
-                ->groupBy(function ($pago) {
-                    if ($pago->fecha_pago) {
-                        return $pago->fecha_pago->format('Y-m');
-                    }
-
-                    return $pago->created_at ? $pago->created_at->format('Y-m') : null;
-                })
-                ->map(function ($monthPayments) {
-                    return $monthPayments->sum('monto');
-                })
-                ->filter(function ($value, $key) {
-                    return !is_null($key);
-                })
-                ->sortKeys()
-                ->all();
+            $analytics = $this->buildAnalyticsCharts($allPagos, $filters);
 
             $total = $allPagos->count();
             $totalPages = max(1, (int) ceil(max($total, 1) / $perPage));
@@ -433,9 +418,16 @@ class PagoAdminController extends Controller
                     'total_records' => $total,
                 ],
                 'charts' => [
-                    'status_distribution' => $statusDistribution,
+                    'status_distribution' => $subscriptionStatusDistribution,
                     'plan_distribution' => $planDistribution,
-                    'monthly_income' => $monthlyIncome,
+                    'payment_status_distribution' => $analytics['payment_status_distribution'],
+                    'monthly_income' => $analytics['monthly_income'],
+                    'income_by_plan' => $analytics['income_by_plan'],
+                    'active_subscriptions_evolution' => $analytics['active_subscriptions_evolution'],
+                    'top_clients' => $analytics['top_clients'],
+                    'income_comparison' => $analytics['income_comparison'],
+                    'payment_method_distribution' => $analytics['payment_method_distribution'],
+                    'income_by_day' => $analytics['income_by_day'],
                 ],
                 'pagination' => [
                     'current_page' => $page,
@@ -452,6 +444,205 @@ class PagoAdminController extends Controller
                 'message' => 'Error al procesar la búsqueda: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function buildAnalyticsCharts($pagos, array $filters): array
+    {
+        $completedPayments = $pagos->where('estado', 'completado')->values();
+        [$monthKeys, $monthLabels] = $this->resolveAnalyticsMonths($pagos, $filters);
+
+        $monthlyIncome = array_fill_keys($monthKeys, 0.0);
+        foreach ($completedPayments as $pago) {
+            $paymentDate = $this->resolvePaymentDate($pago);
+            if (!$paymentDate) {
+                continue;
+            }
+
+            $monthKey = $paymentDate->format('Y-m');
+            if (array_key_exists($monthKey, $monthlyIncome)) {
+                $monthlyIncome[$monthKey] += (float) $pago->monto;
+            }
+        }
+
+        $incomeByPlan = $completedPayments
+            ->groupBy(function ($pago) {
+                return optional($pago->plan)->nombre ?? 'N/A';
+            })
+            ->map(function ($planPayments) {
+                return round((float) $planPayments->sum('monto'), 2);
+            })
+            ->sortDesc()
+            ->all();
+
+        $paymentStatuses = collect([
+            'pendiente' => 0,
+            'aprobado' => 0,
+            'rechazado' => 0,
+            'cancelado' => 0,
+        ]);
+
+        foreach ($pagos as $pago) {
+            $normalizedStatus = match ($pago->estado) {
+                'completado' => 'aprobado',
+                'cancelado' => 'cancelado',
+                'rechazado' => 'rechazado',
+                default => 'pendiente',
+            };
+            $paymentStatuses[$normalizedStatus] = $paymentStatuses[$normalizedStatus] + 1;
+        }
+
+        $activeSubscriptionsEvolution = [];
+        foreach ($monthKeys as $monthKey) {
+            $monthEnd = Carbon::createFromFormat('Y-m', $monthKey)->endOfMonth();
+
+            $activeSubscriptionsEvolution[$monthKey] = $pagos->filter(function ($pago) use ($monthEnd) {
+                $suscripcion = $pago->suscripcion;
+                if (!$suscripcion || !$suscripcion->fecha_inicio || !$suscripcion->fecha_fin) {
+                    return false;
+                }
+
+                $started = $suscripcion->fecha_inicio->lte($monthEnd);
+                $notFinished = $suscripcion->fecha_fin->gte($monthEnd);
+                $notCancelledBeforeMonthEnd = !$suscripcion->fecha_cancelacion || $suscripcion->fecha_cancelacion->gt($monthEnd);
+
+                return $started && $notFinished && $notCancelledBeforeMonthEnd;
+            })->pluck('suscripcion_id')->filter()->unique()->count();
+        }
+
+        $topClients = $completedPayments
+            ->groupBy(function ($pago) {
+                return optional($pago->usuario)->name ?? 'N/A';
+            })
+            ->map(function ($clientPayments) {
+                return round((float) $clientPayments->sum('monto'), 2);
+            })
+            ->sortDesc()
+            ->take(5)
+            ->all();
+
+        $comparisonAnchor = !empty($filters['endDate'])
+            ? Carbon::parse($filters['endDate'])
+            : Carbon::now();
+        $currentMonthKey = $comparisonAnchor->format('Y-m');
+        $previousMonthKey = $comparisonAnchor->copy()->subMonth()->format('Y-m');
+
+        $paymentMethodDistribution = $pagos
+            ->groupBy(function ($pago) {
+                return $this->normalizePaymentMethodLabel($pago->metodo);
+            })
+            ->map(function ($methodPayments) {
+                return $methodPayments->count();
+            })
+            ->sortDesc()
+            ->all();
+
+        $incomeByDay = collect(range(1, 31))->mapWithKeys(function ($day) {
+            return [$day => 0.0];
+        })->all();
+
+        foreach ($completedPayments as $pago) {
+            $paymentDate = $this->resolvePaymentDate($pago);
+            if (!$paymentDate) {
+                continue;
+            }
+
+            $day = (int) $paymentDate->format('j');
+            $incomeByDay[$day] += (float) $pago->monto;
+        }
+
+        return [
+            'monthly_income' => [
+                'labels' => array_values($monthLabels),
+                'values' => array_map(fn ($value) => round($value, 2), array_values($monthlyIncome)),
+            ],
+            'income_by_plan' => $incomeByPlan,
+            'payment_status_distribution' => $paymentStatuses->all(),
+            'active_subscriptions_evolution' => [
+                'labels' => array_values($monthLabels),
+                'values' => array_values($activeSubscriptionsEvolution),
+            ],
+            'top_clients' => $topClients,
+            'income_comparison' => [
+                'labels' => [
+                    $this->formatMonthLabel($previousMonthKey),
+                    $this->formatMonthLabel($currentMonthKey),
+                ],
+                'values' => [
+                    round($monthlyIncome[$previousMonthKey] ?? 0, 2),
+                    round($monthlyIncome[$currentMonthKey] ?? 0, 2),
+                ],
+            ],
+            'payment_method_distribution' => $paymentMethodDistribution,
+            'income_by_day' => [
+                'labels' => array_map(fn ($day) => (string) $day, array_keys($incomeByDay)),
+                'values' => array_map(fn ($value) => round($value, 2), array_values($incomeByDay)),
+            ],
+        ];
+    }
+
+    private function resolveAnalyticsMonths($pagos, array $filters): array
+    {
+        $start = !empty($filters['startDate']) ? Carbon::parse($filters['startDate'])->startOfMonth() : null;
+        $end = !empty($filters['endDate']) ? Carbon::parse($filters['endDate'])->startOfMonth() : null;
+
+        if (!$start || !$end) {
+            $dates = $pagos->map(fn ($pago) => $this->resolvePaymentDate($pago))->filter()->sort()->values();
+            $firstDate = $dates->first();
+            $lastDate = $dates->last();
+
+            if (!$start) {
+                $start = $firstDate ? $firstDate->copy()->startOfMonth() : Carbon::now()->startOfMonth();
+            }
+
+            if (!$end) {
+                $end = $lastDate ? $lastDate->copy()->startOfMonth() : $start->copy();
+            }
+        }
+
+        if ($start->gt($end)) {
+            [$start, $end] = [$end->copy(), $start->copy()];
+        }
+
+        $monthKeys = [];
+        $monthLabels = [];
+        $cursor = $start->copy();
+
+        while ($cursor->lte($end)) {
+            $key = $cursor->format('Y-m');
+            $monthKeys[] = $key;
+            $monthLabels[] = $this->formatMonthLabel($key);
+            $cursor->addMonth();
+        }
+
+        return [$monthKeys, $monthLabels];
+    }
+
+    private function resolvePaymentDate(Pago $pago): ?Carbon
+    {
+        if ($pago->fecha_pago) {
+            return $pago->fecha_pago->copy();
+        }
+
+        return $pago->created_at ? $pago->created_at->copy() : null;
+    }
+
+    private function formatMonthLabel(string $monthKey): string
+    {
+        return Carbon::createFromFormat('Y-m', $monthKey)
+            ->locale('es')
+            ->translatedFormat('M Y');
+    }
+
+    private function normalizePaymentMethodLabel(?string $method): string
+    {
+        return match (strtolower((string) $method)) {
+            'qr' => 'QR',
+            'fisico' => 'Efectivo',
+            'transferencia' => 'Transferencia',
+            'tarjeta' => 'Tarjeta',
+            '', 'null' => 'Sin definir',
+            default => ucfirst((string) $method),
+        };
     }
 
     public function descargarPDF(Request $request)

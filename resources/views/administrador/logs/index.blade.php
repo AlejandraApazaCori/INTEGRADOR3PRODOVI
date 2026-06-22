@@ -12,38 +12,48 @@
 @endsection
 
 @section('content')
-<div class="min-h-screen bg-blue-50 py-8 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="flex items-center gap-4 mb-8">
-            <div class="bg-indigo-600 p-3 rounded-xl shadow-lg">
-                <i class="fas fa-list-alt text-white text-2xl"></i>
-            </div>
-            <div>
-                <h1 class="text-3xl font-black text-gray-800 tracking-tight">Logs del Sistema</h1>
-                <p class="text-gray-600 mt-1">Monitorea los accesos y errores del servidor.</p>
+<div class="min-h-screen" style="background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 50%, #F5F3FF 100%);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Banner con fondo geométrico -->
+        <div class="mb-8 rounded-2xl overflow-hidden relative rp-banner">
+            <div class="rp-banner-overlay absolute inset-0"></div>
+            <div class="relative z-10 px-8 py-8">
+                <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                    <div class="flex h-14 w-14 items-center justify-center rounded-2xl flex-shrink-0" style="background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-list-alt text-white text-2xl"></i>
+                    </div>
+                    <div class="flex-1 text-center sm:text-left">
+                        <h1 class="text-3xl font-bold text-white mb-1">Logs del Sistema</h1>
+                        <p style="color: #bfdbfe; font-size: 0.9rem;">Monitorea los accesos y errores del servidor</p>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Filtros Globales -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
+        <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 mb-8">
             <form action="{{ route('administrador.logs.index') }}" method="GET" id="filterForm" class="flex flex-wrap items-end gap-4">
                 <input type="hidden" name="tab" id="activeTabInput" value="{{ request('tab', 'access') }}">
                 
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Fecha Inicio</label>
-                    <input type="date" name="fecha_inicio" value="{{ $fechaInicio ?? '' }}" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">
+                        <i class="fas fa-calendar-alt mr-1 text-gray-400"></i>Fecha Inicio
+                    </label>
+                    <input type="date" name="fecha_inicio" value="{{ $fechaInicio ?? '' }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
                 </div>
                 
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Fecha Fin</label>
-                    <input type="date" name="fecha_fin" value="{{ $fechaFin ?? '' }}" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">
+                        <i class="fas fa-calendar-alt mr-1 text-gray-400"></i>Fecha Fin
+                    </label>
+                    <input type="date" name="fecha_fin" value="{{ $fechaFin ?? '' }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
                 </div>
                 
                 <div class="flex gap-2">
-                    <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-100">
+                    <button type="submit" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-indigo-200/50">
                         <i class="fas fa-filter mr-2"></i>Filtrar
                     </button>
-                    <a href="{{ route('administrador.logs.index') }}" class="bg-gray-100 text-gray-600 px-6 py-2 rounded-lg text-sm font-bold hover:bg-gray-200 transition-colors">
+                    <a href="{{ route('administrador.logs.index') }}" class="bg-gray-100 text-gray-600 px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-200 transition-all">
                         <i class="fas fa-redo mr-2"></i>Limpiar
                     </a>
                 </div>
@@ -71,38 +81,46 @@
         </div>
 
         <!-- Tab Content: Access Logs -->
-        <div id="content-access" class="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100 mb-8">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h2 class="text-lg font-bold text-gray-800">Registros de Acceso</h2>
-                <button onclick="exportToPdf('access')" class="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-colors">
+        <div id="content-access" class="bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100 mb-8">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-sign-in-alt text-indigo-600 text-sm"></i>
+                    </div>
+                    <h2 class="text-lg font-bold text-gray-800">Registros de Acceso</h2>
+                </div>
+                <button onclick="exportToPdf('access')" class="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-colors border border-indigo-100">
                     <i class="fas fa-file-pdf mr-2"></i>Exportar PDF
                 </button>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha y Hora</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP / Usuario</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Método / URL</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado / Tiempo</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User-Agent</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fecha y Hora</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">IP / Usuario</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Método / URL</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Estado / Tiempo</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider">User-Agent</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($accessLogs as $log)
-                        <tr class="hover:bg-gray-50 transition-colors duration-200">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                    <tbody class="bg-white divide-y divide-gray-100">
+                        @forelse($accessLogs as $index => $log)
+                        @php
+                            $rowClass = $index % 2 === 0 ? 'bg-white' : 'bg-indigo-50/20';
+                        @endphp
+                        <tr class="{{ $rowClass }} hover:bg-indigo-50/50 transition-colors duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 border-r border-gray-100">{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap border-r border-gray-100">
                                 <div class="text-sm font-medium text-gray-900">{{ $log->ip_address }}</div>
                                 <div class="text-sm text-gray-500">{{ $log->user ? $log->user->name : 'Invitado' }}</div>
                             </td>
-                            <td class="px-6 py-4">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $log->method === 'GET' ? 'bg-green-100 text-green-800' : ($log->method === 'POST' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800') }}">{{ $log->method }}</span>
+                            <td class="px-6 py-4 border-r border-gray-100">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $log->method === 'GET' ? 'bg-green-100 text-green-800 border border-green-200' : ($log->method === 'POST' ? 'bg-blue-100 text-blue-800 border border-blue-200' : 'bg-yellow-100 text-yellow-800 border border-yellow-200') }}">{{ $log->method }}</span>
                                 <span class="ml-2 text-sm text-gray-600 break-all">{{ Str::limit($log->url, 50) }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $log->status_code >= 400 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">{{ $log->status_code }}</span>
+                            <td class="px-6 py-4 whitespace-nowrap border-r border-gray-100">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $log->status_code >= 400 ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-green-100 text-green-800 border border-green-200' }}">{{ $log->status_code }}</span>
                                 <div class="text-xs text-gray-500 mt-1">{{ $log->response_time_ms }}ms</div>
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title="{{ $log->user_agent }}">
@@ -111,7 +129,10 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">No hay registros de acceso.</td>
+                            <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                                <i class="fas fa-inbox text-3xl text-gray-300 block mb-2"></i>
+                                No hay registros de acceso.
+                            </td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -125,45 +146,51 @@
         </div>
 
         <!-- Tab Content: Security Logs -->
-        <div id="content-security" class="hidden bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100 mb-8">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h2 class="text-lg font-bold text-gray-800">Registros de Seguridad</h2>
-                <button onclick="exportToPdf('security')" class="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-colors">
+        <div id="content-security" class="hidden bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100 mb-8">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-shield-alt text-red-600 text-sm"></i>
+                    </div>
+                    <h2 class="text-lg font-bold text-gray-800">Registros de Seguridad</h2>
+                </div>
+                <button onclick="exportToPdf('security')" class="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-colors border border-indigo-100">
                     <i class="fas fa-file-pdf mr-2"></i>Exportar PDF
                 </button>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha / Hora</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario / IP</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Evento</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Detalles</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fecha / Hora</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Usuario / IP</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Evento</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider">Detalles</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($securityLogs as $log)
-                        <tr class="hover:bg-gray-50 transition-colors duration-200">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                    <tbody class="bg-white divide-y divide-gray-100">
+                        @forelse($securityLogs as $index => $log)
+                        @php
+                            $rowClass = $index % 2 === 0 ? 'bg-white' : 'bg-indigo-50/20';
+                            $eventColors = [
+                                'login_success' => 'bg-green-100 text-green-800 border-green-200',
+                                'login_failed' => 'bg-red-100 text-red-800 border-red-200',
+                            ];
+                            $eventLabels = [
+                                'login_success' => 'LOGUEO EXITOSO',
+                                'login_failed' => 'LOGUEO FALLIDO',
+                            ];
+                            $colorClass = $eventColors[$log->event_type] ?? 'bg-gray-100 text-gray-800 border-gray-200';
+                            $labelText = $eventLabels[$log->event_type] ?? str_replace('_', ' ', strtoupper($log->event_type));
+                        @endphp
+                        <tr class="{{ $rowClass }} hover:bg-indigo-50/50 transition-colors duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 border-r border-gray-100">{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap border-r border-gray-100">
                                 <div class="text-sm font-medium text-gray-900">{{ $log->user ? $log->user->name : 'Desconocido' }}</div>
                                 <div class="text-sm text-gray-500">{{ $log->ip_address }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @php
-                                    $eventColors = [
-                                        'login_success' => 'bg-green-100 text-green-800',
-                                        'login_failed' => 'bg-red-100 text-red-800',
-                                    ];
-                                    $eventLabels = [
-                                        'login_success' => 'LOGUEO EXITOSO',
-                                        'login_failed' => 'LOGUEO FALLIDO',
-                                    ];
-                                    $colorClass = $eventColors[$log->event_type] ?? 'bg-gray-100 text-gray-800';
-                                    $labelText = $eventLabels[$log->event_type] ?? str_replace('_', ' ', strtoupper($log->event_type));
-                                @endphp
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $colorClass }}">
+                            <td class="px-6 py-4 whitespace-nowrap border-r border-gray-100">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full border {{ $colorClass }}">
                                     {{ $labelText }}
                                 </span>
                             </td>
@@ -177,7 +204,10 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">No hay registros de seguridad.</td>
+                            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+                                <i class="fas fa-inbox text-3xl text-gray-300 block mb-2"></i>
+                                No hay registros de seguridad.
+                            </td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -191,41 +221,47 @@
         </div>
 
         <!-- Tab Content: Audit Logs -->
-        <div id="content-audit" class="hidden bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100 mb-8">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h2 class="text-lg font-bold text-gray-800">Registros de Actividad (Auditoría)</h2>
-                <button onclick="exportToPdf('audit')" class="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-colors">
+        <div id="content-audit" class="hidden bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100 mb-8">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-history text-amber-600 text-sm"></i>
+                    </div>
+                    <h2 class="text-lg font-bold text-gray-800">Registros de Actividad (Auditoría)</h2>
+                </div>
+                <button onclick="exportToPdf('audit')" class="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-colors border border-indigo-100">
                     <i class="fas fa-file-pdf mr-2"></i>Exportar PDF
                 </button>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha / Hora</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acción / Recurso</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cambios</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fecha / Hora</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Usuario</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Acción / Recurso</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider">Cambios</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($auditLogs as $log)
-                        <tr class="hover:bg-gray-50 transition-colors duration-200 flex flex-col sm:table-row">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <tbody class="bg-white divide-y divide-gray-100">
+                        @forelse($auditLogs as $index => $log)
+                        @php
+                            $rowClass = $index % 2 === 0 ? 'bg-white' : 'bg-indigo-50/20';
+                            $actionColors = [
+                                'create' => 'bg-green-100 text-green-800 border-green-200',
+                                'update' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                                'delete' => 'bg-red-100 text-red-800 border-red-200',
+                            ];
+                            $colorClass = $actionColors[$log->action] ?? 'bg-gray-100 text-gray-800 border-gray-200';
+                            $resourceName = class_basename($log->auditable_type);
+                        @endphp
+                        <tr class="{{ $rowClass }} hover:bg-indigo-50/50 transition-colors duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 border-r border-gray-100">{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-100">
                                 {{ $log->user ? $log->user->name : 'Sistema/Consola' }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @php
-                                    $actionColors = [
-                                        'create' => 'bg-green-100 text-green-800',
-                                        'update' => 'bg-yellow-100 text-yellow-800',
-                                        'delete' => 'bg-red-100 text-red-800',
-                                    ];
-                                    $colorClass = $actionColors[$log->action] ?? 'bg-gray-100 text-gray-800';
-                                    $resourceName = class_basename($log->auditable_type);
-                                @endphp
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $colorClass }} mb-1">
+                            <td class="px-6 py-4 whitespace-nowrap border-r border-gray-100">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full border {{ $colorClass }} mb-1">
                                     {{ strtoupper($log->action) }}
                                 </span>
                                 <div class="text-xs text-gray-500">Recurso: <span class="font-semibold">{{ $resourceName }}</span> (#{{ $log->auditable_id }})</div>
@@ -258,7 +294,10 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">No hay registros de actividad.</td>
+                            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+                                <i class="fas fa-inbox text-3xl text-gray-300 block mb-2"></i>
+                                No hay registros de actividad.
+                            </td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -272,31 +311,36 @@
         </div>
 
         <!-- Tab Content: Error Logs -->
-        <div id="content-error" class="hidden bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100 mb-8">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h2 class="text-lg font-bold text-gray-800">Registros de Errores</h2>
-                <div class="flex gap-2">
-                    <button onclick="exportToPdf('error')" class="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-colors">
-                        <i class="fas fa-file-pdf mr-2"></i>Exportar PDF
-                    </button>
-                  
+        <div id="content-error" class="hidden bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100 mb-8">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-sm"></i>
+                    </div>
+                    <h2 class="text-lg font-bold text-gray-800">Registros de Errores</h2>
                 </div>
+                <button onclick="exportToPdf('error')" class="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-colors border border-indigo-100">
+                    <i class="fas fa-file-pdf mr-2"></i>Exportar PDF
+                </button>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha y Hora</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mensaje</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fecha y Hora</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Tipo</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider">Mensaje</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($errorLogs as $log)
-                        <tr class="hover:bg-gray-50 transition-colors duration-200">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $log['datetime'] }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $log['is_fatal'] ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800' }}">
+                    <tbody class="bg-white divide-y divide-gray-100">
+                        @forelse($errorLogs as $index => $log)
+                        @php
+                            $rowClass = $index % 2 === 0 ? 'bg-white' : 'bg-indigo-50/20';
+                        @endphp
+                        <tr class="{{ $rowClass }} hover:bg-indigo-50/50 transition-colors duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 border-r border-gray-100">{{ $log['datetime'] }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap border-r border-gray-100">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full border {{ $log['is_fatal'] ? 'bg-red-100 text-red-800 border-red-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200' }}">
                                     {{ Str::limit($log['type'], 20) }}
                                 </span>
                             </td>
@@ -308,7 +352,10 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">No hay registros de errores recientes.</td>
+                            <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500">
+                                <i class="fas fa-inbox text-3xl text-gray-300 block mb-2"></i>
+                                No hay registros de errores recientes.
+                            </td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -322,6 +369,49 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Banner geométrico - Mismo estilo que las otras vistas */
+    .rp-banner {
+        background:
+            linear-gradient(135deg, #4f46e5 25%, transparent 25%) -50px 0,
+            linear-gradient(225deg, #4f46e5 25%, transparent 25%) -50px 0,
+            linear-gradient(315deg, #4f46e5 25%, transparent 25%),
+            linear-gradient(45deg,  #4f46e5 25%, transparent 25%),
+            linear-gradient(to bottom, #3b82f6 0%, #2563eb 100%);
+        background-size:
+            100px 100px,
+            100px 100px,
+            100px 100px,
+            100px 100px,
+            100% 100%;
+        background-color: #1d4ed8;
+        position: relative;
+    }
+
+    .rp-banner-overlay {
+        background:
+            radial-gradient(circle at 0%   0%,   rgba(255,255,255,0.2) 0%, transparent 50%),
+            radial-gradient(circle at 100% 0%,   rgba(255,255,255,0.2) 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(255,255,255,0.2) 0%, transparent 50%),
+            radial-gradient(circle at 0%   100%, rgba(255,255,255,0.2) 0%, transparent 50%);
+        background-size:     50% 50%;
+        background-position: 0 0, 100% 0, 100% 100%, 0 100%;
+        background-repeat:   no-repeat;
+    }
+
+    @media (max-width: 640px) {
+        .rp-banner .px-8 { 
+            padding-left: 1.25rem; 
+            padding-right: 1.25rem; 
+        }
+        .rp-banner .flex.flex-col.sm\:flex-row {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+    }
+</style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

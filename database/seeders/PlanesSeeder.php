@@ -56,7 +56,6 @@ class PlanesSeeder extends Seeder
             ],
             [
                 'nombre' => 'Marketing Super Pro',
-                'subtitulo' => 'Estrategia completa de alto impacto',
                 'precio' => 1900.00,
                 'moneda' => 'BS',
                 'periodo_facturacion' => 'mes',

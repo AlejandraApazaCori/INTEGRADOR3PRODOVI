@@ -3,464 +3,1033 @@
 @section('title', 'Publicar en Redes Sociales')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="bg-white shadow rounded-lg overflow-hidden">
-        <!-- Encabezado con gradiente -->
-        <div class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4">
-            <div class="flex justify-between items-center">
-                <h1 class="text-2xl font-bold text-white">Crear Nueva Publicación</h1>
-                
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="min-h-screen" style="background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 45%, #F5F3FF 100%);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Banner con fondo geométrico -->
+        <div class="mb-8 rounded-2xl overflow-hidden relative rp-banner">
+            <div class="rp-banner-overlay absolute inset-0"></div>
+            <div class="relative z-10 px-8 py-9">
+                <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                    <div class="flex h-16 w-16 items-center justify-center rounded-2xl flex-shrink-0 rp-icon-pulse" style="background: rgba(255,255,255,0.22); backdrop-filter: blur(6px); box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
+                        <i class="fas fa-share-alt text-white text-2xl"></i>
+                    </div>
+                    <div class="flex-1 text-center sm:text-left">
+                        <h1 class="text-3xl font-bold text-white mb-1 tracking-tight">Crear Nueva Publicación</h1>
+                        <p style="color: #dbe6ff; font-size: 0.92rem;">Comparte contenido en las redes sociales de tu cliente</p>
+                    </div>
+                    <div class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);">
+                        <i class="fas fa-bolt text-white text-xs"></i>
+                        <span class="text-white text-xs font-semibold">Listo para publicar</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Contenido principal -->
-        <div class="p-6 space-y-8">
-            <!-- Panel de publicación -->
-            <div class="bg-gray-50 rounded-lg p-6">
-                <!-- Mensaje de publicación exitosa (oculto por defecto) -->
-                <div id="success-alert" class="hidden mb-6 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h5 class="font-bold">✅ Publicación completada</h5>
-                            <p class="mt-1"><strong>Plataformas:</strong> <span id="published-platforms">Facebook, Instagram</span></p>
-                            <p><strong>Programado para:</strong> <span id="published-time">Ahora mismo</span></p>
-                            <p class="mt-2 text-sm">Tu contenido está siendo distribuido en las plataformas seleccionadas.</p>
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden rp-card">
+            <!-- Encabezado con gradiente -->
+            <div class="px-8 py-6 bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-50 border-b border-indigo-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #ea9f21, #e37225);">
+                        <i class="fas fa-rocket text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Nueva Publicación</h2>
+                        <p class="text-gray-500 text-sm mt-0.5">Comparte contenido en redes sociales</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido principal -->
+            <div class="p-6 md:p-8 space-y-6">
+                <!-- Panel de publicación -->
+                <div class="rounded-xl p-6" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                    <!-- Mensaje de publicación exitosa -->
+                    <div id="success-alert" class="hidden mb-6 p-4 rounded-xl flex items-start gap-3 rp-alert-success" style="background: #f0fdf4; border: 1px solid #bbf7d0; box-shadow: 0 4px 14px rgba(34,197,94,0.12);">
+                        <i class="fas fa-check-circle text-lg" style="color: #16a34a;"></i>
+                        <div class="flex-1">
+                            <h5 class="font-bold" style="color: #166534;">✅ Publicación completada</h5>
+                            <p class="mt-1 text-sm" style="color: #166534;"><strong>Plataformas:</strong> <span id="published-platforms">Facebook, Instagram</span></p>
+                            <p class="text-sm" style="color: #166534;"><strong>Programado para:</strong> <span id="published-time">Ahora mismo</span></p>
+                            <p class="mt-2 text-xs" style="color: #166534;">Tu contenido está siendo distribuido en las plataformas seleccionadas.</p>
                         </div>
-                        <button onclick="hideAlert()" class="text-green-700 hover:text-green-900">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                            </svg>
+                        <button onclick="hideAlert()" class="flex-shrink-0 rp-close-btn" style="color: #166534;">
+                            <i class="fas fa-times"></i>
                         </button>
                     </div>
-                </div>
-                
-                <!-- Formulario de publicación -->
-                <form id="publishing-form">
-                    <!-- Selección de cuenta y plataforma -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Cuenta y Plataformas del cliente</label>
-                        
-                        <!-- Selector de cuenta - Dinámico según plataformas seleccionadas -->
-                        <div class="mb-4 space-y-3" id="account-display">
-                            <!-- Cuenta de Facebook (ALNI) - visible por defecto -->
-                            <div id="facebook-account" class="flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200">
-                                <div class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
-                                    A
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="font-semibold text-gray-800">ALNI</span>
-                                        <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">facebook</span>
-                                    </div>
-                                </div>
-                            </div>
+                    
+                    <!-- Formulario de publicación -->
+                    <form id="publishing-form">
+                        <!-- Selección de cuenta y plataforma -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                <i class="fas fa-users mr-2 text-indigo-400"></i>
+                                Cuenta y Plataformas
+                            </label>
                             
-                            <!-- Cuenta de Instagram (la_llajuitaa) - oculta por defecto -->
-                            <div id="instagram-account" class="hidden flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200">
-                                <div class="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center text-white font-bold">
-                                    L
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="font-semibold text-gray-800">la_llajuitaa</span>
-                                        <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">instagram</span>
+                            <div class="mb-4 space-y-3" id="account-display">
+                                <div id="facebook-account" class="flex items-center space-x-3 p-3 rounded-xl border rp-account-card" style="background: #ffffff; border-color: #e2e8f0;">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm" style="background: linear-gradient(135deg, #1877f2, #0d5dc7);">
+                                        A
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Plataformas -->
-                        <div class="flex flex-wrap gap-4">
-                            <div class="flex items-center">
-                                <input id="facebook-checkbox" type="checkbox" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" onchange="updateAccountDisplay()">
-                                <label for="facebook-checkbox" class="ml-2 block text-sm text-gray-700 flex items-center">
-                                    <svg class="w-5 h-5 mr-1 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/>
-                                    </svg>
-                                    Facebook
-                                </label>
-                            </div>
-                            <div class="flex items-center">
-                                <input id="instagram-checkbox" type="checkbox" class="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded" onchange="updateAccountDisplay()">
-                                <label for="instagram-checkbox" class="ml-2 block text-sm text-gray-700 flex items-center">
-                                    <svg class="w-5 h-5 mr-1 text-pink-600" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-                                    </svg>
-                                    Instagram
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Contenido multimedia -->
-                  <!-- Contenido multimedia -->
-<div class="mb-6">
-    <label class="block text-sm font-medium text-gray-700 mb-2">Contenido Multimedia Aprobado</label>
-    
-    @if($tarea->archivos->count() > 0)
-        <div class="mt-4 border border-gray-200 rounded-lg divide-y divide-gray-200">
-            @foreach($tarea->archivos as $archivo)
-            <div class="p-4">
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <span class="text-blue-600">
-                                @if(in_array($archivo->extension, ['jpg', 'jpeg', 'png', 'gif']))
-                                    📷
-                                @elseif(in_array($archivo->extension, ['pdf']))
-                                    📄
-                                @elseif(in_array($archivo->extension, ['doc', 'docx']))
-                                    📝
-                                @elseif(in_array($archivo->extension, ['xls', 'xlsx']))
-                                    📊
-                                @elseif(in_array($archivo->extension, ['mp4', 'mov', 'avi']))
-                                    🎥
-                                @elseif(in_array($archivo->extension, ['mp3', 'wav']))
-                                    🎵
-                                @elseif(in_array($archivo->extension, ['zip', 'rar']))
-                                    🗄️
-                                @else
-                                    📁
-                                @endif
-                            </span>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-900">{{ $archivo->nombre_original }}</p>
-                            <p class="text-xs text-gray-500">{{ number_format($archivo->tamanio / 1024, 2) }} KB · {{ strtoupper($archivo->extension) }}</p>
-                        </div>
-                    </div>
-                    <div class="flex space-x-2">
-                        <a href="{{ Storage::url($archivo->ruta_archivo) }}" download class="text-blue-600 hover:text-blue-800" title="Descargar">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-                
-                @if($archivo->descripcion)
-                <div class="mt-2 text-sm text-gray-600">
-                    <p>{{ $archivo->descripcion }}</p>
-                </div>
-                @endif
-            </div>
-            @endforeach
-        </div>
-    @else
-        <div class="mt-4 text-center py-8 bg-gray-50 rounded-lg">
-            <p class="text-gray-500">No hay archivos aprobados para publicar</p>
-        </div>
-    @endif
-    
-
-</div>
-                    
-                   <!-- Contenido a publicar -->
-<div class="mb-6">
-    <div class="flex justify-between items-center mb-2">
-        <label for="content" class="block text-sm font-medium text-gray-700">Texto de la Publicación</label>
-        {{-- BOTÓN ACTUALIZADO PARA PLAN DE MARKETING --}}
-        <button type="button" id="generate-copy-btn" data-tarea-id="{{ $tarea->id }}" class="px-3 py-1 text-xs font-medium text-white bg-gradient-to-r from-purple-500 to-indigo-500 rounded-md hover:from-purple-600 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-            </svg>
-            Generar Copy con IA
-        </button>
-    </div>
-    <textarea id="content" rows="5" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="Escribe el mensaje que acompañará a tu publicación..."></textarea>
-</div>
-                    
-                    <!-- Configuración de publicación -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Configuración de Publicación</label>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Programación -->
-                            <div>
-                                <div class="flex items-center mb-2">
-                                    <input id="publish-now" name="schedule_type" type="radio" value="now" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                    <label for="publish-now" class="ml-2 block text-sm text-gray-700">
-                                        Publicar ahora
-                                    </label>
-                                </div>
-                                <div class="flex items-center">
-                                    <input id="schedule-later" name="schedule_type" type="radio" value="later" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                    <label for="schedule-later" class="ml-2 block text-sm text-gray-700">
-                                        Programar para más tarde
-                                    </label>
-                                </div>
-                                <div id="schedule-datetime-container" class="mt-2 hidden">
-                                    <input type="datetime-local" id="schedule-datetime" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                </div>
-                            </div>
-                            
-                            <!-- Optimización inteligente -->
-                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                                <div class="flex items-start">
-                                    <div class="flex-shrink-0">
-                                        <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <div class="ml-3">
-                                        <h3 class="text-sm font-medium text-blue-800">Optimización Inteligente</h3>
-                                        <div class="mt-2 text-sm text-blue-700">
-                                            <p>Nuestro sistema analiza automáticamente:</p>
-                                            <ul class="list-disc pl-5 mt-1">
-                                                <li>Horarios de mayor engagement</li>
-                                                <li>Comportamiento de tu audiencia</li>
-                                            </ul>
+                                    <div class="flex-1">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="font-semibold text-gray-800">ALNI</span>
+                                            <span class="text-xs px-2 py-1 rounded-full font-medium" style="background: #eef2ff; color: #4f46e5;">
+                                                <i class="fab fa-facebook-f mr-1"></i>facebook
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="mt-4">
-                                    <div class="flex items-center">
-                                        <input id="use-optimization" type="checkbox" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                        <label for="use-optimization" class="ml-2 block text-sm text-blue-800">
+                                
+                                <div id="instagram-account" class="hidden flex items-center space-x-3 p-3 rounded-xl border rp-account-card" style="background: #ffffff; border-color: #e2e8f0;">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm" style="background: linear-gradient(135deg, #e4405f, #c1306d);">
+                                        L
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="font-semibold text-gray-800">la_llajuitaa</span>
+                                            <span class="text-xs px-2 py-1 rounded-full font-medium" style="background: #fdf2f8; color: #db2777;">
+                                                <i class="fab fa-instagram mr-1"></i>instagram
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-wrap gap-3">
+                                <label class="rp-checkbox-pill" for="facebook-checkbox">
+                                    <input id="facebook-checkbox" type="checkbox" checked class="h-4 w-4 rounded focus:ring-2" style="accent-color: #1877f2; border-color: #d1d5db;" onchange="updateAccountDisplay(); updatePreview();">
+                                    <span class="ml-2 text-sm text-gray-700 flex items-center">
+                                        <i class="fab fa-facebook mr-1.5" style="color: #1877f2;"></i>
+                                        Facebook
+                                    </span>
+                                </label>
+                                <label class="rp-checkbox-pill" for="instagram-checkbox">
+                                    <input id="instagram-checkbox" type="checkbox" class="h-4 w-4 rounded focus:ring-2" style="accent-color: #e4405f; border-color: #d1d5db;" onchange="updateAccountDisplay(); updatePreview();">
+                                    <span class="ml-2 text-sm text-gray-700 flex items-center">
+                                        <i class="fab fa-instagram mr-1.5" style="color: #e4405f;"></i>
+                                        Instagram
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Contenido multimedia aprobado -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                <i class="fas fa-images mr-2 text-indigo-400"></i>
+                                Contenido Multimedia Aprobado
+                            </label>
+                            
+                            @if($tarea->archivos->count() > 0)
+                                <div class="grid grid-cols-1 gap-2">
+                                    @foreach($tarea->archivos as $archivo)
+                                    <div class="flex items-center justify-between p-3 rounded-xl border rp-file-card" style="background: #ffffff; border-color: #e2e8f0;">
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex-shrink-0 h-10 w-10 rounded-lg flex items-center justify-center text-lg" style="background: linear-gradient(135deg, #e0e7ff, #ede9fe);">
+                                                @if(in_array($archivo->extension, ['jpg', 'jpeg', 'png', 'gif']))
+                                                    <i class="fas fa-image text-indigo-500"></i>
+                                                @elseif(in_array($archivo->extension, ['pdf']))
+                                                    <i class="fas fa-file-pdf text-red-500"></i>
+                                                @elseif(in_array($archivo->extension, ['doc', 'docx']))
+                                                    <i class="fas fa-file-word text-blue-500"></i>
+                                                @elseif(in_array($archivo->extension, ['xls', 'xlsx']))
+                                                    <i class="fas fa-file-excel text-green-500"></i>
+                                                @elseif(in_array($archivo->extension, ['mp4', 'mov', 'avi']))
+                                                    <i class="fas fa-video text-purple-500"></i>
+                                                @elseif(in_array($archivo->extension, ['mp3', 'wav']))
+                                                    <i class="fas fa-music text-pink-500"></i>
+                                                @else
+                                                    <i class="fas fa-file text-gray-500"></i>
+                                                @endif
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900">{{ $archivo->nombre_original }}</p>
+                                                <p class="text-xs text-gray-500">{{ number_format($archivo->tamanio / 1024, 2) }} KB · {{ strtoupper($archivo->extension) }}</p>
+                                            </div>
+                                        </div>
+                                        <a href="{{ Storage::url($archivo->ruta_archivo) }}" download class="text-gray-400 hover:text-indigo-600 transition-colors rp-download-btn">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="text-center py-10 rounded-xl border border-dashed" style="background: #f8fafc; border-color: #d1d5db;">
+                                    <i class="fas fa-folder-open text-4xl text-gray-300 mb-3 block"></i>
+                                    <p class="text-gray-500 text-sm">No hay archivos aprobados para publicar</p>
+                                </div>
+                            @endif
+                        </div>
+                        
+                        <!-- Texto de la publicación -->
+                        <div class="mb-6">
+                            <div class="flex justify-between items-center mb-2">
+                                <label for="content" class="block text-sm font-semibold text-gray-700">
+                                    <i class="fas fa-align-left mr-2 text-indigo-400"></i>
+                                    Texto de la Publicación
+                                </label>
+                                <button type="button" id="generate-copy-btn" data-tarea-id="{{ $tarea->id }}" 
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-white rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg" style="background: linear-gradient(135deg, #ea9f21, #e37225); box-shadow: 0 2px 8px rgba(234,159,33,0.35);">
+                                    <i class="fas fa-wand-magic-sparkles"></i>
+                                    Generar Copy con IA
+                                </button>
+                            </div>
+                            <textarea id="content" rows="4" oninput="updatePreview()"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white resize-none"
+                                placeholder="Escribe el mensaje que acompañará a tu publicación..."></textarea>
+                        </div>
+                        
+                        <!-- Configuración de publicación -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                <i class="fas fa-gear mr-2 text-indigo-400"></i>
+                                Configuración de Publicación
+                            </label>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="p-4 rounded-xl border" style="background: #ffffff; border-color: #e2e8f0;">
+                                    <div class="flex items-center mb-3 rp-radio-option">
+                                        <input id="publish-now" name="schedule_type" type="radio" value="now" checked class="h-4 w-4 focus:ring-2" style="accent-color: #4f46e5; border-color: #d1d5db;">
+                                        <label for="publish-now" class="ml-2 block text-sm text-gray-700 font-medium">
+                                            <i class="fas fa-bolt mr-1 text-amber-400"></i>
+                                            Publicar ahora
+                                        </label>
+                                    </div>
+                                    <div class="flex items-center rp-radio-option">
+                                        <input id="schedule-later" name="schedule_type" type="radio" value="later" class="h-4 w-4 focus:ring-2" style="accent-color: #4f46e5; border-color: #d1d5db;">
+                                        <label for="schedule-later" class="ml-2 block text-sm text-gray-700 font-medium">
+                                            <i class="fas fa-clock mr-1 text-indigo-400"></i>
+                                            Programar para más tarde
+                                        </label>
+                                    </div>
+                                    <div id="schedule-datetime-container" class="mt-4 hidden">
+                                        <div class="rp-schedule-card">
+                                            <div class="rp-schedule-card__header">
+                                                <div class="rp-schedule-card__icon">
+                                                    <i class="fas fa-calendar-check"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-semibold text-gray-800">Programa tu publicación</p>
+                                                    <p class="text-xs text-gray-500">Elige una fecha y hora atractiva para lanzar el contenido.</p>
+                                                </div>
+                                            </div>
+
+                                            <input type="datetime-local" id="schedule-datetime" class="sr-only">
+
+                                            <div class="rp-schedule-grid mt-4">
+                                                <label class="rp-schedule-field">
+                                                    <span class="rp-schedule-field__label">Fecha</span>
+                                                    <div class="rp-schedule-field__control">
+                                                        <i class="fas fa-calendar-day"></i>
+                                                        <input type="date" id="schedule-date-ui" class="rp-schedule-input">
+                                                    </div>
+                                                </label>
+
+                                                <label class="rp-schedule-field">
+                                                    <span class="rp-schedule-field__label">Hora</span>
+                                                    <div class="rp-schedule-field__control">
+                                                        <i class="fas fa-clock"></i>
+                                                        <input type="time" id="schedule-time-ui" class="rp-schedule-input" step="300">
+                                                    </div>
+                                                </label>
+                                            </div>
+
+                                            <div class="mt-4">
+                                                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Atajos rápidos</p>
+                                                <div class="rp-schedule-chips">
+                                                    <button type="button" class="rp-schedule-chip" data-schedule-preset="today-0900">Hoy 09:00</button>
+                                                    <button type="button" class="rp-schedule-chip" data-schedule-preset="today-1800">Hoy 18:00</button>
+                                                    <button type="button" class="rp-schedule-chip" data-schedule-preset="tomorrow-0900">Mañana 09:00</button>
+                                                </div>
+                                            </div>
+
+                                            <div class="rp-schedule-summary mt-4">
+                                                <span class="rp-schedule-summary__label">Se publicará:</span>
+                                                <span id="schedule-readable" class="rp-schedule-summary__value">Selecciona una fecha y hora</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-4 rounded-xl border" style="background: linear-gradient(135deg, #eff6ff, #f5f3ff); border-color: #bfdbfe;">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background: rgba(79,70,229,0.12);">
+                                            <i class="fas fa-lightbulb text-sm" style="color: #4f46e5;"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-sm font-semibold" style="color: #1e3a5f;">Optimización Inteligente</h3>
+                                            <div class="mt-2 text-xs" style="color: #1e40af;">
+                                                <p>Nuestro sistema analiza automáticamente:</p>
+                                                <ul class="list-disc pl-4 mt-1 space-y-0.5">
+                                                    <li>Horarios de mayor engagement</li>
+                                                    <li>Comportamiento de tu audiencia</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 flex items-center pt-3" style="border-top: 1px solid rgba(79,70,229,0.12);">
+                                        <input id="use-optimization" type="checkbox" class="h-4 w-4 rounded focus:ring-2" style="accent-color: #4f46e5; border-color: #d1d5db;">
+                                        <label for="use-optimization" class="ml-2 block text-sm font-medium" style="color: #1e3a5f;">
                                             Optimizar tiempo de publicación
                                         </label>
+                                    </div>
+                                    <div id="optimization-panel" class="hidden mt-4 pt-4" style="border-top: 1px solid rgba(79,70,229,0.12);">
+                                        <div class="flex flex-wrap gap-2 mb-4">
+                                            <button type="button" class="rp-optimization-time" data-optimized-time="12:00">12 pm</button>
+                                            <button type="button" class="rp-optimization-time" data-optimized-time="20:00">8 pm</button>
+                                        </div>
+                                        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+                                            <div class="flex items-center gap-3 mb-4">
+                                                <div class="bg-gradient-to-br from-cyan-500 to-blue-600 p-2.5 rounded-xl">
+                                                    <i class="fas fa-chart-line text-white text-sm"></i>
+                                                </div>
+                                                <div>
+                                                    <h3 class="text-lg font-bold text-gray-800">Predicción de Horarios de Publicación</h3>
+                                                    <p class="text-xs text-gray-500">Modelo LSTM – Engagement estimado para Instagram y Facebook</p>
+                                                </div>
+                                            </div>
+                                            <div style="position:relative; height:220px; width:100%;">
+                                                <canvas id="optimizationEngagementChart"></canvas>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    
-                   <!-- Vista previa de la publicación -->
-<div class="mb-6 hidden" id="publication-preview">
-    <label class="block text-sm font-medium text-gray-700 mb-2">Vista Previa</label>
-    <div class="space-y-4">
-        <!-- Vista previa para Facebook (ALNI) -->
-        <div id="facebook-preview" class="bg-white border border-gray-200 rounded-lg p-4">
-            <div class="flex items-center mb-3">
-                <div class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
-                    A
-                </div>
-                <div>
-                    <div class="font-semibold">ALNI</div>
-                    <div class="text-xs text-gray-500">Ahora mismo · <span class="text-blue-500">🌐 Público</span></div>
-                </div>
-            </div>
-            <div class="mb-3" id="preview-content-facebook">
-                El texto de tu publicación aparecerá aquí...
-            </div>
-            <div class="bg-gray-100 rounded-lg w-full h-48 flex items-center justify-center text-gray-400" id="preview-media-facebook">
-                Vista previa de multimedia aparecerá aquí
-            </div>
-            <div class="mt-3 flex justify-between text-gray-500 text-sm">
-                <span>👍 0</span>
-                <span>💬 0 comentarios</span>
-                <span>↗️ 0 compartidos</span>
-            </div>
-        </div>
-        
-        <!-- Vista previa para Instagram (la_llajuitaa) -->
-        <div id="instagram-preview" class="hidden bg-white border border-gray-200 rounded-lg p-4">
-            <div class="flex items-center mb-3">
-                <div class="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
-                    L
-                </div>
-                <div>
-                    <div class="font-semibold">la_llajuitaa</div>
-                    <div class="text-xs text-gray-500">Ahora mismo · <span class="text-pink-500">📷 Instagram</span></div>
-                </div>
-            </div>
-            <div class="mb-3" id="preview-content-instagram">
-                El texto de tu publicación aparecerá aquí...
-            </div>
-            <div class="bg-gray-100 rounded-lg w-full h-48 flex items-center justify-center text-gray-400" id="preview-media-instagram">
-                Vista previa de multimedia aparecerá aquí
-            </div>
-            <div class="mt-3 flex justify-between text-gray-500 text-sm">
-                <span>❤️ 0</span>
-                <span>💬 0 comentarios</span>
-                <span>📤 0 compartidos</span>
-            </div>
-        </div>
-    </div>
-</div>
-                    
-                    <!-- Botones de acción -->
-                    <div class="flex justify-between items-center pt-4 border-t border-gray-200">
-                        <button type="button" onclick="showPreview()" class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50">
-                            Vista Previa
-                        </button>
-                        <div class="flex space-x-3">
-                            <button type="button" onclick="publishContent()" class="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium rounded-lg shadow-sm hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                </svg>
+                        
+                        <!-- Vista previa de la publicación - visible por defecto -->
+                        @php
+                            $previewImage = $tarea->archivos->first(function ($archivo) {
+                                return in_array(strtolower($archivo->extension), ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                            });
+                        @endphp
+                        <div class="mb-6" id="publication-preview">
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                <i class="fas fa-eye mr-2 text-indigo-400"></i>
+                                Vista Previa
+                            </label>
+                            <div class="space-y-4">
+                                <div id="facebook-preview" class="bg-white overflow-hidden rp-facebook-preview" style="border: 1px solid #dddfe2; border-radius: 0;">
+                                    <div class="px-3 pt-3 pb-2">
+                                        <div class="flex items-start justify-between gap-3">
+                                            <div class="flex items-start gap-2.5">
+                                                <div class="rp-facebook-avatar">P</div>
+                                                <div>
+                                                    <div class="flex items-center gap-1 flex-wrap">
+                                                        <span class="text-[14px] font-semibold text-black">PRODOVI</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-1 text-[12px] text-gray-500 leading-none mt-1">
+                                                        <span id="preview-facebook-time">Ahora mismo</span>
+                                                        <i class="fas fa-globe-americas text-[11px]"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button type="button" class="text-gray-500 text-sm leading-none">...</button>
+                                        </div>
+                                        <div class="mt-3 text-[14px] text-[#1c1e21] leading-5" id="preview-content-facebook">Escribe tu mensaje aquí...</div>
+                                    </div>
+                                    <div class="w-full bg-[#f0f2f5]" id="preview-media-facebook" style="min-height: 420px;">
+                                        @if($previewImage)
+                                            <img src="{{ Storage::url($previewImage->ruta_archivo) }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
+                                        @else
+                                            <div class="w-full h-[420px] flex items-center justify-center text-gray-400">
+                                                <i class="fas fa-image text-3xl mr-2"></i>
+                                                Vista previa de multimedia
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div class="px-3 py-2 text-[13px] text-gray-500 border-b border-[#dadde1] flex items-center gap-1.5">
+                                        <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-[11px]" style="background:#1877f2;">👍</span>
+                                        <span>5</span>
+                                    </div>
+                                    <div class="grid grid-cols-3 text-[15px] text-[#65676b] font-semibold">
+                                        <button type="button" class="rp-facebook-action"><i class="far fa-thumbs-up"></i><span>Me gusta</span></button>
+                                        <button type="button" class="rp-facebook-action"><i class="far fa-comment"></i><span>Comentar</span></button>
+                                        <button type="button" class="rp-facebook-action"><i class="far fa-share-square"></i><span>Compartir</span></button>
+                                    </div>
+                                </div>
+                                
+                                <div id="instagram-preview" class="hidden bg-white overflow-hidden rp-facebook-preview" style="border: 1px solid #dddfe2; border-radius: 0;">
+                                    <div class="px-3 pt-3 pb-2">
+                                        <div class="flex items-start justify-between gap-3">
+                                            <div class="flex items-start gap-2.5">
+                                                <div class="rp-facebook-avatar">P</div>
+                                                <div>
+                                                    <div class="flex items-center gap-1 flex-wrap">
+                                                        <span class="text-[14px] font-semibold text-black">PRODOVI</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-1 text-[12px] text-gray-500 leading-none mt-1">
+                                                        <span id="preview-instagram-time">Ahora mismo</span>
+                                                        <span>·</span>
+                                                        <i class="fas fa-globe-americas text-[11px]"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button type="button" class="text-gray-500 text-sm leading-none">...</button>
+                                        </div>
+                                        <div class="mt-3 text-[14px] text-[#1c1e21] leading-5" id="preview-content-instagram">Escribe tu mensaje aquí...</div>
+                                    </div>
+                                    <div class="w-full bg-[#f0f2f5]" id="preview-media-instagram" style="min-height: 420px;">
+                                        @if($previewImage)
+                                            <img src="{{ Storage::url($previewImage->ruta_archivo) }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
+                                        @else
+                                            <div class="w-full h-[420px] flex items-center justify-center text-gray-400">
+                                                <i class="fas fa-image text-3xl mr-2"></i>
+                                                Vista previa de multimedia
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div class="px-3 py-2 text-[13px] text-gray-500 border-b border-[#dadde1] flex items-center gap-1.5">
+                                        <span>5</span>
+                                    </div>
+                                    <div class="grid grid-cols-3 text-[15px] text-[#65676b] font-semibold">
+                                        <button type="button" class="rp-facebook-action"><i class="far fa-thumbs-up"></i><span>Me gusta</span></button>
+                                        <button type="button" class="rp-facebook-action"><i class="far fa-comment"></i><span>Comentar</span></button>
+                                        <button type="button" class="rp-facebook-action"><i class="far fa-share-square"></i><span>Compartir</span></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Botones de acción -->
+                        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-5 border-t border-gray-200">
+                            <button type="button" onclick="togglePreview()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 rp-secondary-btn" style="color: #4f46e5; background: #eef2ff;">
+                                <i class="fas fa-eye"></i>
+                                <span id="preview-toggle-text">Ocultar Vista Previa</span>
+                            </button>
+                            <button type="button" onclick="publishContent()" 
+                                    class="inline-flex items-center gap-2 px-7 py-3 rounded-xl text-white font-semibold shadow-lg transition-all duration-200 hover:shadow-2xl hover:-translate-y-0.5 rp-publish-btn" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);">
+                                <i class="fas fa-rocket"></i>
                                 Publicar
                             </button>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+    .rp-banner {
+        background:
+            linear-gradient(135deg, #4f46e5 25%, transparent 25%) -50px 0,
+            linear-gradient(225deg, #4f46e5 25%, transparent 25%) -50px 0,
+            linear-gradient(315deg, #4f46e5 25%, transparent 25%),
+            linear-gradient(45deg,  #4f46e5 25%, transparent 25%),
+            linear-gradient(to bottom right, #4338ca 0%, #2563eb 60%, #1d4ed8 100%);
+        background-size: 100px 100px, 100px 100px, 100px 100px, 100px 100px, 100% 100%;
+        background-color: #1d4ed8;
+        position: relative;
+        box-shadow: 0 10px 30px -10px rgba(79, 70, 229, 0.5);
+    }
+
+    .rp-banner-overlay {
+        background:
+            radial-gradient(circle at 0% 0%, rgba(255,255,255,0.22) 0%, transparent 50%),
+            radial-gradient(circle at 100% 0%, rgba(255,255,255,0.18) 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(255,255,255,0.18) 0%, transparent 50%),
+            radial-gradient(circle at 0% 100%, rgba(255,255,255,0.22) 0%, transparent 50%);
+        background-size: 50% 50%;
+        background-position: 0 0, 100% 0, 100% 100%, 0 100%;
+        background-repeat: no-repeat;
+    }
+
+    .rp-icon-pulse {
+        animation: rp-pulse 3s ease-in-out infinite;
+    }
+    @keyframes rp-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.06); }
+    }
+
+    .rp-card {
+        transition: box-shadow 0.3s ease;
+    }
+
+    .rp-account-card, .rp-file-card, .rp-preview-card {
+        transition: all 0.2s ease;
+    }
+    .rp-account-card:hover, .rp-file-card:hover {
+        border-color: #c7d2fe !important;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08);
+        transform: translateY(-1px);
+    }
+    .rp-preview-card {
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+    }
+
+    .rp-facebook-preview {
+        max-width: 566px;
+        margin: 0 auto;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+        font-family: Helvetica, Arial, sans-serif;
+    }
+
+    .rp-facebook-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        background: radial-gradient(circle at 30% 30%, #4d2a82, #1d112c 70%);
+        box-shadow: inset 0 0 0 2px rgba(255,255,255,0.12);
+        flex-shrink: 0;
+    }
+
+    .rp-facebook-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 0.5rem;
+        border-top: 1px solid #dadde1;
+        transition: background 0.2s ease;
+    }
+
+    .rp-facebook-action:hover {
+        background: #f2f2f2;
+    }
+
+    .rp-checkbox-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 0.9rem;
+        border-radius: 0.75rem;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .rp-checkbox-pill:hover {
+        border-color: #c7d2fe;
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
+    }
+
+    .rp-radio-option {
+        padding: 0.35rem 0.5rem;
+        border-radius: 0.5rem;
+        transition: background 0.2s ease;
+    }
+    .rp-radio-option:hover {
+        background: #f8fafc;
+    }
+
+    .rp-schedule-card {
+        padding: 1rem;
+        border-radius: 1rem;
+        background: linear-gradient(135deg, #ffffff 0%, #eef2ff 55%, #f8fafc 100%);
+        border: 1px solid #c7d2fe;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 10px 24px rgba(79,70,229,0.08);
+    }
+
+    .rp-schedule-card__header {
+        display: flex;
+        align-items: center;
+        gap: 0.875rem;
+    }
+
+    .rp-schedule-card__icon {
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        box-shadow: 0 8px 20px rgba(79,70,229,0.28);
+        flex-shrink: 0;
+    }
+
+    .rp-schedule-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.9rem;
+    }
+
+    .rp-schedule-field {
+        display: block;
+    }
+
+    .rp-schedule-field__label {
+        display: block;
+        margin-bottom: 0.45rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #6366f1;
+    }
+
+    .rp-schedule-field__control {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        border-radius: 0.95rem;
+        border: 1px solid #cbd5e1;
+        background: rgba(255,255,255,0.92);
+        padding: 0.85rem 0.95rem;
+        transition: all 0.2s ease;
+    }
+
+    .rp-schedule-field__control:focus-within {
+        border-color: #818cf8;
+        box-shadow: 0 0 0 4px rgba(99,102,241,0.12);
+        transform: translateY(-1px);
+    }
+
+    .rp-schedule-field__control i {
+        color: #6366f1;
+    }
+
+    .rp-schedule-input {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        padding: 0;
+        color: #111827;
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    .rp-schedule-input:focus {
+        box-shadow: none;
+    }
+
+    .rp-schedule-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    .rp-schedule-chip {
+        border: 1px solid #c7d2fe;
+        background: #ffffff;
+        color: #4338ca;
+        border-radius: 9999px;
+        padding: 0.5rem 0.85rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(79,70,229,0.06);
+    }
+
+    .rp-schedule-chip:hover,
+    .rp-schedule-chip.is-active {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        border-color: transparent;
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 18px rgba(79,70,229,0.22);
+    }
+
+    .rp-schedule-summary {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.9rem 1rem;
+        border-radius: 0.95rem;
+        background: rgba(79,70,229,0.08);
+        border: 1px solid rgba(99,102,241,0.14);
+    }
+
+    .rp-schedule-summary__label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #4f46e5;
+    }
+
+    .rp-schedule-summary__value {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .rp-optimization-time {
+        border: 1px solid #c7d2fe;
+        background: #ffffff;
+        color: #4338ca;
+        border-radius: 9999px;
+        padding: 0.55rem 0.9rem;
+        font-size: 0.8rem;
+        font-weight: 700;
+        transition: all 0.2s ease;
+    }
+
+    .rp-optimization-time:hover,
+    .rp-optimization-time.is-active {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: #ffffff;
+        border-color: transparent;
+        box-shadow: 0 10px 18px rgba(79,70,229,0.18);
+    }
+
+    .rp-download-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+    }
+    .rp-download-btn:hover {
+        background: #eef2ff;
+        transform: translateY(-1px);
+    }
+
+    .rp-close-btn {
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.5rem;
+        transition: background 0.2s ease;
+    }
+    .rp-close-btn:hover {
+        background: rgba(22, 101, 52, 0.1);
+    }
+
+    .rp-secondary-btn:hover {
+        background: #e0e7ff !important;
+        transform: translateY(-1px);
+    }
+
+    .rp-publish-btn {
+        box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4);
+    }
+
+    .rp-alert-success {
+        animation: rp-fade-in 0.35s ease;
+    }
+    @keyframes rp-fade-in {
+        from { opacity: 0; transform: translateY(-6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    }
+
+    @media (max-width: 640px) {
+        .rp-banner .px-8 { 
+            padding-left: 1.25rem; 
+            padding-right: 1.25rem; 
+        }
+        .rp-banner .flex.flex-col.sm\:flex-row {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .rp-schedule-grid {
+            grid-template-columns: 1fr;
+        }
+        .rp-schedule-card__header {
+            align-items: flex-start;
+        }
+    }
+</style>
+
 <script>
-const RECOMMENDED_HOUR = 11;
-const RECOMMENDED_MINUTE = 0;
-const RECOMMENDED_TIME_LABEL = '11:00 AM';
+    // Estado de la vista previa
+    let previewVisible = true;
 
-function getRecommendedScheduleDate() {
-    const now = new Date();
-    const recommendedDate = new Date(now);
-    recommendedDate.setHours(RECOMMENDED_HOUR, RECOMMENDED_MINUTE, 0, 0);
-
-    if (recommendedDate <= now) {
-        recommendedDate.setDate(recommendedDate.getDate() + 1);
-    }
-
-    return recommendedDate;
-}
-
-function toLocalDatetimeValue(date) {
-    const timezoneOffset = date.getTimezoneOffset() * 60000;
-    return new Date(date - timezoneOffset).toISOString().slice(0, 16);
-}
-
-function applyRecommendedSchedule() {
-    const scheduleLater = document.getElementById('schedule-later');
-    const datetimeContainer = document.getElementById('schedule-datetime-container');
-    const datetimeInput = document.getElementById('schedule-datetime');
-
-    scheduleLater.checked = true;
-    datetimeContainer.classList.remove('hidden');
-    datetimeInput.min = toLocalDatetimeValue(new Date());
-    datetimeInput.value = toLocalDatetimeValue(getRecommendedScheduleDate());
-}
-
-document.getElementById('use-optimization').addEventListener('change', function() {
-    if (this.checked) {
-        simulateOptimization();
-    }
-});
-
-function simulateOptimization() {
-    const optimizationBox = document.querySelector('.bg-blue-50');
-    const checkbox = document.getElementById('use-optimization');
-    
-    // Deshabilitar el checkbox durante el "análisis"
-    checkbox.disabled = true;
-    
-    // Cambiar texto y mostrar animación de carga
-    optimizationBox.innerHTML = `
-        <div class="flex items-center p-4">
-            <svg class="animate-spin h-5 w-5 text-blue-600 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span class="text-blue-800">Analizando audiencia y horarios óptimos...</span>
-        </div>
-    `;
-    
-    // Simular tiempo de análisis (2 segundos)
-    setTimeout(() => {
-        // Mostrar resultado "automático"
-        optimizationBox.innerHTML = `
-            <div id="optimization-result" class="p-4 rounded-lg cursor-pointer transition hover:bg-blue-100" title="Aplicar horario recomendado">
-                <div class="flex items-start">
-                    <svg class="h-5 w-5 text-green-500 mt-0.5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                    <div>
-                        <h3 class="text-sm font-medium text-blue-800">Optimización completada</h3>
-                        <div class="mt-2 text-sm text-blue-700">
-                            <p class="font-semibold">Recomendación del sistema:</p>
-                            <ul class="list-disc pl-5 mt-1">
-                                <li>Publicar hoy a las <strong>${RECOMMENDED_TIME_LABEL}</strong> (mayor engagement)</li>
-                                <li>Incluir 2 hashtags para mayor alcance</li>
-                            </ul>
-                            <p class="mt-2 text-xs font-medium text-blue-800">Haz clic aquí para llenar automáticamente "Programar para más tarde".</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-3 flex items-center">
-                    <input id="use-optimization" type="checkbox" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <label for="use-optimization" class="ml-2 block text-sm text-blue-800">
-                        Usar recomendaciones
-                    </label>
-                </div>
-            </div>
-        `;
-        
-        // Actualizar el selector de fecha automáticamente
-        document.getElementById('optimization-result').addEventListener('click', function(event) {
-            if (event.target.id !== 'use-optimization') {
-                applyRecommendedSchedule();
-            }
-        });
-        
-        // Re-asignar el event listener al nuevo checkbox
-        document.getElementById('use-optimization').addEventListener('change', function() {
-            if (!this.checked) {
-                optimizationBox.innerHTML = `
-                    <div class="flex items-start">
-                        <!-- Contenido original de la caja -->
-                    </div>
-                `;
-            }
-        });
-    }, 2000);
-}
-    // Función para actualizar la visualización de cuentas según las plataformas seleccionadas
+    // Función para actualizar la visualización de cuentas
     function updateAccountDisplay() {
         const facebookChecked = document.getElementById('facebook-checkbox').checked;
         const instagramChecked = document.getElementById('instagram-checkbox').checked;
         
-        // Mostrar/ocultar cuentas según selección
         document.getElementById('facebook-account').classList.toggle('hidden', !facebookChecked);
         document.getElementById('instagram-account').classList.toggle('hidden', !instagramChecked);
     }
-    
+
+    function getPreviewScheduleText() {
+        if (document.getElementById('schedule-later').checked) {
+            const hiddenInput = document.getElementById('schedule-datetime');
+            if (hiddenInput?.value) {
+                const date = new Date(hiddenInput.value);
+                const datePart = new Intl.DateTimeFormat('es-BO', {
+                    day: 'numeric',
+                    month: 'long'
+                }).format(date);
+                const timePart = new Intl.DateTimeFormat('es-BO', {
+                    hour: 'numeric',
+                    minute: '2-digit'
+                }).format(date);
+
+                return `${datePart} a las ${timePart}`;
+            }
+        }
+
+        return 'Ahora mismo';
+    }
+
+    // Función para actualizar la vista previa
+    function updatePreview() {
+        const facebookChecked = document.getElementById('facebook-checkbox').checked;
+        const instagramChecked = document.getElementById('instagram-checkbox').checked;
+        const contentText = document.getElementById('content').value || "Escribe tu mensaje aquí...";
+        const scheduleText = getPreviewScheduleText();
+        
+        document.getElementById('facebook-preview').classList.toggle('hidden', !facebookChecked);
+        document.getElementById('preview-content-facebook').textContent = contentText;
+        document.getElementById('preview-facebook-time').textContent = scheduleText;
+        
+        document.getElementById('instagram-preview').classList.toggle('hidden', !instagramChecked);
+        document.getElementById('preview-content-instagram').textContent = contentText;
+        document.getElementById('preview-instagram-time').textContent = scheduleText;
+    }
+
+    // Función para toggle de vista previa
+    function togglePreview() {
+        previewVisible = !previewVisible;
+        document.getElementById('publication-preview').classList.toggle('hidden', !previewVisible);
+        document.getElementById('preview-toggle-text').textContent = previewVisible ? 'Ocultar Vista Previa' : 'Mostrar Vista Previa';
+    }
+
+    function formatScheduleDate(date) {
+        return new Intl.DateTimeFormat('es-BO', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            hour: 'numeric',
+            minute: '2-digit'
+        }).format(date);
+    }
+
+    function markActivePreset(activePreset) {
+        document.querySelectorAll('[data-schedule-preset]').forEach((button) => {
+            button.classList.toggle('is-active', button.dataset.schedulePreset === activePreset);
+        });
+    }
+
+    function syncCustomScheduleInputs(fromPreset = null) {
+        const hiddenInput = document.getElementById('schedule-datetime');
+        const dateInput = document.getElementById('schedule-date-ui');
+        const timeInput = document.getElementById('schedule-time-ui');
+        const readable = document.getElementById('schedule-readable');
+
+        if (!hiddenInput || !dateInput || !timeInput || !readable) {
+            return;
+        }
+
+        const hasDate = dateInput.value;
+        const hasTime = timeInput.value;
+
+        if (!hasDate || !hasTime) {
+            hiddenInput.value = '';
+            readable.textContent = 'Selecciona una fecha y hora';
+            markActivePreset(null);
+            return;
+        }
+
+        let composedValue = `${dateInput.value}T${timeInput.value}`;
+
+        if (hiddenInput.min && composedValue < hiddenInput.min) {
+            composedValue = hiddenInput.min;
+            dateInput.value = composedValue.slice(0, 10);
+            timeInput.value = composedValue.slice(11, 16);
+        }
+
+        hiddenInput.value = composedValue;
+
+        const selectedDate = new Date(composedValue);
+        readable.textContent = formatScheduleDate(selectedDate);
+        markActivePreset(fromPreset);
+    }
+
+    function initializeSchedulePicker() {
+        const hiddenInput = document.getElementById('schedule-datetime');
+        const dateInput = document.getElementById('schedule-date-ui');
+        const timeInput = document.getElementById('schedule-time-ui');
+
+        if (!hiddenInput || !dateInput || !timeInput) {
+            return;
+        }
+
+        const now = new Date();
+        const minDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        hiddenInput.min = minDateTime;
+        dateInput.min = minDateTime.slice(0, 10);
+
+        if (!dateInput.value || !timeInput.value) {
+            const defaultDate = new Date(now);
+            defaultDate.setMinutes(Math.ceil(defaultDate.getMinutes() / 5) * 5, 0, 0);
+            if (defaultDate <= now) {
+                defaultDate.setMinutes(defaultDate.getMinutes() + 5);
+            }
+
+            dateInput.value = defaultDate.toISOString().slice(0, 10);
+            timeInput.value = defaultDate.toTimeString().slice(0, 5);
+        }
+
+        syncCustomScheduleInputs();
+        updatePreview();
+    }
+
+    function applySchedulePreset(preset) {
+        const dateInput = document.getElementById('schedule-date-ui');
+        const timeInput = document.getElementById('schedule-time-ui');
+
+        if (!dateInput || !timeInput) {
+            return;
+        }
+
+        const base = new Date();
+        const presetDate = new Date(base);
+
+        if (preset === 'tomorrow-0900') {
+            presetDate.setDate(presetDate.getDate() + 1);
+            presetDate.setHours(9, 0, 0, 0);
+        }
+
+        if (preset === 'today-0900') {
+            presetDate.setHours(9, 0, 0, 0);
+            if (presetDate <= base) {
+                presetDate.setDate(presetDate.getDate() + 1);
+            }
+        }
+
+        if (preset === 'today-1800') {
+            presetDate.setHours(18, 0, 0, 0);
+            if (presetDate <= base) {
+                presetDate.setDate(presetDate.getDate() + 1);
+            }
+        }
+
+        dateInput.value = presetDate.toISOString().slice(0, 10);
+        timeInput.value = presetDate.toTimeString().slice(0, 5);
+        syncCustomScheduleInputs(preset);
+    }
+
     // Mostrar/ocultar selector de fecha para programación
     document.querySelectorAll('input[name="schedule_type"]').forEach(radio => {
         radio.addEventListener('change', function() {
             const datetimeContainer = document.getElementById('schedule-datetime-container');
             if (this.value === 'later') {
                 datetimeContainer.classList.remove('hidden');
-                
-                // Establecer fecha mínima como ahora
-                const now = new Date();
-                const localISOTime = toLocalDatetimeValue(now);
-                document.getElementById('schedule-datetime').min = localISOTime;
-
-                if (!document.getElementById('schedule-datetime').value) {
-                    document.getElementById('schedule-datetime').value = toLocalDatetimeValue(getRecommendedScheduleDate());
-                }
+                initializeSchedulePicker();
             } else {
                 datetimeContainer.classList.add('hidden');
+                updatePreview();
             }
         });
     });
-    
-   // Mostrar vista previa
-function showPreview() {
-    const facebookChecked = document.getElementById('facebook-checkbox').checked;
-    const instagramChecked = document.getElementById('instagram-checkbox').checked;
-    const contentText = document.getElementById('content').value;
-    
-    // Actualizar vista previa de Facebook
-    document.getElementById('facebook-preview').classList.toggle('hidden', !facebookChecked);
-    document.getElementById('preview-content-facebook').textContent = contentText || "El texto de tu publicación aparecerá aquí...";
-    
-    // Actualizar vista previa de Instagram
-    document.getElementById('instagram-preview').classList.toggle('hidden', !instagramChecked);
-    document.getElementById('preview-content-instagram').textContent = contentText || "El texto de tu publicación aparecerá aquí...";
-    
-    // Mostrar la sección de vista previa
-    document.getElementById('publication-preview').classList.remove('hidden');
-}
 
-// Actualizar vista previa cuando cambia el texto
-document.getElementById('content').addEventListener('input', function() {
-    const contentText = this.value;
-    document.getElementById('preview-content-facebook').textContent = contentText || "El texto de tu publicación aparecerá aquí...";
-    document.getElementById('preview-content-instagram').textContent = contentText || "El texto de tu publicación aparecerá aquí...";
-});
-    
+    document.getElementById('schedule-date-ui')?.addEventListener('change', () => { syncCustomScheduleInputs();
+        updatePreview(); });
+    document.getElementById('schedule-time-ui')?.addEventListener('change', () => { syncCustomScheduleInputs();
+        updatePreview(); });
+    document.querySelectorAll('[data-schedule-preset]').forEach((button) => {
+        button.addEventListener('click', () => { applySchedulePreset(button.dataset.schedulePreset); updatePreview(); });
+    });
+
+    let optimizationChart = null;
+
+    function ensureOptimizationChart() {
+        const canvas = document.getElementById('optimizationEngagementChart');
+        if (!canvas || typeof Chart === 'undefined' || optimizationChart) {
+            return;
+        }
+
+        optimizationChart = new Chart(canvas.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['8 am', '10 am', '12 pm', '2 pm', '5 pm', '8 pm'],
+                datasets: [
+                    {
+                        label: 'Instagram',
+                        data: [22, 38, 82, 56, 48, 91],
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79,70,229,0.12)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4
+                    },
+                    {
+                        label: 'Facebook',
+                        data: [18, 35, 76, 51, 44, 84],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16,185,129,0.08)',
+                        tension: 0.4,
+                        borderDash: [6, 6],
+                        pointRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) { return value + '%'; }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function applyOptimizedTime(timeValue) {
+        document.getElementById('schedule-later').checked = true;
+        document.getElementById('schedule-datetime-container').classList.remove('hidden');
+        initializeSchedulePicker();
+
+        const dateInput = document.getElementById('schedule-date-ui');
+        const timeInput = document.getElementById('schedule-time-ui');
+        const now = new Date();
+        const selectedDate = new Date(now);
+        const parts = timeValue.split(':');
+
+        selectedDate.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
+        if (selectedDate <= now) {
+            selectedDate.setDate(selectedDate.getDate() + 1);
+        }
+
+        dateInput.value = selectedDate.toISOString().slice(0, 10);
+        timeInput.value = timeValue;
+        syncCustomScheduleInputs();
+        updatePreview();
+
+        document.querySelectorAll('.rp-optimization-time').forEach((button) => {
+            button.classList.toggle('is-active', button.dataset.optimizedTime === timeValue);
+        });
+    }
+
+    document.getElementById('use-optimization')?.addEventListener('change', function() {
+        const panel = document.getElementById('optimization-panel');
+        panel.classList.toggle('hidden', !this.checked);
+        if (this.checked) {
+            ensureOptimizationChart();
+        }
+    });
+
+    document.querySelectorAll('.rp-optimization-time').forEach((button) => {
+        button.addEventListener('click', () => applyOptimizedTime(button.dataset.optimizedTime));
+    });
+
     // Publicar contenido
     function publishContent() {
         const successAlert = document.getElementById('success-alert');
@@ -471,7 +1040,6 @@ document.getElementById('content').addEventListener('input', function() {
         
         document.getElementById('published-platforms').textContent = platforms.join(', ') || 'Ninguna plataforma seleccionada';
         
-        // Determinar el tiempo de publicación
         let publishTime = 'Ahora mismo';
         if (document.getElementById('schedule-later').checked) {
             const datetimeInput = document.getElementById('schedule-datetime');
@@ -480,115 +1048,69 @@ document.getElementById('content').addEventListener('input', function() {
         }
         document.getElementById('published-time').textContent = publishTime;
         
-        // Mostrar alerta de éxito
         successAlert.classList.remove('hidden');
-        
-        // Desplazarse al inicio del formulario para ver la alerta
         successAlert.scrollIntoView({ behavior: 'smooth' });
         
-        // Mostrar animación de carga ficticia
         const publishBtn = document.querySelector('button[onclick="publishContent()"]');
         const originalText = publishBtn.innerHTML;
-        publishBtn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg> Publicando...`;
+        publishBtn.disabled = true;
+        publishBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Publicando...`;
         
         setTimeout(() => {
+            publishBtn.disabled = false;
             publishBtn.innerHTML = originalText;
         }, 1500);
     }
-    
-    // Ocultar alerta
+
     function hideAlert() {
         document.getElementById('success-alert').classList.add('hidden');
     }
-    
-    // Mostrar vista previa de multimedia cuando se selecciona
-    document.querySelectorAll('button[type="button"]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            if (this.textContent.includes('Imágenes') || this.textContent.includes('Video')) {
-                const mediaPreview = document.getElementById('media-preview');
-                mediaPreview.classList.remove('hidden');
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', function() {
+        updateAccountDisplay();
+        updatePreview();
+        
+        // Mostrar vista previa por defecto
+        document.getElementById('publication-preview').classList.remove('hidden');
+        document.getElementById('preview-toggle-text').textContent = 'Ocultar Vista Previa';
+    });
+
+    // Generar copy con IA
+    document.getElementById('generate-copy-btn')?.addEventListener('click', async function() {
+        const btn = this;
+        const tareaId = btn.dataset.tareaId;
+        const contentTextarea = document.getElementById('content');
+
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> Generando...`;
+
+        try {
+            const response = await fetch('{{ route("publicaciones.generate.copy") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ tarea_id: tareaId })
+            });
+
+            if (!response.ok) throw new Error('Error en el servidor.');
+            const data = await response.json();
+
+            if (data.success) {
+                contentTextarea.value = data.copy;
+                updatePreview();
+            } else {
+                alert('Error: ' + (data.copy || 'No se pudo generar el copy.'));
             }
-        });
-    });
-    
-    // Actualizar vista previa cuando cambia el texto
-    document.getElementById('content').addEventListener('input', function() {
-        const previewContent = document.getElementById('preview-content');
-        if (previewContent) {
-            previewContent.textContent = this.value || "El texto de tu publicación aparecerá aquí...";
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Hubo un error en la petición. Por favor, inténtalo de nuevo.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fas fa-wand-magic-sparkles mr-1"></i> Generar Copy con IA`;
         }
     });
-    
-    // Inicializar la visualización de cuentas
-    updateAccountDisplay();
-    // ... tu código JavaScript existente ...
-
-// NUEVO: Manejador de clic para el botón de generar copy
-document.getElementById('generate-copy-btn')?.addEventListener('click', async function() {
-    const btn = this;
-    const tareaId = btn.dataset.tareaId;
-    const contentTextarea = document.getElementById('content');
-
-    // 1. Mostrar estado de carga
-    btn.disabled = true;
-    btn.innerHTML = `
-        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        Generando...
-    `;
-
-    try {
-        // 2. Hacer la llamada a la API
-        const response = await fetch('{{ route("publicaciones.generate.copy") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ tarea_id: tareaId })
-        });
-
-        if (!response.ok) {
-            throw new Error('Error en la respuesta del servidor.');
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-            // 3. Colocar el texto generado en el textarea
-            contentTextarea.value = data.copy;
-        } else {
-            alert('Error: ' + (data.copy || 'No se pudo generar el copy.'));
-        }
-
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Hubo un error en la petición. Por favor, inténtalo de nuevo.');
-    } finally {
-        // 4. Restaurar el botón
-        btn.disabled = false;
-        btn.innerHTML = `
-            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-            </svg>
-            Generar Copy (Plan de Marketing)
-        `;
-    }
-});
 </script>
-<style>
-    .optimization-pulse {
-        animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-        0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
-        70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
-    }
-</style>
 @endsection
