@@ -1,6 +1,6 @@
 @extends('layouts.app2')
 
-@section('title', 'Cuestionario de Información de Empresa')
+@section('title', 'Cuestionario de Informacion de Empresa')
 
 @section('content')
 @php
@@ -54,6 +54,31 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="space-y-4 mb-6">
+            @if(session('success'))
+                <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-green-800">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-800">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @if($errors->any())
+                <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-800">
+                    <p class="font-semibold">No se pudo guardar el cuestionario.</p>
+                    <ul class="mt-2 list-disc list-inside text-sm space-y-1">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
         </div>
 
         <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">

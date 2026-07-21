@@ -18,7 +18,7 @@ class EmpresaAdminController extends Controller
      */
     public function index(Request $request)
     {
-        // 1. Verificar si el usuario estÃ¡ autenticado
+        // 1. Verificar si el usuario está autenticado
         if (!Auth::check()) {
             return redirect()->route('login');
         }
@@ -28,7 +28,7 @@ class EmpresaAdminController extends Controller
 
         // 3. Verificar si el usuario tiene el rol de "Administrador"
         if (!$user->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
-            abort(403, 'No tienes permisos para acceder a esta pÃ¡gina.');
+            abort(403, 'No tienes permisos para acceder a esta página.');
         }
 
         // 4. Obtener todos los usuarios para el filtro
@@ -93,7 +93,7 @@ class EmpresaAdminController extends Controller
      */
     public function show($id)
     {
-        // 1. Verificar si el usuario estÃ¡ autenticado
+        // 1. Verificar si el usuario está autenticado
         if (!Auth::check()) {
             return redirect()->route('login');
         }
@@ -103,7 +103,7 @@ class EmpresaAdminController extends Controller
 
         // 3. Verificar si el usuario tiene el rol de "Administrador"
         if (!$user->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
-            abort(403, 'No tienes permisos para acceder a esta pÃ¡gina.');
+            abort(403, 'No tienes permisos para acceder a esta página.');
         }
 
         // 4. Obtener la empresa con sus relaciones
@@ -112,7 +112,7 @@ class EmpresaAdminController extends Controller
             'planesMarketing.suscripcion.plan'
         ])->findOrFail($id);
         
-        // 5. Obtener la suscripciÃ³n activa del usuario
+        // 5. Obtener la suscripción activa del usuario
         $suscripcionActiva = Suscripcion::with('plan.caracteristicas')
             ->where('usuario_id', $empresa->usuario_id)
             ->where('estado', 'activa')
@@ -122,7 +122,7 @@ class EmpresaAdminController extends Controller
     }
 
     /**
-     * Mostrar formulario para crear empresa para un usuario especÃ­fico
+     * Mostrar formulario para crear empresa para un usuario específico
      */
     public function crearParaUsuario($usuario_id)
     {

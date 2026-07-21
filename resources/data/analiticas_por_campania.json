@@ -1,0 +1,1194 @@
+{
+  "usuarios": {
+    "6": {
+      "nombre": "Andy Contreras Callisaya",
+      "periodos": {
+        "last7days": {
+          "engagement": {
+            "rate": "4.5%",
+            "vs_previous": "1.9%",
+            "trend": "up",
+            "chart_data": [
+              3.5,
+              3.7,
+              3.8,
+              4.0,
+              4.1,
+              4.3,
+              4.5,
+              4.4,
+              4.5,
+              4.5
+            ]
+          },
+          "interactions_breakdown": {
+            "likes": 184,
+            "comments": 36,
+            "shares": 21,
+            "saves": 27
+          },
+          "engagement_by_type": [
+            {
+              "type": "Imagen",
+              "rate": "4.1%",
+              "interactions": 74
+            },
+            {
+              "type": "Video",
+              "rate": "4.8%",
+              "interactions": 81
+            },
+            {
+              "type": "Reel",
+              "rate": "5.3%",
+              "interactions": 92
+            },
+            {
+              "type": "Carrusel",
+              "rate": "4.6%",
+              "interactions": 63
+            }
+          ],
+          "engagement_by_platform": [
+            {
+              "platform": "Facebook",
+              "rate": "4.9%",
+              "trend": "up"
+            },
+            {
+              "platform": "Instagram",
+              "rate": "4.1%",
+              "trend": "up"
+            }
+          ],
+          "reach": {
+            "total": "372",
+            "vs_previous": "1.2%",
+            "trend": "up",
+            "chart_data": [
+              260,
+              268,
+              280,
+              294,
+              305,
+              320,
+              332,
+              344,
+              358,
+              372
+            ]
+          },
+          "followers": {
+            "label": "Seguidores",
+            "new": "459",
+            "total": "459",
+            "vs_previous": "1.3%",
+            "trend": "up",
+            "facebook_count": "329",
+            "instagram_count": "130",
+            "facebook_percent": 72,
+            "growth_labels": [
+              "Lun",
+              "Mar",
+              "Mie",
+              "Jue",
+              "Vie",
+              "Sab",
+              "Dom"
+            ],
+            "growth_facebook": [
+              320,
+              321,
+              323,
+              324,
+              326,
+              327,
+              329
+            ],
+            "growth_instagram": [
+              124,
+              125,
+              126,
+              127,
+              128,
+              129,
+              130
+            ]
+          },
+          "conversion": {
+            "rate": "3.5%",
+            "vs_previous": "0.9%",
+            "trend": "down",
+            "chart_data": [
+              3.5,
+              3.3,
+              3.1,
+              3.4,
+              3.6,
+              3.2,
+              3.0,
+              3.1,
+              3.3,
+              3.5
+            ],
+            "platform_metrics": [
+              {
+                "platform": "Facebook",
+                "impressions": 8500,
+                "clicks": 280,
+                "ctr": 3.29
+              },
+              {
+                "platform": "Instagram",
+                "impressions": 6200,
+                "clicks": 235,
+                "ctr": 3.79
+              }
+            ]
+          },
+          "optimal_time": {
+            "range": "13:00 y 16:00",
+            "engagement_boost": "+24%",
+            "percent": 78,
+            "source": "Lunes 13:00, Miercoles 16:00"
+          },
+          "demographics": {
+            "female_25_34": 39,
+            "male_25_34": 0.5,
+            "female_18_24": 4.5
+          },
+          "distribution": {
+            "platform": {
+              "facebook": 72,
+              "instagram": 28
+            },
+            "time": {
+              "labels": [
+                "6-9",
+                "9-12",
+                "12-15",
+                "15-18",
+                "18-21",
+                "21-24"
+              ],
+              "data": [
+                6,
+                14,
+                18,
+                27,
+                23,
+                12
+              ]
+            },
+            "by_hour": {
+              "labels": [
+                "6-9",
+                "9-12",
+                "12-15",
+                "15-18",
+                "18-21",
+                "21-24"
+              ],
+              "values": [
+                6,
+                14,
+                18,
+                27,
+                23,
+                12
+              ]
+            }
+          },
+          "reach_by_platform": [
+            {
+              "platform": "Facebook",
+              "reach": "260",
+              "trend": "up",
+              "percentage": 65
+            },
+            {
+              "platform": "Instagram",
+              "reach": "140",
+              "trend": "up",
+              "percentage": 35
+            }
+          ],
+          "reach_by_type": [
+            {
+              "type": "Imagen",
+              "reach": "96",
+              "percentage": 24
+            },
+            {
+              "type": "Video",
+              "reach": "118",
+              "percentage": 30
+            },
+            {
+              "type": "Reel",
+              "reach": "124",
+              "percentage": 31
+            },
+            {
+              "type": "Carrusel",
+              "reach": "62",
+              "percentage": 15
+            }
+          ],
+          "top_publications": [
+            {
+              "title": "Promocion principal",
+              "reach": "158",
+              "date": "08/06/2026",
+              "type": "Reel",
+              "platform": "Facebook"
+            },
+            {
+              "title": "Oferta destacada",
+              "reach": "132",
+              "date": "14/06/2026",
+              "type": "Video",
+              "platform": "Instagram"
+            },
+            {
+              "title": "Anuncio semanal",
+              "reach": "110",
+              "date": "20/06/2026",
+              "type": "Imagen",
+              "platform": "Facebook"
+            }
+          ],
+          "growth_publications": [
+            {
+              "platform": "Facebook",
+              "type": "Reel",
+              "new_followers": 18,
+              "date": "08/06/2026"
+            },
+            {
+              "platform": "Instagram",
+              "type": "Video",
+              "new_followers": 11,
+              "date": "14/06/2026"
+            }
+          ],
+          "acquisition_insights": "La base de seguidores se mantiene estable, con mayor peso en Facebook y una respuesta sostenida desde publicaciones visuales y reels.",
+          "audience": {
+            "summary": {
+              "segment": "Mujeres de 25-44 anos",
+              "location": "La Paz, Bolivia",
+              "women_display": "95,5%",
+              "men_display": "4,5%",
+              "primary": "La audiencia principal esta compuesta por mujeres de 25-44 anos, principalmente de La Paz, Bolivia."
+            },
+            "age_gender": {
+              "labels": [
+                "18-24",
+                "25-34",
+                "35-44",
+                "45-54",
+                "55-64",
+                "65+"
+              ],
+              "women": [
+                4.5,
+                39.0,
+                38.5,
+                9.8,
+                2.0,
+                1.7
+              ],
+              "men": [
+                0.2,
+                0.5,
+                1.8,
+                0.8,
+                0.5,
+                0.2
+              ],
+              "women_total": 95.5,
+              "men_total": 4.5,
+              "women_total_display": "95,5%",
+              "men_total_display": "4,5%"
+            },
+            "cities": [
+              {
+                "name": "La Paz, Bolivia",
+                "percentage": 83.6
+              },
+              {
+                "name": "Cochabamba, Bolivia",
+                "percentage": 4.6
+              },
+              {
+                "name": "Santa Cruz de la Sierra, Bolivia",
+                "percentage": 2.4
+              },
+              {
+                "name": "Callampaya, Bolivia",
+                "percentage": 1.2
+              },
+              {
+                "name": "Oruro, Bolivia",
+                "percentage": 0.9
+              },
+              {
+                "name": "Quillacollo, Bolivia",
+                "percentage": 0.6
+              },
+              {
+                "name": "Sucre, Bolivia",
+                "percentage": 0.6
+              },
+              {
+                "name": "Uyuni, Bolivia",
+                "percentage": 0.6
+              },
+              {
+                "name": "Cobija, Bolivia",
+                "percentage": 0.3
+              },
+              {
+                "name": "Tarija, Bolivia",
+                "percentage": 0.3
+              }
+            ],
+            "countries": [
+              {
+                "name": "Bolivia",
+                "percentage": 97.9
+              },
+              {
+                "name": "Argentina",
+                "percentage": 0.6
+              },
+              {
+                "name": "Colombia",
+                "percentage": 0.6
+              },
+              {
+                "name": "Estados Unidos",
+                "percentage": 0.6
+              },
+              {
+                "name": "Mexico",
+                "percentage": 0.6
+              },
+              {
+                "name": "Ecuador",
+                "percentage": 0.3
+              },
+              {
+                "name": "Espana",
+                "percentage": 0.3
+              },
+              {
+                "name": "Paraguay",
+                "percentage": 0.3
+              },
+              {
+                "name": "Peru",
+                "percentage": 0.3
+              },
+              {
+                "name": "Yemen",
+                "percentage": 0.3
+              }
+            ]
+          },
+          "period_label": "semana anterior"
+        },
+        "last30days": {
+          "engagement": {
+            "rate": "4.7%",
+            "vs_previous": "2.4%",
+            "trend": "up",
+            "chart_data": [
+              3.6,
+              3.8,
+              4.0,
+              4.1,
+              4.3,
+              4.2,
+              4.4,
+              4.5,
+              4.6,
+              4.7
+            ]
+          },
+          "interactions_breakdown": {
+            "likes": 184,
+            "comments": 36,
+            "shares": 21,
+            "saves": 27
+          },
+          "engagement_by_type": [
+            {
+              "type": "Imagen",
+              "rate": "4.1%",
+              "interactions": 74
+            },
+            {
+              "type": "Video",
+              "rate": "4.8%",
+              "interactions": 81
+            },
+            {
+              "type": "Reel",
+              "rate": "5.3%",
+              "interactions": 92
+            },
+            {
+              "type": "Carrusel",
+              "rate": "4.6%",
+              "interactions": 63
+            }
+          ],
+          "engagement_by_platform": [
+            {
+              "platform": "Facebook",
+              "rate": "4.9%",
+              "trend": "up"
+            },
+            {
+              "platform": "Instagram",
+              "rate": "4.1%",
+              "trend": "up"
+            }
+          ],
+          "reach": {
+            "total": "400",
+            "vs_previous": "1.8%",
+            "trend": "up",
+            "chart_data": [
+              280,
+              295,
+              300,
+              315,
+              324,
+              336,
+              348,
+              360,
+              382,
+              400
+            ]
+          },
+          "followers": {
+            "label": "Seguidores",
+            "new": "459",
+            "total": "459",
+            "vs_previous": "1.3%",
+            "trend": "up",
+            "facebook_count": "329",
+            "instagram_count": "130",
+            "facebook_percent": 72,
+            "growth_labels": [
+              "Lun",
+              "Mar",
+              "Mie",
+              "Jue",
+              "Vie",
+              "Sab",
+              "Dom"
+            ],
+            "growth_facebook": [
+              312,
+              315,
+              318,
+              320,
+              323,
+              326,
+              329
+            ],
+            "growth_instagram": [
+              118,
+              120,
+              122,
+              124,
+              126,
+              128,
+              130
+            ]
+          },
+          "conversion": {
+            "rate": "3.5%",
+            "vs_previous": "0.9%",
+            "trend": "down",
+            "chart_data": [
+              3.5,
+              3.3,
+              3.1,
+              3.4,
+              3.6,
+              3.2,
+              3.0,
+              3.1,
+              3.3,
+              3.5
+            ],
+            "platform_metrics": [
+              {
+                "platform": "Facebook",
+                "impressions": 8500,
+                "clicks": 280,
+                "ctr": 3.29
+              },
+              {
+                "platform": "Instagram",
+                "impressions": 6200,
+                "clicks": 235,
+                "ctr": 3.79
+              }
+            ]
+          },
+          "optimal_time": {
+            "range": "13:00 y 16:00",
+            "engagement_boost": "+24%",
+            "percent": 78,
+            "source": "Lunes 13:00, Miercoles 16:00"
+          },
+          "demographics": {
+            "female_25_34": 39,
+            "male_25_34": 0.5,
+            "female_18_24": 4.5
+          },
+          "distribution": {
+            "platform": {
+              "facebook": 72,
+              "instagram": 28
+            },
+            "time": {
+              "labels": [
+                "6-9",
+                "9-12",
+                "12-15",
+                "15-18",
+                "18-21",
+                "21-24"
+              ],
+              "data": [
+                6,
+                14,
+                18,
+                27,
+                23,
+                12
+              ]
+            },
+            "by_hour": {
+              "labels": [
+                "6-9",
+                "9-12",
+                "12-15",
+                "15-18",
+                "18-21",
+                "21-24"
+              ],
+              "values": [
+                6,
+                14,
+                18,
+                27,
+                23,
+                12
+              ]
+            }
+          },
+          "reach_by_platform": [
+            {
+              "platform": "Facebook",
+              "reach": "260",
+              "trend": "up",
+              "percentage": 65
+            },
+            {
+              "platform": "Instagram",
+              "reach": "140",
+              "trend": "up",
+              "percentage": 35
+            }
+          ],
+          "reach_by_type": [
+            {
+              "type": "Imagen",
+              "reach": "96",
+              "percentage": 24
+            },
+            {
+              "type": "Video",
+              "reach": "118",
+              "percentage": 30
+            },
+            {
+              "type": "Reel",
+              "reach": "124",
+              "percentage": 31
+            },
+            {
+              "type": "Carrusel",
+              "reach": "62",
+              "percentage": 15
+            }
+          ],
+          "top_publications": [
+            {
+              "title": "Promocion principal",
+              "reach": "158",
+              "date": "08/06/2026",
+              "type": "Reel",
+              "platform": "Facebook"
+            },
+            {
+              "title": "Oferta destacada",
+              "reach": "132",
+              "date": "14/06/2026",
+              "type": "Video",
+              "platform": "Instagram"
+            },
+            {
+              "title": "Anuncio semanal",
+              "reach": "110",
+              "date": "20/06/2026",
+              "type": "Imagen",
+              "platform": "Facebook"
+            }
+          ],
+          "growth_publications": [
+            {
+              "platform": "Facebook",
+              "type": "Reel",
+              "new_followers": 18,
+              "date": "08/06/2026"
+            },
+            {
+              "platform": "Instagram",
+              "type": "Video",
+              "new_followers": 11,
+              "date": "14/06/2026"
+            }
+          ],
+          "acquisition_insights": "La base de seguidores se mantiene estable, con mayor peso en Facebook y una respuesta sostenida desde publicaciones visuales y reels.",
+          "audience": {
+            "summary": {
+              "segment": "Mujeres de 25-44 anos",
+              "location": "La Paz, Bolivia",
+              "women_display": "95,5%",
+              "men_display": "4,5%",
+              "primary": "La audiencia principal esta compuesta por mujeres de 25-44 anos, principalmente de La Paz, Bolivia."
+            },
+            "age_gender": {
+              "labels": [
+                "18-24",
+                "25-34",
+                "35-44",
+                "45-54",
+                "55-64",
+                "65+"
+              ],
+              "women": [
+                4.5,
+                39.0,
+                38.5,
+                9.8,
+                2.0,
+                1.7
+              ],
+              "men": [
+                0.2,
+                0.5,
+                1.8,
+                0.8,
+                0.5,
+                0.2
+              ],
+              "women_total": 95.5,
+              "men_total": 4.5,
+              "women_total_display": "95,5%",
+              "men_total_display": "4,5%"
+            },
+            "cities": [
+              {
+                "name": "La Paz, Bolivia",
+                "percentage": 83.6
+              },
+              {
+                "name": "Cochabamba, Bolivia",
+                "percentage": 4.6
+              },
+              {
+                "name": "Santa Cruz de la Sierra, Bolivia",
+                "percentage": 2.4
+              },
+              {
+                "name": "Callampaya, Bolivia",
+                "percentage": 1.2
+              },
+              {
+                "name": "Oruro, Bolivia",
+                "percentage": 0.9
+              },
+              {
+                "name": "Quillacollo, Bolivia",
+                "percentage": 0.6
+              },
+              {
+                "name": "Sucre, Bolivia",
+                "percentage": 0.6
+              },
+              {
+                "name": "Uyuni, Bolivia",
+                "percentage": 0.6
+              },
+              {
+                "name": "Cobija, Bolivia",
+                "percentage": 0.3
+              },
+              {
+                "name": "Tarija, Bolivia",
+                "percentage": 0.3
+              }
+            ],
+            "countries": [
+              {
+                "name": "Bolivia",
+                "percentage": 97.9
+              },
+              {
+                "name": "Argentina",
+                "percentage": 0.6
+              },
+              {
+                "name": "Colombia",
+                "percentage": 0.6
+              },
+              {
+                "name": "Estados Unidos",
+                "percentage": 0.6
+              },
+              {
+                "name": "Mexico",
+                "percentage": 0.6
+              },
+              {
+                "name": "Ecuador",
+                "percentage": 0.3
+              },
+              {
+                "name": "Espana",
+                "percentage": 0.3
+              },
+              {
+                "name": "Paraguay",
+                "percentage": 0.3
+              },
+              {
+                "name": "Peru",
+                "percentage": 0.3
+              },
+              {
+                "name": "Yemen",
+                "percentage": 0.3
+              }
+            ]
+          },
+          "period_label": "periodo anterior"
+        },
+        "thisyear": {
+          "engagement": {
+            "rate": "4.9%",
+            "vs_previous": "3.1%",
+            "trend": "up",
+            "chart_data": [
+              3.9,
+              4.0,
+              4.1,
+              4.2,
+              4.4,
+              4.5,
+              4.5,
+              4.7,
+              4.8,
+              4.9
+            ]
+          },
+          "interactions_breakdown": {
+            "likes": 184,
+            "comments": 36,
+            "shares": 21,
+            "saves": 27
+          },
+          "engagement_by_type": [
+            {
+              "type": "Imagen",
+              "rate": "4.1%",
+              "interactions": 74
+            },
+            {
+              "type": "Video",
+              "rate": "4.8%",
+              "interactions": 81
+            },
+            {
+              "type": "Reel",
+              "rate": "5.3%",
+              "interactions": 92
+            },
+            {
+              "type": "Carrusel",
+              "rate": "4.6%",
+              "interactions": 63
+            }
+          ],
+          "engagement_by_platform": [
+            {
+              "platform": "Facebook",
+              "rate": "4.9%",
+              "trend": "up"
+            },
+            {
+              "platform": "Instagram",
+              "rate": "4.1%",
+              "trend": "up"
+            }
+          ],
+          "reach": {
+            "total": "400",
+            "vs_previous": "2.3%",
+            "trend": "up",
+            "chart_data": [
+              290,
+              300,
+              308,
+              320,
+              334,
+              346,
+              354,
+              368,
+              384,
+              400
+            ]
+          },
+          "followers": {
+            "label": "Seguidores",
+            "new": "459",
+            "total": "459",
+            "vs_previous": "1.3%",
+            "trend": "up",
+            "facebook_count": "329",
+            "instagram_count": "130",
+            "facebook_percent": 72,
+            "growth_labels": [
+              "Lun",
+              "Mar",
+              "Mie",
+              "Jue",
+              "Vie",
+              "Sab",
+              "Dom"
+            ],
+            "growth_facebook": [
+              312,
+              315,
+              318,
+              320,
+              323,
+              326,
+              329
+            ],
+            "growth_instagram": [
+              118,
+              120,
+              122,
+              124,
+              126,
+              128,
+              130
+            ]
+          },
+          "conversion": {
+            "rate": "3.5%",
+            "vs_previous": "0.9%",
+            "trend": "down",
+            "chart_data": [
+              3.5,
+              3.3,
+              3.1,
+              3.4,
+              3.6,
+              3.2,
+              3.0,
+              3.1,
+              3.3,
+              3.5
+            ],
+            "platform_metrics": [
+              {
+                "platform": "Facebook",
+                "impressions": 8500,
+                "clicks": 280,
+                "ctr": 3.29
+              },
+              {
+                "platform": "Instagram",
+                "impressions": 6200,
+                "clicks": 235,
+                "ctr": 3.79
+              }
+            ]
+          },
+          "optimal_time": {
+            "range": "13:00 y 16:00",
+            "engagement_boost": "+24%",
+            "percent": 78,
+            "source": "Lunes 13:00, Miercoles 16:00"
+          },
+          "demographics": {
+            "female_25_34": 39,
+            "male_25_34": 0.5,
+            "female_18_24": 4.5
+          },
+          "distribution": {
+            "platform": {
+              "facebook": 72,
+              "instagram": 28
+            },
+            "time": {
+              "labels": [
+                "6-9",
+                "9-12",
+                "12-15",
+                "15-18",
+                "18-21",
+                "21-24"
+              ],
+              "data": [
+                6,
+                14,
+                18,
+                27,
+                23,
+                12
+              ]
+            },
+            "by_hour": {
+              "labels": [
+                "6-9",
+                "9-12",
+                "12-15",
+                "15-18",
+                "18-21",
+                "21-24"
+              ],
+              "values": [
+                6,
+                14,
+                18,
+                27,
+                23,
+                12
+              ]
+            }
+          },
+          "reach_by_platform": [
+            {
+              "platform": "Facebook",
+              "reach": "260",
+              "trend": "up",
+              "percentage": 65
+            },
+            {
+              "platform": "Instagram",
+              "reach": "140",
+              "trend": "up",
+              "percentage": 35
+            }
+          ],
+          "reach_by_type": [
+            {
+              "type": "Imagen",
+              "reach": "96",
+              "percentage": 24
+            },
+            {
+              "type": "Video",
+              "reach": "118",
+              "percentage": 30
+            },
+            {
+              "type": "Reel",
+              "reach": "124",
+              "percentage": 31
+            },
+            {
+              "type": "Carrusel",
+              "reach": "62",
+              "percentage": 15
+            }
+          ],
+          "top_publications": [
+            {
+              "title": "Promocion principal",
+              "reach": "158",
+              "date": "08/06/2026",
+              "type": "Reel",
+              "platform": "Facebook"
+            },
+            {
+              "title": "Oferta destacada",
+              "reach": "132",
+              "date": "14/06/2026",
+              "type": "Video",
+              "platform": "Instagram"
+            },
+            {
+              "title": "Anuncio semanal",
+              "reach": "110",
+              "date": "20/06/2026",
+              "type": "Imagen",
+              "platform": "Facebook"
+            }
+          ],
+          "growth_publications": [
+            {
+              "platform": "Facebook",
+              "type": "Reel",
+              "new_followers": 18,
+              "date": "08/06/2026"
+            },
+            {
+              "platform": "Instagram",
+              "type": "Video",
+              "new_followers": 11,
+              "date": "14/06/2026"
+            }
+          ],
+          "acquisition_insights": "La base de seguidores se mantiene estable, con mayor peso en Facebook y una respuesta sostenida desde publicaciones visuales y reels.",
+          "audience": {
+            "summary": {
+              "segment": "Mujeres de 25-44 anos",
+              "location": "La Paz, Bolivia",
+              "women_display": "95,5%",
+              "men_display": "4,5%",
+              "primary": "La audiencia principal esta compuesta por mujeres de 25-44 anos, principalmente de La Paz, Bolivia."
+            },
+            "age_gender": {
+              "labels": [
+                "18-24",
+                "25-34",
+                "35-44",
+                "45-54",
+                "55-64",
+                "65+"
+              ],
+              "women": [
+                4.5,
+                39.0,
+                38.5,
+                9.8,
+                2.0,
+                1.7
+              ],
+              "men": [
+                0.2,
+                0.5,
+                1.8,
+                0.8,
+                0.5,
+                0.2
+              ],
+              "women_total": 95.5,
+              "men_total": 4.5,
+              "women_total_display": "95,5%",
+              "men_total_display": "4,5%"
+            },
+            "cities": [
+              {
+                "name": "La Paz, Bolivia",
+                "percentage": 83.6
+              },
+              {
+                "name": "Cochabamba, Bolivia",
+                "percentage": 4.6
+              },
+              {
+                "name": "Santa Cruz de la Sierra, Bolivia",
+                "percentage": 2.4
+              },
+              {
+                "name": "Callampaya, Bolivia",
+                "percentage": 1.2
+              },
+              {
+                "name": "Oruro, Bolivia",
+                "percentage": 0.9
+              },
+              {
+                "name": "Quillacollo, Bolivia",
+                "percentage": 0.6
+              },
+              {
+                "name": "Sucre, Bolivia",
+                "percentage": 0.6
+              },
+              {
+                "name": "Uyuni, Bolivia",
+                "percentage": 0.6
+              },
+              {
+                "name": "Cobija, Bolivia",
+                "percentage": 0.3
+              },
+              {
+                "name": "Tarija, Bolivia",
+                "percentage": 0.3
+              }
+            ],
+            "countries": [
+              {
+                "name": "Bolivia",
+                "percentage": 97.9
+              },
+              {
+                "name": "Argentina",
+                "percentage": 0.6
+              },
+              {
+                "name": "Colombia",
+                "percentage": 0.6
+              },
+              {
+                "name": "Estados Unidos",
+                "percentage": 0.6
+              },
+              {
+                "name": "Mexico",
+                "percentage": 0.6
+              },
+              {
+                "name": "Ecuador",
+                "percentage": 0.3
+              },
+              {
+                "name": "Espana",
+                "percentage": 0.3
+              },
+              {
+                "name": "Paraguay",
+                "percentage": 0.3
+              },
+              {
+                "name": "Peru",
+                "percentage": 0.3
+              },
+              {
+                "name": "Yemen",
+                "percentage": 0.3
+              }
+            ]
+          },
+          "period_label": "este ano"
+        }
+      }
+    }
+  }
+}

@@ -141,7 +141,7 @@
                 </td>
                 <td style="width: 50%; vertical-align: top; padding-left: 20px;">
                     <div style="background-color: #f5f3ff; border-left: 4px solid #9333ea; padding: 15px; border-radius: 0 8px 8px 0; font-size: 13px;">
-                        <strong>Análisis:</strong> El alcance ha mostrado un crecimiento del <strong>{{ $data['reach']['vs_previous'] ?? '0%' }}</strong>, impulsado principalmente por el rendimiento en <strong>Facebook</strong> ({{ $data['reach_by_platform'][0]['percentage'] ?? 0 }}%).
+                        <strong>Análisis:</strong> El alcance ha mostrado un crecimiento del <strong>{{ $data['reach']['vs_previous'] ?? '0%' }}</strong>, impulsado principalmente por el rendimiento en <strong>Facebook</strong> ({{ $data['reach_by_platform'][0]['percentage'] ?? 0 }}%) y por una audiencia concentrada en <strong>{{ $data['audience']['summary']['location'] ?? 'La Paz, Bolivia' }}</strong>.
                     </div>
                 </td>
             </tr>

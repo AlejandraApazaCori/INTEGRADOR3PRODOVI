@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Cuestionario de Información de Empresa (Vista Admin)')
+@section('title', 'Cuestionario de Informacion de Empresa (Vista Admin)')
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 py-8">
@@ -14,6 +14,25 @@
                 </svg>
                 Volver a la Empresa
             </a>
+        </div>
+
+        <div class="space-y-4 mb-6">
+            @if(session('success'))
+                <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-green-800">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if($errors->any())
+                <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-800">
+                    <p class="font-semibold">No se pudo guardar el cuestionario.</p>
+                    <ul class="mt-2 list-disc list-inside text-sm space-y-1">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
         </div>
 
         <div class="bg-white rounded-2xl shadow-xl overflow-hidden">

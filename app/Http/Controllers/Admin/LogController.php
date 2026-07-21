@@ -3,13 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\AccessLog;
-use App\Models\SecurityLog;
 use App\Models\AuditLog;
-use Illuminate\Support\Facades\File;
+use App\Models\SecurityLog;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 
 class LogController extends Controller
 {
@@ -18,13 +20,15 @@ class LogController extends Controller
         $fechaInicio = $request->input('fecha_inicio');
         $fechaFin = $request->input('fecha_fin');
 
-        // 1. Obtener los logs de acceso con filtros
         $queryAccess = AccessLog::with('user')->orderBy('created_at', 'desc');
-        if ($fechaInicio) $queryAccess->whereDate('created_at', '>=', $fechaInicio);
-        if ($fechaFin) $queryAccess->whereDate('created_at', '<=', $fechaFin);
+        if ($fechaInicio) {
+            $queryAccess->whereDate('created_at', '>=', $fechaInicio);
+        }
+        if ($fechaFin) {
+            $queryAccess->whereDate('created_at', '<=', $fechaFin);
+        }
         $accessLogs = $queryAccess->paginate(15, ['*'], 'access_page');
 
-        // 2. Parsear el archivo de errores de Laravel con filtros
         $allErrorLogs = collect($this->getErrorLogs($fechaInicio, $fechaFin));
         $perPage = 15;
         $currentPage = Paginator::resolveCurrentPage('error_page');
@@ -36,19 +40,36 @@ class LogController extends Controller
             ['path' => Paginator::resolveCurrentPath(), 'pageName' => 'error_page']
         );
 
-        // 3. Logs de Seguridad con filtros
         $querySecurity = SecurityLog::with('user')->orderBy('created_at', 'desc');
-        if ($fechaInicio) $querySecurity->whereDate('created_at', '>=', $fechaInicio);
-        if ($fechaFin) $querySecurity->whereDate('created_at', '<=', $fechaFin);
+        if ($fechaInicio) {
+            $querySecurity->whereDate('created_at', '>=', $fechaInicio);
+        }
+        if ($fechaFin) {
+            $querySecurity->whereDate('created_at', '<=', $fechaFin);
+        }
         $securityLogs = $querySecurity->paginate(15, ['*'], 'security_page');
 
-        // 4. Logs de Auditoría con filtros
         $queryAudit = AuditLog::with('user')->orderBy('created_at', 'desc');
-        if ($fechaInicio) $queryAudit->whereDate('created_at', '>=', $fechaInicio);
-        if ($fechaFin) $queryAudit->whereDate('created_at', '<=', $fechaFin);
+        if ($fechaInicio) {
+            $queryAudit->whereDate('created_at', '>=', $fechaInicio);
+        }
+        if ($fechaFin) {
+            $queryAudit->whereDate('created_at', '<=', $fechaFin);
+        }
         $auditLogs = $queryAudit->paginate(15, ['*'], 'audit_page');
 
-        return view('administrador.logs.index', compact('accessLogs', 'errorLogs', 'securityLogs', 'auditLogs', 'fechaInicio', 'fechaFin'));
+        $showScheduledPublicationsSetupButton = ! Schema::hasColumn('tareas', 'publication_message')
+            || ! Cache::has('administrador.publicaciones_programadas_setup.ejecutado');
+
+        return view('administrador.logs.index', compact(
+            'accessLogs',
+            'errorLogs',
+            'securityLogs',
+            'auditLogs',
+            'fechaInicio',
+            'fechaFin',
+            'showScheduledPublicationsSetupButton'
+        ));
     }
 
     public function exportPdf($type, Request $request)
@@ -56,36 +77,45 @@ class LogController extends Controller
         $fechaInicio = $request->input('fecha_inicio');
         $fechaFin = $request->input('fecha_fin');
         $data = [];
-        $view = "";
-        $title = "";
+        $view = '';
+        $title = '';
         $chartBase64 = null;
 
         switch ($type) {
             case 'access':
                 $query = AccessLog::with('user')->orderBy('created_at', 'desc');
-                if ($fechaInicio) $query->whereDate('created_at', '>=', $fechaInicio);
-                if ($fechaFin) $query->whereDate('created_at', '<=', $fechaFin);
+                if ($fechaInicio) {
+                    $query->whereDate('created_at', '>=', $fechaInicio);
+                }
+                if ($fechaFin) {
+                    $query->whereDate('created_at', '<=', $fechaFin);
+                }
                 $data = $query->get();
                 $view = 'administrador.logs.access_pdf';
                 $title = 'Reporte de Logs de Acceso';
-                
+
                 $chartLabels = [];
                 $chartValues = [];
                 $statusCounts = $data->groupBy('status_code')->map->count();
-                foreach($statusCounts as $status => $count) {
-                    $chartLabels[] = "Status " . ($status ?: 'N/A');
+                foreach ($statusCounts as $status => $count) {
+                    $chartLabels[] = 'Status ' . ($status ?: 'N/A');
                     $chartValues[] = $count;
                 }
-                $chartBase64 = $this->generateChartBase64($chartLabels, $chartValues, 'Distribución de Códigos de Estado');
+                $chartBase64 = $this->generateChartBase64($chartLabels, $chartValues, 'Distribucion de Codigos de Estado');
                 break;
+
             case 'security':
                 $query = SecurityLog::with('user')->orderBy('created_at', 'desc');
-                if ($fechaInicio) $query->whereDate('created_at', '>=', $fechaInicio);
-                if ($fechaFin) $query->whereDate('created_at', '<=', $fechaFin);
+                if ($fechaInicio) {
+                    $query->whereDate('created_at', '>=', $fechaInicio);
+                }
+                if ($fechaFin) {
+                    $query->whereDate('created_at', '<=', $fechaFin);
+                }
                 $data = $query->get();
                 $view = 'administrador.logs.security_pdf';
                 $title = 'Reporte de Logs de Seguridad';
-                
+
                 $chartLabels = [];
                 $chartValues = [];
                 $eventCounts = $data->groupBy('event_type')->map->count();
@@ -93,38 +123,44 @@ class LogController extends Controller
                     'login_success' => 'Logueo Exitoso',
                     'login_failed' => 'Logueo Fallido',
                 ];
-                foreach($eventCounts as $event => $count) {
+                foreach ($eventCounts as $event => $count) {
                     $chartLabels[] = $eventLabelsMapping[$event] ?? strtoupper(str_replace('_', ' ', $event));
                     $chartValues[] = $count;
                 }
-                $chartBase64 = $this->generateChartBase64($chartLabels, $chartValues, 'Distribución de Eventos de Seguridad');
+                $chartBase64 = $this->generateChartBase64($chartLabels, $chartValues, 'Distribucion de Eventos de Seguridad');
                 break;
+
             case 'audit':
                 $query = AuditLog::with('user')->orderBy('created_at', 'desc');
-                if ($fechaInicio) $query->whereDate('created_at', '>=', $fechaInicio);
-                if ($fechaFin) $query->whereDate('created_at', '<=', $fechaFin);
+                if ($fechaInicio) {
+                    $query->whereDate('created_at', '>=', $fechaInicio);
+                }
+                if ($fechaFin) {
+                    $query->whereDate('created_at', '<=', $fechaFin);
+                }
                 $data = $query->get();
                 $view = 'administrador.logs.audit_pdf';
                 $title = 'Reporte de Logs de Actividad';
-                
+
                 $chartLabels = [];
                 $chartValues = [];
                 $actionCounts = $data->groupBy('action')->map->count();
-                foreach($actionCounts as $action => $count) {
+                foreach ($actionCounts as $action => $count) {
                     $chartLabels[] = strtoupper($action);
                     $chartValues[] = $count;
                 }
-                $chartBase64 = $this->generateChartBase64($chartLabels, $chartValues, 'Distribución de Acciones');
+                $chartBase64 = $this->generateChartBase64($chartLabels, $chartValues, 'Distribucion de Acciones');
                 break;
+
             case 'error':
                 $data = collect($this->getErrorLogs($fechaInicio, $fechaFin));
                 $view = 'administrador.logs.error_pdf';
                 $title = 'Reporte de Logs de Errores';
-                
+
                 $chartLabels = [];
                 $chartValues = [];
                 $typeCounts = $data->groupBy('type')->map->count();
-                foreach($typeCounts as $errorType => $count) {
+                foreach ($typeCounts as $errorType => $count) {
                     $chartLabels[] = $errorType;
                     $chartValues[] = $count;
                 }
@@ -137,39 +173,40 @@ class LogController extends Controller
             'fecha_inicio' => $fechaInicio,
             'fecha_fin' => $fechaFin,
             'title' => $title,
-            'chartBase64' => $chartBase64
+            'chartBase64' => $chartBase64,
         ])->setPaper('a4', 'landscape');
 
-        return $pdf->download("logs_{$type}_" . now()->format('Ymd_His') . ".pdf");
+        return $pdf->download('logs_' . $type . '_' . now()->format('Ymd_His') . '.pdf');
     }
 
     private function getErrorLogs($fechaInicio = null, $fechaFin = null)
     {
         $logPath = storage_path('logs/laravel.log');
         $errorLogs = [];
-        
-        if (!File::exists($logPath)) {
+
+        if (! File::exists($logPath)) {
             return $errorLogs;
         }
 
-        // Leer el archivo de logs
         $logFile = file($logPath);
-        $logFile = array_reverse($logFile); // Mostrar los más recientes primero
+        $logFile = array_reverse($logFile);
 
         $pattern = '/^\[(.*?)\] (.*?): (.*?) in (.*?):([0-9]+)/';
         $simplePattern = '/^\[(.*?)\] (.*?): (.*)/';
 
         foreach ($logFile as $line) {
-            // Saltamos las líneas que no empiezan con fecha
-            if (!preg_match('/^\[([0-9]{4}-[0-9]{2}-[0-9]{2}) [0-9]{2}:[0-9]{2}:[0-9]{2}\]/', $line, $dateMatches)) {
+            if (! preg_match('/^\[([0-9]{4}-[0-9]{2}-[0-9]{2}) [0-9]{2}:[0-9]{2}:[0-9]{2}\]/', $line, $dateMatches)) {
                 continue;
             }
 
             $logDate = $dateMatches[1];
 
-            // Aplicar filtros de fecha si existen
-            if ($fechaInicio && $logDate < $fechaInicio) continue;
-            if ($fechaFin && $logDate > $fechaFin) continue;
+            if ($fechaInicio && $logDate < $fechaInicio) {
+                continue;
+            }
+            if ($fechaFin && $logDate > $fechaFin) {
+                continue;
+            }
 
             if (preg_match($pattern, $line, $matches)) {
                 $errorLogs[] = [
@@ -191,8 +228,9 @@ class LogController extends Controller
                 ];
             }
 
-            // Limitar a 1000 logs procesados para evitar lag si hay demasiados en el rango
-            if (count($errorLogs) >= 1000) break;
+            if (count($errorLogs) >= 1000) {
+                break;
+            }
         }
 
         return $errorLogs;
@@ -211,25 +249,22 @@ class LogController extends Controller
                 'datasets' => [
                     [
                         'data' => $dataVals,
-                    ]
-                ]
+                    ],
+                ],
             ],
             'options' => [
                 'title' => [
                     'display' => true,
-                    'text' => $chartTitle
-                ]
-            ]
+                    'text' => $chartTitle,
+                ],
+            ],
         ];
 
         $encodedConfig = urlencode(json_encode($chartConfig));
-        
-        // Use timeout and suppress errors to not crash if the API is down
         $context = stream_context_create(['http' => ['timeout' => 5]]);
         $imageUrl = "https://quickchart.io/chart?c={$encodedConfig}&w=500&h=300";
-        
         $imageData = @file_get_contents($imageUrl, false, $context);
-        
+
         if ($imageData) {
             return 'data:image/png;base64,' . base64_encode($imageData);
         }

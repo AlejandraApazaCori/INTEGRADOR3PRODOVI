@@ -1,8 +1,11 @@
-@php
+﻿@php
+    $socialAccountsTableExists = auth()->user()?->socialAccountsTableExists() ?? false;
     $socialAccounts = auth()->user()?->linkedSocialAccounts() ?? collect();
     $facebookLinked = $socialAccounts->has('facebook') && filled(optional($socialAccounts->get('facebook'))->provider_user_id);
     $instagramLinked = $socialAccounts->has('instagram') && filled(optional($socialAccounts->get('instagram'))->provider_user_id);
     $allAccountsLinked = $facebookLinked && $instagramLinked;
+    $facebookAppId = config('services.facebook.client_id');
+    $facebookApiVersion = config('facebook.api_version', 'v18.0');
 @endphp
 
 @if(! $allAccountsLinked)
@@ -13,7 +16,7 @@
                 <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <p class="font-small">Para aprovechar al máximo nuestros servicios, vincula tus cuentas de redes sociales</p>
+                <p class="font-small">Para aprovechar al m?ximo nuestros servicios, vincula tus cuentas de redes sociales</p>
             </div>
             <button id="link-now-btn" class="bg-white text-blue-600 hover:bg-blue-50 font-medium py-2 px-4 rounded-md transition-colors duration-200">
                 Vincular ahora
@@ -37,8 +40,9 @@
             </div>
 
             <div class="bg-white px-6 py-6">
-                <p class="text-gray-700 mb-2">Conecta tus cuentas de redes sociales para que podamos gestionar tu presencia en línea de manera efectiva.</p>
-                <p class="text-sm text-gray-500 mb-6">Instagram se habilitará después de vincular Facebook.</p>
+                <p class="text-gray-700 mb-2">Conecta tus cuentas de redes sociales para que podamos gestionar tu presencia en linea de manera efectiva.</p>
+                <p class="text-sm text-gray-500 mb-3">Instagram se habilitará después de vincular Facebook.</p>
+                <p id="facebook-login-status" class="mb-4 text-sm text-blue-600"></p>
 
                 @if(session('social_accounts_error'))
                     <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -52,8 +56,26 @@
                     </div>
                 @endif
 
+                                @if(! $socialAccountsTableExists)
+                    <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">
+                        <p class="font-semibold">La tabla <code>social_accounts</code> aún no está lista en este entorno.</p>
+                        <p class="mt-1">Este botón ejecuta una sola vez la reparación automática: elimina cualquier tabla incompleta y corre las migraciones necesarias.</p>
+                        <form method="POST" action="{{ route('clientes.social.setup-social-accounts') }}" class="mt-3">
+                            @csrf
+                            <button type="submit" class="inline-flex items-center rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-amber-600">
+                                Ejecutar migración automática
+                            </button>
+                        </form>
+                    </div>
+                @endif
+
                 <div class="space-y-4">
-                    <a href="{{ route('clientes.social.redirect', 'facebook') }}" class="w-full flex items-center justify-between p-4 rounded-xl border transition-all duration-200 {{ $facebookLinked ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 hover:bg-blue-50 border-gray-200 hover:border-blue-300' }}">
+                    <a
+                        href="{{ route('clientes.social.redirect', 'facebook') }}"
+                        id="facebook-connect-btn"
+                        data-facebook-login-url="{{ route('clientes.social.redirect', 'facebook') }}"
+                        class="w-full flex items-center justify-between p-4 rounded-xl border transition-all duration-200 {{ $facebookLinked ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 hover:bg-blue-50 border-gray-200 hover:border-blue-300' }}"
+                    >
                         <div class="flex items-center">
                             <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-4">
                                 <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -62,12 +84,12 @@
                             </div>
                             <div>
                                 <span class="font-medium text-gray-800 block">Facebook</span>
-                                <span class="text-xs {{ $facebookLinked ? 'text-emerald-600' : 'text-gray-500' }}">
+                                <span id="facebook-connect-subtitle" class="text-xs {{ $facebookLinked ? 'text-emerald-600' : 'text-gray-500' }}">
                                     {{ $facebookLinked ? 'Cuenta conectada' : 'Conectar con Meta OAuth' }}
                                 </span>
                             </div>
                         </div>
-                        <span class="text-sm font-medium {{ $facebookLinked ? 'text-emerald-600' : 'text-gray-500' }}">
+                        <span id="facebook-connect-badge" class="text-sm font-medium {{ $facebookLinked ? 'text-emerald-600' : 'text-gray-500' }}">
                             {{ $facebookLinked ? 'Vinculado' : 'No vinculado' }}
                         </span>
                     </a>
@@ -121,7 +143,15 @@
     document.addEventListener('DOMContentLoaded', function () {
         const modal = document.getElementById('link-social-modal');
         const openModalButton = document.getElementById('link-now-btn');
+        const facebookConnectButton = document.getElementById('facebook-connect-btn');
+        const facebookStatusText = document.getElementById('facebook-login-status');
+        const facebookSubtitle = document.getElementById('facebook-connect-subtitle');
+        const facebookBadge = document.getElementById('facebook-connect-badge');
         const shouldOpenOnLoad = {{ session()->has('social_accounts_error') || session()->has('social_accounts_success') ? 'true' : 'false' }};
+        const facebookAppId = @json($facebookAppId);
+        const facebookApiVersion = @json($facebookApiVersion);
+        const isFacebookLinked = {{ $facebookLinked ? 'true' : 'false' }};
+        let facebookSdkReady = false;
 
         if (!modal || !openModalButton) {
             return;
@@ -132,7 +162,93 @@
             document.body.classList.add('overflow-hidden');
         }
 
+        function updateFacebookVisualState(subtitle, badge, statusMessage) {
+            if (facebookSubtitle) {
+                facebookSubtitle.textContent = subtitle;
+            }
+
+            if (facebookBadge) {
+                facebookBadge.textContent = badge;
+            }
+
+            if (facebookStatusText) {
+                facebookStatusText.textContent = statusMessage;
+            }
+        }
+
+        function statusChangeCallback(response) {
+            if (!response) {
+                updateFacebookVisualState('Conectar con Meta OAuth', 'No vinculado', 'No se pudo verificar el estado de Facebook en este momento.');
+                return;
+            }
+
+            if (response.status === 'connected') {
+                updateFacebookVisualState(
+                    isFacebookLinked ? 'Cuenta conectada' : 'Sesion de Facebook detectada',
+                    isFacebookLinked ? 'Vinculado' : 'Listo para vincular',
+                    isFacebookLinked
+                        ? 'Tu cuenta de Facebook ya esta vinculada con PRODOVI.'
+                        : 'Facebook reconocio tu sesion. Ahora puedes continuar con el boton de vinculacion.'
+                );
+
+                return;
+            }
+
+            if (response.status === 'not_authorized') {
+                updateFacebookVisualState('Autoriza el acceso con Meta OAuth', 'Pendiente', 'Has iniciado sesion en Facebook, pero todavia no autorizaste esta app.');
+                return;
+            }
+
+            updateFacebookVisualState('Conectar con Meta OAuth', 'No vinculado', 'Inicia sesion en Facebook para vincular tu cuenta con PRODOVI.');
+        }
+
+        window.checkLoginState = function () {
+            if (!facebookSdkReady || typeof FB === 'undefined') {
+                updateFacebookVisualState('Conectar con Meta OAuth', 'No vinculado', 'El SDK de Facebook aun no termino de cargar.');
+                return;
+            }
+
+            FB.getLoginStatus(function (response) {
+                statusChangeCallback(response);
+            });
+        };
+
         openModalButton.addEventListener('click', showModal);
+
+        if (facebookConnectButton && facebookAppId) {
+            window.fbAsyncInit = function () {
+                FB.init({
+                    appId: facebookAppId,
+                    cookie: true,
+                    xfbml: true,
+                    version: facebookApiVersion
+                });
+
+                FB.AppEvents.logPageView();
+                facebookSdkReady = true;
+                window.checkLoginState();
+            };
+
+            (function (d, s, id) {
+                let js;
+                const fjs = d.getElementsByTagName(s)[0];
+
+                if (d.getElementById(id)) {
+                    return;
+                }
+
+                js = d.createElement(s);
+                js.id = id;
+                js.src = 'https://connect.facebook.net/en_US/sdk.js';
+                fjs.parentNode.insertBefore(js, fjs);
+            }(document, 'script', 'facebook-jssdk'));
+
+            facebookConnectButton.addEventListener('click', function () {
+                if (facebookSdkReady && typeof FB !== 'undefined') {
+                    window.checkLoginState();
+                }
+            });
+        }
 
         if (shouldOpenOnLoad) {
             showModal();
@@ -140,3 +256,11 @@
     });
 </script>
 @endif
+
+
+
+
+
+
+
+

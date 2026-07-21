@@ -92,14 +92,14 @@ class UserController extends Controller
             'roles.*' => 'exists:roles,id',
         ], [
             'name.required' => 'El nombre es obligatorio',
-            'email.required' => 'El correo electrÃ³nico es obligatorio',
-            'email.email' => 'Debe ingresar un correo electrÃ³nico vÃ¡lido',
-            'email.unique' => 'Este correo electrÃ³nico ya estÃ¡ en uso',
-            'password.required' => 'La contraseÃ±a es obligatoria',
-            'password.min' => 'La contraseÃ±a debe tener al menos 8 caracteres',
-            'password.confirmed' => 'Las contraseÃ±as no coinciden',
+            'email.required' => 'El correo electrónico es obligatorio',
+            'email.email' => 'Debe ingresar un correo electrónico válido',
+            'email.unique' => 'Este correo electrónico ya está en uso',
+            'password.required' => 'La contraseña es obligatoria',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres',
+            'password.confirmed' => 'Las contraseñas no coinciden',
             'roles.required' => 'Debe seleccionar al menos un rol',
-            'roles.*.exists' => 'Uno de los roles seleccionados no es vÃ¡lido',
+            'roles.*.exists' => 'Uno de los roles seleccionados no es válido',
         ]);
 
         if ($validator->fails()) {
@@ -155,13 +155,13 @@ class UserController extends Controller
             'roles.*' => 'exists:roles,id',
         ], [
             'name.required' => 'El nombre es obligatorio',
-            'email.required' => 'El correo electrÃ³nico es obligatorio',
-            'email.email' => 'Debe ingresar un correo electrÃ³nico vÃ¡lido',
-            'email.unique' => 'Este correo electrÃ³nico ya estÃ¡ en uso',
-            'password.min' => 'La contraseÃ±a debe tener al menos 8 caracteres',
-            'password.confirmed' => 'Las contraseÃ±as no coinciden',
+            'email.required' => 'El correo electrónico es obligatorio',
+            'email.email' => 'Debe ingresar un correo electrónico válido',
+            'email.unique' => 'Este correo electrónico ya está en uso',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres',
+            'password.confirmed' => 'Las contraseñas no coinciden',
             'roles.required' => 'Debe seleccionar al menos un rol',
-            'roles.*.exists' => 'Uno de los roles seleccionados no es vÃ¡lido',
+            'roles.*.exists' => 'Uno de los roles seleccionados no es válido',
         ]);
 
         if ($validator->fails()) {

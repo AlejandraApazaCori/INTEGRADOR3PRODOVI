@@ -1,6 +1,12 @@
-<?php
+﻿<?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\ClienteController;
@@ -17,18 +23,67 @@ use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ResumenController;
 
 Route::get('/chatbot', [ChatbotController::class, 'mostrarVista'])->name('chatbot.vista');
+Route::view('/privacy-policy', 'legal.privacy-policy')->name('legal.privacy-policy');
+Route::view('/terms', 'legal.terms')->name('legal.terms');
+Route::view('/data-deletion', 'legal.data-deletion')->name('legal.data-deletion');
+
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-// Rutas de autenticaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n
+Route::get('/api/lstm/facebook/horarios', function () {
+    $candidateUrls = array_values(array_filter([
+        env('LSTM_API_INTERNAL_URL', 'http://127.0.0.1:8000'),
+        env('LSTM_API_URL'),
+    ]));
+
+    foreach ($candidateUrls as $baseUrl) {
+        $baseUrl = rtrim($baseUrl, '/');
+
+        try {
+            $response = Http::timeout(5)
+                ->acceptJson()
+                ->withHeaders([
+                    'ngrok-skip-browser-warning' => 'true',
+                ])
+                ->get($baseUrl . '/api/horarios/facebook');
+
+            if ($response->successful()) {
+                $payload = $response->json();
+
+                if (is_array($payload)) {
+                    return response()->json($payload);
+                }
+            }
+        } catch (\Throwable $e) {
+        }
+    }
+
+    $fallbackPath = resource_path('data/horarios_lstm_facebook.json');
+
+    if (File::exists($fallbackPath)) {
+        $fallbackData = json_decode(File::get($fallbackPath), true);
+
+        if (is_array($fallbackData)) {
+            return response()->json($fallbackData);
+        }
+    }
+
+    return response()->json([
+        'labels' => [],
+        'realData' => [],
+        'predData' => [],
+        'picos' => '',
+    ]);
+});
+// Rutas de autenticaciÃƒÆ’Ã‚Â³n
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// AutenticaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n con Google
+// AutenticaciÃƒÆ’Ã‚Â³n con Google
 Route::prefix('api')->group(function () {
     Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])
         ->name('auth.google.redirect');
@@ -60,6 +115,7 @@ Route::middleware('auth')->group(function () {
     // Rutas de pago del cliente
     Route::get('/clientes/pago/{plan}', [PagoClienteController::class, 'show'])->name('clientes.pago');
     Route::post('/pago/procesar/{plan}', [PagoClienteController::class, 'procesarPago'])->name('pago.procesar');
+    Route::post('/clientes/social/setup-social-accounts', [SocialAccountController::class, 'setupSocialAccountsTable'])->name('clientes.social.setup-social-accounts');
     Route::get('/clientes/social/{provider}/redirect', [SocialAccountController::class, 'redirect'])->name('clientes.social.redirect');
     Route::get('/clientes/social/{provider}/callback', [SocialAccountController::class, 'callback'])->name('clientes.social.callback');
 });
@@ -76,16 +132,64 @@ Route::post('/facebook/post', [FacebookPostController::class, 'postToPage'])->na
 // Rutas de administrador
 Route::prefix('administrador')->middleware('auth')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('administrador.dashboard');
-    Route::get('/analÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­ticas', [AdminAnaliticasController::class, 'index'])
+    Route::post('/comandos/crear-storage-link', function () {
+        $user = auth()->user();
+        $storageLinkLockKey = 'administrador.storage_link.ejecutado';
+
+        if (! $user || ! $user->hasAnyRole(['Super Administrador', 'Administrador'])) {
+            abort(403);
+        }
+
+        if (Cache::has($storageLinkLockKey)) {
+            return back()->with('error', 'Esta acci?n ya fue ejecutada y qued? deshabilitada por seguridad.');
+        }
+
+        try {
+            if (File::exists(public_path('storage'))) {
+                Cache::forever($storageLinkLockKey, true);
+
+                return back()->with('success', 'El enlace public/storage ya existe. La acci?n qued? deshabilitada por seguridad.');
+            }
+
+            $exitCode = Artisan::call('storage:link');
+
+            if ($exitCode === 0 && File::exists(public_path('storage'))) {
+                Cache::forever($storageLinkLockKey, true);
+
+                return back()->with('success', 'El enlace public/storage se cre? correctamente y la acci?n qued? deshabilitada.');
+            }
+
+            $output = trim(Artisan::output());
+
+            Log::error('No se pudo crear el enlace de storage desde el panel administrador.', [
+                'user_id' => $user->id,
+                'exit_code' => $exitCode,
+                'output' => $output,
+            ]);
+
+            return back()->with('error', $output !== ''
+                ? 'Hubo un error al ejecutar storage:link: ' . $output
+                : 'Hubo un error al ejecutar storage:link.');
+        } catch (\Throwable $e) {
+            Log::error('Error ejecutando storage:link desde el panel administrador.', [
+                'user_id' => $user->id,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->with('error', 'Hubo un error al ejecutar storage:link. Revisa los logs del sistema.');
+        }
+    })->name('administrador.comandos.crear-storage-link');
+    Route::get('/analÃƒÆ’Ã‚Â­ticas', [AdminAnaliticasController::class, 'index'])
         ->name('admin.analiticas.index');
-    Route::post('/analÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­ticas/store-campania', [AdminAnaliticasController::class, 'storeCampania'])
+    Route::post('/analÃƒÆ’Ã‚Â­ticas/store-campania', [AdminAnaliticasController::class, 'storeCampania'])
         ->name('admin.analiticas.storeCampania');
-    Route::get('/analÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­ticas/export-campanias', [AdminAnaliticasController::class, 'exportCampanias'])
+    Route::get('/analÃƒÆ’Ã‚Â­ticas/export-campanias', [AdminAnaliticasController::class, 'exportCampanias'])
         ->name('admin.analiticas.exportCampanias');
     Route::get('/admin/generar-reporte-campanas', [AdminAnaliticasController::class, 'generarReporteCampanas'])
         ->name('admin.generar.reporte.campanas');
 
-    // GestiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de pagos
+    // GestiÃƒÆ’Ã‚Â³n de pagos
     Route::prefix('pagos')->group(function () {
         Route::get('/', [PagoAdminController::class, 'index'])
             ->name('administrador.pagos.index');
@@ -101,7 +205,7 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
             ->name('administrador.pagos.cancelar');
         Route::put('/reactivar/{pago}', [PagoAdminController::class, 'reactivarSuscripcion'])
             ->name('administrador.pagos.reactivar');
-        Route::get('/analÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­ticas', [PagoAdminController::class, 'analiticas'])->name('administrador.pagos.analiticas');
+        Route::get('/analÃƒÆ’Ã‚Â­ticas', [PagoAdminController::class, 'analiticas'])->name('administrador.pagos.analiticas');
         Route::get('/buscar', [PagoAdminController::class, 'buscarPagos'])->name('administrador.pagos.buscar');
         Route::post('/cancelar/{pagoId}', [PagoAdminController::class, 'cancelarSuscripcionApi'])->name('administrador.pagos.cancelar.api');
         Route::post('/reactivar/{pagoId}', [PagoAdminController::class, 'reactivarSuscripcionApi'])->name('administrador.pagos.reactivar.api');
@@ -115,7 +219,7 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
         Route::get('/descargar-recibo/{id}', [PagoAdminController::class, 'descargarComprobante'])->name('administrador.pagos.descargar-recibo');
     });
 
-    // GestiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de planes
+    // Gestión de planes
     Route::resource('planes', 'App\Http\Controllers\Admin\PlanController')
         ->except(['show'])
         ->names([
@@ -133,6 +237,53 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
         ->name('administrador.planes.caracteristicas.update');
 
     // Logs
+    Route::post('/logs/setup-publicaciones-programadas', function () {
+        $user = auth()->user();
+        $setupKey = 'administrador.publicaciones_programadas_setup.ejecutado';
+
+        if (! $user || ! $user->hasAnyRole(['Super Administrador', 'Administrador'])) {
+            abort(403);
+        }
+
+        try {
+            if (! Schema::hasColumn('tareas', 'publication_message')) {
+                $migrationExitCode = Artisan::call('migrate', [
+                    '--path' => 'database/migrations/2026_06_25_000002_add_publication_message_to_tareas_table.php',
+                    '--force' => true,
+                ]);
+
+                if ($migrationExitCode !== 0 && ! Schema::hasColumn('tareas', 'publication_message')) {
+                    $output = trim(Artisan::output());
+
+                    return back()->with('error', $output !== ''
+                        ? 'No se pudo aplicar la migracion publication_message: ' . $output
+                        : 'No se pudo aplicar la migracion publication_message.');
+                }
+            }
+
+            $commandExitCode = Artisan::call('publicaciones:procesar-programadas');
+
+            if ($commandExitCode !== 0) {
+                $output = trim(Artisan::output());
+
+                return back()->with('error', $output !== ''
+                    ? 'No se pudo ejecutar el procesamiento de publicaciones programadas: ' . $output
+                    : 'No se pudo ejecutar el procesamiento de publicaciones programadas.');
+            }
+
+            Cache::forever($setupKey, true);
+
+            return back()->with('success', 'La carga provisional de publicaciones programadas se ejecuto correctamente.');
+        } catch (\Throwable $e) {
+            Log::error('Error ejecutando la carga provisional de publicaciones programadas.', [
+                'user_id' => $user->id,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->with('error', 'Hubo un error al ejecutar la carga provisional de publicaciones programadas. Revisa los logs del sistema.');
+        }
+    })->name('administrador.logs.setup-publicaciones-programadas');
     Route::get('/logs', [\App\Http\Controllers\Admin\LogController::class, 'index'])->name('administrador.logs.index');
     Route::get('/logs/export/{type}', [\App\Http\Controllers\Admin\LogController::class, 'exportPdf'])->name('administrador.logs.export');
 
@@ -198,7 +349,7 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
             ->name('administrador.tareas.comentarios.destroy');
     });
 
-    // GestiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de usuarios
+    // GestiÃƒÆ’Ã‚Â³n de usuarios
     Route::get('/usuarios', [\App\Http\Controllers\Admin\UserController::class, 'index'])
         ->name('administrador.usuarios.index');
     Route::get('/usuarios/create', [\App\Http\Controllers\Admin\UserController::class, 'create'])
@@ -217,6 +368,8 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
         ->name('administrador.usuarios.restore');
     Route::get('/usuarios/{user}/view', [\App\Http\Controllers\Admin\UserViewController::class, 'show'])
         ->name('administrador.usuarios.view');
+    Route::get('/usuarios/{user}/analiticas-campania', [\App\Http\Controllers\Admin\UserViewController::class, 'campaignAnalytics'])
+        ->name('administrador.usuarios.analiticas-campania');
 
     // Notificaciones
     Route::prefix('notificaciones')->group(function () {
@@ -276,7 +429,7 @@ Route::delete('/{id}', [App\Http\Controllers\Admin\EmpresaAdminController::class
         Route::post('/{empresa}/planes-marketing', [App\Http\Controllers\Admin\PlanMarketingController::class, 'store'])->name('planes-marketing.store');
         Route::get('/planes-marketing/{planMarketing}', [App\Http\Controllers\Admin\PlanMarketingController::class, 'show'])->name('planes-marketing.show');
 
-// Ruta para mostrar el formulario de ediciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de un plan
+// Ruta para mostrar el formulario de ediciÃƒÆ’Ã‚Â³n de un plan
 Route::get('/planes-marketing/{planMarketing}/edit', [App\Http\Controllers\Admin\PlanMarketingController::class, 'edit'])->name('planes-marketing.edit');
         // Ruta para actualizar el contenido del plan
     Route::put('/planes-marketing/{planMarketing}', [App\Http\Controllers\Admin\PlanMarketingController::class, 'update'])->name('planes-marketing.update');
@@ -294,8 +447,10 @@ Route::get('/planes-marketing/{planMarketing}/edit', [App\Http\Controllers\Admin
     // Rutas para publicaciones
     Route::get('/publicaciones/publicar', [\App\Http\Controllers\Admin\PublicacionController::class, 'index'])
         ->name('administrador.publicaciones.publicar');
-        Route::post('/publicaciones/generar-copy', [\App\Http\Controllers\Admin\PublicacionController::class, 'generateCopy'])
-    ->name('publicaciones.generate.copy');
+    Route::post('/publicaciones/publicar', [\App\Http\Controllers\Admin\PublicacionController::class, 'store'])
+        ->name('administrador.publicaciones.publicar.store');
+    Route::post('/publicaciones/generar-copy', [\App\Http\Controllers\Admin\PublicacionController::class, 'generateCopy'])
+        ->name('publicaciones.generate.copy');
         
 });
 
@@ -322,7 +477,7 @@ Route::get('/clientes/pagos/comprobante/{id}', [PagoClienteController::class, 'v
 Route::get('/clientes/pagos/descargar/{id}', [PagoClienteController::class, 'descargarComprobante'])
     ->name('clientes.pagos.descargar');
 
-// Ruta para generar el resumen de una empresa especÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­fica
+// Ruta para generar el resumen de una empresa especÃƒÆ’Ã‚Â­fica
 Route::post('/empresas/{empresa}/generar-resumen', [ResumenController::class, 'generate'])->name('empresas.generarResumen');
 
 // Ruta para obtener el plan contratado por el usuario
@@ -338,6 +493,20 @@ Route::prefix('administrador/cuestionario/estructura')->name('administrador.cues
     Route::delete('/{tema}', [App\Http\Controllers\Admin\CuestionarioEstructuraController::class, 'destroy'])->name('destroy');
     Route::post('/reorder', [App\Http\Controllers\Admin\CuestionarioEstructuraController::class, 'reorder'])->name('reorder');
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

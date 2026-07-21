@@ -1,4 +1,4 @@
-<!-- resources/views/componentes/footer.blade.php -->
+﻿<!-- resources/views/componentes/footer.blade.php -->
 <footer class="site-footer">
     <div class="footer-container">
         <!-- Sección Superior del Footer -->
@@ -58,9 +58,9 @@
                 &copy; {{ date('Y') }} PRODOVI. Todos los derechos reservados.
             </div>
             <div class="legal-links">
-                <a href="#">Política de Privacidad</a>
-                <a href="#">Términos de Servicio</a>
-                <a href="#">Aviso Legal</a>
+                <a href="{{ route('legal.privacy-policy') }}">Política de Privacidad</a>
+                <a href="{{ route('legal.terms') }}">Términos de Servicio</a>
+                <a href="{{ route('legal.data-deletion') }}">Eliminación de datos</a>
             </div>
         </div>
     </div>
@@ -267,3 +267,4 @@
 
 <!-- Incluir Font Awesome para los íconos -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+

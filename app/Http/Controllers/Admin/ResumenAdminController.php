@@ -27,7 +27,7 @@ class ResumenAdminController extends Controller
     {
         // 1. Verificar si el usuario es administrador
         if (!auth()->check() || !auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
-            abort(403, 'No tienes permisos para acceder a esta pÃ¡gina.');
+            abort(403, 'No tienes permisos para acceder a esta página.');
         }
 
         // 2. Obtener la empresa
@@ -50,7 +50,7 @@ class ResumenAdminController extends Controller
     {
         // 1. Verificar si el usuario es administrador
         if (!auth()->check() || !auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
-            abort(403, 'No tienes permisos para realizar esta acciÃ³n.');
+            abort(403, 'No tienes permisos para realizar esta acción.');
         }
 
         // 2. Validar la solicitud
@@ -80,7 +80,7 @@ class ResumenAdminController extends Controller
     {
         // 1. Verificar si el usuario es administrador
         if (!auth()->check() || !auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
-            abort(403, 'No tienes permisos para realizar esta acciÃ³n.');
+            abort(403, 'No tienes permisos para realizar esta acción.');
         }
 
         // 2. Obtener la empresa
@@ -90,7 +90,7 @@ class ResumenAdminController extends Controller
         $empresa->resumen_ejecutivo = null;
         $empresa->save();
 
-        // 4. Redirigir con mensaje de Ã©xito
+        // 4. Redirigir con mensaje de éxito
         return redirect()->route('administrador.empresas.show', $empresa->id)
             ->with('success', 'Resumen ejecutivo eliminado correctamente.');
     }

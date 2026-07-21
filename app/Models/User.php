@@ -49,6 +49,11 @@ class User extends Authenticatable
         return $this->roles()->where('nombre_rol', $roles)->exists();
     }
 
+    public function hasRole($role)
+    {
+        return $this->hasAnyRole($role);
+    }
+
     public function permissions(): Collection
     {
         return $this->roles

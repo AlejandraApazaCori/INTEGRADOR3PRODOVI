@@ -18,12 +18,11 @@ class CuestionarioController extends Controller
     {
         $empresa = Empresa::where('usuario_id', Auth::id())->findOrFail($empresaId);
         $temas = TemaCuestionario::with('preguntas')->orderBy('orden')->get();
-        
-        // Obtener respuestas existentes si las hay
+
         $respuestasExistentes = RespuestaCuestionario::where('empresa_id', $empresaId)
             ->pluck('respuesta', 'pregunta_id')
             ->toArray();
-        
+
         return view('clientes.cuestionario.show', compact('empresa', 'temas', 'respuestasExistentes'));
     }
 
@@ -33,42 +32,46 @@ class CuestionarioController extends Controller
     public function store(Request $request, $empresaId)
     {
         $empresa = Empresa::where('usuario_id', Auth::id())->findOrFail($empresaId);
-        
-        // Validar que se hayan respondido todas las preguntas requeridas
-        $preguntasRequeridas = DB::table('preguntas_cuestionario')
-            ->where('requerido', true)
-            ->pluck('id')
-            ->toArray();
-        
-        foreach ($preguntasRequeridas as $preguntaId) {
-            if (!$request->has("respuesta_{$preguntaId}") || empty($request->input("respuesta_{$preguntaId}"))) {
-                return redirect()->back()
-                    ->with('error', 'Por favor responde todas las preguntas requeridas.')
-                    ->withInput();
-            }
+        $preguntas = TemaCuestionario::with('preguntas')->orderBy('orden')->get()
+            ->flatMap(fn ($tema) => $tema->preguntas)
+            ->unique('id')
+            ->values();
+        $rules = [];
+
+        foreach ($preguntas as $pregunta) {
+            $rules["respuesta_{$pregunta->id}"] = $pregunta->requerido ? 'required|string' : 'nullable|string';
         }
-        
-        // Guardar respuestas
-        foreach ($request->all() as $key => $value) {
-            if (strpos($key, 'respuesta_') === 0) {
-                $preguntaId = substr($key, 10); // Eliminar "respuesta_" del inicio
-                
-                RespuestaCuestionario::updateOrCreate(
-                    [
-                        'empresa_id' => $empresaId,
-                        'pregunta_id' => $preguntaId,
-                    ],
-                    [
-                        'respuesta' => $value,
-                    ]
-                );
+
+        $request->validate($rules);
+
+        DB::transaction(function () use ($request, $empresa, $preguntas) {
+            foreach ($preguntas as $pregunta) {
+                $respuestaTexto = $request->input("respuesta_{$pregunta->id}");
+
+                $respuesta = RespuestaCuestionario::withTrashed()->firstOrNew([
+                    'empresa_id' => $empresa->id,
+                    'pregunta_id' => $pregunta->id,
+                ]);
+
+                if (blank($respuestaTexto)) {
+                    if ($respuesta->exists) {
+                        $respuesta->delete();
+                    }
+                    continue;
+                }
+
+                $respuesta->respuesta = trim((string) $respuestaTexto);
+                $respuesta->save();
+
+                if ($respuesta->trashed()) {
+                    $respuesta->restore();
+                }
             }
-        }
-        
-        // Marcar el cuestionario como completado
-        $empresa->cuestionario_completado = true;
-        $empresa->save();
-        
+
+            $empresa->cuestionario_completado = true;
+            $empresa->save();
+        });
+
         return redirect()->route('empresas.show', $empresaId)
             ->with('success', 'Cuestionario completado correctamente.');
     }

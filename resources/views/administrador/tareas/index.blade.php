@@ -1,4 +1,4 @@
-Ôªø<!-- TAREAS -->
+<!-- TAREAS -->
 @php
     $tareas = $campania->tareas;
     $totalTareas = $tareas->count();
@@ -14,9 +14,9 @@
             <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                    
-                    <h2 class="mt-3 text-2xl md:text-3xl font-bold text-white">Tareas de la Campa√±a</h2>
+                    <h2 class="mt-3 text-2xl md:text-3xl font-bold text-white">Tareas de la CampaÒa</h2>
                     <p class="mt-2 max-w-2xl text-sm md:text-base" style="color: #93c5fd;">
-                        Visualiza el avance del equipo, identifica bloqueos r√°pido y gestiona las entregas de esta campa√±a desde un solo lugar.
+                        Visualiza el avance del equipo, identifica bloqueos r·pido y gestiona las entregas de esta campaÒa desde un solo lugar.
                     </p>
                 </div>
 
@@ -29,7 +29,7 @@
                 </a>
             </div>
 
-            <!-- Tarjetas de estad√≠sticas -->
+            <!-- Tarjetas de estadÌsticas -->
             <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <div class="rounded-2xl px-4 py-4" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);">
                     <p class="text-xs font-semibold uppercase tracking-wide" style="color: #93c5fd;">Total</p>
@@ -55,7 +55,7 @@
                 <div class="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900">Panel de tareas</h3>
-                        <p class="text-sm text-gray-500">Consulta responsables, prioridad, fecha l√≠mite y accesos r√°pidos para cada tarea.</p>
+                        <p class="text-sm text-gray-500">Consulta responsables, prioridad, fecha lÌmite y accesos r·pidos para cada tarea.</p>
                     </div>
                     <div class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium" style="background: #f1f5f9; color: #475569;">
                         <span class="h-2.5 w-2.5 rounded-full" style="background: #a7b838;"></span>
@@ -71,7 +71,7 @@
                                 <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em]" style="color: #64748b;">Responsable</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em]" style="color: #64748b;">Estado</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em]" style="color: #64748b;">Prioridad</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em]" style="color: #64748b;">Fecha l√≠mite</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em]" style="color: #64748b;">Fecha lÌmite</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em]" style="color: #64748b;">Acciones</th>
                             </tr>
                         </thead>
@@ -131,18 +131,16 @@
                                         <div class="text-sm font-medium text-gray-900">{{ $tarea->fecha_limite->format('d/m/Y') }}</div>
                                         <div class="mt-1 text-xs text-gray-500">
                                             {{ now()->startOfDay()->diffInDays($tarea->fecha_limite->copy()->startOfDay(), false) >= 0
-                                                ? 'Faltan ' . now()->startOfDay()->diffInDays($tarea->fecha_limite->copy()->startOfDay()) . ' d√≠as'
-                                                : 'Vencida hace ' . abs(now()->startOfDay()->diffInDays($tarea->fecha_limite->copy()->startOfDay(), false)) . ' d√≠as' }}
+                                                ? 'Faltan ' . now()->startOfDay()->diffInDays($tarea->fecha_limite->copy()->startOfDay()) . ' dÌas'
+                                                : 'Vencida hace ' . abs(now()->startOfDay()->diffInDays($tarea->fecha_limite->copy()->startOfDay(), false)) . ' dÌas' }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-5 align-top">
                                         <div class="flex flex-wrap gap-2">
-                                            @if($tarea->asignado_id == auth()->id())
-                                                <a href="{{ route('administrador.tareas.show', $tarea->id) }}"
-                                                   class="inline-flex items-center rounded-xl px-3 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
-                                                    Subir Tarea
-                                                </a>
-                                            @endif
+                                            <a href="{{ route('administrador.tareas.archivos.create', $tarea->id) }}"
+                                               class="inline-flex items-center rounded-xl px-3 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                                                Subir Tarea
+                                            </a>
 
                                             <a href="{{ route('administrador.tareas.ver-subidas', $tarea->id) }}"
                                                class="inline-flex items-center rounded-xl px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-slate-800" style="background: #475569;">
@@ -170,7 +168,7 @@
                         </svg>
                     </div>
                     <h3 class="mt-5 text-xl font-semibold text-gray-900">No hay tareas registradas</h3>
-                    <p class="mt-2 text-sm text-gray-500">Crea la primera tarea para empezar a organizar entregas, responsables y fechas clave de esta campa√±a.</p>
+                    <p class="mt-2 text-sm text-gray-500">Crea la primera tarea para empezar a organizar entregas, responsables y fechas clave de esta campaÒa.</p>
                     <a href="{{ route('administrador.tareas.create', $campania->id) }}"
                        class="mt-6 inline-flex items-center rounded-2xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5" style="background: linear-gradient(135deg, #2563eb, #4f46e5);">
                         Crear primera tarea

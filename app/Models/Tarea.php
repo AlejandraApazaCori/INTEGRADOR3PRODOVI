@@ -19,15 +19,22 @@ class Tarea extends Model
         'prioridad',
         'campania_id',
         'creador_id',
-        'asignado_id'
+        'asignado_id',
+        'publication_status',
+        'publication_scheduled_at',
+        'published_at',
+        'facebook_post_id',
+        'publication_error',
+        'publication_message',
     ];
 
     protected $casts = [
         'fecha_inicio' => 'date',
         'fecha_limite' => 'date',
+        'publication_scheduled_at' => 'datetime',
+        'published_at' => 'datetime',
     ];
 
-    // Relaciones
     public function campania()
     {
         return $this->belongsTo(Campania::class);
@@ -38,14 +45,11 @@ class Tarea extends Model
         return $this->belongsTo(User::class, 'creador_id');
     }
 
-   // In your Tarea model// App\Models\Tarea.php
-public function asignado()
-{
-    return $this->belongsTo(User::class, 'asignado_id');
-}
+    public function asignado()
+    {
+        return $this->belongsTo(User::class, 'asignado_id');
+    }
 
-
-    // Scopes para filtros
     public function scopePendientes($query)
     {
         return $query->where('estado', 'pendiente');
@@ -60,7 +64,8 @@ public function asignado()
     {
         return $query->where('estado', 'completada');
     }
-     public function archivos()
+
+    public function archivos()
     {
         return $this->hasMany(TareaArchivo::class);
     }

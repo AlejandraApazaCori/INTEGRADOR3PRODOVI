@@ -129,7 +129,7 @@ class CampañasController extends Controller
 
         if (!$pago || !$pago->suscripcion) {
             return redirect()->back()
-                ->with('error', 'El cliente no tiene una suscripciÃ³n activa vÃ¡lida')
+                ->with('error', 'El cliente no tiene una suscripción activa válida')
                 ->withInput();
         }
 
@@ -292,4 +292,6 @@ class CampañasController extends Controller
         }
     }
 }
+
+
 

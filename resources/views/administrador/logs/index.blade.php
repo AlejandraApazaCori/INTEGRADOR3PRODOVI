@@ -14,7 +14,7 @@
 @section('content')
 <div class="min-h-screen" style="background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 50%, #F5F3FF 100%);">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Banner con fondo geométrico -->
+        <!-- Banner con fondo geomÃ©trico -->
         <div class="mb-8 rounded-2xl overflow-hidden relative rp-banner">
             <div class="rp-banner-overlay absolute inset-0"></div>
             <div class="relative z-10 px-8 py-8">
@@ -29,6 +29,24 @@
                 </div>
             </div>
         </div>
+
+        @if($showScheduledPublicationsSetupButton)
+        <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-6 py-5 shadow-lg">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-red-700">Carga provisional de publicaciones programadas</h2>
+                    <p class="mt-1 text-sm text-red-600">Ejecuta la migracion de publication_message y procesa el comando manual una vez. Cuando salga bien, este boton desaparece.</p>
+                </div>
+                <form action="{{ route('administrador.logs.setup-publicaciones-programadas') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-red-700">
+                        <i class="fas fa-bolt"></i>
+                        Ejecutar carga provisional
+                    </button>
+                </form>
+            </div>
+        </div>
+        @endif
 
         <!-- Filtros Globales -->
         <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 mb-8">
@@ -99,7 +117,7 @@
                         <tr>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fecha y Hora</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">IP / Usuario</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Método / URL</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">MÃ©todo / URL</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Estado / Tiempo</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider">User-Agent</th>
                         </tr>
@@ -227,7 +245,7 @@
                     <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
                         <i class="fas fa-history text-amber-600 text-sm"></i>
                     </div>
-                    <h2 class="text-lg font-bold text-gray-800">Registros de Actividad (Auditoría)</h2>
+                    <h2 class="text-lg font-bold text-gray-800">Registros de Actividad (AuditorÃ­a)</h2>
                 </div>
                 <button onclick="exportToPdf('audit')" class="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-colors border border-indigo-100">
                     <i class="fas fa-file-pdf mr-2"></i>Exportar PDF
@@ -239,7 +257,7 @@
                         <tr>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fecha / Hora</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Usuario</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Acción / Recurso</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">AcciÃ³n / Recurso</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider">Cambios</th>
                         </tr>
                     </thead>
@@ -371,7 +389,7 @@
 </div>
 
 <style>
-    /* Banner geométrico - Mismo estilo que las otras vistas */
+    /* Banner geomÃ©trico - Mismo estilo que las otras vistas */
     .rp-banner {
         background:
             linear-gradient(135deg, #4f46e5 25%, transparent 25%) -50px 0,

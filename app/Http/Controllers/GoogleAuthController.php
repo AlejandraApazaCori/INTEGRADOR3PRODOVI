@@ -7,8 +7,10 @@ use App\Models\Role;
 use App\Models\RoleUser;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\InvalidStateException;
 use Throwable;
 
 class GoogleAuthController extends Controller
@@ -21,14 +23,7 @@ class GoogleAuthController extends Controller
     public function callback()
     {
         try {
-            $guzzleClient = new \GuzzleHttp\Client([
-                'curl' => [
-                    CURLOPT_SSL_VERIFYPEER => false,
-                ],
-            ]);
-
-            $socialite = Socialite::driver('google')->setHttpClient($guzzleClient);
-            $googleUser = $socialite->user();
+            $googleUser = $this->getGoogleUser();
 
             $user = User::updateOrCreate(
                 ['email' => $googleUser->getEmail()],
@@ -51,6 +46,7 @@ class GoogleAuthController extends Controller
             }
 
             Auth::login($user);
+            request()->session()->regenerate();
 
             \App\Models\SecurityLog::create([
                 'user_id' => $user->id,
@@ -69,7 +65,41 @@ class GoogleAuthController extends Controller
 
             return redirect()->route('clientes.home');
         } catch (Throwable $e) {
-            return redirect('/')->with('error', 'Google authentication failed: ' . $e->getMessage());
+            Log::error('Google authentication failed.', [
+                'message' => $e->getMessage(),
+                'exception' => get_class($e),
+                'url' => request()->fullUrl(),
+                'ip' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+
+            return redirect()->route('login')->with('error', 'No se pudo completar el ingreso con Google.');
+        }
+    }
+
+    private function getGoogleUser()
+    {
+        $guzzleClient = new \GuzzleHttp\Client([
+            'curl' => [
+                CURLOPT_SSL_VERIFYPEER => false,
+            ],
+        ]);
+
+        $driver = Socialite::driver('google')->setHttpClient($guzzleClient);
+
+        try {
+            return $driver->user();
+        } catch (InvalidStateException $e) {
+            Log::warning('Google OAuth state mismatch. Retrying stateless.', [
+                'message' => $e->getMessage(),
+                'url' => request()->fullUrl(),
+                'ip' => request()->ip(),
+            ]);
+
+            return Socialite::driver('google')
+                ->setHttpClient($guzzleClient)
+                ->stateless()
+                ->user();
         }
     }
 }

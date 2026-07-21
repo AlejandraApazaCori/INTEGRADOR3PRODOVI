@@ -35,7 +35,7 @@ class EmpresaController extends Controller
             'nombre_empresa' => 'required|string|max:255',
             'tipo_empresa' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
-            // 'sitio_web' => 'nullable|url',  // <-- ELIMINA ESTA LÃƒÂNEA
+            // 'sitio_web' => 'nullable|url',  // <-- ELIMINA ESTA LÍNEA
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
@@ -44,7 +44,7 @@ class EmpresaController extends Controller
         $empresa->nombre_empresa = $request->nombre_empresa;
         $empresa->tipo_empresa = $request->tipo_empresa;
         $empresa->descripcion = $request->descripcion;
-        // $empresa->sitio_web = $request->sitio_web; // <-- ELIMINA ESTA LÃƒÂNEA
+        // $empresa->sitio_web = $request->sitio_web; // <-- ELIMINA ESTA LÍNEA
 
         // Guardar logo si se proporciona
         if ($request->hasFile('logo')) {
@@ -85,7 +85,7 @@ class EmpresaController extends Controller
             'nombre_empresa' => 'required|string|max:255',
             'tipo_empresa' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
-            // Quita la coma sobrante aquÃƒÂ­ tambiÃƒÂ©n si la tienes
+            // Quita la coma sobrante aquí también si la tienes
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
@@ -94,7 +94,7 @@ class EmpresaController extends Controller
         $empresa->tipo_empresa = $request->tipo_empresa;
         $empresa->descripcion = $request->descripcion;
         
-        // No necesitas asignar sitio_web aquÃƒÂ­ tampoco
+        // No necesitas asignar sitio_web aquí tampoco
 
         // Actualizar logo si se proporciona
         if ($request->hasFile('logo')) {

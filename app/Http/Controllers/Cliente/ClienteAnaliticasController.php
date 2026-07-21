@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Cliente;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ClienteAnaliticasController extends Controller
@@ -17,66 +17,25 @@ class ClienteAnaliticasController extends Controller
             ->latest('fecha_inicio')
             ->first();
 
-        $jsonPath = resource_path('data/analiticas.json');
-        if (file_exists($jsonPath)) {
-            $jsonString = file_get_contents($jsonPath);
-            $allData = json_decode($jsonString, true);
-            $data = $allData['last30days'] ?? [];
-        } else {
-            $data = [];
-        }
+        $data = $this->loadAnalyticsData('last30days');
 
         return view('clientes.analiticas', compact('data', 'campaniaActual'));
     }
 
     public function loadView(Request $request)
     {
-        $view = $request->input('view');
-        
-        // Mapeo del parámetro select a las llaves del JSON
-        $periodMap = [
-            '7dias' => 'last7days',
-            '30dias' => 'last30days',
-            'anual' => 'thisyear'
-        ];
-        
-        $periodKey = $periodMap[$view] ?? 'last30days';
-        
-        // Cargar los datos desde el archivo JSON
-        $jsonPath = resource_path('data/analiticas.json');
-        if (file_exists($jsonPath)) {
-            $jsonString = file_get_contents($jsonPath);
-            $allData = json_decode($jsonString, true);
-            $data = $allData[$periodKey] ?? [];
-        } else {
-            $data = []; 
-        }
-        
-        return view("clientes.analiticas.partials.analiticas", compact('data'));
+        $periodKey = $this->resolvePeriodKey($request->input('view', '30dias'));
+        $userId = $request->filled('user_id') ? (int) $request->input('user_id') : null;
+        $data = $this->loadAnalyticsData($periodKey, $userId);
+
+        return view('clientes.analiticas.partials.analiticas', compact('data'));
     }
 
     public function exportarPDF(Request $request)
     {
-        $periodo = $request->input('periodo', '30dias');
-
-       
-        $periodMap = [
-            '7dias' => 'last7days',
-            '30dias' => 'last30days',
-            'anual' => 'thisyear' 
-        ];
-        
-        $periodKey = $periodMap[$periodo] ?? 'last30days';
-        
-        // Cargar los datos desde el archivo JSON
-        $jsonPath = resource_path('data/analiticas.json');
-        if (file_exists($jsonPath)) {
-            $jsonString = file_get_contents($jsonPath);
-            $allData = json_decode($jsonString, true);
-            $jsonData = $allData[$periodKey] ?? [];
-        } else {
-            $jsonData = []; // Fallback por si no existe
-        }
+        $periodKey = $this->resolvePeriodKey($request->input('periodo', '30dias'));
+        $userId = $request->filled('user_id') ? (int) $request->input('user_id') : null;
+        $jsonData = $this->loadAnalyticsData($periodKey, $userId);
 
         $data = [
             'fecha_generacion' => now()->format('d/m/Y H:i'),
@@ -88,147 +47,101 @@ class ClienteAnaliticasController extends Controller
         $pdf->setOption('isHtml5ParserEnabled', true);
         $pdf->setOption('isRemoteEnabled', true);
 
-        $nombreArchivo = "informe_analiticas_{$periodo}.pdf";
-
-        return $pdf->download($nombreArchivo);
+        return $pdf->download('informe_analiticas_' . $request->input('periodo', '30dias') . '.pdf');
     }
-
 
     public function exportarReporteEngagement(Request $request)
     {
-        $view = $request->input('view', 'last30days');
-        
-        // Mapeo del parámetro select a las llaves del JSON
-        $periodMap = [
-            '7dias' => 'last7days',
-            '30dias' => 'last30days',
-            'anual' => 'thisyear'
-        ];
-        
-        $periodKey = $periodMap[$view] ?? 'last30days';
-        
-        // Cargar los datos desde el archivo JSON
-        $jsonPath = resource_path('data/analiticas.json');
-        if (file_exists($jsonPath)) {
-            $jsonString = file_get_contents($jsonPath);
-            $allData = json_decode($jsonString, true);
-            $data = $allData[$periodKey] ?? [];
-        } else {
-            $data = []; // Fallback por si no existe
-        }
-        
-        $pdfData = [
-            'fecha_generacion' => now()->format('d/m/Y H:i'),
-            'data' => $data
-        ];
+        $periodKey = $this->resolvePeriodKey($request->input('view', '30dias'));
+        $userId = $request->filled('user_id') ? (int) $request->input('user_id') : null;
+        $data = $this->loadAnalyticsData($periodKey, $userId);
+        $pdfData = ['fecha_generacion' => now()->format('d/m/Y H:i'), 'data' => $data];
 
         $pdf = Pdf::loadView('pdf.reporte_engagement', $pdfData);
         $pdf->setPaper('A4', 'portrait');
         $pdf->setOption('isHtml5ParserEnabled', true);
         $pdf->setOption('isRemoteEnabled', true);
 
-        return $pdf->download("informe_engagement_{$view}.pdf");
+        return $pdf->download('informe_engagement_' . $request->input('view', '30dias') . '.pdf');
     }
 
     public function exportarReporteAlcance(Request $request)
     {
-        $view = $request->input('view', 'last30days');
-        
-        $periodMap = [
-            '7dias' => 'last7days',
-            '30dias' => 'last30days',
-            'anual' => 'thisyear'
-        ];
-        
-        $periodKey = $periodMap[$view] ?? 'last30days';
-        
-        $jsonPath = resource_path('data/analiticas.json');
-        if (file_exists($jsonPath)) {
-            $jsonString = file_get_contents($jsonPath);
-            $allData = json_decode($jsonString, true);
-            $data = $allData[$periodKey] ?? [];
-        } else {
-            $data = [];
-        }
-        
-        $pdfData = [
-            'fecha_generacion' => now()->format('d/m/Y H:i'),
-            'data' => $data
-        ];
+        $periodKey = $this->resolvePeriodKey($request->input('view', '30dias'));
+        $userId = $request->filled('user_id') ? (int) $request->input('user_id') : null;
+        $data = $this->loadAnalyticsData($periodKey, $userId);
+        $pdfData = ['fecha_generacion' => now()->format('d/m/Y H:i'), 'data' => $data];
 
         $pdf = Pdf::loadView('pdf.reporte_alcance', $pdfData);
         $pdf->setPaper('A4', 'portrait');
         $pdf->setOption('isHtml5ParserEnabled', true);
         $pdf->setOption('isRemoteEnabled', true);
 
-        return $pdf->download("informe_alcance_{$view}.pdf");
+        return $pdf->download('informe_alcance_' . $request->input('view', '30dias') . '.pdf');
     }
 
     public function exportarReporteSeguidores(Request $request)
     {
-        $view = $request->input('view', 'last30days');
-        
-        $periodMap = [
-            '7dias' => 'last7days',
-            '30dias' => 'last30days',
-            'anual' => 'thisyear'
-        ];
-        
-        $periodKey = $periodMap[$view] ?? 'last30days';
-        
-        $jsonPath = resource_path('data/analiticas.json');
-        if (file_exists($jsonPath)) {
-            $jsonString = file_get_contents($jsonPath);
-            $allData = json_decode($jsonString, true);
-            $data = $allData[$periodKey] ?? [];
-        } else {
-            $data = [];
-        }
-        
-        $pdfData = [
-            'fecha_generacion' => now()->format('d/m/Y H:i'),
-            'data' => $data
-        ];
+        $periodKey = $this->resolvePeriodKey($request->input('view', '30dias'));
+        $userId = $request->filled('user_id') ? (int) $request->input('user_id') : null;
+        $data = $this->loadAnalyticsData($periodKey, $userId);
+        $pdfData = ['fecha_generacion' => now()->format('d/m/Y H:i'), 'data' => $data];
 
         $pdf = Pdf::loadView('pdf.reporte_seguidores', $pdfData);
         $pdf->setPaper('A4', 'portrait');
         $pdf->setOption('isHtml5ParserEnabled', true);
         $pdf->setOption('isRemoteEnabled', true);
-        
-        return $pdf->download("informe_seguidores_{$view}.pdf");
+
+        return $pdf->download('informe_seguidores_' . $request->input('view', '30dias') . '.pdf');
     }
-    
+
     public function exportarReporteCTR(Request $request)
     {
-        $view = $request->input('view', 'last30days');
-        
-        $periodMap = [
-            '7dias' => 'last7days',
-            '30dias' => 'last30days',
-            'anual' => 'thisyear'
-        ];
-        
-        $periodKey = $periodMap[$view] ?? 'last30days';
-        
-        $jsonPath = resource_path('data/analiticas.json');
-        if (file_exists($jsonPath)) {
-            $jsonString = file_get_contents($jsonPath);
-            $allData = json_decode($jsonString, true);
-            $data = $allData[$periodKey] ?? [];
-        } else {
-            $data = [];
-        }
-        
-        $pdfData = [
-            'fecha_generacion' => now()->format('d/m/Y H:i'),
-            'data' => $data
-        ];
+        $periodKey = $this->resolvePeriodKey($request->input('view', '30dias'));
+        $userId = $request->filled('user_id') ? (int) $request->input('user_id') : null;
+        $data = $this->loadAnalyticsData($periodKey, $userId);
+        $pdfData = ['fecha_generacion' => now()->format('d/m/Y H:i'), 'data' => $data];
 
         $pdf = Pdf::loadView('pdf.reporte_ctr', $pdfData);
         $pdf->setPaper('A4', 'portrait');
         $pdf->setOption('isHtml5ParserEnabled', true);
         $pdf->setOption('isRemoteEnabled', true);
 
-        return $pdf->download("reporte_ctr_plataforma.pdf");
+        return $pdf->download('reporte_ctr_plataforma.pdf');
+    }
+
+    private function resolvePeriodKey(string $view): string
+    {
+        $periodMap = [
+            '7dias' => 'last7days',
+            '30dias' => 'last30days',
+            'anual' => 'thisyear',
+        ];
+
+        return $periodMap[$view] ?? 'last30days';
+    }
+
+    private function loadAnalyticsData(string $periodKey, ?int $userId = null): array
+    {
+        $resolvedUserId = $userId ?: Auth::id();
+        $campaignJsonPath = resource_path('data/analiticas_por_campania.json');
+
+        if ($resolvedUserId && file_exists($campaignJsonPath)) {
+            $campaignJson = json_decode(file_get_contents($campaignJsonPath), true);
+            $campaignData = $campaignJson['usuarios'][(string) $resolvedUserId]['periodos'][$periodKey] ?? null;
+
+            if (is_array($campaignData)) {
+                return $campaignData;
+            }
+        }
+
+        $jsonPath = resource_path('data/analiticas.json');
+        if (file_exists($jsonPath)) {
+            $jsonString = file_get_contents($jsonPath);
+            $allData = json_decode($jsonString, true);
+            return $allData[$periodKey] ?? [];
+        }
+
+        return [];
     }
 }

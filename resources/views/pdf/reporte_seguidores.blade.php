@@ -130,8 +130,8 @@
         <table class="kpi-tabla">
             <tr>
                 <td class="kpi-tarjeta">
-                    <div class="kpi-etiqueta">Nuevos Seguidores</div>
-                    <div class="kpi-valor">{{ $data['followers']['new'] ?? '0' }}</div>
+                    <div class="kpi-etiqueta">Seguidores Totales</div>
+                    <div class="kpi-valor">{{ $data['followers']['total'] ?? $data['followers']['new'] ?? '0' }}</div>
                     <span class="tendencia {{ ($data['followers']['trend'] ?? 'up') === 'up' ? 'tendencia-up' : 'tendencia-down' }}">
                         {{ $data['followers']['vs_previous'] ?? '0%' }} vs periodo anterior
                     </span>
@@ -191,7 +191,7 @@
                     <th>Plataforma</th>
                     <th>Formato</th>
                     <th>Fecha</th>
-                    <th style="text-align: right;">Nuevos Seguidores</th>
+                    <th style="text-align: right;">Seguidores Totales</th>
                 </tr>
             </thead>
             <tbody>

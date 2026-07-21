@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Dashboard del Administrador')
 
@@ -106,30 +106,30 @@
             box-shadow: 0 0 20px rgba(99, 102, 241, 0.3), 0 0 40px rgba(99, 102, 241, 0.2);
         }
 
-        /* Nuevos estilos para los contenedores de gráficos */
+        /* Nuevos estilos para los contenedores de grÃ¡ficos */
         .chart-container {
             position: relative;
             height: 300px;
-            /* Altura fija para el gráfico mensual */
+            /* Altura fija para el grÃ¡fico mensual */
             width: 100%;
         }
 
         .chart-container-small {
             position: relative;
             height: 250px;
-            /* Altura fija para el gráfico anual */
+            /* Altura fija para el grÃ¡fico anual */
             width: 100%;
         }
 
         .chart-container-donut {
             position: relative;
             height: 250px;
-            /* Altura fija para el gráfico de dona */
+            /* Altura fija para el grÃ¡fico de dona */
             width: 100%;
             max-width: 250px;
-            /* Ancho máximo para el gráfico de dona */
+            /* Ancho mÃ¡ximo para el grÃ¡fico de dona */
             margin: 0 auto;
-            /* Centrar el gráfico de dona */
+            /* Centrar el grÃ¡fico de dona */
         }
     </style>
 @endsection
@@ -142,6 +142,19 @@
             
 
             <div class="relative z-10 p-6 max-w-7xl mx-auto">
+                @if (session('success'))
+                    <div class="mb-6 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm font-medium text-green-800 shadow-sm">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-800 shadow-sm">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+           
                  <!-- Sección de Estadísticas de IA -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 
@@ -155,7 +168,7 @@
                             </div>
                             <div>
                                 <h3 class="text-lg font-bold text-gray-800">Predicción de Horarios de Publicación</h3>
-                                <p class="text-xs text-gray-500">Modelo LSTM — Engagement estimado para Instagram y Facebook</p>
+                                <p class="text-xs text-gray-500">Modelo LSTM — Engagement estimado para Facebook</p>
                             </div>
                         </div>
                         <div style="position:relative; height:280px; width:100%;">
@@ -170,9 +183,9 @@
                                     <span class="w-3 h-0.5 bg-emerald-500 rounded" style="border-bottom:2px dashed #10b981"></span> Predicción LSTM
                                 </span>
                             </div>
-                            <span class="bg-cyan-50 text-cyan-700 px-2 py-0.5 rounded-full font-medium">Picos: 11:00-14:00 y 19:00-21:00</span>
+                            <span id="lstmPeakText" class="bg-cyan-50 text-cyan-700 px-2 py-0.5 rounded-full font-medium">Cargando picos LSTM...</span>
                         </div>
-                        <p class="mt-2 text-xs text-gray-500">Mayor visibilidad estimada en Instagram los jueves y viernes; en Facebook destacan media mañana y primeras horas de la tarde.</p>
+                        <p class="mt-2 text-xs text-gray-500">Prediccion basada en modelo LSTM entrenado con patrones temporales de publicaciones en Facebook.</p>
                     </div>
 
                     <!-- Evaluación de Rendimiento del Modelo PLN -->
@@ -330,9 +343,9 @@
                         </div>
                     </a>
                 </div>
-                                <!-- Gráficos en una sola fila -->
+                                <!-- GrÃ¡ficos en una sola fila -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                    <!-- Gráfico Mensual -->
+                    <!-- GrÃ¡fico Mensual -->
                     <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
                         <h3 class="text-xl font-bold text-gray-800 mb-4">Ingresos Mensuales</h3>
                         <div class="chart-container">
@@ -453,7 +466,7 @@
 
                 <!-- Plan Más Contratado -->
                 <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 mb-8">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">Plan Más Contratado</h3>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Plan más contratado</h3>
                     @if($mostContractedPlan)
                         <div class="text-center">
                             <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-6 text-white mb-4">
@@ -488,35 +501,38 @@
     </div>
 
     <script>
-
         // =============================================
-        // Predicción de Horarios Óptimos (Engagement)
+        // Prediccion de Horarios Optimos (Engagement)
         // =============================================
-        (function() {
-            // Patrón horario más realista:
-            // Instagram: fuerte al mediodía y noche.
-            // Facebook: fuerte a media mañana y primera hora de la tarde.
-            const horas = Array.from({ length: 24 }, (_, i) => i);
-            const baseRealData = [
-                0.16, 0.13, 0.10, 0.08, 0.07, 0.09,
-                0.18, 0.31, 0.49, 0.68, 0.81, 0.92,
-                0.98, 1.00, 0.93, 0.74, 0.57, 0.51,
-                0.60, 0.77, 0.88, 0.80, 0.58, 0.34
-            ];
-
-            const predDataSource = [
-                0.14, 0.12, 0.09, 0.08, 0.07, 0.10,
-                0.20, 0.34, 0.53, 0.72, 0.84, 0.95,
-                1.00, 0.98, 0.90, 0.76, 0.61, 0.55,
-                0.66, 0.82, 0.91, 0.83, 0.61, 0.38
-            ];
-
-            const labels = horas.map(h => String(h).padStart(2, '0') + ':00');
-            const realData = baseRealData;
-            const predData = predDataSource;
-
+        (async function() {
             const engCtx = document.getElementById('engagementChart');
-            if (engCtx) {
+
+            if (!engCtx) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/lstm/facebook/horarios');
+
+                if (!response.ok) {
+                    throw new Error('Error al obtener datos de la API LSTM');
+                }
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.message || 'Error desconocido en API LSTM');
+                }
+
+                const labels = data.labels || [];
+                const realData = data.realData || [];
+                const predData = data.predData || [];
+                const peakText = document.getElementById('lstmPeakText');
+
+                if (peakText && data.picos) {
+                    peakText.textContent = 'Picos: ' + data.picos;
+                }
+
                 new Chart(engCtx.getContext('2d'), {
                     type: 'line',
                     data: {
@@ -535,7 +551,7 @@
                                 pointBackgroundColor: 'rgba(59, 130, 246, 1)'
                             },
                             {
-                                label: 'Predicción LSTM',
+                                label: 'Prediccion LSTM',
                                 data: predData,
                                 borderColor: 'rgba(16, 185, 129, 1)',
                                 backgroundColor: 'transparent',
@@ -552,9 +568,14 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        animation: { duration: 1200, easing: 'easeInOutQuart' },
+                        animation: {
+                            duration: 1200,
+                            easing: 'easeInOutQuart'
+                        },
                         plugins: {
-                            legend: { display: false },
+                            legend: {
+                                display: false
+                            },
                             tooltip: {
                                 backgroundColor: 'rgba(15, 23, 42, 0.9)',
                                 titleColor: '#fff',
@@ -564,19 +585,7 @@
                                 displayColors: true,
                                 callbacks: {
                                     label: function(ctx) {
-                                        return ctx.dataset.label + ': ' + (ctx.parsed.y * 100).toFixed(1) + '% engagement';
-                                    }
-                                }
-                            },
-                            annotation: {
-                                annotations: {
-                                    peakLine: {
-                                        type: 'line',
-                                        xMin: 12,
-                                        xMax: 12,
-                                        borderColor: 'rgba(234, 88, 12, 0.5)',
-                                        borderWidth: 2,
-                                        borderDash: [4, 4]
+                                        return ctx.dataset.label + ': ' + (ctx.parsed.y * 100).toFixed(1) + '% nivel relativo';
                                     }
                                 }
                             }
@@ -585,23 +594,50 @@
                             y: {
                                 beginAtZero: true,
                                 max: 1.1,
-                                grid: { color: 'rgba(0,0,0,0.04)' },
+                                grid: {
+                                    color: 'rgba(0,0,0,0.04)'
+                                },
                                 ticks: {
                                     callback: function(value) {
                                         return (value * 100).toFixed(0) + '%';
                                     },
-                                    font: { size: 11 }
+                                    font: {
+                                        size: 11
+                                    }
                                 },
-                                title: { display: true, text: 'Nivel de Engagement', font: { size: 11, weight: 'bold' } }
+                                title: {
+                                    display: true,
+                                    text: 'Nivel relativo de Engagement',
+                                    font: {
+                                        size: 11,
+                                        weight: 'bold'
+                                    }
+                                }
                             },
                             x: {
-                                grid: { display: false },
-                                ticks: { font: { size: 10 }, maxRotation: 45 },
-                                title: { display: true, text: 'Hora del día', font: { size: 11, weight: 'bold' } }
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 10
+                                    },
+                                    maxRotation: 45
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Hora del dia',
+                                    font: {
+                                        size: 11,
+                                        weight: 'bold'
+                                    }
+                                }
                             }
                         }
                     }
                 });
+            } catch (error) {
+                console.error(error);
             }
         })();
 
@@ -611,7 +647,7 @@
         (function() {
             const radarCtx = document.getElementById('radarPlnChart');
             if (radarCtx) {
-                new Chart(radarCtx.getContext('2d'), {
+                new Chart(radarCtx.getContext('2d'), {  
                     type: 'radar',
                     data: {
                         labels: ['Coherencia', 'Relevancia', 'Fluidez', 'Diversidad', 'Precisión Semántica'],
@@ -901,3 +937,9 @@
         });
     </script>
 @endsection
+
+
+
+
+
+

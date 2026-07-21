@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Cliente;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Socialite\Facades\Socialite;
 use Throwable;
 
@@ -18,7 +22,7 @@ class SocialAccountController extends Controller
         $user = Auth::user();
 
         if (! $user->socialAccountsTableExists()) {
-            return redirect()->back()->with('social_accounts_error', 'La integración de redes sociales aún no está disponible.');
+            return redirect()->back()->with('social_accounts_error', 'La integraciÓn de redes sociales aÚn no esté disponible en este entorno porque falta la tabla social_accounts. Ejecuta las migraciones del sistema.');
         }
 
         if ($provider === 'instagram' && ! $user->hasLinkedSocialAccount('facebook')) {
@@ -36,7 +40,16 @@ class SocialAccountController extends Controller
         }
 
         return Socialite::driver('facebook')
-            ->scopes(['email', 'public_profile'])
+            ->scopes([
+                'email',
+                'public_profile',
+                'pages_show_list',
+                'pages_read_engagement',
+                'pages_manage_posts',
+            ])
+            ->with([
+                'config_id' => config('services.facebook.login_config_id'),
+            ])
             ->redirect();
     }
 
@@ -51,13 +64,17 @@ class SocialAccountController extends Controller
         }
 
         if (! Auth::user()->socialAccountsTableExists()) {
-            return redirect($returnUrl)->with('social_accounts_error', 'La integración de redes sociales aún no está disponible.');
+            return redirect($returnUrl)->with('social_accounts_error', 'La integración de redes sociales aún no está disponible en este entorno porque falta la tabla social_accounts. Ejecuta las migraciones del sistema.');
         }
 
         try {
             $socialUser = Socialite::driver('facebook')->user();
+            $user = Auth::user();
+            $facebookPages = $this->fetchFacebookPages($socialUser->token);
+            $primaryPage = $facebookPages[0] ?? null;
+            $rawUserData = method_exists($socialUser, 'user') ? ($socialUser->user ?? []) : [];
 
-            Auth::user()->socialAccounts()->updateOrCreate(
+            $user->socialAccounts()->updateOrCreate(
                 ['provider' => 'facebook'],
                 [
                     'provider_user_id' => $socialUser->getId(),
@@ -70,17 +87,71 @@ class SocialAccountController extends Controller
                     'token_expires_at' => null,
                     'metadata' => [
                         'provider' => 'facebook',
-                        'raw' => method_exists($socialUser, 'user') ? $socialUser->user : [],
+                        'user_access_token' => $socialUser->token,
+                        'facebook_user_id' => $socialUser->getId(),
+                        'granted_scopes' => $rawUserData['granted_scopes'] ?? [],
+                        'pages' => $facebookPages,
+                        'raw' => $rawUserData,
                     ],
                 ]
             );
 
-            return redirect($returnUrl)->with('social_accounts_success', 'Facebook fue vinculado correctamente. Ya puedes continuar con Instagram.');
+            if (! $primaryPage) {
+                $user->socialAccounts()->where('provider', 'facebook_page')->delete();
+
+                return redirect($returnUrl)->with('social_accounts_error', 'Facebook fue vinculado, pero no se encontró ninguna página autorizada. Asegúrate de seleccionar una página y otorgar permisos de publicación.');
+            }
+
+            $user->socialAccounts()->updateOrCreate(
+                ['provider' => 'facebook_page'],
+                [
+                    'provider_user_id' => $primaryPage['id'],
+                    'username' => $primaryPage['name'],
+                    'display_name' => $primaryPage['name'],
+                    'email' => null,
+                    'avatar' => null,
+                    'access_token' => $primaryPage['access_token'] ?? null,
+                    'refresh_token' => null,
+                    'token_expires_at' => null,
+                    'metadata' => [
+                        'page_id' => $primaryPage['id'],
+                        'page_name' => $primaryPage['name'],
+                        'source' => 'me/accounts',
+                        'linked_facebook_user_id' => $socialUser->getId(),
+                        'raw' => $primaryPage,
+                        'all_pages' => $facebookPages,
+                    ],
+                ]
+            );
+
+            return redirect($returnUrl)->with('social_accounts_success', 'Facebook fue vinculado correctamente y ya se guardó la página principal autorizada.');
         } catch (Throwable $e) {
             return redirect($returnUrl)->with('social_accounts_error', 'No se pudo completar la vinculación con Facebook: ' . $e->getMessage());
         }
     }
 
+    public function setupSocialAccountsTable()
+    {
+        $returnUrl = url()->previous();
+
+        try {
+            Schema::dropIfExists('social_accounts');
+            Artisan::call('migrate', ['--force' => true]);
+
+            if (! Schema::hasTable('social_accounts')) {
+                return redirect($returnUrl)->with('social_accounts_error', 'No se pudo completar la creación de la tabla social_accounts.');
+            }
+
+            return redirect($returnUrl)->with('social_accounts_success', 'La tabla social_accounts fue creada correctamente. Ya puedes vincular Facebook.');
+        } catch (Throwable $e) {
+            Log::error('No se pudo ejecutar la configuración de social_accounts.', [
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect($returnUrl)->with('social_accounts_error', 'No se pudo ejecutar la migración automática: ' . $e->getMessage());
+        }
+    }
     private function providerIsConfigured(string $provider): bool
     {
         $config = config("services.{$provider}");
@@ -89,4 +160,55 @@ class SocialAccountController extends Controller
             && filled($config['client_secret'] ?? null)
             && filled($config['redirect'] ?? null);
     }
+
+    private function fetchFacebookPages(string $userAccessToken): array
+    {
+        $response = Http::timeout(20)->get(
+            'https://graph.facebook.com/' . config('facebook.api_version', 'v25.0') . '/me/accounts',
+            [
+                'fields' => 'id,name,access_token',
+                'access_token' => $userAccessToken,
+            ]
+        );
+
+        if (! $response->successful()) {
+            $error = $response->json('error.message') ?? 'No se pudo obtener la lista de páginas autorizadas.';
+
+            Log::warning('No se pudieron obtener p�ginas de Facebook autorizadas.', [
+                'status' => $response->status(),
+                'token' => $this->maskToken($userAccessToken),
+                'error' => $error,
+            ]);
+
+            throw new \RuntimeException($error);
+        }
+
+        return collect($response->json('data', []))
+            ->map(function (array $page): array {
+                return [
+                    'id' => $page['id'] ?? null,
+                    'name' => $page['name'] ?? 'Página sin nombre',
+                    'access_token' => $page['access_token'] ?? null,
+                ];
+            })
+            ->filter(fn (array $page): bool => filled($page['id']) && filled($page['access_token']))
+            ->values()
+            ->all();
+    }
+
+    private function maskToken(?string $token): ?string
+    {
+        if (! filled($token)) {
+            return null;
+        }
+
+        if (strlen($token) <= 8) {
+            return str_repeat('*', strlen($token));
+        }
+
+        return substr($token, 0, 4) . str_repeat('*', max(strlen($token) - 8, 4)) . substr($token, -4);
+    }
 }
+
+
+

@@ -201,7 +201,30 @@
             </div>
         </div>
 
-        <!-- Botones de acción -->
+        
+        <div class=" mb-8 mt-8 ml-auto w-full lg:w-[calc(33.333333%-0.5rem)] bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-white/30 overflow-hidden hover:shadow-3xl transition-all duration-300">
+            <div class="px-8 py-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+                <h2 class="text-2xl font-bold">Campaña Activa</h2>
+                <p class="text-indigo-100 mt-1">Resumen rápido de la campaña del usuario</p>
+            </div>
+
+            <div class="p-8">
+                <div class="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-5">
+                    <p class="text-sm font-medium text-gray-500">Campaña actual</p>
+                    <div class="mt-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">{{ $campania->nombre }}</h3>
+                            <p class="mt-1 text-sm text-gray-600">Estado: {{ ucfirst($campania->estado) }}</p>
+                        </div>
+                        <a href="{{ route('administrador.usuarios.analiticas-campania', $campania->cliente->id) }}" class="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-3 text-sm font-medium text-white shadow-lg transition-all duration-300 hover:from-indigo-700 hover:to-purple-700 hover:shadow-xl">
+                            Ver analíticas de campaña
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!-- Botones de acción -->
         <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
             <div class="flex flex-col sm:flex-row gap-4 justify-between items-center">
                 <div class="flex items-center text-gray-600">

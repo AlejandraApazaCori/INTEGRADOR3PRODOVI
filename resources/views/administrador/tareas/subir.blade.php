@@ -53,7 +53,7 @@
                     <div class="relative border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 bg-gray-50/50 hover:bg-gray-50" style="border-color: #d1d5db; hover:border-color: #818cf8;">
                         <input type="file" name="archivos[]" id="archivos" 
                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                               multiple required>
+                               multiple required accept=".jpg,.jpeg,.png,.gif,.mp4,.mov,.avi,.pdf,.ai,.mp3,.wav,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.psd,.svg,.webp">
                         <div class="flex flex-col items-center justify-center">
                             <i class="fas fa-cloud-upload-alt text-4xl text-gray-300 mb-3"></i>
                             <p class="text-sm text-gray-500 font-medium">Haz clic o arrastra tus archivos aquí</p>

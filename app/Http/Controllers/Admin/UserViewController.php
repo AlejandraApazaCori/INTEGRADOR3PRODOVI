@@ -8,9 +8,6 @@ use Carbon\Carbon;
 
 class UserViewController extends Controller
 {
-    /**
-     * Muestra los detalles de un usuario especifico
-     */
     public function show($id)
     {
         $user = User::with(['roles', 'suscripciones.plan.caracteristicas', 'empresas'])->findOrFail($id);
@@ -57,15 +54,30 @@ class UserViewController extends Controller
             ->latest('fecha_inicio')
             ->first();
 
+        $data = $this->loadAnalyticsData('last30days', (int) $id);
+
+        return view('administrador.campanias.analiticasusuario', compact('user', 'campaniaActual', 'data'));
+    }
+
+    private function loadAnalyticsData(string $periodKey, int $userId): array
+    {
+        $campaignJsonPath = resource_path('data/analiticas_por_campania.json');
+        if (file_exists($campaignJsonPath)) {
+            $campaignJson = json_decode(file_get_contents($campaignJsonPath), true);
+            $campaignData = $campaignJson['usuarios'][(string) $userId]['periodos'][$periodKey] ?? null;
+
+            if (is_array($campaignData)) {
+                return $campaignData;
+            }
+        }
+
         $jsonPath = resource_path('data/analiticas.json');
         if (file_exists($jsonPath)) {
             $jsonString = file_get_contents($jsonPath);
             $allData = json_decode($jsonString, true);
-            $data = $allData['last30days'] ?? [];
-        } else {
-            $data = [];
+            return $allData[$periodKey] ?? [];
         }
 
-        return view('administrador.campañas.analiticasusuario', compact('user', 'campaniaActual', 'data'));
+        return [];
     }
 }

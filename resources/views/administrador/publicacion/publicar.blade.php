@@ -3,6 +3,11 @@
 @section('title', 'Publicar en Redes Sociales')
 
 @section('content')
+@php
+    $facebookPageName = optional($facebookPage)->display_name ?? optional($facebookPage)->username ?? 'Sin página vinculada';
+    $facebookPageInitial = strtoupper(substr($facebookPageName, 0, 1));
+    $facebookReady = filled(optional($facebookPage)->provider_user_id) && filled(optional($facebookPage)->access_token);
+@endphp
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -47,6 +52,26 @@
                 <!-- Panel de publicación -->
                 <div class="rounded-xl p-6" style="background: #f8fafc; border: 1px solid #e2e8f0;">
                     <!-- Mensaje de publicación exitosa -->
+                    @if(session('success'))
+                    <div class="mb-6 p-4 rounded-xl flex items-start gap-3 rp-alert-success" style="background: #f0fdf4; border: 1px solid #bbf7d0; box-shadow: 0 4px 14px rgba(34,197,94,0.12);">
+                        <i class="fas fa-check-circle text-lg" style="color: #16a34a;"></i>
+                        <div class="flex-1 text-sm" style="color: #166534;">{{ session('success') }}</div>
+                    </div>
+                    @endif
+
+                    @if(session('error'))
+                    <div class="mb-6 p-4 rounded-xl flex items-start gap-3" style="background: #fef2f2; border: 1px solid #fecaca;">
+                        <i class="fas fa-triangle-exclamation text-lg" style="color: #dc2626;"></i>
+                        <div class="flex-1 text-sm" style="color: #991b1b;">{{ session('error') }}</div>
+                    </div>
+                    @endif
+
+                    @if ($errors->any())
+                    <div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        {{ $errors->first() }}
+                    </div>
+                    @endif
+
                     <div id="success-alert" class="hidden mb-6 p-4 rounded-xl flex items-start gap-3 rp-alert-success" style="background: #f0fdf4; border: 1px solid #bbf7d0; box-shadow: 0 4px 14px rgba(34,197,94,0.12);">
                         <i class="fas fa-check-circle text-lg" style="color: #16a34a;"></i>
                         <div class="flex-1">
@@ -61,7 +86,9 @@
                     </div>
                     
                     <!-- Formulario de publicación -->
-                    <form id="publishing-form">
+                    <form id="publishing-form" method="POST" action="{{ route('administrador.publicaciones.publicar.store') }}">
+                        @csrf
+                        <input type="hidden" name="tarea_id" value="{{ $tarea->id }}">
                         <!-- Selección de cuenta y plataforma -->
                         <div class="mb-6">
                             <label class="block text-sm font-semibold text-gray-700 mb-3">
@@ -72,11 +99,11 @@
                             <div class="mb-4 space-y-3" id="account-display">
                                 <div id="facebook-account" class="flex items-center space-x-3 p-3 rounded-xl border rp-account-card" style="background: #ffffff; border-color: #e2e8f0;">
                                     <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm" style="background: linear-gradient(135deg, #1877f2, #0d5dc7);">
-                                        A
+                                        {{ $facebookPageInitial }}
                                     </div>
                                     <div class="flex-1">
                                         <div class="flex items-center space-x-2">
-                                            <span class="font-semibold text-gray-800">ALNI</span>
+                                            <span class="font-semibold text-gray-800">{{ $facebookPageName }}</span>
                                             <span class="text-xs px-2 py-1 rounded-full font-medium" style="background: #eef2ff; color: #4f46e5;">
                                                 <i class="fab fa-facebook-f mr-1"></i>facebook
                                             </span>
@@ -101,14 +128,14 @@
                             
                             <div class="flex flex-wrap gap-3">
                                 <label class="rp-checkbox-pill" for="facebook-checkbox">
-                                    <input id="facebook-checkbox" type="checkbox" checked class="h-4 w-4 rounded focus:ring-2" style="accent-color: #1877f2; border-color: #d1d5db;" onchange="updateAccountDisplay(); updatePreview();">
+                                    <input id="facebook-checkbox" name="platforms[]" value="facebook" type="checkbox" checked class="h-4 w-4 rounded focus:ring-2" style="accent-color: #1877f2; border-color: #d1d5db;" onchange="updateAccountDisplay(); updatePreview();">
                                     <span class="ml-2 text-sm text-gray-700 flex items-center">
                                         <i class="fab fa-facebook mr-1.5" style="color: #1877f2;"></i>
                                         Facebook
                                     </span>
                                 </label>
                                 <label class="rp-checkbox-pill" for="instagram-checkbox">
-                                    <input id="instagram-checkbox" type="checkbox" class="h-4 w-4 rounded focus:ring-2" style="accent-color: #e4405f; border-color: #d1d5db;" onchange="updateAccountDisplay(); updatePreview();">
+                                    <input id="instagram-checkbox" name="platforms[]" value="instagram" type="checkbox" class="h-4 w-4 rounded focus:ring-2" style="accent-color: #e4405f; border-color: #d1d5db;" onchange="updateAccountDisplay(); updatePreview();">
                                     <span class="ml-2 text-sm text-gray-700 flex items-center">
                                         <i class="fab fa-instagram mr-1.5" style="color: #e4405f;"></i>
                                         Instagram
@@ -178,9 +205,9 @@
                                     Generar Copy con IA
                                 </button>
                             </div>
-                            <textarea id="content" rows="4" oninput="updatePreview()"
+                            <textarea id="content" name="message" rows="4" oninput="updatePreview()"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white resize-none"
-                                placeholder="Escribe el mensaje que acompañará a tu publicación..."></textarea>
+                                placeholder="Escribe el mensaje que acompañará a tu publicación...">{{ old('message') }}</textarea>
                         </div>
                         
                         <!-- Configuración de publicación -->
@@ -193,14 +220,14 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="p-4 rounded-xl border" style="background: #ffffff; border-color: #e2e8f0;">
                                     <div class="flex items-center mb-3 rp-radio-option">
-                                        <input id="publish-now" name="schedule_type" type="radio" value="now" checked class="h-4 w-4 focus:ring-2" style="accent-color: #4f46e5; border-color: #d1d5db;">
+                                        <input id="publish-now" name="schedule_type" type="radio" value="now" {{ old('schedule_type', 'now') === 'now' ? 'checked' : '' }} class="h-4 w-4 focus:ring-2" style="accent-color: #4f46e5; border-color: #d1d5db;">
                                         <label for="publish-now" class="ml-2 block text-sm text-gray-700 font-medium">
                                             <i class="fas fa-bolt mr-1 text-amber-400"></i>
                                             Publicar ahora
                                         </label>
                                     </div>
                                     <div class="flex items-center rp-radio-option">
-                                        <input id="schedule-later" name="schedule_type" type="radio" value="later" class="h-4 w-4 focus:ring-2" style="accent-color: #4f46e5; border-color: #d1d5db;">
+                                        <input id="schedule-later" name="schedule_type" type="radio" value="later" {{ old('schedule_type') === 'later' ? 'checked' : '' }} class="h-4 w-4 focus:ring-2" style="accent-color: #4f46e5; border-color: #d1d5db;">
                                         <label for="schedule-later" class="ml-2 block text-sm text-gray-700 font-medium">
                                             <i class="fas fa-clock mr-1 text-indigo-400"></i>
                                             Programar para más tarde
@@ -214,11 +241,11 @@
                                                 </div>
                                                 <div>
                                                     <p class="text-sm font-semibold text-gray-800">Programa tu publicación</p>
-                                                    <p class="text-xs text-gray-500">Elige una fecha y hora atractiva para lanzar el contenido.</p>
+                                                    <p class="text-xs text-gray-500">Elige la fecha y hora exacta en que quieres publicar el contenido.</p>
                                                 </div>
                                             </div>
 
-                                            <input type="datetime-local" id="schedule-datetime" class="sr-only">
+                                            <input type="datetime-local" id="schedule-datetime" name="scheduled_at" class="sr-only" value="{{ old('scheduled_at') }}">
 
                                             <div class="rp-schedule-grid mt-4">
                                                 <label class="rp-schedule-field">
@@ -233,7 +260,7 @@
                                                     <span class="rp-schedule-field__label">Hora</span>
                                                     <div class="rp-schedule-field__control">
                                                         <i class="fas fa-clock"></i>
-                                                        <input type="time" id="schedule-time-ui" class="rp-schedule-input" step="300">
+                                                        <input type="time" id="schedule-time-ui" class="rp-schedule-input" step="60">
                                                     </div>
                                                 </label>
                                             </div>
@@ -303,9 +330,11 @@
                         
                         <!-- Vista previa de la publicación - visible por defecto -->
                         @php
-                            $previewImage = $tarea->archivos->first(function ($archivo) {
-                                return in_array(strtolower($archivo->extension), ['jpg', 'jpeg', 'png', 'gif', 'webp']);
-                            });
+                            $approvedImageFiles = $tarea->archivos->filter(function ($archivo) {
+                                return in_array(strtolower($archivo->extension), ['jpg', 'jpeg', 'png', 'gif']);
+                            })->values();
+                            $previewImage = $approvedImageFiles->first();
+                            $hasCarouselPreview = $approvedImageFiles->count() > 1;
                         @endphp
                         <div class="mb-6" id="publication-preview">
                             <label class="block text-sm font-semibold text-gray-700 mb-3">
@@ -333,7 +362,28 @@
                                         <div class="mt-3 text-[14px] text-[#1c1e21] leading-5" id="preview-content-facebook">Escribe tu mensaje aquí...</div>
                                     </div>
                                     <div class="w-full bg-[#f0f2f5]" id="preview-media-facebook" style="min-height: 420px;">
-                                        @if($previewImage)
+                                        @if($previewImage && $hasCarouselPreview)
+                                            <div class="rp-preview-carousel" data-carousel>
+                                                <div class="rp-preview-carousel__track" data-carousel-track>
+                                                    @foreach($approvedImageFiles as $imageFile)
+                                                        <div class="rp-preview-carousel__slide">
+                                                            <img src="{{ Storage::url($imageFile->ruta_archivo) }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                                <button type="button" class="rp-preview-carousel__nav rp-preview-carousel__nav--prev" data-carousel-prev>
+                                                    <i class="fas fa-chevron-left"></i>
+                                                </button>
+                                                <button type="button" class="rp-preview-carousel__nav rp-preview-carousel__nav--next" data-carousel-next>
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </button>
+                                                <div class="rp-preview-carousel__dots">
+                                                    @foreach($approvedImageFiles as $imageIndex => $imageFile)
+                                                        <button type="button" class="rp-preview-carousel__dot {{ $imageIndex === 0 ? 'is-active' : '' }}" data-carousel-dot="{{ $imageIndex }}"></button>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @elseif($previewImage)
                                             <img src="{{ Storage::url($previewImage->ruta_archivo) }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
                                         @else
                                             <div class="w-full h-[420px] flex items-center justify-center text-gray-400">
@@ -374,7 +424,28 @@
                                         <div class="mt-3 text-[14px] text-[#1c1e21] leading-5" id="preview-content-instagram">Escribe tu mensaje aquí...</div>
                                     </div>
                                     <div class="w-full bg-[#f0f2f5]" id="preview-media-instagram" style="min-height: 420px;">
-                                        @if($previewImage)
+                                        @if($previewImage && $hasCarouselPreview)
+                                            <div class="rp-preview-carousel" data-carousel>
+                                                <div class="rp-preview-carousel__track" data-carousel-track>
+                                                    @foreach($approvedImageFiles as $imageFile)
+                                                        <div class="rp-preview-carousel__slide">
+                                                            <img src="{{ Storage::url($imageFile->ruta_archivo) }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                                <button type="button" class="rp-preview-carousel__nav rp-preview-carousel__nav--prev" data-carousel-prev>
+                                                    <i class="fas fa-chevron-left"></i>
+                                                </button>
+                                                <button type="button" class="rp-preview-carousel__nav rp-preview-carousel__nav--next" data-carousel-next>
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </button>
+                                                <div class="rp-preview-carousel__dots">
+                                                    @foreach($approvedImageFiles as $imageIndex => $imageFile)
+                                                        <button type="button" class="rp-preview-carousel__dot {{ $imageIndex === 0 ? 'is-active' : '' }}" data-carousel-dot="{{ $imageIndex }}"></button>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @elseif($previewImage)
                                             <img src="{{ Storage::url($previewImage->ruta_archivo) }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
                                         @else
                                             <div class="w-full h-[420px] flex items-center justify-center text-gray-400">
@@ -396,12 +467,18 @@
                         </div>
                         
                         <!-- Botones de acción -->
+                        @if(! $facebookReady)
+                        <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                            Este cliente todavía no tiene una página de Facebook autorizada con token válido. Vincula Facebook desde su panel antes de publicar.
+                        </div>
+                        @endif
+
                         <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-5 border-t border-gray-200">
                             <button type="button" onclick="togglePreview()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 rp-secondary-btn" style="color: #4f46e5; background: #eef2ff;">
                                 <i class="fas fa-eye"></i>
                                 <span id="preview-toggle-text">Ocultar Vista Previa</span>
                             </button>
-                            <button type="button" onclick="publishContent()" 
+                            <button type="submit" id="publish-submit-btn" {{ ! $facebookReady ? 'disabled' : '' }} 
                                     class="inline-flex items-center gap-2 px-7 py-3 rounded-xl text-white font-semibold shadow-lg transition-all duration-200 hover:shadow-2xl hover:-translate-y-0.5 rp-publish-btn" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);">
                                 <i class="fas fa-rocket"></i>
                                 Publicar
@@ -725,6 +802,71 @@
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
     }
 
+    .rp-preview-carousel {
+        position: relative;
+        overflow: hidden;
+        min-height: 420px;
+        background: #f0f2f5;
+    }
+
+    .rp-preview-carousel__track {
+        display: flex;
+        width: 100%;
+        min-height: 420px;
+        transition: transform 0.35s ease;
+    }
+
+    .rp-preview-carousel__slide {
+        width: 100%;
+        min-height: 420px;
+        flex: 0 0 100%;
+    }
+
+    .rp-preview-carousel__nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 36px;
+        height: 36px;
+        border-radius: 9999px;
+        background: rgba(15, 23, 42, 0.7);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+    }
+
+    .rp-preview-carousel__nav--prev {
+        left: 12px;
+    }
+
+    .rp-preview-carousel__nav--next {
+        right: 12px;
+    }
+
+    .rp-preview-carousel__dots {
+        position: absolute;
+        left: 50%;
+        bottom: 14px;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 0.45rem;
+        z-index: 2;
+    }
+
+    .rp-preview-carousel__dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 9999px;
+        background: rgba(255,255,255,0.45);
+        border: 1px solid rgba(255,255,255,0.75);
+    }
+
+    .rp-preview-carousel__dot.is-active {
+        background: #ffffff;
+    }
+
     @media (max-width: 640px) {
         .rp-banner .px-8 { 
             padding-left: 1.25rem; 
@@ -868,9 +1010,9 @@
 
         if (!dateInput.value || !timeInput.value) {
             const defaultDate = new Date(now);
-            defaultDate.setMinutes(Math.ceil(defaultDate.getMinutes() / 5) * 5, 0, 0);
+            defaultDate.setSeconds(0, 0);
             if (defaultDate <= now) {
-                defaultDate.setMinutes(defaultDate.getMinutes() + 5);
+                defaultDate.setMinutes(defaultDate.getMinutes() + 1);
             }
 
             dateInput.value = defaultDate.toISOString().slice(0, 10);
@@ -1066,12 +1208,68 @@
         document.getElementById('success-alert').classList.add('hidden');
     }
 
+    function initializePreviewCarousels() {
+        document.querySelectorAll('[data-carousel]').forEach((carousel) => {
+            const track = carousel.querySelector('[data-carousel-track]');
+            const slides = carousel.querySelectorAll('.rp-preview-carousel__slide');
+            const prevButton = carousel.querySelector('[data-carousel-prev]');
+            const nextButton = carousel.querySelector('[data-carousel-next]');
+            const dots = carousel.querySelectorAll('[data-carousel-dot]');
+            let currentIndex = 0;
+
+            if (!track || slides.length <= 1) {
+                return;
+            }
+
+            const renderCarousel = () => {
+                track.style.transform = `translateX(-${currentIndex * 100}%)`;
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('is-active', index === currentIndex);
+                });
+            };
+
+            prevButton?.addEventListener('click', () => {
+                currentIndex = currentIndex === 0 ? slides.length - 1 : currentIndex - 1;
+                renderCarousel();
+            });
+
+            nextButton?.addEventListener('click', () => {
+                currentIndex = currentIndex === slides.length - 1 ? 0 : currentIndex + 1;
+                renderCarousel();
+            });
+
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    currentIndex = index;
+                    renderCarousel();
+                });
+            });
+
+            renderCarousel();
+        });
+    }
+
     // Inicializar
     document.addEventListener('DOMContentLoaded', function() {
         updateAccountDisplay();
+
+        if (document.getElementById('schedule-later').checked) {
+            document.getElementById('schedule-datetime-container').classList.remove('hidden');
+            initializeSchedulePicker();
+        }
+
         updatePreview();
-        
-        // Mostrar vista previa por defecto
+        initializePreviewCarousels();
+
+        const form = document.getElementById('publishing-form');
+        const submitButton = document.getElementById('publish-submit-btn');
+        if (form && submitButton) {
+            form.addEventListener('submit', function() {
+                submitButton.disabled = true;
+                submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Procesando...`;
+            });
+        }
+
         document.getElementById('publication-preview').classList.remove('hidden');
         document.getElementById('preview-toggle-text').textContent = 'Ocultar Vista Previa';
     });
@@ -1114,3 +1312,19 @@
     });
 </script>
 @endsection
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -16,7 +16,7 @@ class ReporteController extends Controller
     {
         // 1. Verificar si el usuario es administrador
         if (!auth()->check() || !auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
-            abort(403, 'No tienes permisos para acceder a esta pÃ¡gina.');
+            abort(403, 'No tienes permisos para acceder a esta página.');
         }
 
         // 2. Obtener la empresa
@@ -44,7 +44,7 @@ class ReporteController extends Controller
 {
     // Verificar si el usuario es administrador
     if (!auth()->check() || !auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
-        abort(403, 'No tienes permisos para acceder a esta pÃ¡gina.');
+        abort(403, 'No tienes permisos para acceder a esta página.');
     }
 
     // Obtener la empresa
@@ -80,9 +80,9 @@ class ReporteController extends Controller
         $contenidoActual = [];
 
         foreach ($lineas as $linea) {
-            // Detectar encabezados de secciÃ³n (##)
+            // Detectar encabezados de sección (##)
             if (preg_match('/^##\s+(.+)$/', $linea, $matches)) {
-                // Guardar la secciÃ³n anterior si existe
+                // Guardar la sección anterior si existe
                 if ($seccionActual) {
                     $secciones[] = [
                         'titulo' => $seccionActual,
@@ -90,18 +90,18 @@ class ReporteController extends Controller
                     ];
                 }
 
-                // Iniciar nueva secciÃ³n
+                // Iniciar nueva sección
                 $seccionActual = $matches[1];
                 $contenidoActual = [];
             } else {
-                // AÃ±adir lÃ­nea al contenido de la secciÃ³n actual
+                // Añadir línea al contenido de la sección actual
                 if ($seccionActual) {
                     $contenidoActual[] = $linea;
                 }
             }
         }
 
-        // Guardar la Ãºltima secciÃ³n
+        // Guardar la última sección
         if ($seccionActual) {
             $secciones[] = [
                 'titulo' => $seccionActual,
