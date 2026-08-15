@@ -9,54 +9,6 @@
             }
         });
 
-        // Animated counter mejorado
-        function animateCounter(element, target, duration = 2500) {
-            let start = 0;
-            const increment = target / (duration / 16);
-            
-            const counter = setInterval(() => {
-                start += increment;
-                if (start >= target) {
-                    element.textContent = target;
-                    clearInterval(counter);
-                    // Efecto de brillo al completar
-                    element.style.textShadow = '0 0 20px rgba(168, 85, 247, 0.6)';
-                    setTimeout(() => {
-                        element.style.textShadow = 'none';
-                    }, 500);
-                } else {
-                    element.textContent = Math.floor(start);
-                }
-            }, 16);
-        }
-
-        // Start counters cuando son visibles
-        const observerOptions = {
-            threshold: 0.5,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const counters = entry.target.querySelectorAll('.stat-number');
-                    counters.forEach((counter, index) => {
-                        const target = parseInt(counter.getAttribute('data-target'));
-                        setTimeout(() => {
-                            animateCounter(counter, target);
-                        }, index * 200);
-                    });
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, observerOptions);
-
-        // Observar las estadísticas
-        const statsSection = document.querySelector('.stats');
-        if (statsSection) {
-            observer.observe(statsSection);
-        }
-
         // Smooth scrolling con GSAP para enlaces de navegación y botón hero
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -146,11 +98,6 @@
                 0%, 100% { transform: translateX(0); }
                 25% { transform: translateX(-5px); }
                 75% { transform: translateX(5px); }
-            }
-
-            /* Mejoras adicionales de hover para elementos interactivos */
-            .stat-item {
-                cursor: pointer;
             }
 
             .hero-person {

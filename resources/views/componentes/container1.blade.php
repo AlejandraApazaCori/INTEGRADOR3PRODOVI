@@ -1,58 +1,439 @@
-     <div class="container1 animate-container slide-left">
+<style>
+    html {
+        overflow-x: hidden;
+        scrollbar-width: thin;
+        scrollbar-color: #117e8c #111;
+    }
+
+    body {
+        overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar {
+        width: 11px;
+        height: 0;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #111;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        min-height: 45px;
+        border: 2px solid #111;
+        border-radius: 10px;
+        background: #117e8c;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #ef6c22;
+    }
+
+    ::-webkit-scrollbar-corner {
+        background: #111;
+    }
+
+    .animate-container {
+        --section-entry-x: -70px;
+    }
+
+    .animate-container.slide-right {
+        --section-entry-x: 70px;
+    }
+
+    .container1 > .hero-content,
+    .container2 > .section-header,
+    .container2 > .services-grid,
+    .container3 > .about-content,
+    .container4 > .section-header,
+    .container4 > .portfolio-filters,
+    .container4 > .portfolio-grid,
+    .container5 > .section-header,
+    .container5 > .testimonials-slider,
+    .container5 > .testimonial-controls,
+    .container6 > .contact-content,
+    .site-footer > .footer-container {
+        opacity: 0;
+        transform: translate3d(var(--section-entry-x), 38px, 0) scale(.98);
+    }
+
+    .container1.section-entered > .hero-content,
+    .container2.section-entered > .section-header,
+    .container2.section-entered > .services-grid,
+    .container3.section-entered > .about-content,
+    .container4.section-entered > .section-header,
+    .container4.section-entered > .portfolio-filters,
+    .container4.section-entered > .portfolio-grid,
+    .container5.section-entered > .section-header,
+    .container5.section-entered > .testimonials-slider,
+    .container5.section-entered > .testimonial-controls,
+    .container6.section-entered > .contact-content,
+    .site-footer.section-entered > .footer-container {
+        animation: section-content-enter .9s cubic-bezier(.22, 1, .36, 1) both;
+    }
+
+    .container2.section-entered > .services-grid,
+    .container4.section-entered > .portfolio-filters,
+    .container5.section-entered > .testimonials-slider { animation-delay: .14s; }
+
+    .container4.section-entered > .portfolio-grid,
+    .container5.section-entered > .testimonial-controls { animation-delay: .28s; }
+
+    .animate-container .hero-text,
+    .animate-container .hero-image {
+        animation: none !important;
+    }
+
+    @keyframes section-content-enter {
+        from {
+            opacity: 0;
+            transform: translate3d(var(--section-entry-x), 38px, 0) scale(.98);
+            filter: blur(7px);
+        }
+        to {
+            opacity: 1;
+            transform: translate3d(0, 0, 0) scale(1);
+            filter: blur(0);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .container1 > .hero-content,
+        .container2 > .section-header,
+        .container2 > .services-grid,
+        .container3 > .about-content,
+        .container4 > .section-header,
+        .container4 > .portfolio-filters,
+        .container4 > .portfolio-grid,
+        .container5 > .section-header,
+        .container5 > .testimonials-slider,
+        .container5 > .testimonial-controls,
+        .container6 > .contact-content,
+        .site-footer > .footer-container {
+            opacity: 1;
+            transform: none;
+        }
+
+        .animate-container.section-entered > * {
+            animation: none;
+        }
+    }
+
+    .container1 .hero-color-strip {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        width: min(100%, 190px);
+        height: 7px;
+        margin-bottom: 1.35rem;
+    }
+
+    .container1 .hero-color-strip span {
+        display: block;
+        height: 100%;
+        flex: 1;
+        border-radius: 1px;
+        box-shadow: 0 5px 14px rgba(0, 0, 0, .18);
+        transform: scaleX(0);
+        transform-origin: left;
+        animation: hero-color-reveal .55s ease forwards;
+    }
+
+    .container1 .hero-color-strip span:nth-child(1) { background: #5b2b76; animation-delay: .15s; }
+    .container1 .hero-color-strip span:nth-child(2) { background: #ef6c22; animation-delay: .21s; }
+    .container1 .hero-color-strip span:nth-child(3) { background: #f5a900; animation-delay: .27s; }
+    .container1 .hero-color-strip span:nth-child(4) { background: #7da533; animation-delay: .33s; }
+    .container1 .hero-color-strip span:nth-child(5) { background: #117e8c; animation-delay: .39s; }
+    .container1 .hero-color-strip span:nth-child(6) { background: #b9b9b9; animation-delay: .45s; }
+
+    .container1 .hero-title-accent {
+        text-shadow: none;
+    }
+
+    .container1 .hero-title-accent span { color: #117e8c; }
+
+    .container1 .hero-plans-button {
+        background: linear-gradient(135deg, #117e8c 0%, #0d6672 100%);
+        border: 1px solid rgba(245, 169, 0, .72);
+        color: #fff;
+        box-shadow: 0 14px 32px rgba(17, 126, 140, .32);
+    }
+
+    .container1 .hero-plans-button:hover {
+        background: linear-gradient(135deg, #1594a4 0%, #117e8c 100%);
+        border-color: #f5a900;
+        box-shadow: 0 19px 40px rgba(17, 126, 140, .42);
+    }
+
+    .container1 .scroll-down-btn {
+        background: #ef6c22;
+        color: #fff4dc;
+        border-radius: 10px;
+        border: 2px solid #f5a900;
+        outline: 1px solid rgba(91, 43, 24, .7);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 5px 0 #8f3e17, 0 10px 22px rgba(0, 0, 0, .3);
+        backdrop-filter: none;
+        animation: vintage-float 2.4s ease-in-out infinite;
+    }
+
+    .container1 .scroll-down-btn:hover {
+        background: #d95b18;
+        color: #fff4dc;
+        border-color: #ffd166;
+        transform: translateX(-50%) translateY(3px);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 2px 0 #8f3e17, 0 6px 15px rgba(0, 0, 0, .3);
+    }
+
+    .container1 .pulse-ring {
+        border-color: #f5a900;
+        border-radius: 10px;
+        animation: vintage-ring 2.4s ease-out infinite;
+    }
+
+    @keyframes vintage-float {
+        0%, 100% { transform: translateX(-50%) translateY(0); }
+        50% { transform: translateX(-50%) translateY(-6px); }
+    }
+
+    @keyframes vintage-ring {
+        0% { transform: scale(.9); opacity: .65; }
+        75%, 100% { transform: scale(1.45); opacity: 0; }
+    }
+
+    .container1 .hero-reactions {
+        position: absolute;
+        top: 80px;
+        right: clamp(1rem, 3vw, 3.5rem);
+        bottom: 0;
+        width: clamp(90px, 9vw, 140px);
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 4;
+    }
+
+    .container1 .hero-reaction {
+        position: absolute;
+        bottom: -70px;
+        width: var(--reaction-size);
+        height: var(--reaction-size);
+        object-fit: contain;
+        opacity: 0;
+        filter: drop-shadow(0 8px 12px rgba(0, 0, 0, .3));
+        animation: hero-reaction-rise 20.4s linear infinite;
+        animation-delay: var(--reaction-delay);
+    }
+
+    .container1 .hero-reaction:nth-child(odd) { left: 8%; }
+    .container1 .hero-reaction:nth-child(even) { right: 6%; }
+
+    @keyframes hero-reaction-rise {
+        0% { transform: translateY(0) scale(.72); opacity: 0; }
+        10% { opacity: 1; }
+        82% { opacity: 1; }
+        100% { transform: translateY(calc(-100vh - 150px)) scale(1.05); opacity: 0; }
+    }
+
+    @media (max-width: 768px) {
+        .container1 .hero-reactions {
+            right: .5rem;
+            width: 70px;
+            opacity: .85;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .container1 .hero-reactions { display: none; }
+    }
+
+    .container1 .hero-person {
+        --reveal-x: 50%;
+        --reveal-y: 50%;
+        cursor: none;
+        overflow: visible;
+    }
+
+    .container1 .hero-image {
+        padding-bottom: clamp(2.5rem, 5vw, 5rem);
+    }
+
+    .container1 .hero-person .hero-person-color {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        object-fit: contain;
+        pointer-events: none;
+        clip-path: circle(0 at var(--reveal-x) var(--reveal-y));
+        transition: clip-path .28s ease;
+        z-index: 2;
+    }
+
+    .container1 .hero-person.is-revealing .hero-person-color {
+        clip-path: circle(105px at var(--reveal-x) var(--reveal-y));
+        transition: clip-path .08s linear;
+    }
+
+    .container1 .hero-reveal-cursor {
+        position: absolute;
+        left: var(--reveal-x);
+        top: var(--reveal-y);
+        width: 210px;
+        height: 210px;
+        border: 2px solid #f5a900;
+        border-radius: 50%;
+        box-shadow: 0 0 0 5px rgba(17, 126, 140, .18), 0 0 28px rgba(245, 169, 0, .35);
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, -50%) scale(.75);
+        transition: opacity .2s ease, transform .2s ease;
+        z-index: 3;
+    }
+
+    .container1 .hero-person.is-revealing .hero-reveal-cursor {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    @media (hover: none) {
+        .container1 .hero-person { cursor: auto; }
+        .container1 .hero-person .hero-person-color { clip-path: circle(150% at 50% 50%); }
+        .container1 .hero-reveal-cursor { display: none; }
+    }
+
+    @keyframes hero-color-reveal {
+        to { transform: scaleX(1); }
+    }
+
+    @media (min-width: 1025px) {
+        .container1 .hero-content {
+            grid-template-columns: minmax(540px, 1.08fr) minmax(390px, .92fr);
+            gap: clamp(2.5rem, 5vw, 5.5rem);
+            max-width: 1380px;
+            margin-inline: auto;
+        }
+
+        .container1 .hero-text {
+            width: 100%;
+            max-width: 620px;
+            padding: 2.25rem 0;
+        }
+
+        .container1 .hero-badge {
+            margin-bottom: 1.35rem;
+            padding: .58rem 1rem;
+            border: 1px solid rgba(196, 120, 255, .32);
+            background: rgba(123, 46, 190, .18);
+            box-shadow: 0 10px 30px rgba(120, 35, 190, .14);
+            letter-spacing: .12em;
+            backdrop-filter: blur(10px);
+        }
+
+        .container1 .hero-title {
+            width: 100%;
+            max-width: 620px;
+            margin: 0 0 1.35rem;
+            font-size: 3.7rem;
+            font-weight: 700;
+            line-height: .98;
+            letter-spacing: -.045em;
+            text-wrap: balance;
+            text-shadow: 0 10px 35px rgba(0, 0, 0, .28);
+        }
+
+        .container1 .hero-title-line,
+        .container1 .hero-title-accent {
+            display: block;
+        }
+
+        .container1 .hero-title-line {
+            margin-bottom: .12em;
+            color: #fff;
+        }
+
+        .container1 .hero-title-accent {
+            width: 100%;
+            padding-right: .06em;
+        }
+
+        .container1 .hero-subtitle {
+            width: 100%;
+            max-width: 620px;
+            margin-bottom: 1.8rem;
+            color: rgba(255, 255, 255, .82);
+            font-size: clamp(1rem, 1.15vw, 1.16rem);
+            line-height: 1.75;
+            text-wrap: pretty;
+        }
+
+        .container1 .hero-plans-button {
+            display: inline-flex;
+            align-items: center;
+            gap: .65rem;
+            padding: .9rem 1.5rem;
+            border-radius: 10px;
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+
+        .container1 .hero-plans-button::after {
+            content: "→";
+            font-size: 1.15em;
+            transition: transform .25s ease;
+        }
+
+        .container1 .hero-plans-button:hover {
+            transform: translateY(-3px);
+        }
+
+        .container1 .hero-plans-button:hover::after {
+            transform: translateX(4px);
+        }
+    }
+</style>
+
+     <div class="container1 animate-container slide-left" id="inicio">
         <div class="grid-pattern"></div>
         
-        <!-- Elementos flotantes decorativos -->
-        <div class="floating-element"></div>
-        <div class="floating-element"></div>
-        <div class="floating-element"></div>
+       
         
         <div class="hero-content">
             <div class="hero-text">
-                <div class="hero-badge">
-                    AGENCIA DE MARKETING DIGITAL
+                <div class="hero-color-strip" aria-hidden="true">
+                    <span></span><span></span><span></span>
+                    <span></span><span></span><span></span>
                 </div>
                 <h1 class="hero-title">
-                    Somos Expertos<br>
-                    Potencia Tus Redes 
+                    <span class="hero-title-line">Somos expertos</span>
+                    <span class="hero-title-accent"><span>potenciando</span> <span>tus</span> <span>redes</span></span>
                 </h1>
                 <p class="hero-subtitle">
-                    Incrementa la visibilidad de tu marca y atrae más clientes con nuestra agencia de marketing digital.
-                    Vea cómo sus campañas logran resultados impresionantes con estrategias personalizadas.
+                    Creatividad, producción y estrategia para llevar tu marca al siguiente nivel. Tenemos lo necesario para ser tu empresa de marketing digital.
                 </p>
                
-                <div class="stats">
-                    <div class="stat-item">
-                        <span class="stat-number" data-target="25">0</span>
-                        <div class="stat-label">Empresas</div>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number" data-target="50">0</span>
-                        <div class="stat-label">Campañas</div>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number" data-target="23">0</span>
-                        <div class="stat-label">Clientes Satisfechos</div>
-                    </div>
-                </div>
+                <a href="#servicios" class="cta-button hero-plans-button">Conoce nuestros planes</a>
             </div>
             <div class="hero-image">
                 <div class="hero-person">
-                    <img src="{{ asset('imagenes/personahero.png') }}" alt="Hero Person">
+                    <img class="hero-person-base" src="{{ asset('imagenes/personahero.png') }}" alt="Hero Person">
+                    <img class="hero-person-color" src="{{ asset('imagenes/hombre-color.png') }}" alt="" aria-hidden="true">
+                    <span class="hero-reveal-cursor" aria-hidden="true"></span>
                 </div>
             </div>
         </div>
-        <a href="#services" class="scroll-down-btn">
-            <div class="pulse-ring"></div>
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M7 13l5 5 5-5M7 6l5 5 5-5"/>
-            </svg>
-        </a>
+        <div class="hero-reactions" aria-hidden="true">
+            <img class="hero-reaction" style="--reaction-size: 48px; --reaction-delay: 0s;" src="{{ asset('imagenes/landing/icono-like.png') }}" alt="">
+            <img class="hero-reaction" style="--reaction-size: 42px; --reaction-delay: 3.4s;" src="{{ asset('imagenes/landing/icono-corazon.png') }}" alt="">
+            <img class="hero-reaction" style="--reaction-size: 34px; --reaction-delay: 6.8s;" src="{{ asset('imagenes/landing/icono-like.png') }}" alt="">
+            <img class="hero-reaction" style="--reaction-size: 52px; --reaction-delay: 10.2s;" src="{{ asset('imagenes/landing/icono-corazon.png') }}" alt="">
+            <img class="hero-reaction" style="--reaction-size: 38px; --reaction-delay: 13.6s;" src="{{ asset('imagenes/landing/icono-like.png') }}" alt="">
+            <img class="hero-reaction" style="--reaction-size: 32px; --reaction-delay: 17s;" src="{{ asset('imagenes/landing/icono-corazon.png') }}" alt="">
+        </div>
+       
     </div>
 
-<div class="container2 animate-container slide-right" id="services">
+<div class="container2 animate-container slide-right" id="servicios">
     <div class="section-header">
-        <div class="section-badge">NUESTROS SERVICIOS</div>
-        <h2 class="section-title">Estrategias Digitales que Impulsan tu Negocio</h2>
+        <h2 class="section-title">Nuestros Servicios</h2>
         <p class="section-subtitle">Ofrecemos soluciones integrales de marketing digital adaptadas a tus necesidades</p>
     </div>
     
@@ -60,41 +441,67 @@
         <div class="service-card">
             <div class="service-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 11v2"></path><path d="M6 9v6"></path><path d="M6 10l13-5v14L6 14"></path><path d="M8 15l2 5H7l-2-6"></path>
+                </svg>
+            </div>
+            <h3 class="service-title">Publicidad y marketing</h3>
+            <p class="service-description">Creamos campañas estratégicas para posicionar tu marca, atraer clientes y aumentar tus ventas.</p>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
                 </svg>
             </div>
-            <h3 class="service-title">Gestión de Redes Sociales</h3>
-            <p class="service-description">Creamos y gestionamos contenido atractivo para aumentar tu engagement y construir una comunidad fiel.</p>
-            <a href="#" class="service-link">Saber más →</a>
+            <h3 class="service-title">Redes sociales</h3>
+            <p class="service-description">Gestionamos contenido y comunidades para fortalecer la presencia digital de tu marca.</p>
         </div>
-        
+
         <div class="service-card">
             <div class="service-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                    <rect x="3" y="5" width="14" height="14" rx="2"></rect><path d="m17 10 4-2v8l-4-2"></path><path d="m8 9 5 3-5 3z"></path>
                 </svg>
             </div>
-            <h3 class="service-title">Publicidad Digital</h3>
-            <p class="service-description">Diseñamos campañas publicitarias efectivas en Google, Facebook e Instagram para maximizar tu ROI.</p>
-            <a href="#" class="service-link">Saber más →</a>
+            <h3 class="service-title">Producción audiovisual</h3>
+            <p class="service-description">Producimos fotografías y videos creativos que comunican la esencia de tu proyecto.</p>
         </div>
-        
+
         <div class="service-card">
             <div class="service-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
+                    <rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M8 2v4M16 2v4M3 9h18"></path><path d="m9 15 2 2 4-4"></path>
                 </svg>
             </div>
-            <h3 class="service-title">Marketing de Contenidos</h3>
-            <p class="service-description">Desarrollamos estrategias de contenido que posicionan tu marca como autoridad en tu sector.</p>
-            <a href="#" class="service-link">Saber más →</a>
+            <h3 class="service-title">Planificación de eventos</h3>
+            <p class="service-description">Diseñamos y coordinamos experiencias memorables cuidando cada detalle del evento.</p>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8z"></path>
+                </svg>
+            </div>
+            <h3 class="service-title">Planificación de bodas</h3>
+            <p class="service-description">Convertimos cada boda en una celebración única, elegante y completamente personalizada.</p>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path><path d="m19 3 .7 1.5L21 5l-1.3.5L19 7l-.7-1.5L17 5l1.3-.5z"></path>
+                </svg>
+            </div>
+            <h3 class="service-title">Manejo de influencers</h3>
+            <p class="service-description">Conectamos tu marca con creadores estratégicos y gestionamos colaboraciones de impacto.</p>
         </div>
     </div>
 </div>
 
 
-<div class="container3 animate-container slide-left">
+<div class="container3 animate-container slide-left" id="conocenos">
     <div class="about-content">
         <div class="about-image">
             <img src="{{ asset('imagenes/Equipo-Marketing.jpg') }}" alt="About Us">
@@ -152,10 +559,10 @@
 </div>
 
 <!-- Container 4: Portfolio Section -->
-<div class="container4 animate-container slide-right">
+<div class="container4 animate-container slide-right" id="proyectos">
     <div class="section-header">
         <div class="section-badge">CASOS DE ÉXITO</div>
-        <h2 class="section-title">Proyectos que Han Transformado Marcas</h2>
+        <h2 class="section-title">Proyectos que han transformado marcas</h2>
         <p class="section-subtitle">Descubre cómo hemos ayudado a empresas como la tuya a alcanzar sus objetivos</p>
     </div>
     
@@ -174,7 +581,6 @@
                     <div class="portfolio-info">
                         <h3>Campaña de Instagram para ModaLocal</h3>
                         <p>Aumento del 250% en engagement en 3 meses</p>
-                        <a href="#" class="portfolio-link">Ver caso →</a>
                     </div>
                 </div>
             </div>
@@ -187,7 +593,6 @@
                     <div class="portfolio-info">
                         <h3>Anuncios en Facebook para TechStart</h3>
                         <p>Reducción del 40% en costo por adquisición</p>
-                        <a href="#" class="portfolio-link">Ver caso →</a>
                     </div>
                 </div>
             </div>
@@ -200,7 +605,6 @@
                     <div class="portfolio-info">
                         <h3>Estrategia de Contenido para FoodiePlace</h3>
                         <p>Posicionamiento en las primeras 3 búsquedas de Google</p>
-                        <a href="#" class="portfolio-link">Ver caso →</a>
                     </div>
                 </div>
             </div>
@@ -220,49 +624,83 @@
         <div class="testimonial-card active">
             <div class="testimonial-content">
                 <div class="testimonial-text">
-                    "Trabajar con PRODOVI ha transformado completamente nuestra presencia en redes sociales. Hemos visto un aumento del 300% en seguidores y un incremento significativo en ventas."
+                    “PRODOVI comprendió el carácter institucional de nuestro club y nos ayudó a comunicar cada actividad con una imagen organizada, elegante y cercana a nuestros miembros.”
                 </div>
                 <div class="testimonial-author">
                     <div class="author-avatar">
-                        <img src="{{ asset('imagenes/author1.jpg') }}" alt="Author 1">
+                        <img src="{{ asset('imagenes/landing/clientes/club-oficiales-navales.jpg') }}" alt="Club de Oficiales Navales">
                     </div>
                     <div class="author-info">
-                        <h4>María González</h4>
-                        <p>Directora de Marketing, ModaLocal</p>
+                        <h4>Club de Oficiales Navales</h4>
+                        <p>Comunicación institucional y eventos</p>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <div class="testimonial-card">
             <div class="testimonial-content">
                 <div class="testimonial-text">
-                    "El equipo de PRODOVI entendió nuestras necesidades desde el primer momento. Sus estrategias de publicidad nos han permitido alcanzar a miles de nuevos clientes con un presupuesto ajustado."
+                    “El contenido refleja la personalidad de nuestra barbería. Ahora mostramos mejor nuestro trabajo y mantenemos una comunicación mucho más activa con nuestros clientes.”
                 </div>
                 <div class="testimonial-author">
                     <div class="author-avatar">
-                        <img src="{{ asset('imagenes/author2.jpg') }}" alt="Author 2">
+                        <img src="{{ asset('imagenes/landing/clientes/guille-barber-shop.jpg') }}" alt="Guille Barber Shop">
                     </div>
                     <div class="author-info">
-                        <h4>Juan Pérez</h4>
-                        <p>CEO, TechStart</p>
+                        <h4>Guille Barber Shop</h4>
+                        <p>Redes sociales y contenido</p>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <div class="testimonial-card">
             <div class="testimonial-content">
                 <div class="testimonial-text">
-                    "Gracias a su estrategia de contenido, ahora somos una referencia en nuestro sector. El tráfico orgánico a nuestro sitio web se ha duplicado en solo seis meses."
+                    “Lograron presentar nuestros servicios odontológicos de manera profesional y sencilla. La nueva comunicación transmite confianza y facilita que más pacientes conozcan nuestros tratamientos.”
                 </div>
                 <div class="testimonial-author">
                     <div class="author-avatar">
-                        <img src="{{ asset('imagenes/author3.jpg') }}" alt="Author 3">
+                        <img src="{{ asset('imagenes/landing/clientes/Marfil-odontologia.jpg') }}" alt="Marfil Odontología">
                     </div>
                     <div class="author-info">
-                        <h4>Carlos Rodríguez</h4>
-                        <p>Fundador, FoodiePlace</p>
+                        <h4>Marfil Odontología</h4>
+                        <p>Publicidad y marketing digital</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-content">
+                <div class="testimonial-text">
+                    “Las fotografías y piezas audiovisuales capturan la esencia de nuestra cocina. PRODOVI consiguió que cada publicación invite a descubrir nuestra propuesta mediterránea y española.”
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-avatar">
+                        <img src="{{ asset('imagenes/landing/clientes/sancho-panza-comida-mediterranea-espanola.jpg') }}" alt="Sancho Panza">
+                    </div>
+                    <div class="author-info">
+                        <h4>Sancho Panza</h4>
+                        <p>Producción audiovisual y redes sociales</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-content">
+                <div class="testimonial-text">
+                    “El equipo organizó nuestra comunicación digital y convirtió servicios técnicos en mensajes claros y atractivos. El resultado representa mejor la calidad de nuestra empresa.”
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-avatar">
+                        <img src="{{ asset('imagenes/landing/clientes/sirio-telecomunicaciones.jpeg') }}" alt="Sirio Telecomunicaciones">
+                    </div>
+                    <div class="author-info">
+                        <h4>Sirio Telecomunicaciones</h4>
+                        <p>Estrategia de comunicación digital</p>
                     </div>
                 </div>
             </div>
@@ -334,19 +772,24 @@
             </div>
             
             <div class="social-links">
-                <a href="#" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.facebook.com/PRODOVI" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                     </svg>
                 </a>
-                <a href="#" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.instagram.com/prodovi_agencia" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                     </svg>
                 </a>
-                <a href="#" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.tiktok.com/@prodovi" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                    </svg>
+                </a>
+                <a href="https://wa.me/59179561365" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-1.76-.88-2.91-1.57-4.08-3.57-.31-.53.31-.49.88-1.64.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.91-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.08c.15.2 2.1 3.2 5.08 4.49 1.89.81 2.63.88 3.58.74 1.15-.17 1.76-1.02 2.01-2 .25-.98.25-1.81.17-1.98-.07-.17-.27-.25-.57-.4zM12.04 2a9.84 9.84 0 0 0-8.41 14.94L2.05 22l5.2-1.53A9.95 9.95 0 1 0 12.04 2zm0 17.98a8.04 8.04 0 0 1-4.1-1.12l-.29-.17-3.09.91.92-3.01-.19-.31a8.04 8.04 0 1 1 6.75 3.7z"/>
                     </svg>
                 </a>
             </div>
@@ -358,19 +801,30 @@
                     <input type="text" placeholder="Nombre completo" required>
                 </div>
                 <div class="form-group">
-                    <input type="email" placeholder="Correo electrónico" required>
+                    <input type="email" name="email" placeholder="Correo electrónico" inputmode="email" autocomplete="email" pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" title="Ingresa un correo electrónico válido" required>
                 </div>
                 <div class="form-group">
-                    <input type="tel" placeholder="Teléfono">
+                    <input type="tel" name="phone" placeholder="Teléfono" inputmode="numeric" autocomplete="tel" pattern="[0-9]{7,15}" maxlength="15" title="Ingresa únicamente números" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                 </div>
                 <div class="form-group">
-                    <select>
-                        <option value="" disabled selected>Servicio de interés</option>
-                        <option value="social">Gestión de Redes Sociales</option>
-                        <option value="ads">Publicidad Digital</option>
-                        <option value="content">Marketing de Contenidos</option>
-                        <option value="other">Otro</option>
-                    </select>
+                    <div class="custom-select" data-custom-select>
+                        <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+                            <span>Servicio de interés</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="m6 9 6 6 6-6"/>
+                            </svg>
+                        </button>
+                        <div class="custom-select-options" role="listbox">
+                            <button type="button" class="custom-select-option" role="option" data-value="publicidad">Publicidad y marketing</button>
+                            <button type="button" class="custom-select-option" role="option" data-value="social">Redes sociales</button>
+                            <button type="button" class="custom-select-option" role="option" data-value="audiovisual">Producción audiovisual</button>
+                            <button type="button" class="custom-select-option" role="option" data-value="eventos">Planificación de eventos</button>
+                            <button type="button" class="custom-select-option" role="option" data-value="bodas">Planificación de bodas</button>
+                            <button type="button" class="custom-select-option" role="option" data-value="influencers">Manejo de influencers</button>
+                            <button type="button" class="custom-select-option" role="option" data-value="other">Otro</button>
+                        </div>
+                        <input type="hidden" name="service" value="">
+                    </div>
                 </div>
                 <div class="form-group">
                     <textarea placeholder="Cuéntanos sobre tu proyecto" rows="5"></textarea>
@@ -384,6 +838,54 @@
 <script>
     // Testimonial Slider
 document.addEventListener('DOMContentLoaded', function() {
+    const animatedSections = document.querySelectorAll('.animate-container');
+    const heroSection = document.querySelector('.container1.animate-container');
+    const preloader = document.getElementById('gallery-tunnel-preloader');
+
+    const enterSection = section => {
+        if (section) section.classList.add('section-entered');
+    };
+
+    const sectionObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                enterSection(entry.target);
+                sectionObserver.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: .18,
+        rootMargin: '0px 0px -8% 0px'
+    });
+
+    animatedSections.forEach(section => {
+        if (section !== heroSection) sectionObserver.observe(section);
+    });
+
+    if (!preloader || preloader.classList.contains('is-finished')) {
+        requestAnimationFrame(() => enterSection(heroSection));
+    } else {
+        const loaderObserver = new MutationObserver(() => {
+            if (preloader.classList.contains('is-finished')) {
+                enterSection(heroSection);
+                loaderObserver.disconnect();
+            }
+        });
+        loaderObserver.observe(preloader, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    const heroPerson = document.querySelector('.hero-person');
+
+    if (heroPerson && window.matchMedia('(hover: hover)').matches) {
+        heroPerson.addEventListener('mouseenter', () => heroPerson.classList.add('is-revealing'));
+        heroPerson.addEventListener('mouseleave', () => heroPerson.classList.remove('is-revealing'));
+        heroPerson.addEventListener('mousemove', function(e) {
+            const bounds = this.getBoundingClientRect();
+            this.style.setProperty('--reveal-x', `${e.clientX - bounds.left}px`);
+            this.style.setProperty('--reveal-y', `${e.clientY - bounds.top}px`);
+        });
+    }
+
     const testimonialCards = document.querySelectorAll('.testimonial-card');
     const prevBtn = document.querySelector('.testimonial-prev');
     const nextBtn = document.querySelector('.testimonial-next');
@@ -460,6 +962,54 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Form submission
     const contactForm = document.querySelector('.contact-form form');
+
+    document.querySelectorAll('[data-custom-select]').forEach(customSelect => {
+        const trigger = customSelect.querySelector('.custom-select-trigger');
+        const triggerText = trigger.querySelector('span');
+        const hiddenInput = customSelect.querySelector('input[type="hidden"]');
+        const options = customSelect.querySelectorAll('.custom-select-option');
+
+        trigger.addEventListener('click', () => {
+            const isOpen = customSelect.classList.toggle('open');
+            trigger.setAttribute('aria-expanded', String(isOpen));
+        });
+
+        options.forEach(option => {
+            option.addEventListener('click', () => {
+                options.forEach(item => {
+                    item.classList.remove('selected');
+                    item.setAttribute('aria-selected', 'false');
+                });
+                option.classList.add('selected');
+                option.setAttribute('aria-selected', 'true');
+                triggerText.textContent = option.textContent;
+                hiddenInput.value = option.dataset.value;
+                customSelect.classList.remove('open');
+                trigger.setAttribute('aria-expanded', 'false');
+            });
+        });
+
+        document.addEventListener('click', event => {
+            if (!customSelect.contains(event.target)) {
+                customSelect.classList.remove('open');
+                trigger.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        customSelect.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                customSelect.classList.remove('open');
+                trigger.setAttribute('aria-expanded', 'false');
+                trigger.focus();
+            }
+        });
+
+        customSelect.closest('form')?.addEventListener('reset', () => {
+            triggerText.textContent = 'Servicio de interés';
+            hiddenInput.value = '';
+            options.forEach(option => option.classList.remove('selected'));
+        });
+    });
     
     if (contactForm) {
         contactForm.addEventListener('submit', function(e) {

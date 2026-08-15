@@ -3,7 +3,7 @@
     <div class="navbar-container">
         <!-- Logo -->
         <div class="navbar-brand">
-            <a href="/">
+            <a href="#inicio">
                 <img src="{{ asset('imagenes/logoblanco.png') }}" alt="PRODOVI Logo" class="navbar-logo">
             </a>
         </div>
@@ -13,7 +13,10 @@
             <!-- Navigation Links -->
             <ul class="navbar-links">
                 <li class="navbar-item">
-                    <a href="/" class="navbar-link">Inicio</a>
+                    <a href="#inicio" class="navbar-link">Inicio</a>
+                </li>
+                <li class="navbar-item">
+                    <a href="#servicios" class="navbar-link">Servicios</a>
                 </li>
                 <li class="navbar-item">
                     <a href="#conocenos" class="navbar-link">Conócenos</a>
@@ -21,9 +24,7 @@
                 <li class="navbar-item">
                     <a href="#proyectos" class="navbar-link">Proyectos</a>
                 </li>
-                <li class="navbar-item">
-                    <a href="#servicios" class="navbar-link">Servicios</a>
-                </li>
+                
             </ul>
             
         
@@ -68,7 +69,7 @@
     <div class="mobile-menu" id="mobileMenu">
         <div class="mobile-menu-content">
             <ul class="mobile-nav-links">
-                <li><a href="/">Inicio</a></li>
+                <li><a href="#inicio">Inicio</a></li>
                 <li><a href="#conocenos">Conócenos</a></li>
                 <li><a href="#proyectos">Proyectos</a></li>
                 <li><a href="#servicios">Servicios</a></li>
@@ -202,7 +203,7 @@
         bottom: 0;
         left: 50%;
         transform: translateX(-50%);
-        background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        background: #117e8c;
         transition: width 0.3s ease;
     }
     
@@ -262,22 +263,24 @@
     
     /* Login Button Styles */
     .login-button {
-        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        background: linear-gradient(135deg, #117e8c 0%, #0d6672 100%);
         color: white;
-        border: none;
+        border: 1px solid rgba(245, 169, 0, .72);
         padding: 0.6rem 1.5rem;
-        border-radius: 50px;
+        border-radius: 10px;
         font-family: 'Inter', sans-serif;
         font-weight: 600;
         cursor: pointer;
         text-decoration: none;
         transition: var(--transition);
-        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        box-shadow: 0 14px 32px rgba(17, 126, 140, .32);
     }
     
     .login-button:hover {
+        background: linear-gradient(135deg, #1594a4 0%, #117e8c 100%);
+        border-color: #f5a900;
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        box-shadow: 0 19px 40px rgba(17, 126, 140, .42);
     }
     
     /* Mobile Menu Styles */
@@ -395,9 +398,9 @@
     }
     
     .mobile-login-button {
-        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        background: linear-gradient(135deg, #117e8c 0%, #0d6672 100%);
         color: white;
-        border: none;
+        border: 1px solid rgba(245, 169, 0, .72);
         padding: 0.8rem 1.5rem;
         border-radius: 50px;
         font-family: 'Inter', sans-serif;
@@ -407,11 +410,14 @@
         transition: var(--transition);
         text-align: center;
         margin-top: auto;
+        box-shadow: 0 14px 32px rgba(17, 126, 140, .32);
     }
     
     .mobile-login-button:hover {
+        background: linear-gradient(135deg, #1594a4 0%, #117e8c 100%);
+        border-color: #f5a900;
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        box-shadow: 0 19px 40px rgba(17, 126, 140, .42);
     }
     
     /* Overlay for mobile menu */

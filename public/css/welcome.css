@@ -67,7 +67,7 @@ body{
         }
 
         .hero-title {
-            font-size: 3.7rem;
+            font-size: 3rem;
             font-weight: bold;
             color: white;
             margin-bottom: 1rem;
@@ -86,45 +86,6 @@ body{
             font-family: "Varela Round", sans-serif;
         }
 
-
-        .stats {
-            display: flex;
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .stat-item {
-            text-align: center;
-            animation: fadeInUp 1s ease-out;
-            animation-delay: 0.5s;
-            animation-fill-mode: both;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .stat-number {
-            font-size: 3rem;
-            font-weight: bold;
-            color: white;
-            display: block;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-             font-family: "Rowdies", sans-serif;
-        }
-
-        .stat-label {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-        }
 
         .hero-image {
             position: relative;
@@ -179,9 +140,6 @@ body{
         font-size: 3.2rem;
     }
     
-    .stat-number {
-        font-size: 2.5rem;
-    }
 }
 
 /* Tablets pequeñas */
@@ -203,15 +161,6 @@ body{
     
     .hero-subtitle {
         font-size: 1.1rem;
-    }
-    
-    .stats {
-        justify-content: center;
-        gap: 1.5rem;
-    }
-    
-    .stat-number {
-        font-size: 2.2rem;
     }
     
     .hero-badge {
@@ -242,28 +191,6 @@ body{
         margin-bottom: 1.5rem;
     }
     
-    .stats {
-        flex-direction: column;
-        gap: 1rem;
-        margin-top: 1.5rem;
-    }
-    
-    .stat-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        text-align: left;
-    }
-    
-    .stat-number {
-        font-size: 1.8rem;
-        margin-right: 1rem;
-    }
-    
-    .stat-label {
-        font-size: 0.8rem;
-    }
-    
     .hero-badge {
         font-size: 0.75rem;
         padding: 0.3rem 0.6rem;
@@ -286,13 +213,6 @@ body{
         font-size: 0.9rem;
     }
     
-    .stat-number {
-        font-size: 1.5rem;
-    }
-    
-    .stat-label {
-        font-size: 0.7rem;
-    }
 }
 .scroll-down-btn{
     position: relative;
