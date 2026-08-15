@@ -23,6 +23,16 @@
 </div>
 
 <style>
+    :root,
+    html,
+    body {
+        color-scheme: only light;
+    }
+
+    #gallery-tunnel-preloader {
+        color-scheme: only light;
+    }
+
     html.gallery-is-loading,
     html.gallery-is-loading body {
         overflow: hidden !important;
