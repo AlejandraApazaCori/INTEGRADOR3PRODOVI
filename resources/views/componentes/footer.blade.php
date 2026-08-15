@@ -44,8 +44,8 @@
                 <div class="links-column">
                     <h3 class="links-title">Contacto</h3>
                     <ul class="contact-info">
-                        <li><i class="fas fa-map-marker-alt"></i> Zona Miraflores, Stadium Av. Hugo Estrada , Edificio Olímpia # 1354, lado Banco Sol y Karaoke Love City, Piso 1 Oficina 3, La Paz, Bolivia</li>
-                        <li><i class="fas fa-phone"></i> +591 79561365</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Real Plaza Hotel &amp; Convention Center. Av. Arce #2177 (Frente a la Plaza Bolivia), La Paz, Bolivia, La Paz, Bolivia</li>
+                        <li><i class="fas fa-phone-alt"></i> +591 79561365</li>
                         <li><i class="fas fa-envelope"></i> info@prodovi.com</li>
                     </ul>
                 </div>

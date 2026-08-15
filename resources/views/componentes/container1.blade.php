@@ -389,6 +389,386 @@
             transform: translateX(4px);
         }
     }
+
+    @media (max-width: 1024px) {
+        .container1 .hero-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .container1 .hero-text { display: contents; }
+        .container1 .hero-color-strip { order: 1; margin: 0 auto; }
+        .container1 .hero-image { order: 2; width: 100%; padding-bottom: 0; }
+        .container1 .hero-title { order: 3; width: 100%; margin: 0; }
+        .container1 .hero-subtitle { order: 4; width: min(100%, 620px); margin: 0; }
+        .container1 .hero-plans-button { order: 5; }
+
+        .container1 .hero-title-accent {
+            display: block;
+            width: 100%;
+            overflow: visible;
+            padding: 0 .12em .08em;
+            line-height: 1.18;
+        }
+
+        .container1 .hero-title-accent span {
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .container3 .about-text {
+            width: 100%;
+            text-align: center;
+        }
+
+        .container3 .section-badge {
+            justify-content: center;
+            margin-inline: auto;
+        }
+
+        .container3 .section-subtitle {
+            max-width: 680px;
+            margin-inline: auto;
+        }
+
+        .container3 .features-list {
+            width: min(100%, 680px);
+            margin-inline: auto;
+        }
+
+        .container3 .feature-item {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .container3 .feature-icon {
+            margin: 0 0 .75rem;
+        }
+    }
+
+    /* Tablet */
+    @media (min-width: 769px) and (max-width: 1024px) {
+        .container1.container1 {
+            min-height: auto;
+            padding: 110px 36px 80px;
+            border-radius: 0 0 80px 80px;
+        }
+
+        .container1 .hero-content {
+            gap: 1.1rem;
+            padding-top: 0;
+        }
+
+        .container1 .hero-title {
+            font-size: clamp(2.6rem, 5vw, 3.25rem);
+            line-height: 1.05;
+        }
+
+        .container1 .hero-subtitle { font-size: 1rem; }
+        .container1 .hero-person { width: min(100%, 430px); margin-inline: auto; }
+        .container1 .hero-person img { max-width: 390px; }
+        .container1 .hero-image { padding-bottom: 0; }
+        .container1 .hero-reactions { right: .5rem; width: 78px; }
+
+        .container2,
+        .container3,
+        .container4,
+        .container5,
+        .container6 {
+            padding: 4.5rem 2rem;
+        }
+
+        .container2 .services-grid,
+        .container4 .portfolio-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1.5rem;
+        }
+
+        .container3 .about-content,
+        .container6 .contact-content {
+            grid-template-columns: 1fr;
+            gap: 3rem;
+        }
+
+        .container3 .about-image {
+            width: min(100%, 680px);
+            margin-inline: auto;
+            order: 2;
+        }
+
+        .container3 .about-text { order: 1; }
+        .container5 .testimonials-slider { max-width: 720px; }
+    }
+
+    /* Celulares */
+    @media (max-width: 768px) {
+        .container1.container1 {
+            min-height: auto;
+            padding: 100px 18px 64px;
+            border-radius: 0 0 42px 42px;
+        }
+
+        .container1 .hero-content {
+            display: flex;
+            flex-direction: column;
+            gap: .9rem;
+            padding: 0;
+            text-align: center;
+        }
+
+        .container1 .hero-text {
+            order: 1;
+            width: 100%;
+            padding: 0;
+        }
+
+        .container1 .hero-image {
+            order: 2;
+            width: 100%;
+            padding-bottom: 0;
+        }
+
+        .container1 .hero-color-strip {
+            width: min(70%, 190px);
+            margin-inline: auto;
+        }
+
+        .container1 .hero-title {
+            margin: 0;
+            font-size: clamp(1.8rem, 8.4vw, 2.65rem);
+            line-height: 1.08;
+            letter-spacing: -.025em;
+            overflow: visible;
+        }
+
+        .container1 .hero-title-line,
+        .container1 .hero-title-accent { display: block; }
+
+        .container1 .hero-subtitle {
+            max-width: 560px;
+            margin: 0 auto;
+            font-size: .98rem;
+            line-height: 1.6;
+        }
+
+        .container1 .hero-plans-button {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: min(100%, 290px);
+            padding: .9rem 1.2rem;
+            border-radius: 10px;
+        }
+
+        .container1 .hero-person {
+            width: min(100%, 390px);
+            margin-inline: auto;
+        }
+
+        .container1 .hero-person img {
+            width: 100%;
+            max-width: 340px;
+            max-height: 390px;
+        }
+
+        .container1 .hero-reactions,
+        .container1 .scroll-down-btn { display: none; }
+
+        .container2,
+        .container3,
+        .container4,
+        .container5,
+        .container6 {
+            padding: 3.75rem 1.15rem;
+            border-radius: 0;
+        }
+
+        .container2 .section-header,
+        .container4 .section-header,
+        .container5 .section-header {
+            margin-bottom: 2.25rem;
+        }
+
+        .container2 .section-title,
+        .container3 .section-title,
+        .container4 .section-title,
+        .container5 .section-title,
+        .container6 .section-title {
+            font-size: clamp(1.75rem, 8vw, 2.25rem);
+            line-height: 1.15;
+        }
+
+        .container2 .section-subtitle,
+        .container3 .section-subtitle,
+        .container4 .section-subtitle,
+        .container5 .section-subtitle,
+        .container6 .section-subtitle {
+            font-size: .96rem;
+            line-height: 1.6;
+        }
+
+        .container2 .services-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1.25rem;
+        }
+
+        .container4 .portfolio-grid { grid-template-columns: 1fr; gap: 1.25rem; }
+
+        .container2 .service-card {
+            padding: 1.6rem 1.25rem;
+            border-radius: 12px;
+        }
+
+        .container2 .service-icon {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+        }
+
+        .container2 .service-icon svg { width: 36px; height: 36px; }
+        .container2 .service-title { font-size: 1.3rem; }
+
+        .container3 .about-content,
+        .container6 .contact-content {
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
+        }
+
+        .container3 .about-text { order: 1; }
+        .container3 .about-image { order: 2; width: 100%; }
+        .container3 .about-image img { border-radius: 10px; }
+
+        .container3 .experience-badge {
+            right: 12px;
+            bottom: -18px;
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        .container3 .feature-item { gap: .8rem; }
+        .container3 .feature-icon { margin-right: 0; }
+        .container3 .feature-text { min-width: 0; }
+
+        .container4 .portfolio-filters {
+            flex-wrap: wrap;
+            gap: .65rem;
+            margin-bottom: 2rem;
+        }
+
+        .container4 .filter-btn {
+            flex: 1 1 calc(50% - .65rem);
+            min-width: 130px;
+            padding: .65rem .8rem;
+            border-radius: 10px;
+        }
+
+        .container4 .portfolio-image { height: 240px; }
+        .container4 .portfolio-overlay { padding: 1.25rem; }
+
+        .container5 .testimonial-card {
+            padding: 1.5rem 1.2rem;
+            border-radius: 10px;
+        }
+
+        .container5 .testimonial-text {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .container5 .testimonial-author { align-items: flex-start; }
+        .container5 .author-avatar { width: 62px; height: 62px; flex-shrink: 0; }
+        .container5 .author-info { min-width: 0; }
+        .container5 .testimonial-prev,
+        .container5 .testimonial-next { width: 44px; height: 44px; }
+
+        .container6 .contact-item { align-items: flex-start; }
+        .container6 .contact-icon { width: 44px; height: 44px; }
+        .container6 .contact-text { min-width: 0; }
+        .container6 .contact-text p { overflow-wrap: anywhere; }
+
+        .container6 .contact-form {
+            padding: 1.35rem;
+            border-radius: 10px;
+        }
+
+        .container6 .form-group input,
+        .container6 .form-group textarea,
+        .container6 .custom-select-trigger { font-size: 16px; }
+
+        .container6 .social-links { flex-wrap: wrap; }
+    }
+
+    @media (max-width: 420px) {
+        .container1.container1 { padding-inline: 14px; }
+        .container1 .hero-title { font-size: 1.9rem; }
+        .container1 .hero-subtitle { font-size: .9rem; }
+        .container1 .hero-person img { max-width: 285px; }
+
+        .container2,
+        .container3,
+        .container4,
+        .container5,
+        .container6 { padding-inline: .9rem; }
+
+        .container2 .services-grid { gap: .75rem; }
+        .container2 .service-card { padding: 1.1rem .75rem; }
+        .container2 .service-icon { width: 54px; height: 54px; }
+        .container2 .service-icon svg { width: 30px; height: 30px; }
+        .container2 .service-title { font-size: 1.02rem; overflow-wrap: anywhere; }
+        .container2 .service-description { font-size: .82rem; line-height: 1.45; }
+
+        .container3 .feature-item { flex-direction: column; align-items: center; text-align: center; }
+        .container4 .filter-btn { flex-basis: 100%; }
+        .container5 .testimonial-author { flex-direction: column; gap: .8rem; }
+        .container5 .author-avatar { margin-right: 0; }
+        .container6 .contact-form { padding: 1rem; }
+    }
+
+    @media (max-width: 1024px) {
+        .container1 .hero-reactions {
+            display: block;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: .78;
+            overflow: hidden;
+        }
+
+        .container1 .hero-reaction {
+            right: auto;
+            bottom: -60px;
+            animation-name: hero-reaction-rise-responsive;
+            animation-duration: 22s;
+        }
+
+        .container1 .hero-reaction:nth-child(1) { left: 7%; }
+        .container1 .hero-reaction:nth-child(2) { left: 23%; }
+        .container1 .hero-reaction:nth-child(3) { left: 39%; }
+        .container1 .hero-reaction:nth-child(4) { left: 56%; }
+        .container1 .hero-reaction:nth-child(5) { left: 73%; }
+        .container1 .hero-reaction:nth-child(6) { left: 88%; }
+
+        @keyframes hero-reaction-rise-responsive {
+            0% { transform: translateY(0) scale(.65); opacity: 0; }
+            12% { opacity: .9; }
+            82% { opacity: .8; }
+            100% { transform: translateY(-125vh) scale(.9); opacity: 0; }
+        }
+    }
+
+    @media (max-width: 768px) {
+        .container2.container2,
+        .container5.container5 {
+            border-radius: 0;
+        }
+
+        .container1 .hero-reactions { display: block; }
+    }
 </style>
 
      <div class="container1 animate-container slide-left" id="inicio">
@@ -765,7 +1145,7 @@
                     <div class="contact-text">
                         <h4>Ubicación</h4>
                         <p>
-                            Zona Miraflores, Stadium Av. Hugo Estrada , Edificio Olímpia # 1354, lado Banco Sol y Karaoke Love City, Piso 1 Oficina 3, La Paz, Bolivia
+              Real Plaza Hotel & Convention Center. Av. Arce #2177 (Frente a la Plaza Bolivia), La Paz, Bolivia, La Paz, Bolivia
                         </p>
                     </div>
                 </div>
