@@ -28,6 +28,16 @@ return [
         'key' => env('RESEND_KEY'),
     ],
 
+    'turnstile' => [
+        'site_key' => env('TURNSTILE_SITE_KEY'),
+        'secret' => env('TURNSTILE_SECRET'),
+        'hostnames' => array_values(array_filter(array_map(
+            static fn (string $hostname): string => strtolower(trim($hostname)),
+            explode(',', (string) env('TURNSTILE_HOSTNAMES', ''))
+        ))),
+        'action' => 'landing_contacto',
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

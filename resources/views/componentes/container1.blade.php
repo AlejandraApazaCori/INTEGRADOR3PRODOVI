@@ -790,7 +790,7 @@
                     Creatividad, producción y estrategia para llevar tu marca al siguiente nivel. Tenemos lo necesario para ser tu empresa de marketing digital.
                 </p>
                
-                <a href="#servicios" class="cta-button hero-plans-button">Conoce nuestros planes</a>
+                <a href="{{ route('login') }}" class="cta-button hero-plans-button">Conoce nuestros planes</a>
             </div>
             <div class="hero-image">
                 <div class="hero-person">
@@ -1176,46 +1176,130 @@
         </div>
         
         <div class="contact-form">
-            <form>
+            @php
+                $serviciosContacto = [
+                    'publicidad' => 'Publicidad y marketing',
+                    'social' => 'Redes sociales',
+                    'audiovisual' => 'Producción audiovisual',
+                    'eventos' => 'Planificación de eventos',
+                    'bodas' => 'Planificación de bodas',
+                    'influencers' => 'Manejo de influencers',
+                    'other' => 'Otro',
+                ];
+                $servicioSeleccionado = old('servicio');
+            @endphp
+
+            @if (session('contact_success'))
+                <div class="contact-alert contact-alert-success" role="status">
+                    {{ session('contact_success') }}
+                </div>
+            @endif
+
+            @if (session('contact_warning'))
+                <div class="contact-alert contact-alert-warning" role="alert">
+                    {{ session('contact_warning') }}
+                </div>
+            @endif
+
+            <div id="contactFormStatus" class="contact-alert" role="status" aria-live="polite" hidden></div>
+
+            <form method="POST" action="{{ route('landing.contacto.store') }}" id="contactForm">
+                @csrf
                 <div class="form-group">
-                    <input type="text" placeholder="Nombre completo" required>
+                    <input type="text" name="nombre" value="{{ old('nombre') }}" placeholder="Nombre completo" maxlength="120" autocomplete="name" required>
+                    @error('nombre')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
-                    <input type="email" name="email" placeholder="Correo electrónico" inputmode="email" autocomplete="email" pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" title="Ingresa un correo electrónico válido" required>
+                    <input type="email" name="correo" value="{{ old('correo') }}" placeholder="Correo electrónico" inputmode="email" autocomplete="email" pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" maxlength="190" title="Ingresa un correo electrónico válido" required>
+                    @error('correo')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
-                    <input type="tel" name="phone" placeholder="Teléfono" inputmode="numeric" autocomplete="tel" pattern="[0-9]{7,15}" maxlength="15" title="Ingresa únicamente números" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    <input type="tel" name="telefono" value="{{ old('telefono') }}" placeholder="Teléfono" inputmode="numeric" autocomplete="tel" pattern="[0-9]{7,15}" maxlength="15" title="Ingresa únicamente números" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    @error('telefono')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
-                    <div class="custom-select" data-custom-select>
-                        <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
-                            <span>Servicio de interés</span>
+                    <div class="custom-select @error('servicio') has-error @enderror" data-custom-select>
+                        <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-required="true">
+                            <span>{{ $serviciosContacto[$servicioSeleccionado] ?? 'Servicio de interés' }}</span>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                 <path d="m6 9 6 6 6-6"/>
                             </svg>
                         </button>
                         <div class="custom-select-options" role="listbox">
-                            <button type="button" class="custom-select-option" role="option" data-value="publicidad">Publicidad y marketing</button>
-                            <button type="button" class="custom-select-option" role="option" data-value="social">Redes sociales</button>
-                            <button type="button" class="custom-select-option" role="option" data-value="audiovisual">Producción audiovisual</button>
-                            <button type="button" class="custom-select-option" role="option" data-value="eventos">Planificación de eventos</button>
-                            <button type="button" class="custom-select-option" role="option" data-value="bodas">Planificación de bodas</button>
-                            <button type="button" class="custom-select-option" role="option" data-value="influencers">Manejo de influencers</button>
-                            <button type="button" class="custom-select-option" role="option" data-value="other">Otro</button>
+                            @foreach ($serviciosContacto as $valor => $etiqueta)
+                                <button type="button"
+                                        class="custom-select-option {{ $servicioSeleccionado === $valor ? 'selected' : '' }}"
+                                        role="option"
+                                        aria-selected="{{ $servicioSeleccionado === $valor ? 'true' : 'false' }}"
+                                        data-value="{{ $valor }}">{{ $etiqueta }}</button>
+                            @endforeach
                         </div>
-                        <input type="hidden" name="service" value="">
+                        <input type="hidden" name="servicio" value="{{ $servicioSeleccionado }}">
                     </div>
+                    @error('servicio')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
-                    <textarea placeholder="Cuéntanos sobre tu proyecto" rows="5"></textarea>
+                    <textarea name="mensaje" placeholder="Cuéntanos sobre tu proyecto" rows="5" minlength="10" maxlength="2000" required>{{ old('mensaje') }}</textarea>
+                    @error('mensaje')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
-                <button type="submit" class="submit-btn">Enviar Mensaje</button>
+                <div class="form-group turnstile-group">
+                    @if (config('services.turnstile.site_key'))
+                        <div id="contactTurnstile" class="cf-turnstile"></div>
+                    @else
+                        <p class="turnstile-config-error">La verificación de seguridad no está configurada.</p>
+                    @endif
+                    @error('cf-turnstile-response')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
+                <button type="submit" class="submit-btn" {{ config('services.turnstile.site_key') ? 'disabled' : '' }}>Enviar Mensaje</button>
             </form>
         </div>
     </div>
 </div>
 
 <script>
+window.contactTurnstileWidgetId = null;
+
+window.onTurnstileLoad = function() {
+    window.contactTurnstileWidgetId = window.turnstile.render('#contactTurnstile', {
+        sitekey: @json(config('services.turnstile.site_key')),
+        theme: 'light',
+        language: 'es',
+        size: 'flexible',
+        action: @json(config('services.turnstile.action')),
+        callback: window.onTurnstileVerified,
+        'expired-callback': window.onTurnstileExpired,
+        'error-callback': window.onTurnstileError
+    });
+};
+
+window.onTurnstileVerified = function() {
+    const form = document.getElementById('contactForm');
+    const button = form?.querySelector('.submit-btn');
+    const statusBox = document.getElementById('contactFormStatus');
+
+    if (button) button.disabled = false;
+    if (statusBox && statusBox.classList.contains('contact-alert-error')) {
+        statusBox.hidden = true;
+    }
+};
+
+window.onTurnstileExpired = function() {
+    const button = document.querySelector('#contactForm .submit-btn');
+    if (button) button.disabled = true;
+};
+
+window.onTurnstileError = function() {
+    const button = document.querySelector('#contactForm .submit-btn');
+    const statusBox = document.getElementById('contactFormStatus');
+
+    if (button) button.disabled = true;
+    if (statusBox) {
+        statusBox.className = 'contact-alert contact-alert-error';
+        statusBox.textContent = 'No pudimos cargar la verificación de seguridad. Recarga la página e inténtalo nuevamente.';
+        statusBox.hidden = false;
+    }
+};
+
     // Testimonial Slider
 document.addEventListener('DOMContentLoaded', function() {
     const animatedSections = document.querySelectorAll('.animate-container');
@@ -1392,22 +1476,88 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     if (contactForm) {
-        contactForm.addEventListener('submit', function(e) {
+        contactForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            // Here you would normally send the form data to a server
-            // For demonstration, we'll just show a success message
+
             const submitBtn = this.querySelector('.submit-btn');
+            const statusBox = document.getElementById('contactFormStatus');
             const originalText = submitBtn.textContent;
-            
-            submitBtn.textContent = 'Mensaje Enviado!';
-            submitBtn.style.background = 'linear-gradient(45deg, #4ade80, #22c55e)';
-            
-            setTimeout(() => {
-                submitBtn.textContent = originalText;
-                submitBtn.style.background = '';
+            const turnstileWidget = this.querySelector('#contactTurnstile');
+            const turnstileToken = this.querySelector('[name="cf-turnstile-response"]')?.value;
+
+            if (turnstileWidget && !turnstileToken) {
+                statusBox.className = 'contact-alert contact-alert-error';
+                statusBox.textContent = 'Completa la verificación de seguridad antes de enviar.';
+                statusBox.hidden = false;
+                submitBtn.disabled = true;
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Enviando...';
+
+            statusBox.hidden = true;
+            statusBox.textContent = '';
+            statusBox.className = 'contact-alert';
+
+            this.querySelectorAll('.form-error.ajax-error').forEach(error => error.remove());
+
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: new FormData(this),
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                let data;
+
+                try {
+                    data = await response.json();
+                } catch (_) {
+                    data = { message: 'No pudimos procesar la respuesta del servidor. Inténtalo nuevamente.' };
+                }
+
+                if (!response.ok) {
+                    if (response.status === 422 && data.errors) {
+                        Object.entries(data.errors).forEach(([field, messages]) => {
+                            const input = this.querySelector(`[name="${field}"]`);
+                            const formGroup = input?.closest('.form-group');
+
+                            if (formGroup) {
+                                const error = document.createElement('span');
+                                error.className = 'form-error ajax-error';
+                                error.textContent = messages[0];
+                                formGroup.appendChild(error);
+                            }
+                        });
+                    }
+
+                    throw new Error(data.message || 'No pudimos enviar tu solicitud. Revisa los datos e inténtalo nuevamente.');
+                }
+
+                statusBox.className = data.status === 'warning'
+                    ? 'contact-alert contact-alert-warning'
+                    : 'contact-alert contact-alert-success';
+                statusBox.textContent = data.message;
+                statusBox.hidden = false;
                 this.reset();
-            }, 3000);
+            } catch (error) {
+                statusBox.className = 'contact-alert contact-alert-error';
+                statusBox.textContent = error.message;
+                statusBox.hidden = false;
+            } finally {
+                submitBtn.textContent = originalText;
+
+                if (turnstileWidget && window.turnstile) {
+                    window.turnstile.reset(window.contactTurnstileWidgetId);
+                    submitBtn.disabled = true;
+                } else {
+                    submitBtn.disabled = false;
+                }
+            }
         });
     }
 });

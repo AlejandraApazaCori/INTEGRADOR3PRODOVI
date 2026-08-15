@@ -21,6 +21,8 @@ use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\CuestionarioController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ResumenController;
+use App\Http\Controllers\ContactoLandingController;
+use App\Http\Controllers\MantenimientoWebController;
 
 Route::get('/chatbot', [ChatbotController::class, 'mostrarVista'])->name('chatbot.vista');
 Route::view('/privacy-policy', 'legal.privacy-policy')->name('legal.privacy-policy');
@@ -31,6 +33,20 @@ Route::view('/data-deletion', 'legal.data-deletion')->name('legal.data-deletion'
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::post('/contacto', [ContactoLandingController::class, 'store'])
+    ->middleware('throttle:5,1')
+    ->name('landing.contacto.store');
+
+Route::prefix('ejecutar-migraciones-Ma73027456Lpz')
+    ->middleware('throttle:6,1')
+    ->group(function () {
+        Route::get('/', [MantenimientoWebController::class, 'index'])
+            ->name('mantenimiento.web.index');
+        Route::post('/{operation}', [MantenimientoWebController::class, 'execute'])
+            ->whereIn('operation', ['migrate', 'storage-link'])
+            ->name('mantenimiento.web.execute');
+    });
 
 Route::get('/api/lstm/facebook/horarios', function () {
     $candidateUrls = array_values(array_filter([

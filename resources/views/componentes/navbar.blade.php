@@ -50,7 +50,7 @@
             <!-- Login Button -->
             <div class="navbar-actions">
                 <a href="{{ route('login') }}" class="login-button">
-                    Iniciar Sesión
+                    Ver planes
                 </a>
             </div>
         </div>
