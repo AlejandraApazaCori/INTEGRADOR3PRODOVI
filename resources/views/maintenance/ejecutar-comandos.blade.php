@@ -86,7 +86,30 @@
             overflow-wrap: anywhere;
         }
         .warning { margin: 24px 0 0; color: #efb07d; font-size: 13px; line-height: 1.55; }
-        @media (max-width: 640px) { .commands { grid-template-columns: 1fr; } .command-card p { min-height: 0; } }
+        .mail-panel {
+            margin-top: 24px;
+            padding: 20px;
+            border: 1px solid #303b3f;
+            border-radius: 12px;
+            background: #101517;
+        }
+        .mail-panel h2 { margin: 0 0 8px; color: #5fc2ce; font-size: 19px; }
+        .mail-panel > p { margin: 0 0 16px; color: #aab6ba; line-height: 1.5; font-size: 14px; }
+        .mail-config {
+            display: grid;
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            gap: 8px 18px;
+            margin: 0 0 18px;
+            color: #cbd6d9;
+            font-size: 13px;
+        }
+        .mail-config span { overflow-wrap: anywhere; }
+        .mail-config strong { color: #f5a900; }
+        .mail-result { margin-top: 16px; padding: 14px; border: 1px solid #7da533; border-radius: 10px; color: #dce8ea; }
+        .mail-result.error { border-color: #ef6c22; }
+        .mail-result p { margin: 0; line-height: 1.55; }
+        .mail-result pre { margin-top: 10px; }
+        @media (max-width: 640px) { .commands, .mail-config { grid-template-columns: 1fr; } .command-card p { min-height: 0; } }
     </style>
 </head>
 <body>
@@ -121,6 +144,36 @@
                 </article>
             </section>
 
+            <section class="mail-panel">
+                <h2>Diagnóstico de correo SMTP</h2>
+                <p>Envía una prueba solamente al correo remitente configurado. La contraseña nunca se muestra.</p>
+
+                <div class="mail-config">
+                    <span><strong>Mailer:</strong> {{ $mailConfiguration['mailer'] }}</span>
+                    <span><strong>Servidor:</strong> {{ $mailConfiguration['host'] }}:{{ $mailConfiguration['port'] }}</span>
+                    <span><strong>Seguridad:</strong> {{ $mailConfiguration['scheme'] }}</span>
+                    <span><strong>Remitente:</strong> {{ $mailConfiguration['from'] }}</span>
+                    <span><strong>Usuario:</strong> {{ $mailConfiguration['usernameConfigured'] ? 'configurado' : 'falta configurar' }}</span>
+                    <span><strong>Contraseña:</strong> {{ $mailConfiguration['passwordConfigured'] ? 'configurada' : 'falta configurar' }}</span>
+                    <span><strong>Caché de configuración:</strong> {{ $mailConfiguration['configurationCached'] ? 'activa' : 'inactiva' }}</span>
+                </div>
+
+                <form method="POST" action="{{ route('mantenimiento.web.mail-test') }}" data-command-form>
+                    @csrf
+                    <button type="submit">Probar envío SMTP</button>
+                </form>
+
+                @if (session('mail_test_result'))
+                    @php($mailResult = session('mail_test_result'))
+                    <div class="mail-result {{ $mailResult['success'] ? '' : 'error' }}" aria-live="polite">
+                        <p><strong>{{ $mailResult['success'] ? 'Prueba correcta.' : 'No se pudo enviar.' }}</strong> {{ $mailResult['message'] }}</p>
+                        @isset($mailResult['technical'])
+                            <pre>{{ $mailResult['technical'] }}</pre>
+                        @endisset
+                    </div>
+                @endif
+            </section>
+
             @if (session('maintenance_result'))
                 @php($result = session('maintenance_result'))
                 <section class="result {{ $result['success'] ? '' : 'error' }}" aria-live="polite">
@@ -133,7 +186,7 @@
                 </section>
             @endif
 
-            <p class="warning">Por seguridad, no compartas la dirección de esta página. Ningún parámetro permite ejecutar comandos diferentes a los dos mostrados.</p>
+            <p class="warning">Por seguridad, no compartas la dirección de esta página. La prueba usa únicamente el remitente configurado y nunca muestra la contraseña.</p>
         </div>
     </main>
 

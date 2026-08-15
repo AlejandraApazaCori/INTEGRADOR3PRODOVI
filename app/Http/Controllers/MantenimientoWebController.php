@@ -7,6 +7,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Throwable;
 
 class MantenimientoWebController extends Controller
@@ -29,9 +30,91 @@ class MantenimientoWebController extends Controller
         return response()
             ->view('maintenance.ejecutar-comandos', [
                 'storageLinkExists' => File::exists(public_path('storage')),
+                'mailConfiguration' => [
+                    'mailer' => config('mail.default'),
+                    'host' => config('mail.mailers.smtp.host'),
+                    'port' => config('mail.mailers.smtp.port'),
+                    'scheme' => config('mail.mailers.smtp.scheme') ?: 'automático (STARTTLS)',
+                    'usernameConfigured' => filled(config('mail.mailers.smtp.username')),
+                    'passwordConfigured' => filled(config('mail.mailers.smtp.password')),
+                    'from' => config('mail.from.address'),
+                    'configurationCached' => app()->configurationIsCached(),
+                ],
             ])
             ->header('X-Robots-Tag', 'noindex, nofollow, noarchive')
             ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    }
+
+    public function testMail(): RedirectResponse
+    {
+        $recipient = config('mail.from.address');
+
+        if (! is_string($recipient) || ! filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
+            return redirect()
+                ->route('mantenimiento.web.index')
+                ->with('mail_test_result', [
+                    'success' => false,
+                    'message' => 'MAIL_FROM_ADDRESS no contiene un correo válido.',
+                ]);
+        }
+
+        try {
+            Mail::raw(
+                'La conexión SMTP de PRODOVI funciona correctamente.',
+                fn ($message) => $message
+                    ->to($recipient)
+                    ->subject('Prueba de correo SMTP | PRODOVI')
+            );
+
+            Log::notice('Prueba SMTP completada desde mantenimiento web.', [
+                'recipient' => $recipient,
+                'ip' => request()->ip(),
+            ]);
+
+            return redirect()
+                ->route('mantenimiento.web.index')
+                ->with('mail_test_result', [
+                    'success' => true,
+                    'message' => "SMTP aceptó el correo de prueba enviado a {$recipient}. Revisa también la carpeta de spam.",
+                ]);
+        } catch (Throwable $exception) {
+            Log::error('Falló la prueba SMTP desde mantenimiento web.', [
+                'recipient' => $recipient,
+                'ip' => request()->ip(),
+                'message' => $exception->getMessage(),
+            ]);
+
+            return redirect()
+                ->route('mantenimiento.web.index')
+                ->with('mail_test_result', [
+                    'success' => false,
+                    'message' => $this->mailFailureExplanation($exception),
+                    'technical' => $exception->getMessage(),
+                ]);
+        }
+    }
+
+    private function mailFailureExplanation(Throwable $exception): string
+    {
+        $message = strtolower($exception->getMessage());
+
+        if (str_contains($message, '535') || str_contains($message, 'authentication') || str_contains($message, 'authenticate')) {
+            return 'Gmail rechazó las credenciales. MAIL_PASSWORD debe ser una contraseña de aplicación de Google, no la contraseña normal de la cuenta.';
+        }
+
+        if (str_contains($message, 'timed out') || str_contains($message, 'connection refused') || str_contains($message, 'could not connect')) {
+            return 'El servidor no pudo conectarse con Gmail. Confirma con el hosting que permita conexiones SMTP salientes a smtp.gmail.com por el puerto 587.';
+        }
+
+        if (str_contains($message, 'certificate') || str_contains($message, 'crypto') || str_contains($message, 'tls')) {
+            return 'Falló la conexión segura TLS con Gmail. El hosting debe tener OpenSSL y certificados raíz actualizados.';
+        }
+
+        if (str_contains($message, 'sender') || str_contains($message, 'from address')) {
+            return 'Gmail rechazó el remitente. MAIL_FROM_ADDRESS debe coincidir con la cuenta configurada en MAIL_USERNAME.';
+        }
+
+        return 'SMTP devolvió un error. El detalle técnico aparece debajo para identificar la causa exacta.';
     }
 
     public function execute(string $operation): RedirectResponse

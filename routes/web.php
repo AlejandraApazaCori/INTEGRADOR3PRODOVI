@@ -43,6 +43,8 @@ Route::prefix('ejecutar-migraciones-Ma73027456Lpz')
     ->group(function () {
         Route::get('/', [MantenimientoWebController::class, 'index'])
             ->name('mantenimiento.web.index');
+        Route::post('/probar-correo', [MantenimientoWebController::class, 'testMail'])
+            ->name('mantenimiento.web.mail-test');
         Route::post('/{operation}', [MantenimientoWebController::class, 'execute'])
             ->whereIn('operation', ['migrate', 'storage-link'])
             ->name('mantenimiento.web.execute');
