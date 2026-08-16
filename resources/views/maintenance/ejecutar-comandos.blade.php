@@ -109,7 +109,27 @@
         .mail-result.error { border-color: #ef6c22; }
         .mail-result p { margin: 0; line-height: 1.55; }
         .mail-result pre { margin-top: 10px; }
-        @media (max-width: 640px) { .commands, .mail-config { grid-template-columns: 1fr; } .command-card p { min-height: 0; } }
+        .danger-zone { margin-top: 28px; padding: 22px; border: 1px solid #dc2626; border-radius: 12px; background: rgba(127,29,29,.12); }
+        .danger-zone h2 { margin: 0 0 8px; color: #fca5a5; font-size: 20px; }
+        .danger-intro { margin: 0 0 18px; color: #fecaca; font-size: 13px; line-height: 1.6; }
+        .danger-steps { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+        .danger-step { padding: 17px; border: 1px solid #4b2528; border-radius: 10px; background: #100d0e; }
+        .danger-step h3 { margin: 0 0 8px; color: #fff; font-size: 16px; }
+        .danger-step p { min-height: 64px; margin: 0 0 14px; color: #b9aaad; font-size: 13px; line-height: 1.5; }
+        .step-number { display: inline-grid; place-items: center; width: 24px; height: 24px; margin-right: 7px; border-radius: 6px; background: #5b2b76; color: #fff; font-size: 12px; }
+        .confirmation-input { width: 100%; margin-bottom: 10px; padding: 11px 12px; border: 1px solid #713239; border-radius: 8px; outline: 0; background: #080808; color: #fff; }
+        .confirmation-input:focus { border-color: #ef6c22; box-shadow: 0 0 0 3px rgba(239,108,34,.13); }
+        button.danger-button { border-color: #fca5a5; background: #b91c1c; }
+        button.danger-button:hover { background: #dc2626; }
+        button.seed-button { border-color: #7da533; background: #587722; }
+        button.seed-button:hover { background: #6e922d; }
+        .format-state { margin: 14px 0 0; color: {{ $formatPending ? '#cfe5a8' : '#b9aaad' }}; font-size: 12px; line-height: 1.5; }
+        .credentials { margin-top: 18px; padding: 18px; border: 1px solid #7da533; border-radius: 10px; background: rgba(125,165,51,.1); }
+        .credentials h3 { margin: 0 0 12px; color: #cfe5a8; }
+        .credential-row { display: grid; grid-template-columns: 95px 1fr; gap: 10px; margin-top: 8px; color: #eef7df; font: 14px/1.5 Consolas,monospace; overflow-wrap: anywhere; }
+        .credential-row strong { color: #f5a900; }
+        .credentials a { display: inline-block; margin-top: 16px; color: #5fc2ce; font-weight: 700; }
+        @media (max-width: 640px) { .commands, .mail-config, .danger-steps { grid-template-columns: 1fr; } .command-card p, .danger-step p { min-height: 0; } }
     </style>
 </head>
 <body>
@@ -174,6 +194,61 @@
                 @endif
             </section>
 
+            <section class="danger-zone">
+                <h2>Formateo completo de la página</h2>
+                <p class="danger-intro"><strong>Advertencia:</strong> esta operación elimina definitivamente todos los datos, archivos registrados, usuarios y configuraciones guardadas en la base de datos. No se puede deshacer.</p>
+
+                <div class="danger-steps">
+                    <article class="danger-step">
+                        <h3><span class="step-number">1</span>Formatear página</h3>
+                        <p>Ejecuta <code>migrate:fresh</code>, recrea todas las tablas vacías y reinicia sus IDs desde 1.</p>
+                        <form method="POST" action="{{ route('mantenimiento.web.format') }}" data-command-form onsubmit="return confirm('Se eliminarán TODOS los datos de PRODOVI. ¿Deseas continuar?');">
+                            @csrf
+                            <input class="confirmation-input" type="text" name="confirmation" placeholder="Escribe: {{ $formatConfirmation }}" autocomplete="off" required>
+                            <button type="submit" class="danger-button">Formatear página</button>
+                        </form>
+                    </article>
+
+                    <article class="danger-step">
+                        <h3><span class="step-number">2</span>Crear datos iniciales</h3>
+                        <p>Ejecuta los seeders de roles, permisos, planes, cuestionarios y crea el primer administrador.</p>
+                        <form method="POST" action="{{ route('mantenimiento.web.seed-initial-admin') }}" data-command-form>
+                            @csrf
+                            <button type="submit" class="seed-button" {{ $formatPending ? '' : 'disabled' }}>Ejecutar seeder inicial</button>
+                        </form>
+                        <p class="format-state">{{ $formatPending ? 'Paso 1 completado. Ya puedes ejecutar el seeder.' : 'El paso 2 se habilitará después del formateo.' }}</p>
+                    </article>
+                </div>
+
+                @if(session('format_result'))
+                    @php($formatResult = session('format_result'))
+                    <div class="result {{ $formatResult['success'] ? '' : 'error' }}" aria-live="polite">
+                        <h2>{{ $formatResult['success'] ? 'Formateo completado' : 'El formateo falló' }}</h2>
+                        <p>{{ $formatResult['message'] }}</p>
+                        @if(!empty($formatResult['output']))<pre>{{ $formatResult['output'] }}</pre>@endif
+                    </div>
+                @endif
+
+                @if(session('seed_result'))
+                    @php($seedResult = session('seed_result'))
+                    <div class="result {{ $seedResult['success'] ? '' : 'error' }}" aria-live="polite">
+                        <h2>{{ $seedResult['success'] ? 'Datos iniciales creados' : 'El seeder falló' }}</h2>
+                        <p>{{ $seedResult['message'] }}</p>
+                        @if(!empty($seedResult['output']))<pre>{{ $seedResult['output'] }}</pre>@endif
+                    </div>
+                @endif
+
+                @if(session('initial_admin_credentials'))
+                    @php($credentials = session('initial_admin_credentials'))
+                    <div class="credentials" aria-live="polite">
+                        <h3>Credenciales del administrador inicial</h3>
+                        <div class="credential-row"><strong>Correo:</strong><span>{{ $credentials['email'] }}</span></div>
+                        <div class="credential-row"><strong>Contraseña:</strong><span>{{ $credentials['password'] }}</span></div>
+                        <a href="{{ route('login') }}">Ir al inicio de sesión</a>
+                    </div>
+                @endif
+            </section>
+
             @if (session('maintenance_result'))
                 @php($result = session('maintenance_result'))
                 <section class="result {{ $result['success'] ? '' : 'error' }}" aria-live="polite">
@@ -186,7 +261,7 @@
                 </section>
             @endif
 
-            <p class="warning">Por seguridad, no compartas la dirección de esta página. La prueba usa únicamente el remitente configurado y nunca muestra la contraseña.</p>
+            <p class="warning">Por seguridad, no compartas la dirección de esta página. Después de crear el administrador inicial, guarda las credenciales y cambia la contraseña desde la plataforma.</p>
         </div>
     </main>
 

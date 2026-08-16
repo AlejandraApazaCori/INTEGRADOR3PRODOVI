@@ -14,23 +14,25 @@ class AdminUserSeeder extends Seeder
     public function run(): void
     {
         $user = User::withTrashed()->firstOrNew([
-            'email' => 'prodovialejandra@gmail.com',
+            'email' => 'administrador_prodovi@gmail.com',
         ]);
 
         $user->name = 'Administrador Prodovi';
-        $user->phone = '62397902';
-        $user->password = 'adminprodovi@2026';
+        $user->phone = '79561365';
+        $user->password = 'adminstradorProdovi123456789';
         $user->email_verified_at = now();
         $user->deleted_at = null;
         $user->save();
 
-        $adminRole = Role::withTrashed()->firstOrNew([
-            'nombre_rol' => 'Super Administrador',
-        ]);
+        $adminRoles = collect(['Super Administrador', 'Administrador'])
+            ->map(function (string $roleName) {
+                $role = Role::withTrashed()->firstOrNew(['nombre_rol' => $roleName]);
+                $role->deleted_at = null;
+                $role->save();
 
-        $adminRole->deleted_at = null;
-        $adminRole->save();
+                return $role->id;
+            });
 
-        $user->roles()->sync([$adminRole->id]);
+        $user->roles()->sync($adminRoles->all());
     }
 }

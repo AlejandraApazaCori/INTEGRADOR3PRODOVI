@@ -46,6 +46,10 @@ Route::prefix('ejecutar-migraciones-Ma73027456Lpz')
             ->name('mantenimiento.web.index');
         Route::post('/probar-correo', [MantenimientoWebController::class, 'testMail'])
             ->name('mantenimiento.web.mail-test');
+        Route::post('/formatear', [MantenimientoWebController::class, 'formatDatabase'])
+            ->name('mantenimiento.web.format');
+        Route::post('/crear-administrador-inicial', [MantenimientoWebController::class, 'seedInitialAdmin'])
+            ->name('mantenimiento.web.seed-initial-admin');
         Route::post('/{operation}', [MantenimientoWebController::class, 'execute'])
             ->whereIn('operation', ['migrate', 'storage-link'])
             ->name('mantenimiento.web.execute');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -12,6 +13,8 @@ use Throwable;
 
 class MantenimientoWebController extends Controller
 {
+    private const FORMAT_CONFIRMATION = 'FORMATEAR PRODOVI';
+
     private const OPERATIONS = [
         'migrate' => [
             'command' => 'migrate',
@@ -30,6 +33,8 @@ class MantenimientoWebController extends Controller
         return response()
             ->view('maintenance.ejecutar-comandos', [
                 'storageLinkExists' => File::exists(public_path('storage')),
+                'formatPending' => File::exists($this->formatMarkerPath()),
+                'formatConfirmation' => self::FORMAT_CONFIRMATION,
                 'mailConfiguration' => [
                     'mailer' => config('mail.default'),
                     'host' => config('mail.mailers.smtp.host'),
@@ -43,6 +48,125 @@ class MantenimientoWebController extends Controller
             ])
             ->header('X-Robots-Tag', 'noindex, nofollow, noarchive')
             ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    }
+
+    public function formatDatabase(Request $request): RedirectResponse
+    {
+        if (! hash_equals(self::FORMAT_CONFIRMATION, (string) $request->input('confirmation'))) {
+            return redirect()->route('mantenimiento.web.index')->with('format_result', [
+                'success' => false,
+                'message' => 'La frase de confirmación no coincide. No se modificó la base de datos.',
+            ]);
+        }
+
+        $lockDirectory = storage_path('framework/cache');
+        File::ensureDirectoryExists($lockDirectory);
+        $lockHandle = fopen($lockDirectory.DIRECTORY_SEPARATOR.'mantenimiento-web-format.lock', 'c');
+
+        if ($lockHandle === false || ! flock($lockHandle, LOCK_EX | LOCK_NB)) {
+            if (is_resource($lockHandle)) {
+                fclose($lockHandle);
+            }
+
+            return redirect()->route('mantenimiento.web.index')->with('format_result', [
+                'success' => false,
+                'message' => 'El formateo ya se está ejecutando. Espera a que termine.',
+            ]);
+        }
+
+        try {
+            $exitCode = Artisan::call('migrate:fresh', ['--force' => true]);
+            $output = trim(Artisan::output());
+
+            if ($exitCode !== 0) {
+                return redirect()->route('mantenimiento.web.index')->with('format_result', [
+                    'success' => false,
+                    'message' => 'No se pudo completar el formateo.',
+                    'output' => $output,
+                ]);
+            }
+
+            File::ensureDirectoryExists(dirname($this->formatMarkerPath()));
+            File::put($this->formatMarkerPath(), now()->toIso8601String());
+
+            Log::critical('La base de datos fue formateada desde mantenimiento web.', [
+                'ip' => $request->ip(),
+            ]);
+
+            return redirect()->route('mantenimiento.web.index')->with('format_result', [
+                'success' => true,
+                'message' => 'La base de datos quedó vacía, las tablas fueron recreadas y los IDs volverán a comenzar desde 1. Ejecuta ahora el paso 2.',
+                'output' => $output,
+            ]);
+        } catch (Throwable $exception) {
+            Log::critical('Falló el formateo de la base de datos desde mantenimiento web.', [
+                'ip' => $request->ip(),
+                'message' => $exception->getMessage(),
+            ]);
+
+            return redirect()->route('mantenimiento.web.index')->with('format_result', [
+                'success' => false,
+                'message' => 'Ocurrió un error durante el formateo: '.$exception->getMessage(),
+            ]);
+        } finally {
+            flock($lockHandle, LOCK_UN);
+            fclose($lockHandle);
+        }
+    }
+
+    public function seedInitialAdmin(Request $request): RedirectResponse
+    {
+        if (! File::exists($this->formatMarkerPath())) {
+            return redirect()->route('mantenimiento.web.index')->with('seed_result', [
+                'success' => false,
+                'message' => 'Primero debes completar el paso 1: Formatear página.',
+            ]);
+        }
+
+        try {
+            $exitCode = Artisan::call('db:seed', ['--force' => true]);
+            $output = trim(Artisan::output());
+
+            if ($exitCode !== 0) {
+                return redirect()->route('mantenimiento.web.index')->with('seed_result', [
+                    'success' => false,
+                    'message' => 'El seeder no terminó correctamente.',
+                    'output' => $output,
+                ]);
+            }
+
+            File::delete($this->formatMarkerPath());
+
+            Log::notice('Seeder inicial ejecutado después del formateo web.', [
+                'ip' => $request->ip(),
+            ]);
+
+            return redirect()->route('mantenimiento.web.index')
+                ->with('seed_result', [
+                    'success' => true,
+                    'message' => 'Roles, permisos, planes, cuestionarios y administrador inicial creados correctamente.',
+                    'output' => $output,
+                ])
+                ->with('initial_admin_credentials', [
+                    'email' => 'administrador_prodovi@gmail.com',
+                    'password' => 'adminstradorProdovi123456789',
+                ]);
+        } catch (Throwable $exception) {
+            Log::error('Falló el seeder inicial desde mantenimiento web.', [
+                'ip' => $request->ip(),
+                'message' => $exception->getMessage(),
+            ]);
+
+            return redirect()->route('mantenimiento.web.index')->with('seed_result', [
+                'success' => false,
+                'message' => 'Ocurrió un error al crear los datos iniciales: '.$exception->getMessage(),
+            ]);
+        }
+    }
+
+    private function formatMarkerPath(): string
+    {
+        return storage_path('app/private/mantenimiento-format-pending');
     }
 
     public function testMail(): RedirectResponse
