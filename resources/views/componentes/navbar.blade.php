@@ -24,6 +24,9 @@
                 <li class="navbar-item">
                     <a href="#proyectos" class="navbar-link">Proyectos</a>
                 </li>
+                <li class="navbar-item">
+                    <a href="#contact" class="navbar-link">Contáctanos</a>
+                </li>
                 
             </ul>
             
@@ -73,6 +76,7 @@
                 <li><a href="#conocenos">Conócenos</a></li>
                 <li><a href="#proyectos">Proyectos</a></li>
                 <li><a href="#servicios">Servicios</a></li>
+                <li><a href="#contact">Contáctanos</a></li>
             </ul>
             
            
