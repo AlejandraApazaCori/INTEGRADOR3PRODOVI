@@ -83,6 +83,8 @@ class AuthController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'phone' => ['required', 'string', 'max:20'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'email.unique' => 'El correo ya está en uso. Intenta con otro.',
         ]);
 
         if ($validator->fails()) {
