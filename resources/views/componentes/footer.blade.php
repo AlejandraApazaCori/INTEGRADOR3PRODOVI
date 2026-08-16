@@ -1,5 +1,5 @@
 ﻿<!-- resources/views/componentes/footer.blade.php -->
-<footer class="site-footer">
+<footer class="site-footer animate-container slide-right">
     <div class="footer-container">
         <!-- Sección Superior del Footer -->
         <div class="footer-top">
