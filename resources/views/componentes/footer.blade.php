@@ -51,7 +51,7 @@
                                 Real Plaza Hotel &amp; Convention Center. Av. Arce #2177 (Frente a la Plaza Bolivia), La Paz, Bolivia, La Paz, Bolivia
                             </a>
                         </li>
-                        <li><i class="fas fa-phone"></i><a href="https://wa.me/59179561365" target="_blank" rel="noopener noreferrer">+591 79561365</a></li>
+                        <li><i class="fas fa-mobile-alt"></i><a href="https://wa.me/59179561365" target="_blank" rel="noopener noreferrer">+591 79561365</a></li>
                         <li><i class="fas fa-envelope"></i><a href="mailto:info@prodovi.com">info@prodovi.com</a></li>
                     </ul>
                 </div>
