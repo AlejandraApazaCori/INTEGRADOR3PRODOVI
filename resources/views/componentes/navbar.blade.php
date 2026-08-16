@@ -52,7 +52,7 @@
             
             <!-- Login Button -->
             <div class="navbar-actions">
-                <a href="{{ route('login') }}" class="login-button">
+                <a href="{{ auth()->check() ? route('clientes.home') : route('login') }}" class="login-button">
                     Ver planes
                 </a>
             </div>
@@ -99,7 +99,9 @@
                 </a>
             </div>
             
-            <a href="{{ route('login') }}" class="mobile-login-button">Iniciar Sesión</a>
+            <a href="{{ auth()->check() ? route('clientes.home') : route('login') }}" class="mobile-login-button">
+                {{ auth()->check() ? 'Ver planes' : 'Iniciar Sesión' }}
+            </a>
         </div>
     </div>
 </nav>

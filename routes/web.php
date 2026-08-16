@@ -23,6 +23,7 @@ use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ResumenController;
 use App\Http\Controllers\ContactoLandingController;
 use App\Http\Controllers\MantenimientoWebController;
+use App\Http\Controllers\RegistroVerificacionController;
 
 Route::get('/chatbot', [ChatbotController::class, 'mostrarVista'])->name('chatbot.vista');
 Route::view('/privacy-policy', 'legal.privacy-policy')->name('legal.privacy-policy');
@@ -98,7 +99,17 @@ Route::get('/api/lstm/facebook/horarios', function () {
 // Rutas de autenticaciÃƒÆ’Ã‚Â³n
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
-Route::post('/register', [AuthController::class, 'register'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])
+    ->middleware('throttle:5,1')
+    ->name('register');
+Route::get('/registro/verificacion', [RegistroVerificacionController::class, 'notice'])
+    ->name('registro.verificacion.aviso');
+Route::get('/registro/verificar/{token}', [RegistroVerificacionController::class, 'verify'])
+    ->middleware('throttle:10,1')
+    ->name('registro.verificacion.confirmar');
+Route::post('/registro/verificacion/reenviar', [RegistroVerificacionController::class, 'resend'])
+    ->middleware('throttle:3,5')
+    ->name('registro.verificacion.reenviar');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // AutenticaciÃƒÆ’Ã‚Â³n con Google
@@ -384,6 +395,8 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
         ->name('administrador.usuarios.eliminados');
     Route::patch('/usuarios/restore/{user}', [\App\Http\Controllers\Admin\UserController::class, 'restore'])
         ->name('administrador.usuarios.restore');
+    Route::delete('/usuarios/eliminados/{user}/permanente', [\App\Http\Controllers\Admin\UserController::class, 'forceDestroy'])
+        ->name('administrador.usuarios.force-destroy');
     Route::get('/usuarios/{user}/view', [\App\Http\Controllers\Admin\UserViewController::class, 'show'])
         ->name('administrador.usuarios.view');
     Route::get('/usuarios/{user}/analiticas-campania', [\App\Http\Controllers\Admin\UserViewController::class, 'campaignAnalytics'])

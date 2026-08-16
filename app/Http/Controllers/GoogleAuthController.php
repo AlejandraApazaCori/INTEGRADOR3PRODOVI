@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Mail\BienvenidaRegistroGoogle;
 use App\Models\Role;
 use App\Models\RoleUser;
+use App\Models\RegistroPendiente;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
@@ -25,15 +28,32 @@ class GoogleAuthController extends Controller
         try {
             $googleUser = $this->getGoogleUser();
 
-            $user = User::updateOrCreate(
-                ['email' => $googleUser->getEmail()],
-                [
-                    'name' => $googleUser->getName(),
-                    'password' => bcrypt(Str::random(16)),
-                    'email_verified_at' => now(),
+            $googleEmail = mb_strtolower($googleUser->getEmail());
+            $user = User::where('email', $googleEmail)->first();
+            $isNewGoogleRegistration = $user === null;
+
+            if ($isNewGoogleRegistration) {
+                $registroPendiente = RegistroPendiente::where('email', $googleEmail)->first();
+
+                $user = User::create([
+                    'email' => $googleEmail,
+                    'name' => $registroPendiente?->name ?: $googleUser->getName(),
+                    'phone' => $registroPendiente?->phone,
+                    'password' => $registroPendiente?->password ?: bcrypt(Str::random(16)),
                     'google_id' => $googleUser->getId(),
-                ]
-            );
+                ]);
+
+                $user->forceFill([
+                    'email_verified_at' => now(),
+                ])->save();
+
+                $registroPendiente?->delete();
+            } else {
+                $user->forceFill([
+                    'email_verified_at' => $user->email_verified_at ?: now(),
+                    'google_id' => $googleUser->getId(),
+                ])->save();
+            }
 
             if (! $user->roles()->exists()) {
                 $rolCliente = Role::where('nombre_rol', 'Cliente')->first();
@@ -45,8 +65,20 @@ class GoogleAuthController extends Controller
                 }
             }
 
-            Auth::login($user);
+            if ($isNewGoogleRegistration) {
+                try {
+                    Mail::to($user->email)->send(new BienvenidaRegistroGoogle($user));
+                } catch (Throwable $mailException) {
+                    Log::error('No se pudo enviar el correo de bienvenida del registro con Google.', [
+                        'user_id' => $user->id,
+                        'message' => $mailException->getMessage(),
+                    ]);
+                }
+            }
+
+            Auth::login($user, true);
             request()->session()->regenerate();
+            request()->session()->forget('pending_registration_email');
 
             \App\Models\SecurityLog::create([
                 'user_id' => $user->id,

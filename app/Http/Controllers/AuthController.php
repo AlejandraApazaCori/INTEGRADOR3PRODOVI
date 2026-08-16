@@ -4,12 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Role;
 use App\Models\RoleUser;
+use App\Models\RegistroPendiente;
 use App\Models\Suscripcion;
 use App\Models\User;
+use App\Mail\VerificarRegistroManual;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -25,7 +31,7 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials)) {
+        if (Auth::attempt($credentials, true)) {
             $request->session()->regenerate();
 
             $user = Auth::user();
@@ -80,29 +86,44 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()
+            return redirect(url('/login').'#register')
                 ->withErrors($validator)
                 ->withInput();
         }
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'password' => Hash::make($request->password),
-        ]);
+        $token = Str::random(64);
 
-        Auth::login($user);
+        $registro = RegistroPendiente::updateOrCreate(
+            ['email' => mb_strtolower($request->email)],
+            [
+                'name' => $request->name,
+                'phone' => $request->phone,
+                'password' => Hash::make($request->password),
+                'verification_token_hash' => hash('sha256', $token),
+                'verification_expires_at' => now()->addHour(),
+            ]
+        );
 
-        $rolCliente = Role::where('nombre_rol', 'Cliente')->first();
-        if ($rolCliente) {
-            RoleUser::firstOrCreate([
-                'role_id' => $rolCliente->id,
-                'user_id' => $user->id,
+        try {
+            Mail::to($registro->email)->send(new VerificarRegistroManual(
+                $registro,
+                route('registro.verificacion.confirmar', ['token' => $token]),
+            ));
+        } catch (Throwable $exception) {
+            Log::error('No se pudo enviar el correo de verificación del registro manual.', [
+                'registro_pendiente_id' => $registro->id,
+                'message' => $exception->getMessage(),
             ]);
+
+            return redirect(url('/login').'#register')
+                ->withInput($request->except(['password', 'password_confirmation']))
+                ->with('error', 'No pudimos enviar el correo de verificación. Inténtalo nuevamente en unos minutos.');
         }
 
-        return redirect()->route('clientes.home');
+        $request->session()->put('pending_registration_email', $registro->email);
+
+        return redirect()->route('registro.verificacion.aviso')
+            ->with('success', 'Te enviamos un enlace para verificar tu correo.');
     }
 
     public function logout(Request $request)

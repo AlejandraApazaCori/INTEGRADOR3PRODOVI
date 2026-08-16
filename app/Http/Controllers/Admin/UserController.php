@@ -8,6 +8,9 @@ use App\Models\Role;
 use App\Models\RoleUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
@@ -251,6 +254,187 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Error al restaurar el usuario: ' . $e->getMessage());
+        }
+    }
+
+    public function forceDestroy($id)
+    {
+        try {
+            $user = User::onlyTrashed()->findOrFail($id);
+            $userName = $user->name;
+
+            DB::transaction(function () use ($user) {
+                $userId = $user->id;
+
+                $campaignIds = collect();
+                if (Schema::hasTable('campanias')) {
+                    $campaignIds = DB::table('campanias')
+                        ->where('usuario_creador_id', $userId)
+                        ->orWhere('community_manager_id', $userId)
+                        ->orWhere('usuario_cliente_id', $userId)
+                        ->pluck('id');
+                }
+
+                $taskIds = collect();
+                if (Schema::hasTable('tareas')) {
+                    $taskIds = DB::table('tareas')
+                        ->where(function ($query) use ($userId, $campaignIds) {
+                            $query->where('creador_id', $userId)
+                                ->orWhere('asignado_id', $userId);
+
+                            if ($campaignIds->isNotEmpty()) {
+                                $query->orWhereIn('campania_id', $campaignIds);
+                            }
+                        })
+                        ->pluck('id');
+                }
+
+                $taskFileIds = collect();
+                if (Schema::hasTable('tarea_archivos')) {
+                    $taskFileIds = DB::table('tarea_archivos')
+                        ->where(function ($query) use ($userId, $taskIds) {
+                            $query->where('user_id', $userId);
+
+                            if ($taskIds->isNotEmpty()) {
+                                $query->orWhereIn('tarea_id', $taskIds);
+                            }
+                        })
+                        ->pluck('id');
+                }
+
+                $commentIds = collect();
+                if (Schema::hasTable('tarea_comentarios')) {
+                    $commentIds = DB::table('tarea_comentarios')
+                        ->where(function ($query) use ($userId, $taskIds, $taskFileIds) {
+                            $query->where('user_id', $userId);
+
+                            if ($taskIds->isNotEmpty()) {
+                                $query->orWhere(function ($subquery) use ($taskIds) {
+                                    $subquery->where('comentable_type', 'App\\Models\\Tarea')
+                                        ->whereIn('comentable_id', $taskIds);
+                                });
+                            }
+
+                            if ($taskFileIds->isNotEmpty()) {
+                                $query->orWhere(function ($subquery) use ($taskFileIds) {
+                                    $subquery->where('comentable_type', 'App\\Models\\TareaArchivo')
+                                        ->whereIn('comentable_id', $taskFileIds);
+                                });
+                            }
+                        })
+                        ->pluck('id');
+                }
+
+                if (Schema::hasTable('comentario_archivos') && $commentIds->isNotEmpty()) {
+                    DB::table('comentario_archivos')->whereIn('comentario_id', $commentIds)->delete();
+                }
+                if (Schema::hasTable('tarea_comentarios')) {
+                    DB::table('tarea_comentarios')->whereIn('id', $commentIds)->delete();
+                }
+                if (Schema::hasTable('tarea_archivos')) {
+                    DB::table('tarea_archivos')->whereIn('id', $taskFileIds)->delete();
+                }
+                if (Schema::hasTable('tareas')) {
+                    DB::table('tareas')->whereIn('id', $taskIds)->delete();
+                }
+                if (Schema::hasTable('empresa_campania') && $campaignIds->isNotEmpty()) {
+                    DB::table('empresa_campania')->whereIn('campania_id', $campaignIds)->delete();
+                }
+                if (Schema::hasTable('campanias')) {
+                    DB::table('campanias')->whereIn('id', $campaignIds)->delete();
+                }
+
+                $paymentIds = collect();
+                if (Schema::hasTable('pagos')) {
+                    $paymentIds = DB::table('pagos')->where('usuario_id', $userId)->pluck('id');
+                    DB::table('pagos')->where('aprobado_por', $userId)->update(['aprobado_por' => null]);
+                }
+
+                if (Schema::hasTable('comprobantes_pago') && $paymentIds->isNotEmpty()) {
+                    DB::table('comprobantes_pago')->whereIn('pago_id', $paymentIds)->delete();
+                }
+                if (Schema::hasTable('codigos_pagos')) {
+                    DB::table('codigos_pagos')
+                        ->where('usuario_id', $userId)
+                        ->when($paymentIds->isNotEmpty(), fn ($query) => $query->orWhereIn('pago_id', $paymentIds))
+                        ->delete();
+                }
+                if (Schema::hasTable('pagos')) {
+                    DB::table('pagos')->whereIn('id', $paymentIds)->delete();
+                }
+
+                $subscriptionIds = collect();
+                if (Schema::hasTable('suscripciones')) {
+                    $subscriptionIds = DB::table('suscripciones')->where('usuario_id', $userId)->pluck('id');
+                }
+                if (Schema::hasTable('planes_marketing') && $subscriptionIds->isNotEmpty()) {
+                    DB::table('planes_marketing')->whereIn('suscripcion_id', $subscriptionIds)->delete();
+                }
+                if (Schema::hasTable('suscripciones')) {
+                    DB::table('suscripciones')->whereIn('id', $subscriptionIds)->delete();
+                }
+
+                foreach (['briefs', 'social_accounts', 'role_user', 'access_logs', 'security_logs'] as $table) {
+                    if (Schema::hasTable($table)) {
+                        DB::table($table)->where('user_id', $userId)->delete();
+                    }
+                }
+
+                if (Schema::hasTable('audit_logs')) {
+                    DB::table('audit_logs')
+                        ->where('user_id', $userId)
+                        ->orWhere(function ($query) use ($userId) {
+                            $query->where('auditable_type', User::class)
+                                ->where('auditable_id', $userId);
+                        })
+                        ->delete();
+                }
+                if (Schema::hasTable('sessions')) {
+                    DB::table('sessions')->where('user_id', $userId)->delete();
+                }
+                if (Schema::hasTable('notifications')) {
+                    DB::table('notifications')
+                        ->where('notifiable_type', User::class)
+                        ->where('notifiable_id', $userId)
+                        ->delete();
+                }
+                if (Schema::hasTable('personal_access_tokens')) {
+                    DB::table('personal_access_tokens')
+                        ->where('tokenable_type', User::class)
+                        ->where('tokenable_id', $userId)
+                        ->delete();
+                }
+                if (Schema::hasTable('password_reset_tokens')) {
+                    DB::table('password_reset_tokens')->where('email', $user->email)->delete();
+                }
+
+                if (Schema::hasTable('empresas')) {
+                    DB::table('empresas')->where('usuario_id', $userId)->delete();
+                }
+
+                DB::table('users')->where('id', $userId)->delete();
+            });
+
+            return redirect()->route('administrador.usuarios.eliminados')
+                ->with('success', "El usuario {$userName} fue eliminado permanentemente.");
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::warning('No se pudo eliminar permanentemente un usuario por información relacionada.', [
+                'user_id' => $id,
+                'message' => $e->getMessage(),
+            ]);
+
+            return redirect()->back()->with(
+                'error',
+                'No se puede eliminar permanentemente este usuario porque conserva información relacionada dentro del sistema.'
+            );
+        } catch (\Exception $e) {
+            Log::error('Error al eliminar permanentemente un usuario.', [
+                'user_id' => $id,
+                'message' => $e->getMessage(),
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'No se pudo eliminar permanentemente el usuario.');
         }
     }
 }

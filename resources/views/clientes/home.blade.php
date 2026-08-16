@@ -105,25 +105,6 @@
                 </div>
             @endunless
             
-            <div class="contact-section">
-                <h3 class="contact-title">¿Listo para impulsar tu negocio?</h3>
-                <p class="contact-description">
-                    Nuestro equipo de expertos está preparado para crear la estrategia perfecta que transformará tu presencia online.
-                </p>
-                <div class="contact-info">
-                    <div class="contact-item">
-                        <h4><i class="fas fa-phone-alt"></i> Contáctanos Ahora</h4>
-                        <p>Celular: <strong>62397902</strong><br>
-                        Respuesta inmediata para todas tus consultas</p>
-                    </div>
-                    <div class="contact-item">
-                        <h4><i class="fas fa-map-marker-alt"></i> Visítanos en La Paz</h4>
-                        <p>Zona Miraflores, Av. Hugo Estrada<br>
-                        (frente al Stadium), Edificio Olímpia #1354<br>
-                        Piso 1 Oficina 3, La Paz, Bolivia</p>
-                    </div>
-                </div>
-            </div>
         </div>
         
         @include('componentes.footer')

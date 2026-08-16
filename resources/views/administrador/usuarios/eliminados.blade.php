@@ -84,6 +84,7 @@
                                     <span class="text-sm text-gray-600">{{ $user->deleted_at->format('d/m/Y H:i') }}</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <div class="flex items-center gap-2">
                                     <form action="{{ route('administrador.usuarios.restore', $user->id) }}" method="POST" class="inline">
                                         @csrf
                                         @method('PATCH')
@@ -92,6 +93,20 @@
                                             Restaurar
                                         </button>
                                     </form>
+                                    <form
+                                        action="{{ route('administrador.usuarios.force-destroy', $user->id) }}"
+                                        method="POST"
+                                        class="inline"
+                                        onsubmit="return confirm('¿Eliminar permanentemente a {{ addslashes($user->name) }}? Esta acción no se puede deshacer.');"
+                                    >
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="inline-flex items-center px-4 py-2 text-xs font-medium rounded-lg text-white transition-all duration-200 hover:-translate-y-0.5" style="background: linear-gradient(to right, #dc2626, #991b1b); box-shadow: 0 4px 14px rgba(220,38,38,0.3);">
+                                            <i class="fas fa-trash mr-1.5"></i>
+                                            Eliminar permanentemente
+                                        </button>
+                                    </form>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
