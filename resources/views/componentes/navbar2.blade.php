@@ -145,7 +145,7 @@
         justify-content: center;
         width: 32px;
         height: 32px;
-        background: linear-gradient(135deg, #a855f7, #3b82f6);
+        background: #117e8c;
         border-radius: 50%;
         flex-shrink: 0;
     }
@@ -234,7 +234,7 @@
         justify-content: center;
         width: 40px;
         height: 40px;
-        background: linear-gradient(135deg, #a855f7, #3b82f6);
+        background: #117e8c;
         border-radius: 50%;
         flex-shrink: 0;
     }
