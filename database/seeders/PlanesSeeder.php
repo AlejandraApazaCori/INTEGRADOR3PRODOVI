@@ -56,6 +56,7 @@ class PlanesSeeder extends Seeder
             ],
             [
                 'nombre' => 'Marketing Super Pro',
+                'subtitulo' => 'La solución más completa para marcas que quieren liderar',
                 'precio' => 1900.00,
                 'moneda' => 'BS',
                 'periodo_facturacion' => 'mes',
