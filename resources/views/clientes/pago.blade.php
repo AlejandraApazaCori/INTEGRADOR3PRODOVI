@@ -19,13 +19,17 @@
     @include('componentes.navbar2')
     
     <div class="main-container">
-         <a style="text-decoration: none"  href="{{ route('clientes.home') }}" class="back-button">
-            <i class="fas fa-arrow-left"></i> 
-        </a>
-
         <div class="payment-header">
+            <a href="{{ route('clientes.home') }}" class="payment-kicker">
+                <i class="fas fa-arrow-left"></i>
+                <span>Escoger otro plan</span>
+            </a>
             <h1 class="payment-title">INFORMACIÓN DE PAGO</h1>
             <div class="plan-name">{{ ucfirst($planNombre) }}</div>
+            <div class="payment-mosaic" aria-hidden="true">
+                <span></span><span></span><span></span>
+                <span></span><span></span><span></span>
+            </div>
         </div>
         
         <!-- Contenedor principal con dos columnas -->
@@ -42,10 +46,7 @@
                         <span class="summary-label">Precio:</span>
                         <span class="summary-value">{{ number_format($planPrecio) }} {{ $planMoneda == 'BS' ? 'Bs' : '$' }}</span>
                     </div>
-                    <div class="summary-details">
-                        <span class="summary-label">Periodo de facturación:</span>
-                        <span class="summary-value">{{ $planPeriodo }}</span>
-                    </div>
+                    
                     <div class="total-amount">
                         Total a pagar: {{ number_format($planPrecio) }} {{ $planMoneda == 'BS' ? 'Bs' : '$' }}
                     </div>
@@ -191,14 +192,13 @@
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                background: linear-gradient(135deg, #667eea, #764ba2);
+                background: #117e8c;
                 color: white;
                 padding: 20px;
                 border-radius: 15px;
                 box-shadow: 0 10px 30px rgba(0,0,0,0.3);
                 z-index: 3000;
                 max-width: 400px;
-                backdrop-filter: blur(20px);
                 border: 1px solid rgba(255,255,255,0.2);
                 animation: slideInRight 0.5s ease;
             `;

@@ -220,6 +220,10 @@
         display: block;
     }
 
+    .user-dropdown.is-open .dropdown-content {
+        display: block;
+    }
+
     .dropdown-header {
         display: flex;
         align-items: center;
@@ -366,8 +370,42 @@
         }
         
         .dropdown-content {
-            min-width: 220px;
-            right: -20px;
+            position: fixed;
+            top: 72px;
+            right: 12px;
+            left: 12px;
+            width: auto;
+            min-width: 0;
+            max-width: none;
+            max-height: calc(100dvh - 84px);
+            margin-top: 0;
+            overflow-x: hidden;
+            overflow-y: auto;
+            z-index: 10001;
+            border-radius: 14px;
+        }
+
+        .dropdown-header {
+            min-width: 0;
+            padding: 16px;
+        }
+
+        .dropdown-user-info {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .dropdown-user-name,
+        .dropdown-user-email {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .logout-button {
+            width: 100%;
+            padding: 15px 16px;
         }
     }
 </style>
@@ -386,31 +424,57 @@
             }
         });
 
-        // Cerrar dropdown al hacer clic fuera
-        document.addEventListener('click', function(event) {
-            const dropdowns = document.querySelectorAll('.user-dropdown');
-            dropdowns.forEach(dropdown => {
-                if (!dropdown.contains(event.target)) {
-                    dropdown.querySelector('.dropdown-content').style.display = 'none';
-                }
-            });
-        });
-
-        // Efecto de hover mejorado para el dropdown
+        // Dropdown por toque en responsive y por hover en escritorio
         const userDropdown = document.querySelector('.user-dropdown');
         if (userDropdown) {
             const dropdownContent = userDropdown.querySelector('.dropdown-content');
+            const userButton = userDropdown.querySelector('.user-button');
             let hoverTimeout;
 
+            const isResponsiveMenu = () => window.matchMedia(
+                '(hover: none), (max-width: 768px)'
+            ).matches;
+
+            userButton?.setAttribute('aria-expanded', 'false');
+
+            userButton?.addEventListener('click', function(event) {
+                if (!isResponsiveMenu()) return;
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                const isOpen = userDropdown.classList.toggle('is-open');
+                dropdownContent.style.display = isOpen ? 'block' : 'none';
+                userButton.setAttribute('aria-expanded', String(isOpen));
+            });
+
             userDropdown.addEventListener('mouseenter', function() {
+                if (isResponsiveMenu()) return;
                 clearTimeout(hoverTimeout);
                 dropdownContent.style.display = 'block';
             });
 
             userDropdown.addEventListener('mouseleave', function() {
+                if (isResponsiveMenu()) return;
                 hoverTimeout = setTimeout(() => {
                     dropdownContent.style.display = 'none';
                 }, 150);
+            });
+
+            document.addEventListener('click', function(event) {
+                if (!userDropdown.contains(event.target)) {
+                    userDropdown.classList.remove('is-open');
+                    userButton?.setAttribute('aria-expanded', 'false');
+                    dropdownContent.style.display = 'none';
+                }
+            });
+
+            window.addEventListener('resize', function() {
+                if (!isResponsiveMenu()) {
+                    userDropdown.classList.remove('is-open');
+                    userButton?.setAttribute('aria-expanded', 'false');
+                    dropdownContent.style.display = '';
+                }
             });
         }
     });
