@@ -71,15 +71,16 @@ class PagoClienteController extends Controller
         try {
             DB::table('users')->where('id', $usuario->id)->lockForUpdate()->first();
 
-            $pendingPayment = Pago::with('codigoPago')
+            $pendingPayments = Pago::with(['codigoPago', 'suscripcion'])
                 ->where('usuario_id', $usuario->id)
-                ->where('plan_id', $planModel->id)
                 ->where('metodo', 'fisico')
                 ->where('estado', 'pendiente')
                 ->latest('id')
-                ->first();
+                ->get();
+            $pendingPayment = $pendingPayments->first();
 
-            if ($pendingPayment?->codigoPago) {
+            if ($pendingPayment?->codigoPago && (int) $pendingPayment->plan_id === (int) $planModel->id) {
+                $pendingPayments->skip(1)->each(fn (Pago $payment) => $this->deletePendingPhysicalPayment($payment));
                 DB::commit();
 
                 return response()->json([
@@ -90,6 +91,8 @@ class PagoClienteController extends Controller
                     ...$this->safePhysicalPaymentData($pendingPayment),
                 ]);
             }
+
+            $pendingPayments->each(fn (Pago $payment) => $this->deletePendingPhysicalPayment($payment));
 
             $fechaInicio = Carbon::now();
             $suscripcion = Suscripcion::create([
@@ -456,6 +459,18 @@ class PagoClienteController extends Controller
             'download_url' => route('pago.fisico.codigo.pdf', $payment, false),
             'downloaded' => $payment->codigoPago->descargado_at !== null,
         ];
+    }
+
+    private function deletePendingPhysicalPayment(Pago $payment): void
+    {
+        $subscription = $payment->suscripcion;
+
+        $payment->codigoPago?->delete();
+        $payment->delete();
+
+        if ($subscription && $subscription->estado === 'pendiente') {
+            $subscription->delete();
+        }
     }
 
     private function optionalUppercase(mixed $value): ?string

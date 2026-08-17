@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
         View::composer('layouts.app', function ($view) {
             $user = \Illuminate\Support\Facades\Auth::user();
             if ($user && $user->hasAnyRole(['Super Administrador', 'Administrador', 'Community Manager'])) {
-                $pagosNoVistos = \App\Models\Pago::with(['usuario', 'plan'])
+                $pagosNoVistos = \App\Models\Pago::with(['usuario', 'plan', 'codigoPago'])
                     ->where('visto', false)
                     ->orderBy('created_at', 'desc')
                     ->take(5)
@@ -47,11 +47,11 @@ class AppServiceProvider extends ServiceProvider
                     ->take(5)
                     ->get();
 
-                $notificationCount = $pagosNoVistos->count()
-                    + $campaniasNoVistas->count()
-                    + $tareasNoVistas->count();
+                $notificationCount = \App\Models\Pago::where('visto', false)->count()
+                    + \App\Models\Campania::where('visto', false)->count()
+                    + \App\Models\TareaArchivo::where('visto', false)->count();
 
-                $pagosVistos = \App\Models\Pago::with(['usuario', 'plan'])
+                $pagosVistos = \App\Models\Pago::with(['usuario', 'plan', 'codigoPago'])
                     ->where('visto', true)
                     ->orderBy('created_at', 'desc')
                     ->take(3)
@@ -69,6 +69,48 @@ class AppServiceProvider extends ServiceProvider
                     ->take(3)
                     ->get();
 
+                $dashboardNotifications = collect();
+
+                foreach ($pagosNoVistos as $pago) {
+                    $isPhysicalCode = $pago->metodo === 'fisico' && $pago->estado === 'pendiente';
+                    $dashboardNotifications->push([
+                        'type' => $isPhysicalCode ? 'physical-code' : 'payment-complete',
+                        'icon' => $isPhysicalCode ? 'fa-receipt' : 'fa-circle-check',
+                        'title' => $pago->usuario->name ?? 'Usuario',
+                        'message' => $isPhysicalCode
+                            ? 'Generó un código de pago físico para '.($pago->plan->nombre ?? '—').($pago->codigoPago ? ' · '.$pago->codigoPago->codigo : '')
+                            : 'Realizó un pago para el plan '.($pago->plan->nombre ?? '—'),
+                        'date' => $pago->created_at,
+                        'url' => $isPhysicalCode
+                            ? route('administrador.pagos.pendientes-fisicos')
+                            : route('administrador.pagos.realizados'),
+                    ]);
+                }
+
+                foreach ($campaniasNoVistas as $campania) {
+                    $dashboardNotifications->push([
+                        'type' => 'campaign',
+                        'icon' => 'fa-bullhorn',
+                        'title' => 'Nueva campaña',
+                        'message' => $campania->nombre,
+                        'date' => $campania->created_at,
+                        'url' => route('administrador.campañas.show', $campania->id),
+                    ]);
+                }
+
+                foreach ($tareasNoVistas as $archivo) {
+                    $dashboardNotifications->push([
+                        'type' => 'task',
+                        'icon' => 'fa-paperclip',
+                        'title' => $archivo->user->name ?? 'Usuario',
+                        'message' => 'Subió un archivo a '.($archivo->tarea->nombre ?? 'una tarea'),
+                        'date' => $archivo->created_at,
+                        'url' => route('administrador.tareas.show', $archivo->tarea_id),
+                    ]);
+                }
+
+                $dashboardNotifications = $dashboardNotifications->sortByDesc('date')->take(4);
+
                 $view->with([
                     'notificationCount' => $notificationCount,
                     'pagosNoVistos' => $pagosNoVistos,
@@ -81,6 +123,7 @@ class AppServiceProvider extends ServiceProvider
                     'latestPendingTasks' => $tareasNoVistas,
                     'pendingPaymentsCount' => $pagosNoVistos->count(),
                     'pendingTasksCount' => $tareasNoVistas->count(),
+                    'dashboardNotifications' => $dashboardNotifications,
                 ]);
             }
         });

@@ -8,6 +8,75 @@
     <link rel="icon" type="image/png" href="{{ asset('imagenes/iconoweb.png') }}">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .dashboard-notification-stack {
+            position: fixed;
+            z-index: 10000;
+            top: 76px;
+            right: 20px;
+            width: min(370px, calc(100% - 32px));
+            display: grid;
+            gap: 9px;
+        }
+        .dashboard-notification-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2px 2px;
+            color: #374151;
+            font-size: .72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        .dashboard-notification-toast {
+            position: relative;
+            display: grid;
+            grid-template-columns: 40px minmax(0, 1fr) 28px;
+            align-items: start;
+            gap: 11px;
+            padding: 14px;
+            border: 1px solid #e5e7eb;
+            border-left: 4px solid #ef6c22;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 14px 38px rgba(15,23,42,.2);
+            animation: adminNotificationIn .28s ease both;
+        }
+        .dashboard-notification-toast.is-payment-complete { border-left-color: #16a34a; }
+        .dashboard-notification-toast.is-campaign { border-left-color: #7c3aed; }
+        .dashboard-notification-toast.is-task { border-left-color: #2563eb; }
+        .dashboard-toast-icon {
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
+            border-radius: 7px;
+            background: #fff3e8;
+            color: #d95d16;
+        }
+        .is-payment-complete .dashboard-toast-icon { background: #ecfdf3; color: #15803d; }
+        .is-campaign .dashboard-toast-icon { background: #f4f0ff; color: #7c3aed; }
+        .is-task .dashboard-toast-icon { background: #eff6ff; color: #2563eb; }
+        .dashboard-toast-copy { min-width: 0; color: #111827; text-decoration: none; }
+        .dashboard-toast-copy strong { display: block; padding-right: 4px; font-size: .79rem; }
+        .dashboard-toast-copy span { display: block; margin-top: 3px; color: #6b7280; font-size: .7rem; line-height: 1.4; }
+        .dashboard-toast-copy time { display: block; margin-top: 5px; color: #9ca3af; font-size: .63rem; }
+        .dashboard-toast-close {
+            width: 28px;
+            height: 28px;
+            display: grid;
+            place-items: center;
+            border: 0;
+            border-radius: 6px;
+            background: transparent;
+            color: #9ca3af;
+            cursor: pointer;
+        }
+        .dashboard-toast-close:hover { background: #f3f4f6; color: #374151; }
+        .dashboard-notification-toast.is-leaving { opacity: 0; transform: translateX(24px); transition: opacity .2s ease, transform .2s ease; }
+        @keyframes adminNotificationIn { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+        @media (max-width: 640px) { .dashboard-notification-stack { top: 68px; right: 16px; } }
+    </style>
     @stack('styles')
 </head>
 <body class="bg-gray-100 ">
@@ -63,11 +132,25 @@
 
                                 {{-- Pagos no vistos --}}
                                 @foreach($pagosNoVistos ?? [] as $pago)
-                                    <a href="{{ url('administrador/pagos/pendientes-fisicos') }}" class="notification-item font-semibold">
-                                        <div class="notification-item-icon bg-amber-100 text-amber-600">💰</div>
+                                    @php
+                                        $esCodigoFisico = $pago->metodo === 'fisico' && $pago->estado === 'pendiente';
+                                    @endphp
+                                    <a href="{{ $esCodigoFisico ? route('administrador.pagos.pendientes-fisicos') : route('administrador.pagos.realizados') }}" class="notification-item font-semibold">
+                                        <div class="notification-item-icon {{ $esCodigoFisico ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600' }}">
+                                            <i class="fas {{ $esCodigoFisico ? 'fa-receipt' : 'fa-circle-check' }}"></i>
+                                        </div>
                                         <div class="notification-item-content">
                                             <p class="text-xs font-semibold">{{ $pago->usuario->name }}</p>
-                                            <p class="text-[10px] text-gray-500">Realizó un pago — plan {{ $pago->plan->nombre ?? '—' }}</p>
+                                            <p class="text-[10px] text-gray-500">
+                                                @if($esCodigoFisico)
+                                                    Generó un código de pago físico para el plan {{ $pago->plan->nombre ?? '—' }}
+                                                    @if($pago->codigoPago)
+                                                        · {{ $pago->codigoPago->codigo }}
+                                                    @endif
+                                                @else
+                                                    Realizó un pago — plan {{ $pago->plan->nombre ?? '—' }}
+                                                @endif
+                                            </p>
                                             <p class="text-[10px] text-gray-400">{{ $pago->created_at->diffForHumans() }}</p>
                                         </div>
                                     </a>
@@ -119,11 +202,14 @@
                                 </div>
 
                                 @foreach($pagosVistos ?? [] as $pago)
-                                    <a href="{{ url('administrador/pagos/pendientes-fisicos') }}" class="notification-item opacity-60">
-                                        <div class="notification-item-icon bg-gray-100 text-gray-400">💰</div>
+                                    @php
+                                        $esCodigoFisico = $pago->metodo === 'fisico' && $pago->estado === 'pendiente';
+                                    @endphp
+                                    <a href="{{ $esCodigoFisico ? route('administrador.pagos.pendientes-fisicos') : route('administrador.pagos.realizados') }}" class="notification-item opacity-60">
+                                        <div class="notification-item-icon bg-gray-100 text-gray-400"><i class="fas {{ $esCodigoFisico ? 'fa-receipt' : 'fa-circle-check' }}"></i></div>
                                         <div class="notification-item-content">
                                             <p class="text-xs">{{ $pago->usuario->name }}</p>
-                                            <p class="text-[10px] text-gray-400">Pago — {{ $pago->plan->nombre ?? '—' }}</p>
+                                            <p class="text-[10px] text-gray-400">{{ $esCodigoFisico ? 'Código físico generado' : 'Pago realizado' }} — {{ $pago->plan->nombre ?? '—' }}</p>
                                         </div>
                                     </a>
                                 @endforeach
@@ -172,6 +258,28 @@
             </div>
         </div>
     </div>
+
+    @if(request()->routeIs('administrador.dashboard') && isset($dashboardNotifications) && $dashboardNotifications->isNotEmpty())
+        <aside class="dashboard-notification-stack" id="dashboardNotificationStack" aria-label="Nuevas notificaciones">
+            <div class="dashboard-notification-heading">
+                <span>Nuevas notificaciones</span>
+                <span>{{ $notificationCount }}</span>
+            </div>
+            @foreach($dashboardNotifications as $notification)
+                <article class="dashboard-notification-toast is-{{ $notification['type'] }}" data-dashboard-notification>
+                    <div class="dashboard-toast-icon"><i class="fas {{ $notification['icon'] }}"></i></div>
+                    <a href="{{ $notification['url'] }}" class="dashboard-toast-copy">
+                        <strong>{{ $notification['title'] }}</strong>
+                        <span>{{ $notification['message'] }}</span>
+                        <time>{{ $notification['date']->diffForHumans() }}</time>
+                    </a>
+                    <button type="button" class="dashboard-toast-close" aria-label="Cerrar notificación">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </article>
+            @endforeach
+        </aside>
+    @endif
 
     <main class="mt-10">
         @yield('content')
@@ -244,6 +352,16 @@
         }
 
         setInterval(verificarNotificaciones, 30000);
+
+        document.querySelectorAll('[data-dashboard-notification]').forEach((toast, index) => {
+            const closeToast = () => {
+                if (toast.classList.contains('is-leaving')) return;
+                toast.classList.add('is-leaving');
+                setTimeout(() => toast.remove(), 220);
+            };
+            toast.querySelector('.dashboard-toast-close')?.addEventListener('click', closeToast);
+            setTimeout(closeToast, 10000 + (index * 900));
+        });
 
         // Cerrar dropdown al hacer clic fuera
         document.addEventListener('click', function(event) {
