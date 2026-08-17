@@ -140,6 +140,31 @@
         </div>
     </div>
 
+    <div class="modal" id="physical-modal" role="dialog" aria-modal="true" aria-labelledby="physical-modal-title">
+        <div class="modal-content physical-modal-content">
+            <div class="physical-modal-icon"><i class="fas fa-file-circle-check"></i></div>
+            <h2 class="modal-title" id="physical-modal-title">Codigo generado correctamente</h2>
+            <p>Tu codigo para pagar el plan es:</p>
+            <div class="payment-code" id="modal-payment-code"></div>
+            <div class="office-links">
+                <a href="https://www.bing.com/maps/search?v=2&amp;pc=FACEBK&amp;mid=8100&amp;mkt=es-MX&amp;FORM=FBKPL1&amp;q=Real+Plaza+Hotel+%26+Convention+Center.+Av.+Arce+%232177+%28Frente+a+la+Plaza+Bolivia%29%2C+La+Paz%2C+Bolivia%2C+La+Paz%2C+Bolivia&amp;cp=-16.506655%7E-68.127258&amp;lvl=16&amp;style=r" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-location-dot"></i>
+                    <span>Real Plaza Hotel, Av. Arce #2177, frente a Plaza Bolivia</span>
+                </a>
+                <a href="https://wa.me/59179561365" target="_blank" rel="noopener noreferrer">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>WhatsApp: +591 79561365</span>
+                </a>
+            </div>
+            <button class="modal-btn download-code-btn" id="download-code-btn" type="button">
+                <i class="fas fa-file-pdf"></i> Descargar codigo en PDF
+            </button>
+            <button class="modal-btn close-physical-btn" id="close-physical-btn" type="button" disabled>
+                <i class="fas fa-lock"></i> Descarga el PDF para continuar
+            </button>
+        </div>
+    </div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const qrCheckbox = document.getElementById('qr-payment');
@@ -153,6 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const paymentLink = document.getElementById('payment-link');
     const qrStatus = document.getElementById('qr-status');
     let transaction = @json($libelulaTransaction);
+    let physicalPayment = @json($physicalPayment);
     let pollTimer = null;
 
     const buttonContent = (icon, label) => `<i class="fas ${icon}"></i> ${label}`;
@@ -163,7 +189,26 @@ document.addEventListener('DOMContentLoaded', () => {
         physicalCheckbox.checked = !qr;
         qrContent.style.display = qr ? 'block' : 'none';
         physicalContent.style.display = qr ? 'none' : 'block';
-        doneBtn.innerHTML = buttonContent(qr ? 'fa-qrcode' : 'fa-check-circle', qr ? (transaction ? 'Verificar pago' : 'Generar QR') : 'Generar codigo');
+        const physicalLabel = physicalPayment ? 'Ver codigo' : 'Generar codigo';
+        doneBtn.innerHTML = buttonContent(qr ? 'fa-qrcode' : 'fa-check-circle', qr ? (transaction ? 'Verificar pago' : 'Generar QR') : physicalLabel);
+    }
+
+    function showPhysicalModal() {
+        if (!physicalPayment) return;
+        document.getElementById('modal-payment-code').textContent = physicalPayment.codigo;
+        const closeButton = document.getElementById('close-physical-btn');
+        closeButton.disabled = !physicalPayment.downloaded;
+        closeButton.innerHTML = physicalPayment.downloaded
+            ? buttonContent('fa-check', 'Continuar')
+            : buttonContent('fa-lock', 'Descarga el PDF para continuar');
+        document.getElementById('physical-modal').style.display = 'flex';
+    }
+
+    function renderPhysicalPayment(data, openModal = true) {
+        physicalPayment = data;
+        document.getElementById('payment-code').textContent = data.codigo;
+        doneBtn.innerHTML = buttonContent('fa-file-lines', 'Ver codigo');
+        if (openModal) showPhysicalModal();
     }
 
     function renderTransaction(data) {
@@ -237,6 +282,46 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = @json(route('clientes.dashboard'));
     });
 
+    document.getElementById('close-physical-btn').addEventListener('click', function () {
+        if (!physicalPayment?.downloaded) return;
+        document.getElementById('physical-modal').style.display = 'none';
+    });
+
+    document.getElementById('download-code-btn').addEventListener('click', async function () {
+        if (!physicalPayment?.download_url) return;
+        const originalContent = this.innerHTML;
+        this.disabled = true;
+        this.innerHTML = buttonContent('fa-spinner fa-spin', 'Preparando PDF...');
+
+        try {
+            const response = await fetch(physicalPayment.download_url, {
+                headers: { 'Accept': 'application/pdf' }
+            });
+            if (!response.ok) throw new Error('No fue posible descargar el PDF.');
+
+            const blob = await response.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = objectUrl;
+            link.download = `codigo-pago-${physicalPayment.codigo}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+
+            physicalPayment.downloaded = true;
+            const closeButton = document.getElementById('close-physical-btn');
+            closeButton.disabled = false;
+            closeButton.innerHTML = buttonContent('fa-check', 'Continuar');
+            this.innerHTML = buttonContent('fa-file-pdf', 'PDF descargado');
+        } catch (error) {
+            showCustomAlert(error.message);
+            this.innerHTML = originalContent;
+        } finally {
+            this.disabled = false;
+        }
+    });
+
     doneBtn.addEventListener('click', async () => {
         if (!qrCheckbox.checked && !physicalCheckbox.checked) {
             showCustomAlert('Selecciona un metodo de pago.');
@@ -271,6 +356,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }));
                 renderTransaction(data);
             } else {
+                if (physicalPayment) {
+                    showPhysicalModal();
+                    return;
+                }
+
                 const data = await readJson(await fetch(@json(route('pago.procesar', $plan)), {
                     method: 'POST',
                     headers: {
@@ -280,8 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     body: JSON.stringify({ metodo_pago: 'fisico' })
                 }));
-                document.getElementById('payment-code').textContent = data.codigo;
-                showCustomAlert(data.message);
+                renderPhysicalPayment(data);
             }
         } catch (error) {
             showCustomAlert(error.message);
@@ -290,7 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (qrCheckbox.checked) {
                 doneBtn.innerHTML = buttonContent(transaction ? 'fa-rotate' : 'fa-qrcode', transaction ? 'Verificar pago' : 'Generar QR');
             } else {
-                doneBtn.innerHTML = buttonContent('fa-check-circle', 'Generar codigo');
+                doneBtn.innerHTML = buttonContent('fa-check-circle', physicalPayment ? 'Ver codigo' : 'Generar codigo');
             }
         }
     });
@@ -315,6 +404,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (transaction) {
         selectMethod('qr');
         renderTransaction(transaction);
+    } else if (physicalPayment) {
+        selectMethod('fisico');
+        renderPhysicalPayment(physicalPayment, !physicalPayment.downloaded);
     }
 });
 </script>

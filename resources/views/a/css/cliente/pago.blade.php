@@ -411,6 +411,55 @@
     .modal-content p { margin-bottom: 24px; color: var(--muted); }
     .modal-btn { width: 100%; padding: 12px 20px; background: var(--prodovi-turquoise); }
 
+    .physical-modal-content { width: min(500px, 100%); }
+    .physical-modal-icon {
+        width: 58px;
+        height: 58px;
+        display: grid;
+        place-items: center;
+        margin: 0 auto 16px;
+        border-radius: 50%;
+        background: rgba(125, 165, 51, .18);
+        color: #a9d457;
+        font-size: 1.55rem;
+    }
+
+    .physical-modal-content .payment-code { display: block; margin: 0 0 20px; }
+    .physical-modal-content > p { margin-bottom: 12px; }
+
+    .office-links {
+        display: grid;
+        gap: 9px;
+        margin-bottom: 20px;
+        text-align: left;
+    }
+
+    .office-links a {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface-soft);
+        color: #e7e2e9;
+        font-size: .8rem;
+        line-height: 1.4;
+        text-decoration: none;
+    }
+
+    .office-links a i { width: 20px; flex: 0 0 20px; color: #7fd1da; text-align: center; }
+    .office-links a:last-child i { color: #5fd276; }
+    .download-code-btn { margin-bottom: 10px; background: var(--prodovi-orange); }
+    .close-physical-btn { background: var(--prodovi-turquoise); }
+    .close-physical-btn:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+        filter: none;
+        transform: none;
+    }
+
     @media (max-width: 900px) {
         .main-container { width: min(100% - 32px, 1180px); padding-top: 105px; }
         .payment-header { padding-right: 245px; }

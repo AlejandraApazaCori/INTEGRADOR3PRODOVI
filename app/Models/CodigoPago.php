@@ -18,7 +18,13 @@ class CodigoPago extends Model
         'usuario_id',
         'pago_id',
         'utilizado',
-        'fecha_utilizacion'
+        'fecha_utilizacion',
+        'descargado_at',
+    ];
+
+    protected $casts = [
+        'fecha_utilizacion' => 'datetime',
+        'descargado_at' => 'datetime',
     ];
 
     public function usuario()

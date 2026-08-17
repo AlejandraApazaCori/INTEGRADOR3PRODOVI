@@ -37,6 +37,13 @@ class PagoClienteController extends Controller
             ->where('expires_at', '>', now())
             ->latest('id')
             ->first();
+        $pendingPhysicalPayment = Pago::with('codigoPago')
+            ->where('usuario_id', $request->user()->id)
+            ->where('plan_id', $planModel->id)
+            ->where('metodo', 'fisico')
+            ->where('estado', 'pendiente')
+            ->latest('id')
+            ->first();
 
         return view('clientes.pago', [
             'plan' => $planSlug,
@@ -46,6 +53,9 @@ class PagoClienteController extends Controller
             'planNombre' => $planModel->nombre,
             'libelulaTransaction' => $pendingTransaction
                 ? $this->safeTransactionData($pendingTransaction)
+                : null,
+            'physicalPayment' => $pendingPhysicalPayment?->codigoPago
+                ? $this->safePhysicalPaymentData($pendingPhysicalPayment)
                 : null,
         ]);
     }
@@ -59,6 +69,28 @@ class PagoClienteController extends Controller
         DB::beginTransaction();
 
         try {
+            DB::table('users')->where('id', $usuario->id)->lockForUpdate()->first();
+
+            $pendingPayment = Pago::with('codigoPago')
+                ->where('usuario_id', $usuario->id)
+                ->where('plan_id', $planModel->id)
+                ->where('metodo', 'fisico')
+                ->where('estado', 'pendiente')
+                ->latest('id')
+                ->first();
+
+            if ($pendingPayment?->codigoPago) {
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'metodo' => 'fisico',
+                    'existing' => true,
+                    'message' => 'Ya tienes un codigo pendiente para este plan.',
+                    ...$this->safePhysicalPaymentData($pendingPayment),
+                ]);
+            }
+
             $fechaInicio = Carbon::now();
             $suscripcion = Suscripcion::create([
                 'usuario_id' => $usuario->id,
@@ -92,7 +124,10 @@ class PagoClienteController extends Controller
                 'success' => true,
                 'metodo' => 'fisico',
                 'codigo' => $codigo,
-                'message' => 'Codigo de pago generado',
+                'payment_id' => $pago->id,
+                'download_url' => route('pago.fisico.codigo.pdf', $pago, false),
+                'downloaded' => false,
+                'message' => 'El codigo fue generado correctamente.',
             ]);
         } catch (Throwable $exception) {
             DB::rollBack();
@@ -316,6 +351,24 @@ class PagoClienteController extends Controller
         ]);
     }
 
+    public function descargarCodigoFisico(Request $request, Pago $pago)
+    {
+        abort_unless((int) $pago->usuario_id === (int) $request->user()->id, 403);
+        abort_unless($pago->metodo === 'fisico', 404);
+
+        $pago->load(['codigoPago', 'plan', 'usuario']);
+        abort_unless($pago->codigoPago, 404, 'Codigo de pago no encontrado.');
+
+        $pdf = PDF::loadView('clientes.codigo-pago-pdf', [
+            'pago' => $pago,
+            'codigoPago' => $pago->codigoPago,
+        ]);
+
+        $pago->codigoPago->update(['descargado_at' => now()]);
+
+        return $pdf->download('codigo-pago-'.$pago->codigoPago->codigo.'.pdf');
+    }
+
     public function estadoPago()
     {
         $suscripcionPendiente = Suscripcion::with(['pagos.codigoPago', 'plan'])
@@ -390,6 +443,16 @@ class PagoClienteController extends Controller
             'currency' => $transaction->currency,
             'expires_at' => $transaction->expires_at?->toIso8601String(),
             'status_url' => route('pago.libelula.estado', $transaction, false),
+        ];
+    }
+
+    private function safePhysicalPaymentData(Pago $payment): array
+    {
+        return [
+            'payment_id' => $payment->id,
+            'codigo' => $payment->codigoPago->codigo,
+            'download_url' => route('pago.fisico.codigo.pdf', $payment, false),
+            'downloaded' => $payment->codigoPago->descargado_at !== null,
         ];
     }
 

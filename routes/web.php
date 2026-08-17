@@ -148,6 +148,7 @@ Route::middleware('auth')->group(function () {
     // Rutas de pago del cliente
     Route::get('/clientes/pago/{plan}', [PagoClienteController::class, 'show'])->name('clientes.pago');
     Route::post('/pago/procesar/{plan}', [PagoClienteController::class, 'procesarPago'])->name('pago.procesar');
+    Route::get('/pago/fisico/{pago}/codigo.pdf', [PagoClienteController::class, 'descargarCodigoFisico'])->name('pago.fisico.codigo.pdf');
     Route::post('/pago/libelula/{plan}', [PagoClienteController::class, 'crearPagoQr'])->name('pago.libelula.crear');
     Route::get('/pago/libelula/estado/{transaction}', [PagoClienteController::class, 'estadoPagoQr'])->name('pago.libelula.estado');
     Route::get('/pago/libelula/retorno', [PagoClienteController::class, 'retornoLibelula'])->name('pago.libelula.retorno');
