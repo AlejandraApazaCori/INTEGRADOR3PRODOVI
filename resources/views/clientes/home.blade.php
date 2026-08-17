@@ -1326,15 +1326,112 @@
         .subscription-alert {
             position: relative;
             z-index: 5;
+            min-height: 104px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            margin-bottom: 38px;
+            padding: 20px 22px;
+            overflow: hidden;
+            border: 1px solid rgba(17,126,140,.28);
+            border-radius: 8px;
             border-color: rgba(17,126,140,.28);
-            background: linear-gradient(110deg,rgba(17,126,140,.15),rgba(125,165,51,.07)),#0e1010;
+            background: #0e1010;
             color: #d6efed;
         }
 
         .subscription-alert.warning {
             border-color: rgba(239,108,34,.28);
-            background: linear-gradient(110deg,rgba(239,108,34,.14),rgba(245,169,0,.06)),#100f0e;
+            background: #100f0e;
             color: #f2d4c1;
+        }
+
+        .subscription-alert.warning::before {
+            content: '';
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 4px;
+            background: var(--prodovi-orange);
+        }
+
+        .alert-copy { min-width: 0; display: flex; align-items: center; gap: 16px; }
+        .alert-icon {
+            width: 48px;
+            height: 48px;
+            flex: 0 0 48px;
+            display: grid;
+            place-items: center;
+            border: 1px solid rgba(239,108,34,.3);
+            border-radius: 8px;
+            background: rgba(239,108,34,.12);
+            color: #ff9b5d;
+            font-size: 1.45rem;
+        }
+
+        .alert-content { min-width: 0; }
+        .alert-eyebrow {
+            display: block;
+            margin-bottom: 2px;
+            color: #ef8b4d;
+            font-size: .65rem;
+            font-weight: 800;
+            letter-spacing: 0;
+            text-transform: uppercase;
+        }
+
+        .alert-copy strong { display: block; margin: 0; color: #fff; font-size: 1rem; }
+        .alert-details { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 15px; margin-top: 7px; }
+        .alert-details > span { color: #bdb6c0; font-size: .78rem; }
+        .alert-details > span + span { position: relative; }
+        .alert-details > span + span::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -8px;
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: #6f6872;
+        }
+
+        .alert-details .alert-code {
+            padding: 4px 7px;
+            border: 1px solid rgba(245,169,0,.25);
+            border-radius: 5px;
+            background: rgba(245,169,0,.09);
+            color: #ffd27b;
+            font-family: 'Courier New', monospace;
+            font-weight: 800;
+        }
+
+        .alert-link {
+            min-height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            padding: 9px 14px;
+            border: 1px solid rgba(239,108,34,.4);
+            border-radius: 7px;
+            background: #ef6c22;
+            color: #fff;
+            font-size: .76rem;
+            font-weight: 800;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: filter .2s ease, transform .2s ease;
+        }
+
+        .alert-link:hover { filter: brightness(1.08); transform: translateY(-2px); }
+
+        @media (max-width: 720px) {
+            .subscription-alert { min-height: 0; align-items: stretch; flex-direction: column; gap: 16px; padding: 18px; }
+            .alert-copy { align-items: flex-start; }
+            .alert-icon { width: 42px; height: 42px; flex-basis: 42px; }
+            .alert-details { align-items: flex-start; flex-direction: column; gap: 5px; }
+            .alert-details > span + span::before { content: none; }
+            .alert-link { width: 100%; }
         }
 
 
@@ -3095,10 +3192,24 @@
                         <a href="{{ route('clientes.dashboard') }}" class="alert-link">Ver dashboard →</a>
                     </div>
                 @elseif($tieneSuscripcionPendiente && $suscripcionPendiente)
-                    @php($pagoPendiente = $suscripcionPendiente->pagos->first())
-                    <div class="subscription-alert warning">
-                        <div class="alert-copy"><span class="alert-icon">◷</span><span><strong>Tu suscripción está pendiente</strong><p>{{ $suscripcionPendiente->plan->nombre }}@if($pagoPendiente) · {{ number_format($pagoPendiente->monto) }} {{ $pagoPendiente->moneda === 'BS' ? 'Bs' : '$' }}@if($suscripcionPendiente->metodo_pago === 'fisico' && $pagoPendiente->codigoPago) · Código <span class="alert-code">{{ $pagoPendiente->codigoPago->codigo }}</span>@endif @endif</p></span></div>
-                        <a href="{{ route('clientes.pago.estado') }}" class="alert-link">Ver detalles →</a>
+                    <div class="subscription-alert warning" role="status">
+                        <div class="alert-copy">
+                            <span class="alert-icon" aria-hidden="true">◷</span>
+                            <div class="alert-content">
+                                <span class="alert-eyebrow">Pago en revisión</span>
+                                <strong>Tu suscripción está pendiente</strong>
+                                <div class="alert-details">
+                                    <span>{{ $pagoPendiente->plan->nombre }}</span>
+                                    <span>{{ number_format($pagoPendiente->monto, 2) }} {{ $pagoPendiente->moneda === 'BS' ? 'Bs' : '$' }}</span>
+                                    @if($pagoPendiente->metodo === 'fisico' && $pagoPendiente->codigoPago)
+                                        <span class="alert-code">Código {{ $pagoPendiente->codigoPago->codigo }}</span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        <a href="{{ route('clientes.pago.estado') }}" class="alert-link">
+                            <span>Ver detalles</span><span aria-hidden="true">→</span>
+                        </a>
                     </div>
                 @endif
             @endauth

@@ -6,6 +6,7 @@ use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Suscripcion;
+use App\Models\Pago;
 use Carbon\Carbon;
 
 class ClienteController extends Controller
@@ -21,7 +22,8 @@ class ClienteController extends Controller
             'planes' => $planes,
             'tieneSuscripcionActiva' => false,
             'tieneSuscripcionPendiente' => false,
-            'suscripcionPendiente' => null
+            'suscripcionPendiente' => null,
+            'pagoPendiente' => null,
         ];
 
         if ($user) {
@@ -30,17 +32,14 @@ class ClienteController extends Controller
                 ->where('fecha_fin', '>', now())
                 ->exists();
 
-            $data['tieneSuscripcionPendiente'] = Suscripcion::where('usuario_id', $user->id)
+            $data['pagoPendiente'] = Pago::with(['codigoPago', 'plan', 'suscripcion'])
+                ->where('usuario_id', $user->id)
                 ->where('estado', 'pendiente')
-                ->exists();
-
-            if ($data['tieneSuscripcionPendiente']) {
-                $data['suscripcionPendiente'] = Suscripcion::with(['pagos.codigoPago', 'plan'])
-                    ->where('usuario_id', $user->id)
-                    ->where('estado', 'pendiente')
-                    ->latest()
-                    ->first();
-            }
+                ->whereHas('suscripcion', fn ($query) => $query->where('estado', 'pendiente'))
+                ->latest('id')
+                ->first();
+            $data['suscripcionPendiente'] = $data['pagoPendiente']?->suscripcion;
+            $data['tieneSuscripcionPendiente'] = $data['pagoPendiente'] !== null;
         }
 
         return view('clientes.home', $data);
@@ -129,7 +128,6 @@ class ClienteController extends Controller
 
 
 }
-
 
 
 

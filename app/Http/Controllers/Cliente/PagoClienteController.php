@@ -371,19 +371,21 @@ class PagoClienteController extends Controller
 
     public function estadoPago()
     {
-        $suscripcionPendiente = Suscripcion::with(['pagos.codigoPago', 'plan'])
+        $pagoPendiente = Pago::with(['codigoPago', 'plan', 'suscripcion'])
             ->where('usuario_id', Auth::id())
             ->where('estado', 'pendiente')
-            ->latest()
+            ->whereHas('suscripcion', fn ($query) => $query->where('estado', 'pendiente'))
+            ->latest('id')
             ->first();
 
-        if (! $suscripcionPendiente) {
+        if (! $pagoPendiente) {
             return redirect()->route('clientes.home')->with('error', 'No tienes pagos pendientes');
         }
 
         return view('clientes.estado-pago', [
-            'suscripcion' => $suscripcionPendiente,
-            'codigoPago' => $suscripcionPendiente->pagos->first()->codigoPago ?? null,
+            'suscripcion' => $pagoPendiente->suscripcion,
+            'pagoPendiente' => $pagoPendiente,
+            'codigoPago' => $pagoPendiente->codigoPago,
         ]);
     }
 
