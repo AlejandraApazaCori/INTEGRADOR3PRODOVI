@@ -148,10 +148,17 @@ Route::middleware('auth')->group(function () {
     // Rutas de pago del cliente
     Route::get('/clientes/pago/{plan}', [PagoClienteController::class, 'show'])->name('clientes.pago');
     Route::post('/pago/procesar/{plan}', [PagoClienteController::class, 'procesarPago'])->name('pago.procesar');
+    Route::post('/pago/libelula/{plan}', [PagoClienteController::class, 'crearPagoQr'])->name('pago.libelula.crear');
+    Route::get('/pago/libelula/estado/{transaction}', [PagoClienteController::class, 'estadoPagoQr'])->name('pago.libelula.estado');
+    Route::get('/pago/libelula/retorno', [PagoClienteController::class, 'retornoLibelula'])->name('pago.libelula.retorno');
     Route::post('/clientes/social/setup-social-accounts', [SocialAccountController::class, 'setupSocialAccountsTable'])->name('clientes.social.setup-social-accounts');
     Route::get('/clientes/social/{provider}/redirect', [SocialAccountController::class, 'redirect'])->name('clientes.social.redirect');
     Route::get('/clientes/social/{provider}/callback', [SocialAccountController::class, 'callback'])->name('clientes.social.callback');
 });
+
+Route::post('/libelula/callback', [PagoClienteController::class, 'callbackLibelula'])
+    ->middleware('throttle:60,1')
+    ->name('pago.libelula.callback');
 
 //ESTADO PAGO
 Route::get('/clientes/estado-pago', [PagoClienteController::class, 'estadoPago'])

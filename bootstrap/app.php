@@ -11,6 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->validateCsrfTokens(except: [
+            'libelula/callback',
+        ]);
+
         // Registrar LogAccessMiddleware globalmente para medir todas las peticiones
         $middleware->append(\App\Http\Middleware\LogAccessMiddleware::class);
     })

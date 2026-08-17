@@ -23,7 +23,10 @@ class Pago extends Model
         'aprobado_por',
         'fecha_aprobacion',
         'fecha_pago',
-        'visto'
+        'visto',
+        'provider',
+        'provider_transaction_id',
+        'provider_reference',
     ];
 
     protected $casts = [

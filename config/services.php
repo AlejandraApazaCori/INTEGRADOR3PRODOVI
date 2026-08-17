@@ -38,6 +38,15 @@ return [
         'action' => 'landing_contacto',
     ],
 
+    'libelula' => [
+        'app_key' => env('LIBELULA_APP_KEY'),
+        'base_url' => env('LIBELULA_BASE_URL', 'https://api.libelula.bo'),
+        'callback_url' => env('LIBELULA_CALLBACK_URL'),
+        'return_url' => env('LIBELULA_RETURN_URL'),
+        'timeout' => (int) env('LIBELULA_TIMEOUT', 30),
+        'product_code' => env('LIBELULA_PRODUCT_CODE', '1'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

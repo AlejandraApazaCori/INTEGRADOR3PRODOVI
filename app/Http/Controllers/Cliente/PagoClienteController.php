@@ -3,231 +3,406 @@
 namespace App\Http\Controllers\Cliente;
 
 use App\Http\Controllers\Controller;
-use App\Models\Plan;
-use App\Models\Pago;
-use App\Models\Suscripcion;
 use App\Models\CodigoPago;
+use App\Models\ComprobantePago;
+use App\Models\LibelulaEvent;
+use App\Models\LibelulaTransaction;
+use App\Models\Pago;
+use App\Models\Plan;
+use App\Models\Suscripcion;
+use App\Services\Libelula\LibelulaClient;
+use App\Services\Libelula\LibelulaPaymentReconciler;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-use Barryvdh\DomPDF\Facade\Pdf as PDF;
-use App\Models\ComprobantePago;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use RuntimeException;
+use Throwable;
 
 class PagoClienteController extends Controller
 {
-    public function show($plan)
+    public function show(Request $request, $plan)
     {
         $planSlug = strtolower($plan);
-        $planNombre = str_replace('-', ' ', $planSlug);
-        $planModel = Plan::where('nombre', $planNombre)->firstOrFail();
+        $planModel = Plan::where('nombre', str_replace('-', ' ', $planSlug))->firstOrFail();
+        $pendingTransaction = LibelulaTransaction::query()
+            ->where('usuario_id', $request->user()->id)
+            ->where('plan_id', $planModel->id)
+            ->where('status', 'pending')
+            ->where('expires_at', '>', now())
+            ->latest('id')
+            ->first();
 
         return view('clientes.pago', [
             'plan' => $planSlug,
             'planPrecio' => $planModel->precio,
             'planMoneda' => $planModel->moneda,
-            'planPeriodo' => $planModel->periodo,
-            'planNombre' => $planModel->nombre
+            'planPeriodo' => $planModel->periodo_facturacion,
+            'planNombre' => $planModel->nombre,
+            'libelulaTransaction' => $pendingTransaction
+                ? $this->safeTransactionData($pendingTransaction)
+                : null,
         ]);
     }
 
     public function procesarPago(Request $request, $plan)
     {
-        $request->validate([
-            'metodo_pago' => 'required|in:qr,fisico'
-        ]);
-
-        $planNombre = str_replace('-', ' ', $plan);
-        $planModel = Plan::where('nombre', $planNombre)->firstOrFail();
-        $usuario = Auth::user();
+        $request->validate(['metodo_pago' => 'required|in:fisico']);
+        $planModel = Plan::where('nombre', str_replace('-', ' ', strtolower($plan)))->firstOrFail();
+        $usuario = $request->user();
 
         DB::beginTransaction();
 
         try {
-            // Obtener fecha y hora exacta actual
             $fechaInicio = Carbon::now();
-
-            // Calcular fecha fin (siempre 1 mes después de la fecha inicio)
-            $fechaFin = $fechaInicio->copy()->addMonth();
-
-            // 1. Crear la suscripción con fechas exactas
             $suscripcion = Suscripcion::create([
                 'usuario_id' => $usuario->id,
                 'plan_id' => $planModel->id,
                 'estado' => 'pendiente',
                 'fecha_inicio' => $fechaInicio,
-                'fecha_fin' => $fechaFin,
-                'metodo_pago' => $request->metodo_pago
+                'fecha_fin' => $fechaInicio->copy()->addMonth(),
+                'metodo_pago' => 'fisico',
+            ]);
+            $codigo = CodigoPago::generarCodigoUnico();
+            $pago = Pago::create([
+                'usuario_id' => $usuario->id,
+                'suscripcion_id' => $suscripcion->id,
+                'plan_id' => $planModel->id,
+                'codigo_pago' => $codigo,
+                'monto' => $planModel->precio,
+                'moneda' => $planModel->moneda,
+                'metodo' => 'fisico',
+                'estado' => 'pendiente',
             ]);
 
-            // 2. Procesar según el método de pago
-            if ($request->metodo_pago === 'qr') {
-                // Pago QR (fake)
-                $pago = Pago::create([
-                    'usuario_id' => $usuario->id,
-                    'suscripcion_id' => $suscripcion->id,
-                    'plan_id' => $planModel->id,
-                    'monto' => $planModel->precio,
-                    'moneda' => $planModel->moneda,
-                    'metodo' => 'qr',
-                    'estado' => 'completado',
-                    'fecha_pago' => $fechaInicio
-                ]);
+            CodigoPago::create([
+                'codigo' => $codigo,
+                'usuario_id' => $usuario->id,
+                'pago_id' => $pago->id,
+            ]);
 
-                // Actualizar estado de la suscripción
-                $suscripcion->update(['estado' => 'activa']);
+            DB::commit();
 
-                // *** NUEVO: Crear el comprobante inmediatamente ***
-                ComprobantePago::create([
-                    'pago_id' => $pago->id,
-                ]);
-
-                DB::commit();
-
-                return response()->json([
-                    'success' => true,
-                    'metodo' => 'qr',
-                    'message' => 'Pago procesado exitosamente'
-                ]);
-
-            } else {
-                // Pago físico
-                $codigo = CodigoPago::generarCodigoUnico();
-
-                // Crear el pago pendiente
-                $pago = Pago::create([
-                    'usuario_id' => $usuario->id,
-                    'suscripcion_id' => $suscripcion->id,
-                    'plan_id' => $planModel->id,
-                    'codigo_pago' => $codigo,
-                    'monto' => $planModel->precio,
-                    'moneda' => $planModel->moneda,
-                    'metodo' => 'fisico',
-                    'estado' => 'pendiente'
-                ]);
-
-                // Crear y asociar el código de pago
-                CodigoPago::create([
-                    'codigo' => $codigo,
-                    'usuario_id' => $usuario->id,
-                    'pago_id' => $pago->id
-                ]);
-
-                DB::commit();
-
-                return response()->json([
-                    'success' => true,
-                    'metodo' => 'fisico',
-                    'codigo' => $codigo,
-                    'message' => 'Código de pago generado'
-                ]);
-            }
-
-        } catch (\Exception $e) {
+            return response()->json([
+                'success' => true,
+                'metodo' => 'fisico',
+                'codigo' => $codigo,
+                'message' => 'Codigo de pago generado',
+            ]);
+        } catch (Throwable $exception) {
             DB::rollBack();
-            Log::error('Error al procesar pago:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'usuario' => $usuario->id ?? null,
-                'plan' => $plan
+            Log::error('Error al procesar pago fisico.', [
+                'error' => $exception->getMessage(),
+                'usuario' => $usuario->id,
+                'plan' => $plan,
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Ocurrió un error al procesar el pago: ' . $e->getMessage()
+                'message' => 'Ocurrio un error al procesar el pago.',
             ], 500);
         }
     }
 
-    // app/Http/Controllers/Cliente/PagoClienteController.php
+    public function crearPagoQr(Request $request, $plan, LibelulaClient $client)
+    {
+        $validated = $request->validate([
+            'document_type_code' => ['required', 'string', Rule::in(['1', '2', '3', '4', '5'])],
+            'document_number' => ['required', 'string', 'max:50', 'regex:/^[0-9]+$/'],
+            'document_complement' => ['nullable', 'string', 'max:20'],
+            'document_extension' => ['nullable', 'string', 'max:20'],
+            'business_name' => ['required', 'string', 'max:255'],
+        ], ['document_number.regex' => 'El numero de documento solo puede contener numeros.']);
+
+        $planModel = Plan::where('nombre', str_replace('-', ' ', strtolower($plan)))->firstOrFail();
+        $user = $request->user();
+
+        if ($planModel->moneda !== 'BS') {
+            return response()->json(['message' => 'El pago QR esta disponible para planes en bolivianos.'], 422);
+        }
+
+        LibelulaTransaction::query()
+            ->where('usuario_id', $user->id)
+            ->where('plan_id', $planModel->id)
+            ->where('status', 'pending')
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '<=', now())
+            ->update(['status' => 'expired', 'expired_at' => now()]);
+
+        $pending = LibelulaTransaction::query()
+            ->where('usuario_id', $user->id)
+            ->where('plan_id', $planModel->id)
+            ->where('status', 'pending')
+            ->where('expires_at', '>', now())
+            ->latest('id')
+            ->first();
+
+        if ($pending) {
+            return response()->json($this->safeTransactionData($pending));
+        }
+
+        $expiresAt = now()->addDay()->endOfMinute();
+        $identifier = sprintf('PRODOVI-PLAN-%d-%d-%s', $user->id, $planModel->id, Str::uuid());
+        $transaction = LibelulaTransaction::create([
+            'usuario_id' => $user->id,
+            'plan_id' => $planModel->id,
+            'identifier' => $identifier,
+            'customer_email' => $user->email,
+            'customer_name' => $user->name,
+            'document_type_code' => trim($validated['document_type_code']),
+            'document_number' => trim($validated['document_number']),
+            'document_complement' => $this->optionalUppercase($validated['document_complement'] ?? null),
+            'document_extension' => $this->optionalUppercase($validated['document_extension'] ?? null),
+            'business_name' => Str::upper(trim($validated['business_name'])),
+            'description' => 'Suscripcion al plan '.$planModel->nombre,
+            'currency' => 'BOB',
+            'expected_amount' => $planModel->precio,
+            'status' => 'creating',
+            'expires_at' => $expiresAt,
+        ]);
+
+        $callbackUrl = (string) config('services.libelula.callback_url');
+        $returnUrl = (string) config('services.libelula.return_url');
+        $callbackUrl = $callbackUrl !== '' ? $callbackUrl : route('pago.libelula.callback');
+        $returnUrl = $returnUrl !== '' ? $returnUrl : route('pago.libelula.retorno');
+        $payload = [
+            'email_cliente' => $user->email,
+            'identificador' => $identifier,
+            'fecha_vencimiento' => $expiresAt->format('Y-m-d H:i'),
+            'descripcion' => $transaction->description,
+            'callback_url' => $callbackUrl,
+            'url_retorno' => $this->returnUrl($returnUrl, $transaction->id),
+            'numero_documento' => $transaction->document_number,
+            'codigo_tipo_documento' => $transaction->document_type_code,
+            'nombre_cliente' => trim((string) $user->name),
+            'apellido_cliente' => '',
+            'codigo_cliente' => (string) $user->id,
+            'razon_social' => $transaction->business_name,
+            'emite_factura' => true,
+            'tipo_factura' => 'Servicios',
+            'moneda' => 'BOB',
+            'lineas_detalle_deuda' => [[
+                'cantidad' => 1,
+                'concepto' => $transaction->description,
+                'costo_unitario' => (float) $planModel->precio,
+                'descuento_unitario' => 0,
+                'codigo_producto' => (string) config('services.libelula.product_code', '1'),
+            ]],
+        ];
+        $complement = collect([$transaction->document_complement, $transaction->document_extension])
+            ->filter()->implode(' ');
+
+        if ($complement !== '') {
+            $payload['complemento_documento'] = $complement;
+        }
+
+        $transaction->update(['request_payload' => $payload]);
+
+        try {
+            $response = $client->registerDebt($payload);
+            $providerId = trim((string) ($response['id_transaccion'] ?? ''));
+            $paymentUrl = trim((string) ($response['url_pasarela_pagos'] ?? ''));
+            $qrUrl = trim((string) ($response['qr_simple_url'] ?? ''));
+
+            if ($providerId === '' || ($paymentUrl === '' && $qrUrl === '')) {
+                throw new RuntimeException('Libelula no devolvio los datos necesarios para pagar.');
+            }
+
+            $transaction->update([
+                'libelula_transaction_id' => $providerId,
+                'collection_code' => $response['codigo_recaudacion'] ?? null,
+                'payment_url' => $paymentUrl ?: null,
+                'qr_url' => $qrUrl ?: null,
+                'response_payload' => $response,
+                'status' => 'pending',
+                'generated_at' => now(),
+                'last_error' => null,
+            ]);
+        } catch (Throwable $exception) {
+            $transaction->update([
+                'status' => 'failed',
+                'last_error' => Str::limit($exception->getMessage(), 2000),
+            ]);
+
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json($this->safeTransactionData($transaction->fresh()));
+    }
+
+    public function estadoPagoQr(Request $request, LibelulaTransaction $transaction, LibelulaPaymentReconciler $reconciler)
+    {
+        abort_unless((int) $transaction->usuario_id === (int) $request->user()->id, 403);
+
+        if (in_array($transaction->status, ['pending', 'expired'], true)) {
+            try {
+                $reconciler->reconcile($transaction);
+            } catch (Throwable $exception) {
+                Log::warning('No se pudo conciliar el pago de Libelula.', [
+                    'transaction_id' => $transaction->id,
+                    'error' => $exception->getMessage(),
+                ]);
+                $transaction->update(['last_error' => Str::limit($exception->getMessage(), 2000)]);
+            }
+        }
+
+        $transaction->refresh();
+        if ($transaction->status === 'pending' && $transaction->expires_at?->isPast()) {
+            $transaction->update(['status' => 'expired', 'expired_at' => now()]);
+        }
+
+        return response()->json($this->safeTransactionData($transaction->fresh()));
+    }
+
+    public function callbackLibelula(Request $request, LibelulaPaymentReconciler $reconciler)
+    {
+        $providerId = trim((string) $request->input('transaction_id', ''));
+        $transaction = $providerId !== ''
+            ? LibelulaTransaction::where('libelula_transaction_id', $providerId)->first()
+            : null;
+        $event = LibelulaEvent::create([
+            'libelula_transaction_record_id' => $transaction?->id,
+            'libelula_transaction_id' => $providerId ?: null,
+            'identifier' => $transaction?->identifier,
+            'event_type' => 'payment_success',
+            'source' => 'callback',
+            'payload' => $request->all(),
+            'processing_status' => $transaction ? 'received' : 'unmatched',
+            'received_at' => now(),
+        ]);
+
+        if (! $transaction) {
+            $event->update(['processed_at' => now()]);
+            return response()->json(['received' => true]);
+        }
+
+        if ($transaction->status === 'paid') {
+            $event->update(['processing_status' => 'duplicate', 'processed_at' => now()]);
+            return response()->json(['received' => true]);
+        }
+
+        try {
+            $paid = $reconciler->reconcile($transaction);
+            $event->update([
+                'processing_status' => $paid ? 'processed' : 'pending_verification',
+                'processed_at' => now(),
+            ]);
+        } catch (Throwable $exception) {
+            $event->update([
+                'processing_status' => 'failed',
+                'error_message' => Str::limit($exception->getMessage(), 2000),
+                'processed_at' => now(),
+            ]);
+        }
+
+        return response()->json(['received' => true]);
+    }
+
+    public function retornoLibelula(Request $request)
+    {
+        $transaction = LibelulaTransaction::query()
+            ->whereKey($request->integer('transaction'))
+            ->where('usuario_id', $request->user()->id)
+            ->firstOrFail();
+
+        return redirect()->route('clientes.pago', [
+            'plan' => Str::slug($transaction->plan->nombre),
+            'transaction' => $transaction->id,
+        ]);
+    }
 
     public function estadoPago()
     {
-        $user = Auth::user();
-
-        // Obtener la última suscripción pendiente del usuario
         $suscripcionPendiente = Suscripcion::with(['pagos.codigoPago', 'plan'])
-            ->where('usuario_id', $user->id)
+            ->where('usuario_id', Auth::id())
             ->where('estado', 'pendiente')
             ->latest()
             ->first();
 
-        if (!$suscripcionPendiente) {
+        if (! $suscripcionPendiente) {
             return redirect()->route('clientes.home')->with('error', 'No tienes pagos pendientes');
         }
 
         return view('clientes.estado-pago', [
             'suscripcion' => $suscripcionPendiente,
-            'codigoPago' => $suscripcionPendiente->pagos->first()->codigoPago ?? null
+            'codigoPago' => $suscripcionPendiente->pagos->first()->codigoPago ?? null,
         ]);
     }
 
-    /**
-     * Muestra el historial de pagos del usuario
-     */
     public function historialPagos()
     {
-        $user = Auth::user();
-
-        // Obtener todos los pagos del usuario con sus relaciones, incluyendo 'comprobantePago'
         $pagos = Pago::with(['plan', 'suscripcion', 'comprobantePago'])
-            ->where('usuario_id', $user->id)
+            ->where('usuario_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         return view('clientes.historialpagos', compact('pagos'));
     }
-    /**
-     * Muestra el comprobante de pago en formato HTML (para el modal)
-     */
+
     public function verComprobante($id)
     {
-        $user = Auth::user();
-        // Carga el pago y su relación con 'comprobantePago'
         $pago = Pago::with(['plan', 'suscripcion', 'usuario', 'comprobantePago'])
             ->where('id', $id)
-            ->where('usuario_id', $user->id)
+            ->where('usuario_id', Auth::id())
             ->firstOrFail();
 
-        // Generar el HTML del comprobante
-        $html = view('clientes.comprobante-pago', compact('pago'))->render();
-
-        return response()->json(['html' => $html]);
+        return response()->json([
+            'html' => view('clientes.comprobante-pago', compact('pago'))->render(),
+        ]);
     }
 
-    /**
-     * Descarga el comprobante de pago en PDF.
-     * El comprobante ya debe existir.
-     */
     public function descargarComprobante($id)
     {
-        $user = Auth::user();
         $pago = Pago::with(['plan', 'suscripcion', 'usuario', 'comprobantePago'])
             ->where('id', $id)
-            ->where('usuario_id', $user->id)
+            ->where('usuario_id', Auth::id())
             ->firstOrFail();
-
-        // 1. Obtener el comprobante. Debe existir.
         $comprobante = $pago->comprobantePago;
-        if (!$comprobante) {
-            // Esto no debería pasar si la lógica es correcta, pero es una buena práctica.
-            abort(404, 'Comprobante no encontrado para este pago.');
-        }
 
-        // 2. Definir la ruta relativa del archivo
-        $rutaRelativa = 'comprobantes_pago/comprobante-' . $comprobante->numero_formateado . '.pdf';
+        abort_unless($comprobante, 404, 'Comprobante no encontrado para este pago.');
 
-        // 3. Verificar si el archivo físico existe. Si no, regenerarlo por seguridad.
-        if (!\Storage::disk('public')->exists($rutaRelativa)) {
+        $rutaRelativa = 'comprobantes_pago/comprobante-'.$comprobante->numero_formateado.'.pdf';
+        if (! Storage::disk('public')->exists($rutaRelativa)) {
             $pdf = PDF::loadView('clientes.comprobante-pago-pdf', compact('pago', 'comprobante'));
-            \Storage::disk('public')->put($rutaRelativa, $pdf->output());
+            Storage::disk('public')->put($rutaRelativa, $pdf->output());
         }
 
-        // 4. Enviar el archivo al usuario para su descarga.
-        $rutaCompletaParaDescarga = \Storage::disk('public')->path($rutaRelativa);
-        $nombreDescarga = 'comprobante-' . $comprobante->numero_formateado . '.pdf';
+        return response()->download(
+            Storage::disk('public')->path($rutaRelativa),
+            'comprobante-'.$comprobante->numero_formateado.'.pdf'
+        );
+    }
 
-        return response()->download($rutaCompletaParaDescarga, $nombreDescarga);
+    private function safeTransactionData(LibelulaTransaction $transaction): array
+    {
+        return [
+            'id' => $transaction->id,
+            'status' => $transaction->status,
+            'identifier' => $transaction->identifier,
+            'payment_url' => $transaction->payment_url,
+            'qr_url' => $transaction->qr_url,
+            'amount' => $transaction->expected_amount,
+            'currency' => $transaction->currency,
+            'expires_at' => $transaction->expires_at?->toIso8601String(),
+            'status_url' => route('pago.libelula.estado', $transaction, false),
+        ];
+    }
+
+    private function optionalUppercase(mixed $value): ?string
+    {
+        $value = Str::upper(trim((string) $value));
+
+        return $value !== '' ? $value : null;
+    }
+
+    private function returnUrl(string $baseUrl, int $transactionId): string
+    {
+        return $baseUrl.(str_contains($baseUrl, '?') ? '&' : '?')
+            .http_build_query(['transaction' => $transactionId]);
     }
 }

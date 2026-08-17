@@ -251,6 +251,43 @@
     .option-content { display: none; margin-top: 20px; animation: revealPayment .25s ease both; }
     @keyframes revealPayment { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
 
+    .billing-form {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        padding: 20px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--surface-soft);
+    }
+
+    .field-wide { grid-column: 1 / -1; }
+    .field-group { min-width: 0; text-align: left; }
+    .field-group label {
+        display: block;
+        margin-bottom: 6px;
+        color: #d8d3da;
+        font-size: .78rem;
+        font-weight: 700;
+    }
+
+    .field-group input,
+    .field-group select {
+        width: 100%;
+        min-height: 44px;
+        padding: 10px 12px;
+        border: 1px solid #403c43;
+        border-radius: 8px;
+        outline: none;
+        background: #0c0c0d;
+        color: #fff;
+        font: inherit;
+        font-size: .84rem;
+    }
+
+    .field-group input:focus,
+    .field-group select:focus { border-color: var(--prodovi-turquoise); }
+
     .qr-code,
     .physical-payment {
         padding: 22px;
@@ -271,6 +308,46 @@
 
     .qr-code p, .physical-payment p { margin-top: 15px; color: var(--muted); font-size: .84rem; }
     .physical-payment p:first-child { margin-top: 0; }
+
+    .payment-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 16px;
+        color: #7fd1da;
+        font-size: .83rem;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .payment-alert {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 2147483647;
+        width: min(400px, calc(100% - 40px));
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 16px 18px;
+        border: 1px solid rgba(255,255,255,.18);
+        border-radius: 10px;
+        background: #117e8c;
+        color: #fff;
+        box-shadow: 0 12px 35px rgba(0,0,0,.4);
+    }
+
+    .payment-alert span { min-width: 0; flex: 1; }
+    .payment-alert button {
+        width: 32px;
+        height: 32px;
+        flex: 0 0 32px;
+        border: 0;
+        background: transparent;
+        color: #fff;
+        cursor: pointer;
+    }
 
     .payment-code {
         display: inline-block;
@@ -357,6 +434,8 @@
         .option-title { font-size: .9rem; }
         .option-title i { width: 32px; height: 32px; }
         .qr-code, .physical-payment { padding: 16px; }
+        .billing-form { grid-template-columns: 1fr; padding: 16px; }
+        .field-wide { grid-column: auto; }
         .modal-content { padding: 28px 21px; border-radius: 17px; }
     }
 
