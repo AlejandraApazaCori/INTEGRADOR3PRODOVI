@@ -176,6 +176,44 @@ class PagoAdminController extends Controller
         }
     }
 
+    public function eliminarPagoFisicoPendiente(Pago $pago)
+    {
+        DB::beginTransaction();
+
+        try {
+            $pago = Pago::with(['codigoPago', 'suscripcion'])
+                ->lockForUpdate()
+                ->findOrFail($pago->id);
+
+            if ($pago->metodo !== 'fisico' || $pago->estado !== 'pendiente') {
+                DB::rollBack();
+
+                return back()->with('error', 'Solo se pueden eliminar pagos fisicos pendientes.');
+            }
+
+            $suscripcion = $pago->suscripcion;
+
+            $pago->codigoPago?->delete();
+            $pago->delete();
+
+            if ($suscripcion && $suscripcion->estado === 'pendiente') {
+                $suscripcion->delete();
+            }
+
+            DB::commit();
+
+            return back()->with('success', 'El pago fisico pendiente y su codigo fueron eliminados correctamente.');
+        } catch (\Throwable $exception) {
+            DB::rollBack();
+            \Log::error('Error al eliminar un pago fisico pendiente.', [
+                'pago_id' => $pago->id,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return back()->with('error', 'No se pudo eliminar el pago fisico pendiente.');
+        }
+    }
+
     public function index(Request $request)
     {
         $countActivos = Suscripcion::where('estado', 'activa')

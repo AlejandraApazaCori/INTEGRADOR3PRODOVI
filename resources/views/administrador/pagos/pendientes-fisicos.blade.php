@@ -197,6 +197,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-100">{{ $pago->monto }} <span class="font-medium text-gray-500">{{ $pago->moneda }}</span></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 border-r border-gray-100">{{ $pago->created_at->format('d/m/Y H:i') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex items-center gap-2">
                                 <form action="{{ route('administrador.pagos.aprobar', $pago->id) }}" method="POST">
                                     @csrf
                                     <button type="submit" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-green-700 bg-green-50 hover:bg-green-100 transition-colors duration-200">
@@ -206,11 +207,22 @@
                                         <span>Aprobar</span>
                                     </button>
                                 </form>
+                                <form action="{{ route('administrador.pagos.pendientes-fisicos.eliminar', $pago->id) }}" method="POST" onsubmit="return confirm('¿Eliminar este pago pendiente y su codigo? La usuaria podra generar uno nuevo.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-red-700 bg-red-50 hover:bg-red-100 transition-colors duration-200">
+                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 7h12m-10 0 1 12h6l1-12m-6 0V4h4v3"></path>
+                                        </svg>
+                                        <span>Eliminar</span>
+                                    </button>
+                                </form>
+                                </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-sm text-gray-500">No se encontraron pagos f�sicos pendientes de aprobaci�n.</td>
+                            <td colspan="6" class="px-6 py-12 text-center text-sm text-gray-500">No se encontraron pagos físicos pendientes de aprobación.</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -259,4 +271,3 @@
 }
 </style>
 @endsection
-

@@ -262,7 +262,7 @@
     @if(request()->routeIs('administrador.dashboard') && isset($dashboardNotifications) && $dashboardNotifications->isNotEmpty())
         <aside class="dashboard-notification-stack" id="dashboardNotificationStack" aria-label="Nuevas notificaciones">
             <div class="dashboard-notification-heading">
-                <span>Nuevas notificaciones</span>
+                
                 <span>{{ $notificationCount }}</span>
             </div>
             @foreach($dashboardNotifications as $notification)
