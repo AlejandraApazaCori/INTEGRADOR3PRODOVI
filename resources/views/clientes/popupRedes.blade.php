@@ -307,9 +307,9 @@
                     @if(session('social_accounts_error'))<div class="notice notice-error"><i class="fa-solid fa-circle-exclamation"></i> {{ session('social_accounts_error') }}</div>@endif
                     @if(session('onboarding_error'))<div class="notice notice-error"><i class="fa-solid fa-circle-exclamation"></i> {{ session('onboarding_error') }}</div>@endif
                     <div class="social-grid">
-                        <a href="{{ $facebookLinked ? '#' : route('clientes.social.redirect', 'facebook') }}" class="social-card {{ $facebookLinked ? 'is-linked' : '' }}" {{ $facebookLinked ? 'onclick=return false' : '' }}>
+                        <a href="{{ route('clientes.social.redirect', 'facebook') }}" class="social-card {{ $facebookLinked ? 'is-linked' : '' }}">
                             <div class="social-top"><span class="social-icon facebook"><i class="fa-brands fa-facebook-f"></i></span><span class="badge">{{ $facebookLinked ? 'Vinculado' : 'Disponible' }}</span></div>
-                            <h3>Facebook</h3><p>Autoriza tu página principal y permite que PRODOVI la reconozca.</p><span class="social-action">{{ $facebookLinked ? 'Cuenta conectada ✓' : 'Conectar con Facebook →' }}</span>
+                            <h3>Facebook</h3><p>Autoriza tu página principal y permite que PRODOVI la reconozca.</p><span class="social-action">{{ $facebookLinked ? 'Vinculado · Volver a conectar →' : 'Conectar con Facebook →' }}</span>
                         </a>
                         @if($instagramLinked)
                             <a href="#" onclick="return false" class="social-card is-linked">
