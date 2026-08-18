@@ -177,6 +177,15 @@
         }
 
         function statusChangeCallback(response) {
+            if (isFacebookLinked) {
+                updateFacebookVisualState(
+                    'Cuenta conectada',
+                    'Vinculado',
+                    'Tu cuenta de Facebook ya esta vinculada con PRODOVI.'
+                );
+                return;
+            }
+
             if (!response) {
                 updateFacebookVisualState('Conectar con Meta OAuth', 'No vinculado', 'No se pudo verificar el estado de Facebook en este momento.');
                 return;
