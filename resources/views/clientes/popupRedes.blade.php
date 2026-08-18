@@ -136,13 +136,110 @@
             .actions .btn { width:100%; }
             .existing-company { align-items:flex-start; }
         }
+
+        /* Experiencia dividida inspirada en plataformas de gestión social */
+        body { overflow-x:hidden; background:#fff; }
+        .onboarding { min-height:100vh; background:#fff; overflow:visible; }
+        .shape { display:none; }
+        .topbar { position:absolute; inset:0 auto auto 0; width:50%; min-height:96px; padding:0 clamp(24px,4vw,68px); z-index:20; }
+        .brand-logo { display:block; width:170px; height:auto; }
+        .brand-mark,.brand-name { display:none; }
+        .user-chip { color:#554d59; }
+        .user-avatar { background:#f1ecf3; color:var(--purple); }
+        .shell { width:100%; min-height:100vh; margin:0; display:block; border:0; border-radius:0; overflow:visible; background:#fff; box-shadow:none; backdrop-filter:none; }
+        .sidebar { position:absolute; z-index:15; top:96px; left:0; width:50%; padding:0 clamp(24px,4vw,68px); border:0; background:transparent; color:var(--ink); }
+        .sidebar-kicker,.sidebar-title,.sidebar-note,.step-indicator strong,.step-indicator small { display:none; }
+        .steps { display:flex; align-items:center; gap:8px; margin:0; }
+        .step-indicator { display:flex; width:auto; flex:1; padding:0; background:transparent!important; transform:none!important; }
+        .step-number { width:100%; height:5px; overflow:hidden; border:0; border-radius:99px; background:#e7e1e9; color:transparent; font-size:0; box-shadow:none!important; }
+        .step-indicator.is-active .step-number { background:var(--orange); }
+        .step-indicator.is-complete .step-number { background:var(--green); color:transparent; }
+        .stage { min-height:100vh; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); background:#fff; }
+        .progress { display:none; }
+        .slides { min-height:100vh; grid-column:1; }
+        .slide { min-height:100vh; padding:145px clamp(28px,5.2vw,100px) 55px; }
+        .content { width:min(610px,100%); }
+        h1 { font-size:clamp(2.75rem,4.5vw,4.85rem); }
+        h2 { font-size:clamp(2.25rem,3.6vw,3.7rem); }
+        .lead { font-size:1rem; line-height:1.65; }
+        .promise-grid { grid-template-columns:1fr; gap:10px; }
+        .promise { display:grid; grid-template-columns:27px 1fr; align-items:center; padding:13px 15px; }
+        .promise i { grid-row:1/3; }
+        .promise strong,.promise small { margin:0; }
+        .social-card { min-height:190px; }
+        .form-card { margin-top:18px; }
+        .form-head { padding:14px 18px; }
+        .form-body { padding:18px; }
+        .form-grid { gap:13px; }
+        textarea { min-height:72px; }
+        .actions { margin-top:22px; }
+
+        .visual-panel { position:fixed; z-index:10; inset:0 0 0 50%; overflow:hidden; color:#fff; background:linear-gradient(145deg,var(--purple) 0%,var(--purple-dark) 58%,#26102f 100%); transition:background .5s ease; }
+        .visual-panel::before,.visual-panel::after { content:''; position:absolute; border-radius:50%; pointer-events:none; }
+        .visual-panel::before { width:560px; height:560px; right:-170px; bottom:-190px; background:var(--orange); opacity:.88; }
+        .visual-panel::after { width:360px; height:360px; right:10%; bottom:-170px; border:75px solid rgba(25,185,178,.8); }
+        .visual-scene { position:absolute; inset:0; display:flex; flex-direction:column; padding:clamp(48px,6vw,92px); opacity:0; visibility:hidden; transform:translateX(35px); transition:opacity .5s ease,transform .5s ease,visibility .5s; }
+        .visual-scene.is-active { opacity:1; visibility:visible; transform:translateX(0); }
+        .visual-copy { position:relative; z-index:4; max-width:650px; margin:0; color:#fff; font-family:'Rowdies',sans-serif; font-size:clamp(2.3rem,4vw,4.25rem); font-weight:600; letter-spacing:-.035em; line-height:1.08; }
+        .visual-copy span { color:#ffd24c; }
+        .hero-person { position:absolute; z-index:3; right:-2%; bottom:-3%; width:min(76%,700px); max-height:72%; object-fit:contain; object-position:right bottom; filter:drop-shadow(-18px 20px 25px rgba(0,0,0,.22)); animation:personFloat 5s ease-in-out infinite; }
+        @keyframes personFloat { 50% { transform:translateY(-10px); } }
+        .floating-ui { position:absolute; z-index:5; padding:15px 18px; border-radius:16px; background:rgba(255,255,255,.96); color:var(--ink); box-shadow:0 18px 45px rgba(31,10,42,.3); animation:uiFloat 3.8s ease-in-out infinite; }
+        @keyframes uiFloat { 50% { transform:translateY(-12px) rotate(1deg); } }
+        .float-like { left:12%; bottom:24%; font-family:'Rowdies',sans-serif; font-size:1.25rem; }
+        .float-like i { margin-right:9px; color:#e8324a; }
+        .float-growth { right:9%; top:38%; animation-delay:.7s; }
+        .float-growth strong { display:block; color:var(--green); font-size:1.5rem; }
+        .float-post { left:11%; bottom:8%; width:210px; padding:10px; animation-delay:1.1s; }
+        .float-post img { display:block; width:100%; height:105px; object-fit:cover; border-radius:10px; }
+        .float-post span { display:block; padding:9px 4px 2px; color:#635a68; font-size:.75rem; }
+        .network-orbit { position:absolute; inset:auto auto 11% 10%; z-index:4; width:320px; height:320px; border:2px solid rgba(255,255,255,.23); border-radius:50%; animation:orbit 18s linear infinite; }
+        @keyframes orbit { to { transform:rotate(360deg); } }
+        .orbit-icon { position:absolute; width:62px; height:62px; display:grid; place-items:center; border-radius:18px; background:#fff; font-size:1.8rem; box-shadow:0 15px 35px rgba(0,0,0,.2); }
+        .orbit-icon.facebook { top:-30px; left:125px; color:#1877f2; }
+        .orbit-icon.instagram { bottom:20px; right:-13px; color:#d62976; }
+        .orbit-center { position:absolute; inset:50% auto auto 50%; width:116px; height:116px; display:grid; place-items:center; border-radius:32px; transform:translate(-50%,-50%); background:var(--orange); color:#fff; font-family:'Rowdies',sans-serif; font-size:2.5rem; box-shadow:0 20px 45px rgba(0,0,0,.25); }
+        .brand-board { position:absolute; z-index:4; left:10%; bottom:11%; width:min(78%,530px); padding:25px; border-radius:22px; background:#fff; color:var(--ink); box-shadow:0 25px 60px rgba(0,0,0,.28); transform:rotate(-2deg); }
+        .board-row { display:flex; align-items:center; gap:13px; }
+        .board-logo { width:56px; height:56px; display:grid; place-items:center; border-radius:15px; background:var(--purple); color:#fff; font-size:1.3rem; }
+        .board-lines { flex:1; }
+        .board-lines i { display:block; height:9px; margin:7px 0; border-radius:8px; background:#e8e2eb; }
+        .board-lines i:first-child { width:68%; background:var(--turquoise); }
+        .color-dots { display:flex; gap:8px; margin-top:20px; }
+        .color-dots i { width:32px; height:32px; border-radius:9px; background:var(--purple); }
+        .color-dots i:nth-child(2) { background:var(--orange); }.color-dots i:nth-child(3) { background:var(--green); }.color-dots i:nth-child(4) { background:var(--turquoise); }
+        .success-ring { position:absolute; z-index:4; left:50%; top:57%; width:230px; height:230px; display:grid; place-items:center; border:4px solid rgba(255,255,255,.3); border-radius:50%; transform:translate(-50%,-50%); }
+        .success-ring::before { content:'✓'; width:150px; height:150px; display:grid; place-items:center; border-radius:45px; background:var(--green); color:#fff; font-size:5rem; box-shadow:0 25px 55px rgba(0,0,0,.25); animation:successPulse 2s ease-in-out infinite; }
+        @keyframes successPulse { 50% { transform:scale(1.07) rotate(-3deg); } }
+
+        @media (max-width:980px) {
+            .topbar { width:100%; background:#fff; }
+            .shell { padding-top:96px; }
+            .sidebar { position:absolute; top:96px; width:100%; padding:0 24px; }
+            .stage { display:block; min-height:auto; }
+            .slides,.slide { min-height:calc(100vh - 96px); }
+            .slide { padding:70px clamp(24px,7vw,70px) 46px; }
+            .visual-panel { display:none; }
+        }
+        @media (max-width:640px) {
+            .topbar { padding:0 22px; }
+            .brand-logo { width:145px; }
+            .sidebar { padding:0 22px; }
+            .stage { min-height:auto; }
+            .slides { min-height:calc(100vh - 96px); }
+            .slide { min-height:calc(100vh - 96px); padding:62px 22px 35px; }
+            .promise-grid { grid-template-columns:1fr; }
+        }
     </style>
 </head>
 <body>
 <main class="onboarding">
     <div class="shape shape-one"></div><div class="shape shape-two"></div>
     <header class="topbar">
-        <div class="brand"><span class="brand-mark">P</span><span class="brand-name">PRODOVI</span></div>
+        <div class="brand">
+            <img class="brand-logo" src="{{ asset('imagenes/logonegro.png') }}" alt="PRODOVI">
+            <span class="brand-mark">P</span><span class="brand-name">PRODOVI</span>
+        </div>
         <div class="user-chip"><span>{{ $user->name }}</span><span class="user-avatar"><i class="fa-solid fa-user"></i></span></div>
     </header>
     <section class="shell" aria-label="Configuración inicial">
@@ -227,6 +324,41 @@
                     <form class="actions" action="{{ route('clientes.onboarding.complete') }}" method="POST">@csrf<button type="submit" class="btn btn-green">Empezar en PRODOVI <i class="fa-solid fa-arrow-right"></i></button></form>
                 </div></article>
             </div>
+
+            <aside class="visual-panel" aria-hidden="true">
+                <section class="visual-scene" data-visual="1">
+                    <h3 class="visual-copy">Tu estrategia social, <span>en buenas manos.</span></h3>
+                    <img class="hero-person" src="{{ asset('imagenes/hombre-color.png') }}" alt="">
+                    <div class="floating-ui float-like"><i class="fa-solid fa-heart"></i> 2.3K</div>
+                    <div class="floating-ui float-growth"><small>Crecimiento mensual</small><strong>+34%</strong></div>
+                    <div class="floating-ui float-post"><img src="{{ asset('imagenes/landing/clientes/guille-barber-shop.jpg') }}" alt=""><span><i class="fa-regular fa-heart"></i> Contenido que conecta</span></div>
+                </section>
+
+                <section class="visual-scene" data-visual="2">
+                    <h3 class="visual-copy">Conecta tus canales. <span>Amplifica tu voz.</span></h3>
+                    <div class="network-orbit">
+                        <span class="orbit-icon facebook"><i class="fa-brands fa-facebook-f"></i></span>
+                        <span class="orbit-icon instagram"><i class="fa-brands fa-instagram"></i></span>
+                        <span class="orbit-center">P</span>
+                    </div>
+                    <div class="floating-ui float-growth"><small>Canales centralizados</small><strong>Todo en uno</strong></div>
+                </section>
+
+                <section class="visual-scene" data-visual="3">
+                    <h3 class="visual-copy">Una identidad clara para una marca <span>inolvidable.</span></h3>
+                    <div class="brand-board">
+                        <div class="board-row"><span class="board-logo"><i class="fa-solid fa-building"></i></span><span class="board-lines"><i></i><i></i><i></i></span></div>
+                        <div class="color-dots"><i></i><i></i><i></i><i></i></div>
+                    </div>
+                    <div class="floating-ui float-growth"><small>Perfil de marca</small><strong>Listo para crecer</strong></div>
+                </section>
+
+                <section class="visual-scene" data-visual="4">
+                    <h3 class="visual-copy">Todo preparado. Es momento de <span>hacer crecer tu marca.</span></h3>
+                    <div class="success-ring"></div>
+                    <div class="floating-ui float-like"><i class="fa-solid fa-rocket"></i> ¡Comencemos!</div>
+                </section>
+            </aside>
         </div>
     </section>
 </main>
@@ -234,12 +366,14 @@
 document.addEventListener('DOMContentLoaded',function(){
     const slides=Array.from(document.querySelectorAll('[data-step]'));
     const indicators=Array.from(document.querySelectorAll('[data-indicator]'));
+    const visualScenes=Array.from(document.querySelectorAll('[data-visual]'));
     const progressBar=document.getElementById('progress-bar');
     const maximumStep={{ $anyAccountLinked ? ($empresa ? 4 : 3) : 2 }};
     let currentStep=Math.min({{ $initialStep }},maximumStep);
     function showStep(step){
         currentStep=Math.max(1,Math.min(Number(step),maximumStep));
         slides.forEach(slide=>slide.classList.toggle('is-active',Number(slide.dataset.step)===currentStep));
+        visualScenes.forEach(scene=>scene.classList.toggle('is-active',Number(scene.dataset.visual)===currentStep));
         indicators.forEach(indicator=>{const stepNumber=Number(indicator.dataset.indicator);indicator.classList.toggle('is-active',stepNumber===currentStep);indicator.classList.toggle('is-complete',stepNumber<currentStep);indicator.querySelector('.step-number').textContent=stepNumber<currentStep?'✓':stepNumber;});
         progressBar.style.width=(currentStep*25)+'%';
         window.scrollTo({top:0,behavior:'smooth'});
