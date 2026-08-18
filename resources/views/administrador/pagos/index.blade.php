@@ -213,12 +213,15 @@
                                                 <i class="fas fa-download mr-1.5"></i>Descargar
                                             </a>
                                             @if($pago->estado === 'completado')
-                                                <form method="POST" action="{{ route('administrador.pagos.reenviar-correo', $pago) }}" onsubmit="return confirm('¿Reenviar el correo de confirmación a {{ optional($pago->usuario)->email }}?')">
-                                                    @csrf
-                                                    <button type="submit" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-orange-700 bg-orange-50 hover:bg-orange-100 transition-colors duration-200">
-                                                        <i class="fas fa-paper-plane mr-1.5"></i>Reenviar correo
-                                                    </button>
-                                                </form>
+                                                <button
+                                                    type="button"
+                                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-orange-700 bg-orange-50 hover:bg-orange-100 transition-colors duration-200"
+                                                    data-resend-email="{{ optional($pago->usuario)->email }}"
+                                                    data-resend-url="{{ route('administrador.pagos.reenviar-correo', $pago) }}"
+                                                    onclick="abrirModalReenvio(this)"
+                                                >
+                                                    <i class="fas fa-paper-plane mr-1.5"></i>Reenviar correo
+                                                </button>
                                             @endif
                                         </div>
                                     </td>
@@ -253,6 +256,43 @@
                         {{ $pagos->onEachSide(1)->links() }}
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para confirmar el reenvío del correo -->
+    <div id="reenvioCorreoModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-950/55 px-4 py-8 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="reenvioCorreoTitulo">
+        <div id="reenvioCorreoDialog" class="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl transition-all duration-200">
+            <div class="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-800 px-7 pb-7 pt-8 text-white">
+                <div class="absolute -right-10 -top-12 h-36 w-36 rounded-full border-[24px] border-white/10"></div>
+                <button type="button" onclick="cerrarModalReenvio()" class="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20" aria-label="Cerrar">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500 text-2xl shadow-lg shadow-purple-950/20">
+                    <i class="fas fa-paper-plane"></i>
+                </div>
+                <h3 id="reenvioCorreoTitulo" class="relative mt-5 text-2xl font-bold">Reenviar confirmación</h3>
+                <p class="relative mt-2 text-sm leading-6 text-purple-100">Enviaremos nuevamente el resumen del pago y su comprobante PDF.</p>
+            </div>
+
+            <div class="px-7 py-7">
+                <div class="rounded-2xl border border-indigo-100 bg-indigo-50/70 p-4">
+                    <p class="text-xs font-bold uppercase tracking-wider text-indigo-500">Destinatario</p>
+                    <div class="mt-2 flex items-center gap-3 text-sm font-semibold text-slate-800">
+                        <span class="flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-white text-indigo-600 shadow-sm"><i class="fas fa-envelope"></i></span>
+                        <span id="reenvioCorreoDestino" class="min-w-0 break-all"></span>
+                    </div>
+                </div>
+
+                <p class="mt-5 text-sm leading-6 text-slate-600">¿Confirmas que deseas reenviar este correo de confirmación?</p>
+
+                <form id="reenvioCorreoForm" method="POST" class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                    @csrf
+                    <button type="button" onclick="cerrarModalReenvio()" class="inline-flex items-center justify-center rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Cancelar</button>
+                    <button id="confirmarReenvioBtn" type="submit" class="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 hover:bg-orange-600">
+                        <i class="fas fa-paper-plane"></i> Sí, reenviar correo
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -334,7 +374,49 @@
                     window.open('/administrador/pagos/reporte-mensual/excel', '_blank');
                 });
             }
+
+            const reenvioModal = document.getElementById('reenvioCorreoModal');
+            const reenvioForm = document.getElementById('reenvioCorreoForm');
+            const confirmarReenvioBtn = document.getElementById('confirmarReenvioBtn');
+
+            reenvioModal?.addEventListener('click', function (event) {
+                if (event.target === reenvioModal) cerrarModalReenvio();
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && !reenvioModal?.classList.contains('hidden')) cerrarModalReenvio();
+            });
+
+            reenvioForm?.addEventListener('submit', function () {
+                confirmarReenvioBtn.disabled = true;
+                confirmarReenvioBtn.classList.add('opacity-70', 'cursor-wait');
+                confirmarReenvioBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Enviando...';
+            });
         });
+
+        function abrirModalReenvio(button) {
+            const modal = document.getElementById('reenvioCorreoModal');
+            const dialog = document.getElementById('reenvioCorreoDialog');
+            const form = document.getElementById('reenvioCorreoForm');
+            const destination = document.getElementById('reenvioCorreoDestino');
+
+            form.action = button.dataset.resendUrl;
+            destination.textContent = button.dataset.resendEmail || 'Correo no disponible';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+            dialog.animate([
+                { opacity: 0, transform: 'translateY(18px) scale(.96)' },
+                { opacity: 1, transform: 'translateY(0) scale(1)' }
+            ], { duration: 220, easing: 'cubic-bezier(.22,.61,.36,1)' });
+        }
+
+        function cerrarModalReenvio() {
+            const modal = document.getElementById('reenvioCorreoModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
+        }
 
         function verComprobante(pagoId) {
             fetch(`/administrador/pagos/ver-recibo/${pagoId}`)

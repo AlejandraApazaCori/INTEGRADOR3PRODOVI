@@ -6,6 +6,7 @@ use App\Mail\ConfirmacionPago;
 use App\Models\Pago;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 class PaymentConfirmationNotifier
@@ -16,10 +17,13 @@ class PaymentConfirmationNotifier
             return false;
         }
 
-        $claimed = Pago::query()
-            ->whereKey($pago->id)
-            ->whereNull('confirmacion_email_enviada_at')
-            ->update(['confirmacion_email_enviada_at' => now()]);
+        $hasEmailTrackingColumn = Schema::hasColumn('pagos', 'confirmacion_email_enviada_at');
+        $claimed = $hasEmailTrackingColumn
+            ? Pago::query()
+                ->whereKey($pago->id)
+                ->whereNull('confirmacion_email_enviada_at')
+                ->update(['confirmacion_email_enviada_at' => now()])
+            : 1;
 
         if ($claimed === 0) {
             return false;
@@ -36,7 +40,9 @@ class PaymentConfirmationNotifier
 
             return true;
         } catch (Throwable $exception) {
-            Pago::query()->whereKey($pago->id)->update(['confirmacion_email_enviada_at' => null]);
+            if ($hasEmailTrackingColumn) {
+                Pago::query()->whereKey($pago->id)->update(['confirmacion_email_enviada_at' => null]);
+            }
 
             Log::error('No se pudo enviar el correo de confirmación de pago.', [
                 'pago_id' => $pago->id,
@@ -53,7 +59,9 @@ class PaymentConfirmationNotifier
             return false;
         }
 
-        Pago::query()->whereKey($pago->id)->update(['confirmacion_email_enviada_at' => null]);
+        if (Schema::hasColumn('pagos', 'confirmacion_email_enviada_at')) {
+            Pago::query()->whereKey($pago->id)->update(['confirmacion_email_enviada_at' => null]);
+        }
 
         return $this->send($pago->fresh());
     }
