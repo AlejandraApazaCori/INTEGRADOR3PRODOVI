@@ -289,7 +289,7 @@
                 <form id="reenvioCorreoForm" method="POST" class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                     @csrf
                     <button type="button" onclick="cerrarModalReenvio()" class="inline-flex items-center justify-center rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Cancelar</button>
-                    <button id="confirmarReenvioBtn" type="submit" class="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 hover:bg-orange-600">
+                    <button id="confirmarReenvioBtn" type="submit" class="resend-confirm-button inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold shadow-lg transition hover:-translate-y-0.5" style="background-color:#ef6c22;color:#ffffff;border:1px solid #ef6c22;">
                         <i class="fas fa-paper-plane"></i> Sí, reenviar correo
                     </button>
                 </form>
@@ -570,6 +570,18 @@
 
         .animate-slideIn {
             animation: slideIn 0.3s ease-out;
+        }
+
+        .resend-confirm-button {
+            background-color: #ef6c22 !important;
+            color: #ffffff !important;
+            border-color: #ef6c22 !important;
+            box-shadow: 0 10px 22px rgba(239, 108, 34, 0.25);
+        }
+
+        .resend-confirm-button:hover {
+            background-color: #d95d16 !important;
+            border-color: #d95d16 !important;
         }
 
         @media (max-width: 640px) {
