@@ -3,6 +3,7 @@
     $socialAccounts = auth()->user()?->linkedSocialAccounts() ?? collect();
     $facebookLinked = $socialAccounts->has('facebook') && filled(optional($socialAccounts->get('facebook'))->provider_user_id);
     $instagramLinked = $socialAccounts->has('instagram') && filled(optional($socialAccounts->get('instagram'))->provider_user_id);
+    $anyAccountLinked = $facebookLinked || $instagramLinked;
     $allAccountsLinked = $facebookLinked && $instagramLinked;
     $facebookAppId = config('services.facebook.client_id');
     $facebookApiVersion = config('facebook.api_version', 'v18.0');
@@ -35,7 +36,14 @@
             <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xl font-bold text-white">Vincula tus cuentas</h3>
-                    <span class="text-xs font-medium uppercase tracking-wide text-white/80">OAuth</span>
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-medium uppercase tracking-wide text-white/80">OAuth</span>
+                        @if($anyAccountLinked)
+                            <button id="close-social-modal" type="button" aria-label="Cerrar" class="flex h-8 w-8 items-center justify-center rounded-full text-2xl leading-none text-white transition-colors hover:bg-white/20">
+                                &times;
+                            </button>
+                        @endif
+                    </div>
                 </div>
             </div>
 
@@ -143,6 +151,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         const modal = document.getElementById('link-social-modal');
         const openModalButton = document.getElementById('link-now-btn');
+        const closeModalButton = document.getElementById('close-social-modal');
         const facebookConnectButton = document.getElementById('facebook-connect-btn');
         const facebookStatusText = document.getElementById('facebook-login-status');
         const facebookSubtitle = document.getElementById('facebook-connect-subtitle');
@@ -223,6 +232,13 @@
         };
 
         openModalButton.addEventListener('click', showModal);
+
+        if (closeModalButton) {
+            closeModalButton.addEventListener('click', function () {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            });
+        }
 
         if (facebookConnectButton && facebookAppId) {
             window.fbAsyncInit = function () {
