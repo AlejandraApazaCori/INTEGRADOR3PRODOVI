@@ -127,6 +127,9 @@ Route::prefix('api')->group(function () {
 // Rutas del cliente
 Route::middleware('auth')->group(function () {
     Route::get('/clientes/home', [ClienteController::class, 'home'])->name('clientes.home');
+    Route::get('/clientes/configuracion', [ClienteController::class, 'onboarding'])->name('clientes.onboarding');
+    Route::post('/clientes/configuracion/empresa', [ClienteController::class, 'storeOnboardingCompany'])->name('clientes.onboarding.empresa');
+    Route::post('/clientes/configuracion/completar', [ClienteController::class, 'completeOnboarding'])->name('clientes.onboarding.complete');
     Route::get('/clientes/dashboard', [ClienteController::class, 'dashboard'])->name('clientes.dashboard');
     Route::get('/clientes/micuenta', [ClienteController::class, 'miCuenta'])->name('clientes.micuenta');
     Route::get('/clientes/brief', [ClienteController::class, 'brief'])->name('clientes.brief');

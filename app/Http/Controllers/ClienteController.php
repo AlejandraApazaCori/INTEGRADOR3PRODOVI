@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Suscripcion;
 use App\Models\Pago;
+use App\Models\Empresa;
 use Carbon\Carbon;
 
 class ClienteController extends Controller
@@ -48,6 +49,10 @@ class ClienteController extends Controller
     {
         $user = Auth::user();
 
+        if (! $this->hasCompletedInitialSetup($user)) {
+            return redirect()->route('clientes.onboarding');
+        }
+
         $suscripcionActiva = Suscripcion::with('plan')
             ->where('usuario_id', $user->id)
             ->where('estado', 'activa')
@@ -80,6 +85,98 @@ class ClienteController extends Controller
             'empresas',
             'data' // Pasamos los datos de analíticas a la vista
         ));
+    }
+
+    public function onboarding(Request $request)
+    {
+        $user = Auth::user();
+        $socialAccounts = $user->linkedSocialAccounts();
+        $facebookAccount = $socialAccounts->get('facebook');
+        $facebookPage = $socialAccounts->get('facebook_page');
+        $instagramAccount = $socialAccounts->get('instagram');
+        $facebookLinked = filled($facebookAccount?->provider_user_id);
+        $instagramLinked = filled($instagramAccount?->provider_user_id);
+        $anyAccountLinked = $facebookLinked || $instagramLinked;
+        $empresa = $user->empresas()->latest('id')->first();
+        $suggestedCompanyName = $empresa?->nombre_empresa
+            ?? $facebookPage?->display_name
+            ?? data_get($facebookPage?->metadata, 'page_name')
+            ?? '';
+
+        $initialStep = 1;
+        if ($request->query('empresa') === 'creada' && $empresa) {
+            $initialStep = 4;
+        } elseif (session()->has('social_accounts_error') || session()->has('social_accounts_success')) {
+            $initialStep = $anyAccountLinked ? 3 : 2;
+        } elseif ($request->session()->has('errors')) {
+            $initialStep = 3;
+        } elseif ($anyAccountLinked && $empresa) {
+            $initialStep = 4;
+        }
+
+        return view('clientes.popupRedes', compact(
+            'user',
+            'facebookLinked',
+            'instagramLinked',
+            'anyAccountLinked',
+            'empresa',
+            'suggestedCompanyName',
+            'initialStep'
+        ));
+    }
+
+    public function storeOnboardingCompany(Request $request)
+    {
+        $user = Auth::user();
+
+        if (! $user->hasLinkedSocialAccount('facebook') && ! $user->hasLinkedSocialAccount('instagram')) {
+            return redirect()->route('clientes.onboarding')
+                ->with('onboarding_error', 'Vincula al menos una red social antes de crear tu empresa.');
+        }
+
+        $validated = $request->validate([
+            'nombre_empresa' => ['required', 'string', 'max:255'],
+            'tipo_empresa' => ['required', 'string', 'max:255'],
+            'descripcion' => ['nullable', 'string'],
+            'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+        ]);
+
+        $empresa = new Empresa([
+            'nombre_empresa' => $validated['nombre_empresa'],
+            'tipo_empresa' => $validated['tipo_empresa'],
+            'descripcion' => $validated['descripcion'] ?? null,
+        ]);
+        $empresa->usuario_id = $user->id;
+
+        if ($request->hasFile('logo')) {
+            $empresa->logo = $request->file('logo')->store('logos', 'public');
+        }
+
+        $empresa->save();
+
+        return redirect()->route('clientes.onboarding', ['empresa' => 'creada'])
+            ->with('onboarding_success', 'Tu empresa fue creada correctamente.');
+    }
+
+    public function completeOnboarding()
+    {
+        $user = Auth::user();
+
+        if (! $this->hasCompletedInitialSetup($user)) {
+            return redirect()->route('clientes.onboarding')
+                ->with('onboarding_error', 'Completa la vinculación y crea tu empresa antes de continuar.');
+        }
+
+        return redirect()->route('clientes.dashboard')
+            ->with('success', '¡Configuración completada! Ya puedes comenzar.');
+    }
+
+    private function hasCompletedInitialSetup($user): bool
+    {
+        $hasSocialAccount = $user->hasLinkedSocialAccount('facebook')
+            || $user->hasLinkedSocialAccount('instagram');
+
+        return $hasSocialAccount && $user->empresas()->exists();
     }
 
     public function brief()
@@ -128,6 +225,4 @@ class ClienteController extends Controller
 
 
 }
-
-
 

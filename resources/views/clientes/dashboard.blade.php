@@ -11,8 +11,6 @@
     $planCaracteristicas = $plan?->planCaracteristicas ?? collect();
 @endphp
 
-@include('clientes.popupRedes')
-
 <div class="min-h-screen" style="background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 50%, #F5F3FF 100%);">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
