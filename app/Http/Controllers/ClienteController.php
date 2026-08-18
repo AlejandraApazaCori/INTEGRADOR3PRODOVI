@@ -97,6 +97,8 @@ class ClienteController extends Controller
         $facebookLinked = filled($facebookAccount?->provider_user_id);
         $instagramLinked = filled($instagramAccount?->provider_user_id);
         $anyAccountLinked = $facebookLinked || $instagramLinked;
+        $socialSetupSkipped = (bool) $user->social_setup_skipped;
+        $canContinueSocialSetup = $anyAccountLinked || $socialSetupSkipped;
         $empresa = $user->empresas()->latest('id')->first();
         $suggestedCompanyName = $empresa?->nombre_empresa
             ?? $facebookPage?->display_name
@@ -110,8 +112,10 @@ class ClienteController extends Controller
             $initialStep = $anyAccountLinked ? 3 : 2;
         } elseif ($request->session()->has('errors')) {
             $initialStep = 3;
-        } elseif ($anyAccountLinked && $empresa) {
+        } elseif ($canContinueSocialSetup && $empresa) {
             $initialStep = 4;
+        } elseif ($socialSetupSkipped) {
+            $initialStep = 3;
         }
 
         return view('clientes.popupRedes', compact(
@@ -119,17 +123,28 @@ class ClienteController extends Controller
             'facebookLinked',
             'instagramLinked',
             'anyAccountLinked',
+            'socialSetupSkipped',
+            'canContinueSocialSetup',
             'empresa',
             'suggestedCompanyName',
             'initialStep'
         ));
     }
 
+    public function skipSocialAccounts()
+    {
+        Auth::user()->update(['social_setup_skipped' => true]);
+
+        return redirect()->route('clientes.onboarding');
+    }
+
     public function storeOnboardingCompany(Request $request)
     {
         $user = Auth::user();
 
-        if (! $user->hasLinkedSocialAccount('facebook') && ! $user->hasLinkedSocialAccount('instagram')) {
+        if (! $user->social_setup_skipped
+            && ! $user->hasLinkedSocialAccount('facebook')
+            && ! $user->hasLinkedSocialAccount('instagram')) {
             return redirect()->route('clientes.onboarding')
                 ->with('onboarding_error', 'Vincula al menos una red social antes de crear tu empresa.');
         }
@@ -173,7 +188,8 @@ class ClienteController extends Controller
 
     private function hasCompletedInitialSetup($user): bool
     {
-        $hasSocialAccount = $user->hasLinkedSocialAccount('facebook')
+        $hasSocialAccount = $user->social_setup_skipped
+            || $user->hasLinkedSocialAccount('facebook')
             || $user->hasLinkedSocialAccount('instagram');
 
         return $hasSocialAccount && $user->empresas()->exists();
@@ -225,4 +241,3 @@ class ClienteController extends Controller
 
 
 }
-

@@ -915,8 +915,13 @@ class PagoAdminController extends Controller
 
         $rutaRelativa = 'comprobantes_pago/comprobante-' . $comprobante->numero_formateado . '.pdf';
 
-        if (!\Storage::disk('public')->exists($rutaRelativa)) {
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('clientes.comprobante-pago-pdf', compact('pago', 'comprobante'));
+        $templateUpdatedAt = filemtime(resource_path('views/clientes/comprobante-pago-pdf.blade.php'));
+        $storedPdfIsOutdated = \Storage::disk('public')->exists($rutaRelativa)
+            && \Storage::disk('public')->lastModified($rutaRelativa) < $templateUpdatedAt;
+
+        if (!\Storage::disk('public')->exists($rutaRelativa) || $storedPdfIsOutdated) {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('clientes.comprobante-pago-pdf', compact('pago', 'comprobante'))
+                ->setPaper('letter', 'portrait');
             \Storage::disk('public')->put($rutaRelativa, $pdf->output());
         }
 

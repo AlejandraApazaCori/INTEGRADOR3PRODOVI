@@ -18,16 +18,7 @@
             display: grid;
             gap: 9px;
         }
-        .dashboard-notification-heading {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 2px 2px;
-            color: #374151;
-            font-size: .72rem;
-            font-weight: 800;
-            text-transform: uppercase;
-        }
+        .dashboard-notification-more { justify-self:end; padding:2px 12px 7px; border-radius:999px; background:#fff; color:#6b7280; font-size:1rem; font-weight:800; line-height:1; box-shadow:0 8px 22px rgba(15,23,42,.14); }
         .dashboard-notification-toast {
             position: relative;
             display: grid;
@@ -175,7 +166,7 @@
                                     <a href="{{ route('administrador.tareas.show', $archivo->tarea_id) }}" class="notification-item font-semibold">
                                         <div class="notification-item-icon bg-blue-100 text-blue-600">📎</div>
                                         <div class="notification-item-content">
-                                            <p class="text-xs font-semibold">{{ $archivo->user->name }}</p>
+                                            <p class="text-xs font-semibold">{{ $archivo->user?->name ?? 'Usuario eliminado' }}</p>
                                             <p class="text-[10px] text-gray-500">Subió un archivo a: {{ $archivo->tarea->nombre ?? '—' }}</p>
                                             <p class="text-[10px] text-gray-400">{{ $archivo->created_at->diffForHumans() }}</p>
                                         </div>
@@ -228,7 +219,7 @@
                                     <a href="{{ route('administrador.tareas.show', $archivo->tarea_id) }}" class="notification-item opacity-60">
                                         <div class="notification-item-icon bg-gray-100 text-gray-400">📎</div>
                                         <div class="notification-item-content">
-                                            <p class="text-xs">{{ $archivo->user->name }}</p>
+                                            <p class="text-xs">{{ $archivo->user?->name ?? 'Usuario eliminado' }}</p>
                                             <p class="text-[10px] text-gray-400">Archivo en: {{ $archivo->tarea->nombre ?? '—' }}</p>
                                         </div>
                                     </a>
@@ -261,10 +252,6 @@
 
     @if(request()->routeIs('administrador.dashboard') && isset($dashboardNotifications) && $dashboardNotifications->isNotEmpty())
         <aside class="dashboard-notification-stack" id="dashboardNotificationStack" aria-label="Nuevas notificaciones">
-            <div class="dashboard-notification-heading">
-                
-                <span>{{ $notificationCount }}</span>
-            </div>
             @foreach($dashboardNotifications as $notification)
                 <article class="dashboard-notification-toast is-{{ $notification['type'] }}" data-dashboard-notification>
                     <div class="dashboard-toast-icon"><i class="fas {{ $notification['icon'] }}"></i></div>
@@ -278,6 +265,9 @@
                     </button>
                 </article>
             @endforeach
+            @if($notificationCount > 3)
+                <div class="dashboard-notification-more" title="Hay más notificaciones">...</div>
+            @endif
         </aside>
     @endif
 

@@ -59,6 +59,18 @@ return [
             'throw' => false,
             'report' => false,
         ],
+        'google' => [
+            'driver' => 'google',
+            'client_id' => env('GOOGLE_DRIVE_CLIENT_ID'),
+            'client_secret' => env('GOOGLE_DRIVE_CLIENT_SECRET'),
+            'redirect_uri' => env('GOOGLE_DRIVE_REDIRECT_URI', 'http://localhost'),
+            'access_token' => env('GOOGLE_DRIVE_ACCESS_TOKEN'),
+            'refresh_token' => env('GOOGLE_DRIVE_REFRESH_TOKEN'),
+            'folder_id' => env('GOOGLE_DRIVE_FOLDER_ID'),
+            'debug' => env('GOOGLE_DRIVE_DEBUG', false),
+            'log_payload' => env('GOOGLE_DRIVE_LOG_PAYLOAD', false),
+            'throw' => true,
+        ],
         'private' => [
         'driver' => 'local',
         'root' => storage_path('app/private'),

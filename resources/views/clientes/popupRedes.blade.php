@@ -86,6 +86,14 @@
         .social-card p { margin:0; color:var(--muted); font-size:.83rem; line-height:1.5; }
         .social-action { margin-top:auto; padding-top:15px; color:var(--purple); font-size:.82rem; font-weight:700; }
         .is-linked .social-action { color:#4e8a29; }
+        .no-social-option { margin-top:16px; }
+        .no-social-button { width:100%; display:flex; align-items:center; gap:14px; padding:16px 18px; border:2px dashed #d5cadb; border-radius:16px; background:#fff; color:var(--ink); text-align:left; cursor:pointer; transition:border-color .22s,background .22s,transform .22s; }
+        .no-social-button:hover { transform:translateY(-2px); border-color:var(--turquoise); background:#f3fbfa; }
+        .no-social-icon { width:42px; height:42px; flex:0 0 auto; display:grid; place-items:center; border-radius:12px; background:rgba(25,185,178,.12); color:var(--turquoise); font-size:1.1rem; }
+        .no-social-copy { flex:1; }
+        .no-social-copy strong { display:block; margin-bottom:3px; }
+        .no-social-copy small { color:var(--muted); line-height:1.4; }
+        .no-social-button > .fa-arrow-right { color:var(--purple); }
         .form-card { margin-top:25px; overflow:hidden; border:1px solid #e5dfe8; border-radius:21px; background:#fff; box-shadow:0 18px 45px rgba(67,23,96,.07); }
         .form-head { display:flex; align-items:center; gap:13px; padding:19px 22px; background:linear-gradient(90deg,rgba(113,48,167,.08),rgba(25,185,178,.08)); }
         .form-head-icon { width:42px; height:42px; display:grid; place-items:center; border-radius:12px; background:var(--purple); color:#fff; }
@@ -322,7 +330,17 @@
                             <h3>Instagram</h3><p>{{ $facebookLinked ? 'Conecta el perfil de Instagram asociado a tu negocio.' : 'Primero vincula Facebook para habilitar esta opción.' }}</p><span class="social-action">{{ $instagramLinked ? 'Cuenta conectada ✓' : ($facebookLinked ? 'Conectar Instagram →' : 'Esperando Facebook') }}</span>
                         @if($instagramLinked || $facebookLinked)</a>@else</div>@endif
                     </div>
-                    <div class="actions"><button type="button" class="btn btn-secondary" data-next="1"><i class="fa-solid fa-arrow-left"></i> Atrás</button><button type="button" class="btn btn-primary" data-next="3" {{ $anyAccountLinked ? '' : 'disabled' }}>Continuar <i class="fa-solid fa-arrow-right"></i></button></div>
+                    @unless($anyAccountLinked)
+                        <form class="no-social-option" action="{{ route('clientes.onboarding.skip-social') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="no-social-button">
+                                <span class="no-social-icon"><i class="fa-solid fa-user-clock"></i></span>
+                                <span class="no-social-copy"><strong>Aún no tengo redes sociales</strong><small>Podrás conectarlas más adelante desde tu cuenta.</small></span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </form>
+                    @endunless
+                    <div class="actions"><button type="button" class="btn btn-secondary" data-next="1"><i class="fa-solid fa-arrow-left"></i> Atrás</button><button type="button" class="btn btn-primary" data-next="3" {{ $canContinueSocialSetup ? '' : 'disabled' }}>Continuar <i class="fa-solid fa-arrow-right"></i></button></div>
                 </div></article>
 
                 <article class="slide" data-step="3"><div class="content">
@@ -387,7 +405,7 @@
                 <article class="slide" data-step="4"><div class="content finish">
                     <div class="finish-mark"><i class="fa-solid fa-check"></i></div><span class="eyebrow">Configuración completada</span>
                     <h2>Gracias por configurar <span>tu cuenta.</span></h2><p class="lead">Ya conocemos tu empresa y tenemos el canal necesario para comenzar a construir su presencia digital.</p>
-                    <div class="summary"><span><i class="fa-solid fa-check"></i> Red social vinculada</span><span><i class="fa-solid fa-check"></i> Empresa registrada</span><span><i class="fa-solid fa-check"></i> Espacio preparado</span></div>
+                    <div class="summary"><span><i class="fa-solid fa-check"></i> {{ $anyAccountLinked ? 'Red social vinculada' : 'Redes para más adelante' }}</span><span><i class="fa-solid fa-check"></i> Empresa registrada</span><span><i class="fa-solid fa-check"></i> Espacio preparado</span></div>
                     <form class="actions" action="{{ route('clientes.onboarding.complete') }}" method="POST">@csrf<button type="submit" class="btn btn-green">Empezar en PRODOVI <i class="fa-solid fa-arrow-right"></i></button></form>
                 </div></article>
             </div>
@@ -435,7 +453,7 @@ document.addEventListener('DOMContentLoaded',function(){
     const indicators=Array.from(document.querySelectorAll('[data-indicator]'));
     const visualScenes=Array.from(document.querySelectorAll('[data-visual]'));
     const progressBar=document.getElementById('progress-bar');
-    const maximumStep={{ $anyAccountLinked ? ($empresa ? 4 : 3) : 2 }};
+    const maximumStep={{ $canContinueSocialSetup ? ($empresa ? 4 : 3) : 2 }};
     let currentStep=Math.min({{ $initialStep }},maximumStep);
 
     const customSelect=document.getElementById('company-type-select');

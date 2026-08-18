@@ -109,7 +109,7 @@ class AppServiceProvider extends ServiceProvider
                     ]);
                 }
 
-                $dashboardNotifications = $dashboardNotifications->sortByDesc('date')->take(4);
+                $dashboardNotifications = $dashboardNotifications->sortByDesc('date')->take(3);
 
                 $view->with([
                     'notificationCount' => $notificationCount,

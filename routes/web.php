@@ -128,6 +128,7 @@ Route::prefix('api')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/clientes/home', [ClienteController::class, 'home'])->name('clientes.home');
     Route::get('/clientes/configuracion', [ClienteController::class, 'onboarding'])->name('clientes.onboarding');
+    Route::post('/clientes/configuracion/sin-redes', [ClienteController::class, 'skipSocialAccounts'])->name('clientes.onboarding.skip-social');
     Route::post('/clientes/configuracion/empresa', [ClienteController::class, 'storeOnboardingCompany'])->name('clientes.onboarding.empresa');
     Route::post('/clientes/configuracion/completar', [ClienteController::class, 'completeOnboarding'])->name('clientes.onboarding.complete');
     Route::get('/clientes/dashboard', [ClienteController::class, 'dashboard'])->name('clientes.dashboard');

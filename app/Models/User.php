@@ -20,6 +20,7 @@ class User extends Authenticatable
         'password',
         'phone',
         'google_id',
+        'social_setup_skipped',
     ];
 
     protected $hidden = [
@@ -32,6 +33,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'social_setup_skipped' => 'boolean',
         ];
     }
 
