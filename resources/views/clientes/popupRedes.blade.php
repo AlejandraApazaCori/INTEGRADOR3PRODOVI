@@ -168,9 +168,41 @@
         .promise strong,.promise small { margin:0; }
         .social-card { min-height:190px; }
         .form-card { margin-top:18px; }
-        .form-head { padding:14px 18px; }
-        .form-body { padding:18px; }
+        .setup-title { font-size:clamp(1.4rem,2.3vw,2.45rem); }
+        .form-card { border:0; border-radius:24px; box-shadow:0 22px 55px rgba(67,23,96,.13); }
+        .form-head { position:relative; padding:18px 20px; overflow:hidden; background:linear-gradient(110deg,var(--purple),#9251c8); color:#fff; }
+        .form-head::after { content:''; position:absolute; width:110px; height:110px; right:-35px; top:-50px; border:22px solid rgba(255,255,255,.12); border-radius:50%; }
+        .form-head-icon { position:relative; z-index:1; background:var(--orange); box-shadow:0 9px 20px rgba(52,15,75,.25); }
+        .form-head strong,.form-head small { position:relative; z-index:1; color:#fff; }
+        .form-head small { display:block; margin-top:3px; opacity:.78; }
+        .form-body { padding:22px; background:linear-gradient(180deg,#fff,#fdfbfe); }
         .form-grid { gap:13px; }
+        .field-shell { position:relative; }
+        .field-icon { position:absolute; z-index:2; left:14px; top:50%; transform:translateY(-50%); color:var(--purple); pointer-events:none; }
+        .field-shell input { padding-left:42px; }
+        .field-shell textarea { padding-left:42px; }
+        .field-shell .textarea-icon { top:16px; transform:none; }
+        .custom-select { position:relative; }
+        .select-trigger { width:100%; min-height:46px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 13px 11px 42px; border:1px solid #dcd4e0; border-radius:11px; background:#fbfafc; color:#807786; text-align:left; cursor:pointer; transition:border-color .2s,box-shadow .2s,background .2s; }
+        .select-trigger.has-value { color:var(--ink); }
+        .select-trigger[aria-expanded="true"] { border-color:var(--purple); background:#fff; box-shadow:0 0 0 4px rgba(113,48,167,.09); }
+        .select-trigger.is-invalid { border-color:#dc2626; box-shadow:0 0 0 4px rgba(220,38,38,.08); }
+        .select-trigger .fa-chevron-down { color:#9d92a2; font-size:.75rem; transition:transform .2s; }
+        .select-trigger[aria-expanded="true"] .fa-chevron-down { transform:rotate(180deg); }
+        .select-menu { position:absolute; z-index:30; top:calc(100% + 8px); left:0; right:0; display:none; max-height:220px; overflow-y:auto; padding:7px; border:1px solid #ded5e3; border-radius:14px; background:#fff; box-shadow:0 18px 38px rgba(67,23,96,.18); }
+        .select-menu.is-open { display:block; animation:dropdownIn .2s ease both; }
+        @keyframes dropdownIn { from { opacity:0; transform:translateY(-7px); } to { opacity:1; transform:translateY(0); } }
+        .select-option { width:100%; display:flex; align-items:center; gap:10px; padding:10px 11px; border:0; border-radius:9px; background:transparent; color:#514858; text-align:left; cursor:pointer; }
+        .select-option:hover,.select-option.is-selected { background:#f2eaf7; color:var(--purple); }
+        .select-option i { width:20px; color:var(--orange); text-align:center; }
+        .logo-drop { position:relative; min-height:46px; display:flex; align-items:center; gap:11px; padding:9px 12px; border:1px dashed #bbaec2; border-radius:11px; background:#fbfafc; color:#776d7c; cursor:pointer; transition:.2s; }
+        .logo-drop:hover { border-color:var(--turquoise); background:#f2fbfa; }
+        .logo-drop input { position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; }
+        .logo-preview { width:30px; height:30px; display:grid; place-items:center; flex:0 0 auto; overflow:hidden; border-radius:8px; background:rgba(25,185,178,.12); color:var(--turquoise); }
+        .logo-preview img { width:100%; height:100%; object-fit:cover; }
+        .logo-copy { min-width:0; font-size:.76rem; }
+        .logo-copy strong { display:block; overflow:hidden; color:#514858; text-overflow:ellipsis; white-space:nowrap; }
+        .logo-copy small { color:#968b9b; }
         textarea { min-height:72px; }
         .actions { margin-top:22px; }
 
@@ -269,7 +301,7 @@
                 </div></article>
 
                 <article class="slide" data-step="2"><div class="content">
-                    <span class="eyebrow">Conecta tu comunidad</span><h2>Vincula alguna de <span>tus cuentas.</span></h2>
+                    <span class="eyebrow">Conecta tu comunidad</span><h2 class="setup-title">Vincula alguna de <span>tus cuentas.</span></h2>
                     <p class="lead">Así podremos identificar la página de tu negocio y preparar la gestión de contenido. Necesitas vincular al menos una para continuar.</p>
                     @if(session('social_accounts_success'))<div class="notice notice-success"><i class="fa-solid fa-circle-check"></i> {{ session('social_accounts_success') }}</div>@endif
                     @if(session('social_accounts_error'))<div class="notice notice-error"><i class="fa-solid fa-circle-exclamation"></i> {{ session('social_accounts_error') }}</div>@endif
@@ -294,7 +326,7 @@
                 </div></article>
 
                 <article class="slide" data-step="3"><div class="content">
-                    <span class="eyebrow">La identidad de tu marca</span><h2>Crea <span>tu empresa.</span></h2>
+                    <span class="eyebrow">La identidad de tu marca</span><h2 class="setup-title">Crea <span>tu empresa.</span></h2>
                     <p class="lead">Usaremos esta información para reconocer la marca que publica y adaptar cada propuesta a su personalidad.</p>
                     @if(session('onboarding_success'))<div class="notice notice-success"><i class="fa-solid fa-circle-check"></i> {{ session('onboarding_success') }}</div>@endif
                     @if($empresa)
@@ -308,10 +340,45 @@
                             @csrf
                             <div class="form-head"><span class="form-head-icon"><i class="fa-solid fa-building"></i></span><span><strong>Datos de la empresa</strong><small>Los campos con * son obligatorios</small></span></div>
                             <div class="form-body"><div class="form-grid">
-                                <div class="field-full"><label for="nombre_empresa">Nombre de la empresa *</label><input id="nombre_empresa" name="nombre_empresa" type="text" required maxlength="255" value="{{ old('nombre_empresa', $suggestedCompanyName) }}" placeholder="Ej: Mi negocio">@error('nombre_empresa')<p class="field-error">{{ $message }}</p>@enderror</div>
-                                <div><label for="tipo_empresa">Tipo de empresa *</label><input id="tipo_empresa" name="tipo_empresa" type="text" required maxlength="255" value="{{ old('tipo_empresa') }}" placeholder="Ej: Comercio, servicios...">@error('tipo_empresa')<p class="field-error">{{ $message }}</p>@enderror</div>
-                                <div><label for="logo">Logo de la empresa</label><input id="logo" name="logo" type="file" accept="image/jpeg,image/png,image/gif">@error('logo')<p class="field-error">{{ $message }}</p>@enderror</div>
-                                <div class="field-full"><label for="descripcion">Descripción</label><textarea id="descripcion" name="descripcion" placeholder="Cuéntanos qué hace tu empresa, sus servicios y sus objetivos...">{{ old('descripcion') }}</textarea>@error('descripcion')<p class="field-error">{{ $message }}</p>@enderror</div>
+                                <div class="field-full">
+                                    <label for="nombre_empresa">Nombre de la empresa *</label>
+                                    <div class="field-shell"><i class="field-icon fa-solid fa-store"></i><input id="nombre_empresa" name="nombre_empresa" type="text" required maxlength="255" value="{{ old('nombre_empresa', $suggestedCompanyName) }}" placeholder="Ej: Mi negocio"></div>
+                                    @error('nombre_empresa')<p class="field-error">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label id="tipo_empresa_label">Tipo de empresa *</label>
+                                    <div class="custom-select" id="company-type-select">
+                                        <i class="field-icon fa-solid fa-briefcase"></i>
+                                        <input id="tipo_empresa" name="tipo_empresa" type="hidden" value="{{ old('tipo_empresa') }}" required>
+                                        <button class="select-trigger {{ old('tipo_empresa') ? 'has-value' : '' }}" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="tipo_empresa_label company-type-value">
+                                            <span id="company-type-value">{{ old('tipo_empresa', 'Selecciona una categoría') }}</span><i class="fa-solid fa-chevron-down"></i>
+                                        </button>
+                                        <div class="select-menu" role="listbox">
+                                            @foreach([
+                                                ['Tecnología', 'fa-laptop-code'], ['Comercio', 'fa-cart-shopping'], ['Servicios', 'fa-handshake'],
+                                                ['Gastronomía', 'fa-utensils'], ['Salud', 'fa-heart-pulse'], ['Educación', 'fa-graduation-cap'],
+                                                ['Belleza', 'fa-spa'], ['Inmobiliaria', 'fa-house'], ['Otro', 'fa-shapes']
+                                            ] as [$type, $icon])
+                                                <button type="button" class="select-option {{ old('tipo_empresa') === $type ? 'is-selected' : '' }}" role="option" data-value="{{ $type }}"><i class="fa-solid {{ $icon }}"></i>{{ $type }}</button>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    @error('tipo_empresa')<p class="field-error">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label for="logo">Logo de la empresa</label>
+                                    <div class="logo-drop">
+                                        <input id="logo" name="logo" type="file" accept="image/jpeg,image/png,image/gif">
+                                        <span class="logo-preview" id="company-logo-preview"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+                                        <span class="logo-copy"><strong id="company-logo-name">Sube tu logo</strong><small>PNG, JPG o GIF · Máx. 2 MB</small></span>
+                                    </div>
+                                    @error('logo')<p class="field-error">{{ $message }}</p>@enderror
+                                </div>
+                                <div class="field-full">
+                                    <label for="descripcion">Descripción</label>
+                                    <div class="field-shell"><i class="field-icon textarea-icon fa-solid fa-align-left"></i><textarea id="descripcion" name="descripcion" placeholder="Cuéntanos qué hace tu empresa, sus servicios y sus objetivos...">{{ old('descripcion') }}</textarea></div>
+                                    @error('descripcion')<p class="field-error">{{ $message }}</p>@enderror
+                                </div>
                             </div><div class="actions"><button type="button" class="btn btn-secondary" data-next="2"><i class="fa-solid fa-arrow-left"></i> Atrás</button><button type="submit" class="btn btn-primary">Crear y continuar <i class="fa-solid fa-arrow-right"></i></button></div></div>
                         </form>
                     @endif
@@ -370,6 +437,39 @@ document.addEventListener('DOMContentLoaded',function(){
     const progressBar=document.getElementById('progress-bar');
     const maximumStep={{ $anyAccountLinked ? ($empresa ? 4 : 3) : 2 }};
     let currentStep=Math.min({{ $initialStep }},maximumStep);
+
+    const customSelect=document.getElementById('company-type-select');
+    if(customSelect){
+        const trigger=customSelect.querySelector('.select-trigger');
+        const menu=customSelect.querySelector('.select-menu');
+        const input=customSelect.querySelector('#tipo_empresa');
+        const valueLabel=customSelect.querySelector('#company-type-value');
+        const options=Array.from(customSelect.querySelectorAll('.select-option'));
+        const closeSelect=()=>{menu.classList.remove('is-open');trigger.setAttribute('aria-expanded','false');};
+        trigger.addEventListener('click',()=>{const opening=!menu.classList.contains('is-open');closeSelect();if(opening){menu.classList.add('is-open');trigger.setAttribute('aria-expanded','true');}});
+        options.forEach(option=>option.addEventListener('click',()=>{
+            input.value=option.dataset.value;
+            valueLabel.textContent=option.dataset.value;
+            trigger.classList.add('has-value');trigger.classList.remove('is-invalid');
+            options.forEach(item=>item.classList.toggle('is-selected',item===option));
+            closeSelect();
+        }));
+        document.addEventListener('click',event=>{if(!customSelect.contains(event.target))closeSelect();});
+        document.addEventListener('keydown',event=>{if(event.key==='Escape')closeSelect();});
+        customSelect.closest('form')?.addEventListener('submit',event=>{if(!input.value){event.preventDefault();trigger.classList.add('is-invalid');menu.classList.add('is-open');trigger.setAttribute('aria-expanded','true');trigger.focus();}});
+    }
+
+    const logoInput=document.getElementById('logo');
+    const logoPreview=document.getElementById('company-logo-preview');
+    const logoName=document.getElementById('company-logo-name');
+    logoInput?.addEventListener('change',()=>{
+        const file=logoInput.files?.[0];
+        if(!file)return;
+        logoName.textContent=file.name;
+        const reader=new FileReader();
+        reader.onload=event=>{logoPreview.innerHTML=`<img src="${event.target.result}" alt="Vista previa del logo">`;};
+        reader.readAsDataURL(file);
+    });
     function showStep(step){
         currentStep=Math.max(1,Math.min(Number(step),maximumStep));
         slides.forEach(slide=>slide.classList.toggle('is-active',Number(slide.dataset.step)===currentStep));

@@ -245,6 +245,8 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
             ->name('administrador.pagos.finalizados');
         Route::post('/aprobar/{pago}', [PagoAdminController::class, 'aprobarPagoFisico'])
             ->name('administrador.pagos.aprobar');
+        Route::post('/{pago}/reenviar-correo', [PagoAdminController::class, 'reenviarCorreoConfirmacion'])
+            ->name('administrador.pagos.reenviar-correo');
         Route::delete('/pendientes-fisicos/{pago}', [PagoAdminController::class, 'eliminarPagoFisicoPendiente'])
             ->name('administrador.pagos.pendientes-fisicos.eliminar');
         Route::put('/cancelar/{pago}', [PagoAdminController::class, 'cancelarSuscripcion'])

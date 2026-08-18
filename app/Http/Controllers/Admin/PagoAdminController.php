@@ -10,6 +10,7 @@ use App\Models\Plan;
 use App\Models\User;
 use App\Models\Role;
 use App\Exports\PagosExport;
+use App\Services\PaymentConfirmationNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -139,7 +140,7 @@ class PagoAdminController extends Controller
         return view('administrador.pagos.finalizados-sin-renovacion', compact('pagos'));
     }
 
-    public function aprobarPagoFisico($pagoId)
+    public function aprobarPagoFisico($pagoId, PaymentConfirmationNotifier $paymentNotifier)
     {
         DB::beginTransaction();
         try {
@@ -167,6 +168,8 @@ class PagoAdminController extends Controller
 
             DB::commit();
 
+            $paymentNotifier->send($pago->fresh());
+
             return back()->with('success', 'Pago aprobado y comprobante generado correctamente.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -174,6 +177,23 @@ class PagoAdminController extends Controller
 
             return back()->with('error', 'Ocurrió un error al aprobar el pago. Por favor, inténtelo de nuevo.');
         }
+    }
+
+    public function reenviarCorreoConfirmacion(Pago $pago, PaymentConfirmationNotifier $paymentNotifier)
+    {
+        if ($pago->estado !== 'completado') {
+            return back()->with('error', 'Solo se puede reenviar el correo de pagos completados.');
+        }
+
+        if (! filled($pago->usuario?->email)) {
+            return back()->with('error', 'El cliente no tiene un correo electrónico registrado.');
+        }
+
+        if (! $paymentNotifier->resend($pago)) {
+            return back()->with('error', 'No se pudo reenviar el correo. Revisa la configuración de correo o los registros del sistema.');
+        }
+
+        return back()->with('success', 'Correo de confirmación reenviado a '.$pago->usuario->email.'.');
     }
 
     public function eliminarPagoFisicoPendiente(Pago $pago)

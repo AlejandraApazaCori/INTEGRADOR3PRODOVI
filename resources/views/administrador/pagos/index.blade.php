@@ -166,7 +166,7 @@
                                 <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fecha de pago</th>
                                 <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Inicio</th>
                                 <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fin</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider">Comprobante</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-100">
@@ -212,6 +212,14 @@
                                             <a href="{{ route('administrador.pagos.descargar-recibo', $pago->id) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-green-700 bg-green-50 hover:bg-green-100 transition-colors duration-200">
                                                 <i class="fas fa-download mr-1.5"></i>Descargar
                                             </a>
+                                            @if($pago->estado === 'completado')
+                                                <form method="POST" action="{{ route('administrador.pagos.reenviar-correo', $pago) }}" onsubmit="return confirm('¿Reenviar el correo de confirmación a {{ optional($pago->usuario)->email }}?')">
+                                                    @csrf
+                                                    <button type="submit" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-orange-700 bg-orange-50 hover:bg-orange-100 transition-colors duration-200">
+                                                        <i class="fas fa-paper-plane mr-1.5"></i>Reenviar correo
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>

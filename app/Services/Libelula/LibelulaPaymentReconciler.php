@@ -6,6 +6,7 @@ use App\Models\ComprobantePago;
 use App\Models\LibelulaTransaction;
 use App\Models\Pago;
 use App\Models\Suscripcion;
+use App\Services\PaymentConfirmationNotifier;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -13,11 +14,15 @@ use RuntimeException;
 
 class LibelulaPaymentReconciler
 {
-    public function __construct(private readonly LibelulaClient $client) {}
+    public function __construct(
+        private readonly LibelulaClient $client,
+        private readonly PaymentConfirmationNotifier $paymentNotifier,
+    ) {}
 
     public function reconcile(LibelulaTransaction $transaction): bool
     {
         if ($transaction->status === 'paid') {
+            $this->notifyPayment($transaction);
             return true;
         }
 
@@ -79,7 +84,21 @@ class LibelulaPaymentReconciler
             ]);
         });
 
+        $this->notifyPayment($transaction);
+
         return true;
+    }
+
+    private function notifyPayment(LibelulaTransaction $transaction): void
+    {
+        $payment = Pago::query()
+            ->where('provider', 'libelula')
+            ->where('provider_transaction_id', $transaction->libelula_transaction_id)
+            ->first();
+
+        if ($payment) {
+            $this->paymentNotifier->send($payment);
+        }
     }
 
     private function findVerifiedDebt(array $verification, LibelulaTransaction $transaction): ?array

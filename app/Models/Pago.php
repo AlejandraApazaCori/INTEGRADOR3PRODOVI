@@ -23,6 +23,7 @@ class Pago extends Model
         'aprobado_por',
         'fecha_aprobacion',
         'fecha_pago',
+        'confirmacion_email_enviada_at',
         'visto',
         'provider',
         'provider_transaction_id',
@@ -32,6 +33,7 @@ class Pago extends Model
     protected $casts = [
         'fecha_aprobacion' => 'datetime',
         'fecha_pago' => 'datetime',
+        'confirmacion_email_enviada_at' => 'datetime',
     ];
 
     public function usuario()
