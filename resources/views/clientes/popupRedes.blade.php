@@ -159,7 +159,7 @@
         .slides { min-height:100vh; grid-column:1; }
         .slide { min-height:100vh; padding:145px clamp(28px,5.2vw,100px) 55px; }
         .content { width:min(610px,100%); }
-        h1 { font-size:clamp(2.75rem,4.5vw,4.85rem); }
+        h1 { font-size:clamp(1.4rem,2.3vw,2.45rem); }
         h2 { font-size:clamp(2.25rem,3.6vw,3.7rem); }
         .lead { font-size:1rem; line-height:1.65; }
         .promise-grid { grid-template-columns:1fr; gap:10px; }
