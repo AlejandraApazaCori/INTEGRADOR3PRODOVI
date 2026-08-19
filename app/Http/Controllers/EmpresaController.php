@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Empresa;
+use App\Models\Suscripcion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -34,15 +35,32 @@ class EmpresaController extends Controller
         $request->validate([
             'nombre_empresa' => 'required|string|max:255',
             'tipo_empresa' => 'required|string|max:255',
+            'direccion' => 'nullable|string|max:500',
             'descripcion' => 'nullable|string',
             // 'sitio_web' => 'nullable|url',  // <-- ELIMINA ESTA LÍNEA
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+        $suscripcion = Suscripcion::query()
+            ->where('usuario_id', Auth::id())
+            ->where('estado', 'activa')
+            ->where('fecha_fin', '>', now())
+            ->whereDoesntHave('empresa')
+            ->latest('id')
+            ->first();
+
+        if (! $suscripcion) {
+            return back()->withInput()->with('error', 'Compra otro plan antes de registrar una empresa adicional.');
+        }
+
         $empresa = new Empresa();
         $empresa->usuario_id = Auth::id();
+        $empresa->suscripcion_id = $suscripcion->id;
         $empresa->nombre_empresa = $request->nombre_empresa;
         $empresa->tipo_empresa = $request->tipo_empresa;
+        if ($request->has('direccion')) {
+            $empresa->direccion = $request->direccion;
+        }
         $empresa->descripcion = $request->descripcion;
         // $empresa->sitio_web = $request->sitio_web; // <-- ELIMINA ESTA LÍNEA
 
@@ -84,6 +102,7 @@ class EmpresaController extends Controller
         $request->validate([
             'nombre_empresa' => 'required|string|max:255',
             'tipo_empresa' => 'required|string|max:255',
+            'direccion' => 'nullable|string|max:500',
             'descripcion' => 'nullable|string',
             // Quita la coma sobrante aquí también si la tienes
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -92,6 +111,7 @@ class EmpresaController extends Controller
         $empresa = Empresa::where('usuario_id', Auth::id())->findOrFail($id);
         $empresa->nombre_empresa = $request->nombre_empresa;
         $empresa->tipo_empresa = $request->tipo_empresa;
+        $empresa->direccion = $request->direccion;
         $empresa->descripcion = $request->descripcion;
         
         // No necesitas asignar sitio_web aquí tampoco
@@ -108,6 +128,11 @@ class EmpresaController extends Controller
         }
 
         $empresa->save();
+
+        if ($request->boolean('return_to_onboarding')) {
+            return redirect()->route('clientes.onboarding', ['empresa' => 'editada'])
+                ->with('onboarding_success', 'Los datos de tu empresa se actualizaron correctamente.');
+        }
 
         return redirect()->route('empresas.show', $empresa->id)
             ->with('success', 'Empresa actualizada correctamente.');

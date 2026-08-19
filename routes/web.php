@@ -12,6 +12,7 @@ use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\Cliente\PagoClienteController;
 use App\Http\Controllers\Cliente\SocialAccountController;
+use App\Http\Controllers\Cliente\RecursoClienteController;
 use App\Http\Controllers\FacebookPostController;
 use App\Http\Controllers\SocialSimulatorController;
 use App\Http\Controllers\Admin\AdminAnaliticasController;
@@ -116,6 +117,12 @@ Route::post('/registro/verificacion/reenviar', [RegistroVerificacionController::
     ->name('registro.verificacion.reenviar');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+Route::get('/clientes/cambiar-contrasena/{token}', [ClienteController::class, 'showPasswordReset'])
+    ->name('clientes.password.reset.form');
+Route::post('/clientes/cambiar-contrasena/{token}', [ClienteController::class, 'resetPassword'])
+    ->middleware('throttle:6,1')
+    ->name('clientes.password.reset');
+
 // AutenticaciÃƒÆ’Ã‚Â³n con Google
 Route::prefix('api')->group(function () {
     Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])
@@ -127,12 +134,20 @@ Route::prefix('api')->group(function () {
 // Rutas del cliente
 Route::middleware('auth')->group(function () {
     Route::get('/clientes/home', [ClienteController::class, 'home'])->name('clientes.home');
+    Route::get('/clientes/comprar-plan', [ClienteController::class, 'comprarOtroPlan'])->name('clientes.planes.comprar');
     Route::get('/clientes/configuracion', [ClienteController::class, 'onboarding'])->name('clientes.onboarding');
     Route::post('/clientes/configuracion/sin-redes', [ClienteController::class, 'skipSocialAccounts'])->name('clientes.onboarding.skip-social');
     Route::post('/clientes/configuracion/empresa', [ClienteController::class, 'storeOnboardingCompany'])->name('clientes.onboarding.empresa');
     Route::post('/clientes/configuracion/completar', [ClienteController::class, 'completeOnboarding'])->name('clientes.onboarding.complete');
     Route::get('/clientes/dashboard', [ClienteController::class, 'dashboard'])->name('clientes.dashboard');
     Route::get('/clientes/micuenta', [ClienteController::class, 'miCuenta'])->name('clientes.micuenta');
+    Route::get('/clientes/recursos', [RecursoClienteController::class, 'index'])->name('clientes.recursos');
+    Route::post('/clientes/recursos', [RecursoClienteController::class, 'store'])->name('clientes.recursos.store');
+    Route::delete('/clientes/recursos/{recurso}', [RecursoClienteController::class, 'destroy'])->name('clientes.recursos.destroy');
+    Route::patch('/clientes/micuenta/datos', [ClienteController::class, 'updateAccountData'])->name('clientes.micuenta.datos');
+    Route::post('/clientes/micuenta/cambio-contrasena', [ClienteController::class, 'requestPasswordChange'])
+        ->middleware('throttle:3,5')
+        ->name('clientes.password.request');
     Route::get('/clientes/brief', [ClienteController::class, 'brief'])->name('clientes.brief');
     Route::get('/clientes/analiticas', [App\Http\Controllers\Cliente\ClienteAnaliticasController::class, 'index'])
         ->name('clientes.analiticas');
@@ -153,6 +168,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/clientes/pago/{plan}', [PagoClienteController::class, 'show'])->name('clientes.pago');
     Route::post('/pago/procesar/{plan}', [PagoClienteController::class, 'procesarPago'])->name('pago.procesar');
     Route::get('/pago/fisico/{pago}/codigo.pdf', [PagoClienteController::class, 'descargarCodigoFisico'])->name('pago.fisico.codigo.pdf');
+    Route::delete('/clientes/pagos/pendientes/{pago}', [PagoClienteController::class, 'eliminarPedidoPendiente'])->name('clientes.pagos.pendientes.eliminar');
     Route::post('/pago/libelula/{plan}', [PagoClienteController::class, 'crearPagoQr'])->name('pago.libelula.crear');
     Route::get('/pago/libelula/estado/{transaction}', [PagoClienteController::class, 'estadoPagoQr'])->name('pago.libelula.estado');
     Route::get('/pago/libelula/retorno', [PagoClienteController::class, 'retornoLibelula'])->name('pago.libelula.retorno');

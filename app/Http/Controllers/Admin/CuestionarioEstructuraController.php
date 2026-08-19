@@ -49,8 +49,9 @@ class CuestionarioEstructuraController extends Controller
             'descripcion_tema' => 'nullable|string',
             'preguntas' => 'required|array|min:1',
             'preguntas.*.pregunta' => 'required|string|max:1000',
-            'preguntas.*.tipo_respuesta' => ['required', Rule::in(['texto_corto', 'texto_largo'])],
+            'preguntas.*.tipo_respuesta' => ['required', Rule::in(['texto', 'texto_largo', 'opcion_multiple', 'checkbox'])],
             'preguntas.*.ayuda' => 'nullable|string|max:1000',
+            'preguntas.*.opciones' => 'nullable|string|max:5000',
             'preguntas.*.requerido' => 'boolean',
         ]);
 
@@ -68,6 +69,7 @@ class CuestionarioEstructuraController extends Controller
                     'tema_id' => $tema->id,
                     'pregunta' => $preguntaData['pregunta'],
                     'tipo_respuesta' => $preguntaData['tipo_respuesta'],
+                    'opciones' => $this->parseOptions($preguntaData),
                     'ayuda' => $preguntaData['ayuda'] ?? null,
                     'requerido' => $preguntaData['requerido'] ?? false,
                     'orden' => $index + 1,
@@ -99,8 +101,9 @@ class CuestionarioEstructuraController extends Controller
             'descripcion_tema' => 'nullable|string',
             'preguntas' => 'required|array|min:1',
             'preguntas.*.pregunta' => 'required|string|max:1000',
-            'preguntas.*.tipo_respuesta' => ['required', Rule::in(['texto_corto', 'texto_largo'])],
+            'preguntas.*.tipo_respuesta' => ['required', Rule::in(['texto', 'texto_largo', 'opcion_multiple', 'checkbox'])],
             'preguntas.*.ayuda' => 'nullable|string|max:1000',
+            'preguntas.*.opciones' => 'nullable|string|max:5000',
             'preguntas.*.requerido' => 'boolean',
         ]);
 
@@ -124,6 +127,7 @@ class CuestionarioEstructuraController extends Controller
                         'tema_id' => $tema->id,
                         'pregunta' => $preguntaData['pregunta'],
                         'tipo_respuesta' => $preguntaData['tipo_respuesta'],
+                        'opciones' => $this->parseOptions($preguntaData),
                         'ayuda' => $preguntaData['ayuda'] ?? null,
                         'requerido' => $preguntaData['requerido'] ?? false,
                         'orden' => $index + 1,
@@ -156,5 +160,19 @@ class CuestionarioEstructuraController extends Controller
             TemaCuestionario::where('id', $temaId)->update(['orden' => $index + 1]);
         }
         return response()->json(['status' => 'success']);
+    }
+
+    private function parseOptions(array $preguntaData): ?array
+    {
+        if (! in_array($preguntaData['tipo_respuesta'], ['opcion_multiple', 'checkbox'], true)) {
+            return null;
+        }
+
+        return collect(preg_split('/\r\n|\r|\n/', $preguntaData['opciones'] ?? ''))
+            ->map(fn ($option) => trim($option))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 }

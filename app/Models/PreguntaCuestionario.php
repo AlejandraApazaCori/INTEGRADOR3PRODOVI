@@ -19,6 +19,7 @@ class PreguntaCuestionario extends Model
         'orden',
         'tipo_respuesta',
         'opciones',
+        'ayuda',
         'requerido',
     ];
 

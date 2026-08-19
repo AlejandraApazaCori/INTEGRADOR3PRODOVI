@@ -9,6 +9,7 @@ use App\Models\Pago;
 use App\Models\PlanMarketing;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class CampañasController extends Controller
@@ -16,29 +17,33 @@ class CampañasController extends Controller
     public function index()
     {
         // 1. Obtener usuarios con suscripción activa que no tienen campaña activa
-        $clientesSinCampania = Pago::with(['usuario.empresas', 'suscripcion', 'plan'])
+        $clientesSinCampania = Pago::with(['usuario', 'suscripcion.empresa', 'plan'])
             ->where('estado', 'completado')
             ->whereHas('suscripcion', function($query) {
                 $query->where('estado', 'activa')
-                    ->where('fecha_fin', '>', now());
+                    ->where(function ($vigenciaQuery) {
+                        $vigenciaQuery->whereNull('vigencia_activada_at')
+                            ->orWhere('fecha_fin', '>', now());
+                    });
             })
-            ->whereDoesntHave('usuario.campaniasCliente', function($query) {
+            ->whereDoesntHave('suscripcion.campanias', function($query) {
                 $query->where('fecha_fin', '>', now())
                     ->whereIn('estado', ['activa', 'pausada']);
             })
             ->orderByDesc('created_at')
             ->get()
             ->map(function($pago) {
-                $empresa = $pago->usuario->empresas->first();
+                $empresa = $pago->suscripcion->empresa;
 
                 return [
                     'id' => $pago->usuario->id,
+                    'suscripcion_id' => $pago->suscripcion->id,
                     'nombre' => $pago->usuario->name,
                     'email' => $pago->usuario->email,
                     'plan' => $pago->plan->nombre ?? 'Sin plan',
-                    'fecha_fin_suscripcion' => optional($pago->suscripcion)->fecha_fin ? $pago->suscripcion->fecha_fin->format('d/m/Y') : 'Sin fecha',
-                    'fecha_fin_suscripcion_raw' => optional($pago->suscripcion)->fecha_fin?->format('Y-m-d'),
-                    'tiene_empresa' => $pago->usuario->empresas->isNotEmpty(),
+                    'fecha_fin_suscripcion' => $pago->suscripcion->vigencia_activada_at ? $pago->suscripcion->fecha_fin->format('d/m/Y') : 'Pendiente de campaña',
+                    'fecha_fin_suscripcion_raw' => $pago->suscripcion->vigencia_activada_at ? $pago->suscripcion->fecha_fin->format('Y-m-d') : null,
+                    'tiene_empresa' => $empresa !== null,
                     'empresa_id' => $empresa ? $empresa->id : null,
                 ];
             })
@@ -115,15 +120,20 @@ class CampañasController extends Controller
             'descripcion' => 'required|string',
             'usuario_cliente_id' => 'required|exists:users,id',
             'community_manager_id' => 'required|exists:users,id',
+            'suscripcion_id' => 'required|exists:suscripciones,id',
         ]);
 
         // Obtener la suscripción del cliente para las fechas
         $pago = Pago::with('suscripcion')
             ->where('usuario_id', $request->usuario_cliente_id)
+            ->where('suscripcion_id', $request->suscripcion_id)
             ->where('estado', 'completado')
             ->whereHas('suscripcion', function($query) {
                 $query->where('estado', 'activa')
-                      ->where('fecha_fin', '>', now());
+                    ->where(function ($vigenciaQuery) {
+                        $vigenciaQuery->whereNull('vigencia_activada_at')
+                            ->orWhere('fecha_fin', '>', now());
+                    });
             })
             ->first();
 
@@ -143,16 +153,30 @@ class CampañasController extends Controller
         ]);
 
         // Crear la campaña
-        $campania = Campania::create([
-            'nombre' => $request->nombre,
-            'descripcion' => $request->descripcion,
-            'fecha_inicio' => now(),
-            'fecha_fin' => $pago->suscripcion->fecha_fin,
-            'usuario_creador_id' => Auth::id(),
-            'community_manager_id' => $request->community_manager_id,
-            'usuario_cliente_id' => $request->usuario_cliente_id,
-            'estado' => 'activa'
-        ]);
+        $campania = DB::transaction(function () use ($request, $pago) {
+            $suscripcion = $pago->suscripcion()->lockForUpdate()->firstOrFail();
+
+            if (! $suscripcion->vigencia_activada_at) {
+                $inicioVigencia = now();
+                $suscripcion->update([
+                    'fecha_inicio' => $inicioVigencia,
+                    'fecha_fin' => $inicioVigencia->copy()->addMonthNoOverflow(),
+                    'vigencia_activada_at' => $inicioVigencia,
+                ]);
+            }
+
+            return Campania::create([
+                'nombre' => $request->nombre,
+                'descripcion' => $request->descripcion,
+                'fecha_inicio' => now(),
+                'fecha_fin' => $suscripcion->fecha_fin,
+                'usuario_creador_id' => Auth::id(),
+                'community_manager_id' => $request->community_manager_id,
+                'usuario_cliente_id' => $request->usuario_cliente_id,
+                'suscripcion_id' => $suscripcion->id,
+                'estado' => 'activa',
+            ]);
+        });
 
         \Log::info('Campaña creada con ID: ' . $campania->id);
 
@@ -225,17 +249,23 @@ class CampañasController extends Controller
             ->with('success', 'Campaña actualizada exitosamente');
     }
 
-    public function obtenerPlanIA($usuario_id)
+    public function obtenerPlanIA(Request $request, $usuario_id)
     {
         try {
-            $user = User::with('empresas')->findOrFail($usuario_id);
-            $empresa = $user->empresas->first();
+            $request->validate(['suscripcion_id' => 'required|integer|exists:suscripciones,id']);
+            $pago = Pago::with('suscripcion.empresa')
+                ->where('usuario_id', $usuario_id)
+                ->where('suscripcion_id', $request->integer('suscripcion_id'))
+                ->where('estado', 'completado')
+                ->firstOrFail();
+            $empresa = $pago->suscripcion->empresa;
 
             if (!$empresa) {
                 return response()->json(['error' => 'El cliente no tiene una empresa registrada.'], 404);
             }
 
             $plan = PlanMarketing::where('empresa_id', $empresa->id)
+                ->where('suscripcion_id', $pago->suscripcion_id)
                 ->latest()
                 ->first();
 

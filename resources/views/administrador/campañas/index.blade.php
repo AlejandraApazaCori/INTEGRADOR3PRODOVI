@@ -110,7 +110,7 @@
                         <tbody id="tabla-clientes-sin-campania" class="bg-white divide-y divide-gray-200">
                             @foreach($clientesSinCampania as $cliente)
                                 <tr class="hover:bg-gray-50 transition-colors duration-200 fila-cliente-sin-campania"
-                                    data-item-id="{{ $cliente['id'] }}"
+                                    data-item-id="{{ $cliente['suscripcion_id'] }}"
                                     data-nombre="{{ mb_strtolower($cliente['nombre']) }}"
                                     data-email="{{ mb_strtolower($cliente['email']) }}"
                                     data-plan="{{ mb_strtolower($cliente['plan']) }}"
@@ -188,7 +188,7 @@
                                                     </div>
                                                 </div>
                                             @else
-                                                <button onclick="llenarConIA('{{ $cliente['id'] }}', this)" 
+                                                <button onclick="llenarConIA('{{ $cliente['id'] }}', '{{ $cliente['suscripcion_id'] }}', this)" 
                                                         class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow-md">
                                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -197,7 +197,7 @@
                                                 </button>
                                             @endif
 
-                                            <button onclick="mostrarFormulario('{{ $cliente['id'] }}')" 
+                                            <button onclick="mostrarFormulario('{{ $cliente['suscripcion_id'] }}')" 
                                                     class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-sm hover:shadow-md">
                                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -209,7 +209,7 @@
                                 </tr>
                                 
                                 <!-- Formulario mejorado -->
-                                <tr id="form-{{ $cliente['id'] }}" class="hidden bg-gradient-to-r from-blue-50 to-indigo-50">
+                                <tr id="form-{{ $cliente['suscripcion_id'] }}" class="hidden bg-gradient-to-r from-blue-50 to-indigo-50">
                                     <td colspan="5" class="px-6 py-8">
                                         <div class="bg-white rounded-xl p-6 shadow-sm border border-blue-100">
                                             <div class="flex items-center mb-6">
@@ -221,13 +221,14 @@
                                                 <h3 class="text-lg font-semibold text-gray-900">Nueva Campaña para {{ $cliente['nombre'] }}</h3>
                                             </div>
                                             
-                                            <form id="crear-campania-form-{{ $cliente['id'] }}" 
+                                            <form id="crear-campania-form-{{ $cliente['suscripcion_id'] }}" 
                                                   action="{{ route('administrador.campañas.guardar') }}" 
                                                   method="POST" 
                                                   class="space-y-6"
-                                                  onsubmit="return validarFormulario({{ $cliente['id'] }})">
+                                                  onsubmit="return validarFormulario({{ $cliente['suscripcion_id'] }})">
                                                 @csrf
                                                 <input type="hidden" name="usuario_cliente_id" value="{{ $cliente['id'] }}">
+                                                <input type="hidden" name="suscripcion_id" value="{{ $cliente['suscripcion_id'] }}">
                                                 
                                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                     <!-- Admin -->
@@ -246,10 +247,10 @@
                                                     
                                                     <!-- Community Manager -->
                                                     <div class="space-y-2">
-                                                        <label for="cm-{{ $cliente['id'] }}" class="block text-sm font-semibold text-gray-700">
+                                                        <label for="cm-{{ $cliente['suscripcion_id'] }}" class="block text-sm font-semibold text-gray-700">
                                                             Community Manager <span class="text-red-500">*</span>
                                                         </label>
-                                                        <select name="community_manager_id" id="cm-{{ $cliente['id'] }}" 
+                                                        <select name="community_manager_id" id="cm-{{ $cliente['suscripcion_id'] }}" 
                                                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
                                                             <option value=">Seleccione un Community Manager</option>
                                                             @foreach($communityManagers as $cm)
@@ -260,27 +261,27 @@
                                                     
                                                     <!-- Nombre -->
                                                     <div class="space-y-2">
-                                                        <label for="nombre-{{ $cliente['id'] }}" class="block text-sm font-semibold text-gray-700">
+                                                        <label for="nombre-{{ $cliente['suscripcion_id'] }}" class="block text-sm font-semibold text-gray-700">
                                                             Nombre de la Campaña <span class="text-red-500">*</span>
                                                         </label>
-                                                        <input type="text" name="nombre" id="nombre-{{ $cliente['id'] }}" 
+                                                        <input type="text" name="nombre" id="nombre-{{ $cliente['suscripcion_id'] }}" 
                                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
                                                                required placeholder="Ej: Campaña Q2 2025">
                                                     </div>
                                                     
                                                     <!-- Descripción -->
                                                     <div class="md:col-span-2 space-y-2">
-                                                        <label for="descripcion-{{ $cliente['id'] }}" class="block text-sm font-semibold text-gray-700">
+                                                        <label for="descripcion-{{ $cliente['suscripcion_id'] }}" class="block text-sm font-semibold text-gray-700">
                                                             Descripción y Objetivos <span class="text-red-500">*</span>
                                                         </label>
-                                                        <textarea name="descripcion" id="descripcion-{{ $cliente['id'] }}" rows="4"
+                                                        <textarea name="descripcion" id="descripcion-{{ $cliente['suscripcion_id'] }}" rows="4"
                                                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none" 
                                                                   required placeholder="Describe los objetivos principales, público objetivo y estrategias clave de la campaña..."></textarea>
                                                     </div>
                                                 </div>
                                                 
                                                 <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                                                    <button type="button" onclick="ocultarFormulario('{{ $cliente['id'] }}')" 
+                                                    <button type="button" onclick="ocultarFormulario('{{ $cliente['suscripcion_id'] }}')" 
                                                             class="px-6 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors">
                                                         Cancelar
                                                     </button>
@@ -613,7 +614,7 @@
     }
 
     // Función para crear campaña con IA
-    function llenarConIA(clienteId, btn) {
+    function llenarConIA(clienteId, formKey, btn) {
         const originalContent = btn.innerHTML;
         btn.disabled = true;
         btn.classList.add('opacity-75', 'cursor-not-allowed');
@@ -625,7 +626,7 @@
             Obteniendo Plan...
         `;
 
-        fetch(`/administrador/campañas/obtener-plan-ia/${clienteId}`)
+        fetch(`/administrador/campañas/obtener-plan-ia/${clienteId}?suscripcion_id=${formKey}`)
             .then(response => {
                 if (!response.ok) {
                     return response.json().then(err => { throw new Error(err.error || 'Error al obtener el plan'); });
@@ -634,17 +635,17 @@
             })
             .then(data => {
                 // Llenar campos
-                const formElement = document.getElementById('crear-campania-form-' + clienteId);
+                const formElement = document.getElementById('crear-campania-form-' + formKey);
                 if (formElement) {
                     formElement.querySelector('input[name="nombre"]').value = data.nombre;
                     formElement.querySelector('textarea[name="descripcion"]').value = data.descripcion;
 
                     // Mostrar el contenedor del formulario
-                    mostrarFormulario(clienteId);
+                    mostrarFormulario(formKey);
 
                     // Pequeña pausa para asegurar que el formulario está visible antes del scroll
                     setTimeout(() => {
-                        const formRow = document.getElementById('form-' + clienteId);
+                        const formRow = document.getElementById('form-' + formKey);
                         formRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         
                         // Resaltar el campo de CM

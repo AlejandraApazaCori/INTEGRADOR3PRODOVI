@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Cliente;
 use App\Http\Controllers\Controller;
 use App\Models\CodigoPago;
 use App\Models\ComprobantePago;
+use App\Models\Empresa;
 use App\Models\LibelulaEvent;
 use App\Models\LibelulaTransaction;
 use App\Models\Pago;
@@ -392,14 +393,60 @@ class PagoClienteController extends Controller
         ]);
     }
 
-    public function historialPagos()
+    public function historialPagos(Request $request)
     {
-        $pagos = Pago::with(['plan', 'suscripcion', 'comprobantePago'])
-            ->where('usuario_id', Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $request->validate([
+            'plan_id' => ['nullable', 'integer'],
+            'empresa_id' => ['nullable', 'integer'],
+            'estado' => ['nullable', Rule::in(['completado', 'pendiente', 'cancelado'])],
+            'fecha_desde' => ['nullable', 'date'],
+            'fecha_hasta' => ['nullable', 'date', 'after_or_equal:fecha_desde'],
+        ]);
 
-        return view('clientes.historialpagos', compact('pagos'));
+        $userId = Auth::id();
+        $pagos = Pago::with(['plan', 'suscripcion.empresa', 'comprobantePago', 'codigoPago'])
+            ->where('usuario_id', $userId)
+            ->when($request->filled('plan_id'), fn ($query) => $query->where('plan_id', $request->integer('plan_id')))
+            ->when($request->filled('empresa_id'), fn ($query) => $query->whereHas(
+                'suscripcion.empresa',
+                fn ($empresaQuery) => $empresaQuery->whereKey($request->integer('empresa_id'))
+            ))
+            ->when($request->filled('estado'), fn ($query) => $query->where('estado', $request->string('estado')))
+            ->when($request->filled('fecha_desde'), fn ($query) => $query->whereDate('fecha_pago', '>=', $request->date('fecha_desde')))
+            ->when($request->filled('fecha_hasta'), fn ($query) => $query->whereDate('fecha_pago', '<=', $request->date('fecha_hasta')))
+            ->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+
+        $planes = Plan::whereIn('id', Pago::query()->where('usuario_id', $userId)->select('plan_id'))
+            ->orderBy('nombre')
+            ->get(['id', 'nombre']);
+
+        $empresas = Empresa::query()
+            ->where('usuario_id', $userId)
+            ->whereNotNull('suscripcion_id')
+            ->orderBy('nombre_empresa')
+            ->get(['id', 'nombre_empresa']);
+
+        return view('clientes.historialpagos', compact('pagos', 'planes', 'empresas'));
+    }
+
+    public function eliminarPedidoPendiente(Pago $pago)
+    {
+        DB::transaction(function () use ($pago) {
+            $pagoPendiente = Pago::with(['codigoPago', 'suscripcion'])
+                ->whereKey($pago->id)
+                ->where('usuario_id', Auth::id())
+                ->where('estado', 'pendiente')
+                ->where('metodo', 'fisico')
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $this->deletePendingPhysicalPayment($pagoPendiente);
+        });
+
+        return redirect()->route('clientes.historial.pagos')
+            ->with('success', 'El pedido pendiente fue eliminado correctamente.');
     }
 
     public function verComprobante($id)

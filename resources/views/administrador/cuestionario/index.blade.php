@@ -3,41 +3,43 @@
 @section('title', 'Gestionar Cuestionario')
 
 @section('content')
-<div class="min-h-screen" style="background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 50%, #F5F3FF 100%);">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div id="questionnaire-index" class="min-h-screen bg-white">
+    <div class="w-full">
         <!-- Banner con fondo geométrico -->
-        <div class="mb-8 rounded-2xl overflow-hidden relative rp-banner">
+        <div class="overflow-hidden relative rp-banner">
             <div class="rp-banner-overlay absolute inset-0"></div>
-            <div class="relative z-10 px-8 py-8">
-                <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                    <div class="flex h-14 w-14 items-center justify-center rounded-2xl flex-shrink-0" style="background: rgba(255,255,255,0.2);">
-                        <i class="fas fa-layer-group text-white text-2xl"></i>
-                    </div>
-                    <div class="flex-1 text-center sm:text-left">
-                        <h1 class="text-3xl font-bold text-white mb-1">Estructura del Cuestionario</h1>
-                        <p style="color: #bfdbfe; font-size: 0.9rem;">Organiza los temas y preguntas de tu cuestionario</p>
-                    </div>
-                    <a href="{{ route('administrador.cuestionario.estructura.create') }}" 
-                       class="inline-flex items-center px-6 py-2.5 rounded-xl font-semibold text-white transition-all hover:-translate-y-0.5 flex-shrink-0" 
-                       style="background: linear-gradient(to right, #f43f5e, #f97316); box-shadow: 0 4px 14px rgba(244,63,94,0.35);">
-                        <i class="fas fa-plus mr-2 text-sm"></i>
-                        Añadir Nuevo Tema
+            <div class="relative z-10 px-8 py-8 flex items-center justify-between gap-8">
+                <div class="hero-content">
+                    <a href="{{ route('administrador.dashboard') }}" class="back-button">
+                        <i class="fas fa-arrow-left"></i>
+                        Volver al dashboard
                     </a>
+                    <h1 class="hero-title">Estructura del <span>cuestionario</span></h1>
+                    <p class="hero-description">Organiza los temas y preguntas de tu cuestionario.</p>
                 </div>
+                <div class="login-mosaic" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
             </div>
+        </div>
+
+        <div class="page-actions flex justify-end">
+            <a href="{{ route('administrador.cuestionario.estructura.create') }}"
+               class="new-topic-button inline-flex items-center px-6 py-2.5 font-semibold text-white transition-all hover:-translate-y-0.5">
+                <i class="fas fa-plus mr-2 text-sm"></i>
+                Añadir Nuevo Tema
+            </a>
         </div>
 
         <!-- Alertas mejoradas -->
         @if(session('success'))
-            <div class="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700 flex items-center">
+            <div class="status-alert mb-6 border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700 flex items-center">
                 <i class="fas fa-check-circle mr-3 text-green-500"></i>
                 {{ session('success') }}
             </div>
         @endif
 
         <!-- Lista de temas mejorada -->
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+        <div class="topics-panel bg-white overflow-hidden">
+            <div class="topics-toolbar px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                 <span class="text-sm font-medium text-gray-700">
                     <i class="fas fa-arrows-alt mr-2 text-gray-400"></i>
                     Arrastra los temas para reordenarlos
@@ -50,13 +52,13 @@
             
             <ul class="divide-y divide-gray-100" id="temas-list">
                 @forelse($temas as $index => $tema)
-                    <li class="px-6 py-4 flex items-center justify-between hover:bg-indigo-50/30 transition-colors duration-150 group" data-id="{{ $tema->id }}">
+                    <li class="topic-row px-6 py-4 flex items-center justify-between transition-colors duration-150 group" data-id="{{ $tema->id }}" tabindex="0" role="button" aria-label="Vista previa de {{ $tema->nombre_tema }}">
                         <div class="flex items-center flex-1">
                             <div class="flex items-center cursor-move mr-4 text-gray-400 hover:text-gray-600 transition-colors">
                                 <i class="fas fa-grip-vertical text-lg"></i>
                             </div>
                             <div class="flex items-center gap-4 flex-1">
-                                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 font-semibold text-sm">
+                                <div class="topic-number flex items-center justify-center w-8 h-8 bg-indigo-100 text-indigo-600 font-semibold text-sm">
                                     {{ $index + 1 }}
                                 </div>
                                 <div>
@@ -68,7 +70,7 @@
                                             <i class="fas fa-question-circle mr-1.5 text-gray-400"></i>
                                             {{ $tema->preguntas->count() }} pregunta(s)
                                         </span>
-                                        <span class="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+                                        <span class="topic-id text-xs px-2 py-1 bg-gray-100 text-gray-600">
                                             <i class="fas fa-hashtag mr-1 text-gray-400"></i>
                                             ID: {{ $tema->id }}
                                         </span>
@@ -78,14 +80,14 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <a href="{{ route('administrador.cuestionario.estructura.edit', $tema->id) }}" 
-                               class="p-2 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition-all duration-200">
+                               class="topic-action p-2 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 transition-all duration-200">
                                 <i class="fas fa-edit"></i>
                             </a>
                             <form action="{{ route('administrador.cuestionario.estructura.destroy', $tema->id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este tema y todas sus preguntas?')" class="inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" 
-                                        class="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200">
+                                        class="topic-action p-2 text-red-500 hover:text-red-700 hover:bg-red-50 transition-all duration-200">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </form>
@@ -116,11 +118,246 @@
 </div>
 
 <!-- Script para arrastrar y soltar (reordenar) -->
+<div id="topic-preview-modal" class="preview-modal hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="preview-topic-title">
+    <div class="preview-backdrop" data-close-preview></div>
+    <div class="preview-dialog">
+        <header class="preview-header">
+            <div>
+                <span class="preview-kicker">Vista previa del cliente</span>
+                <div id="preview-timeline" class="preview-timeline" aria-label="Progreso de preguntas"></div>
+                <h2 id="preview-topic-title" class="preview-accessible-title"></h2>
+                <p id="preview-topic-description" class="preview-accessible-title"></p>
+            </div>
+            <button type="button" class="preview-close" data-close-preview aria-label="Cerrar vista previa">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </header>
+        <div class="preview-side-art preview-side-left" aria-hidden="true">
+            <span class="preview-shape shape-01"></span><span class="preview-shape shape-02"></span><span class="preview-shape shape-03"></span><span class="preview-shape shape-04"></span><span class="preview-shape shape-05"></span>
+        </div>
+        <div class="preview-side-art preview-side-right" aria-hidden="true">
+            <span class="preview-shape shape-05"></span><span class="preview-shape shape-04"></span><span class="preview-shape shape-03"></span><span class="preview-shape shape-02"></span><span class="preview-shape shape-01"></span>
+        </div>
+        <div id="preview-questions" class="preview-body"></div>
+        <footer class="preview-footer">
+            <button type="button" id="preview-prev" class="preview-nav-button preview-prev">
+                <i class="fas fa-arrow-left"></i> Anterior
+            </button>
+            <span id="preview-progress" class="preview-progress"></span>
+            <button type="button" id="preview-next" class="preview-nav-button preview-next">
+                Siguiente <i class="fas fa-arrow-right"></i>
+            </button>
+        </footer>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const el = document.getElementById('temas-list');
         const temasCount = document.getElementById('temas-count');
+        const previewModal = document.getElementById('topic-preview-modal');
+        const previewTitle = document.getElementById('preview-topic-title');
+        const previewDescription = document.getElementById('preview-topic-description');
+        const previewQuestions = document.getElementById('preview-questions');
+        const previewTimeline = document.getElementById('preview-timeline');
+        const previewPrev = document.getElementById('preview-prev');
+        const previewNext = document.getElementById('preview-next');
+        const previewProgress = document.getElementById('preview-progress');
+        const previewTopics = Object.fromEntries(@json($temas).map(tema => [String(tema.id), tema]));
+        let previewStep = -1;
+
+        const escapeHtml = value => String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+
+        function questionControl(question, index) {
+            const options = Array.isArray(question.opciones) ? question.opciones : [];
+            const fieldId = `preview-question-${index}`;
+
+            if (question.tipo_respuesta === 'texto_largo') {
+                return `<textarea id="${fieldId}" class="preview-auto-grow" rows="4" placeholder="Escribe tu respuesta..."></textarea>`;
+            }
+
+            if (question.tipo_respuesta === 'opcion_multiple') {
+                return `<div class="preview-custom-select" id="${fieldId}">
+                    <button type="button" class="preview-select-trigger" aria-expanded="false">
+                        <span>Selecciona una opción</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="preview-select-menu">
+                        ${options.map((option, optionIndex) => `<label>
+                            <input type="radio" name="${fieldId}" value="${escapeHtml(option)}">
+                            <span>${escapeHtml(option)}</span>
+                            <i class="fas fa-check"></i>
+                        </label>`).join('')}
+                    </div>
+                </div>`;
+            }
+
+            if (question.tipo_respuesta === 'checkbox') {
+                return `<div class="preview-checkboxes">
+                    ${options.map((option, optionIndex) => `<label for="${fieldId}-${optionIndex}">
+                        <input id="${fieldId}-${optionIndex}" type="checkbox" value="${escapeHtml(option)}">
+                        <span class="preview-checkbox-mark"><i class="fas fa-check"></i></span>
+                        <span>${escapeHtml(option)}</span>
+                    </label>`).join('')}
+                </div>`;
+            }
+
+            return `<textarea id="${fieldId}" class="preview-auto-grow preview-short-answer" rows="1" placeholder="Escribe tu respuesta..."></textarea>`;
+        }
+
+        function openTopicPreview(topicId) {
+            const topic = previewTopics[String(topicId)];
+            if (!topic) return;
+
+            previewTitle.textContent = topic.nombre_tema;
+            previewDescription.textContent = topic.descripcion_tema || 'Completa las siguientes preguntas para continuar.';
+            const questions = Array.isArray(topic.preguntas) ? topic.preguntas : [];
+            previewTimeline.innerHTML = questions.map((question, index) => `<span class="preview-timeline-step" data-timeline-step="${index}">${index + 1}</span>`).join('');
+            previewQuestions.innerHTML = `<section class="preview-cover" data-preview-cover>
+                    <span class="preview-cover-label">Sección del cuestionario</span>
+                    <h3>${escapeHtml(topic.nombre_tema)}</h3>
+                    <p>${escapeHtml(topic.descripcion_tema || 'Completa las siguientes preguntas para continuar.')}</p>
+                    <div class="preview-cover-meta"><i class="fas fa-list-check"></i> ${questions.length} pregunta${questions.length === 1 ? '' : 's'}</div>
+                </section>` + (questions.length
+                ? questions.map((question, index) => `<div class="preview-question hidden" data-preview-step="${index}">
+                    <div class="preview-question-number">${index + 1}</div>
+                    <div class="preview-question-content">
+                        <label for="preview-question-${index}">${escapeHtml(question.pregunta)}${question.requerido ? '<span class="preview-required">*</span>' : '<span class="preview-optional">(Opcional)</span>'}</label>
+                        ${question.ayuda ? `<p>${escapeHtml(question.ayuda)}</p>` : ''}
+                        ${questionControl(question, index)}
+                    </div>
+                </div>`).join('')
+                : '');
+
+            previewStep = -1;
+            setupCustomDropdowns();
+            setupAutoGrowFields();
+            updatePreviewStep();
+
+            previewModal.classList.remove('hidden');
+            previewModal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('overflow-hidden');
+            previewModal.querySelector('.preview-close').focus();
+        }
+
+        function setupCustomDropdowns() {
+            previewQuestions.querySelectorAll('.preview-custom-select').forEach(dropdown => {
+                const trigger = dropdown.querySelector('.preview-select-trigger');
+                const current = trigger.querySelector('span');
+                trigger.addEventListener('click', () => {
+                    const willOpen = !dropdown.classList.contains('is-open');
+                    previewQuestions.querySelectorAll('.preview-custom-select.is-open').forEach(item => {
+                        item.classList.remove('is-open');
+                        item.querySelector('.preview-select-trigger').setAttribute('aria-expanded', 'false');
+                    });
+                    dropdown.classList.toggle('is-open', willOpen);
+                    trigger.setAttribute('aria-expanded', String(willOpen));
+                });
+                dropdown.querySelectorAll('input[type="radio"]').forEach(option => {
+                    option.addEventListener('change', () => {
+                        current.textContent = option.value;
+                        dropdown.querySelectorAll('label').forEach(label => label.classList.toggle('is-selected', label.contains(option)));
+                        dropdown.classList.remove('is-open');
+                        trigger.setAttribute('aria-expanded', 'false');
+                    });
+                });
+            });
+        }
+
+        function setupAutoGrowFields() {
+            previewQuestions.querySelectorAll('.preview-auto-grow').forEach(field => {
+                const resizeField = () => {
+                    field.style.height = 'auto';
+                    field.style.height = `${field.scrollHeight}px`;
+                };
+                field.addEventListener('input', resizeField);
+                resizeField();
+            });
+        }
+
+        function updatePreviewStep() {
+            const steps = Array.from(previewQuestions.querySelectorAll('[data-preview-step]'));
+            const cover = previewQuestions.querySelector('[data-preview-cover]');
+            cover?.classList.toggle('hidden', previewStep !== -1);
+            previewModal.classList.toggle('is-cover', previewStep === -1);
+            steps.forEach((step, index) => step.classList.toggle('hidden', index !== previewStep));
+            previewQuestions.scrollTop = 0;
+            previewTimeline.querySelectorAll('[data-timeline-step]').forEach((item, index) => {
+                item.classList.toggle('is-active', index === previewStep);
+                item.classList.toggle('is-complete', previewStep > index);
+            });
+            previewPrev.disabled = previewStep === -1;
+            previewPrev.classList.toggle('is-hidden', previewStep === -1);
+            previewNext.disabled = false;
+            previewNext.innerHTML = previewStep === -1 && steps.length === 0
+                ? 'Cerrar <i class="fas fa-xmark"></i>'
+                : previewStep === -1
+                ? 'Comenzar <i class="fas fa-arrow-right"></i>'
+                : previewStep === steps.length - 1
+                ? 'Finalizar vista previa <i class="fas fa-check"></i>'
+                : 'Siguiente <i class="fas fa-arrow-right"></i>';
+            previewProgress.textContent = previewStep === -1 ? '' : `Pregunta ${previewStep + 1} de ${steps.length}`;
+        }
+
+        function closeTopicPreview() {
+            previewModal.classList.add('hidden');
+            previewModal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        document.querySelectorAll('.topic-row').forEach(row => {
+            row.addEventListener('click', event => {
+                if (event.target.closest('a, button, form, .cursor-move')) return;
+                openTopicPreview(row.dataset.id);
+            });
+            row.addEventListener('keydown', event => {
+                if (event.target.closest('a, button, form, .cursor-move')) return;
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openTopicPreview(row.dataset.id);
+                }
+            });
+        });
+
+        previewModal.querySelectorAll('[data-close-preview]').forEach(control => control.addEventListener('click', closeTopicPreview));
+        previewPrev.addEventListener('click', () => {
+            if (previewStep >= 0) {
+                previewStep--;
+                updatePreviewStep();
+            }
+        });
+        previewNext.addEventListener('click', () => {
+            const steps = previewQuestions.querySelectorAll('[data-preview-step]');
+            if (previewStep === -1 && steps.length) {
+                previewStep = 0;
+                updatePreviewStep();
+                return;
+            }
+            if (previewStep < steps.length - 1) {
+                previewStep++;
+                updatePreviewStep();
+            } else {
+                closeTopicPreview();
+            }
+        });
+        previewModal.addEventListener('click', event => {
+            if (!event.target.closest('.preview-custom-select')) {
+                previewQuestions.querySelectorAll('.preview-custom-select.is-open').forEach(dropdown => {
+                    dropdown.classList.remove('is-open');
+                    dropdown.querySelector('.preview-select-trigger').setAttribute('aria-expanded', 'false');
+                });
+            }
+        });
+        document.body.appendChild(previewModal);
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && !previewModal.classList.contains('hidden')) closeTopicPreview();
+        });
         
         if (el) {
             new Sortable(el, {
@@ -179,7 +416,7 @@
             };
             
             const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 p-4 border-l-4 rounded-r-xl shadow-lg ${colors[type]} z-50 transform transition-all duration-500 translate-x-full`;
+            notification.className = `fixed bottom-6 right-6 p-4 border-l-4 rounded-r-xl shadow-lg ${colors[type]} z-50 transform transition-all duration-500 translate-x-full`;
             notification.innerHTML = `
                 <div class="flex items-center">
                     <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-3 text-${type === 'success' ? 'green' : 'red'}-500"></i>
@@ -234,6 +471,451 @@
         background-repeat:   no-repeat;
     }
 
+    /* Diseño plano compartido con el constructor */
+    #questionnaire-index {
+        --prodovi-purple: #5B2B76;
+        --prodovi-orange: #EF6C22;
+        --prodovi-turquoise: #117E8C;
+        color: #17131d;
+    }
+    #questionnaire-index > .w-full > :not(.rp-banner) {
+        margin-left: 2rem;
+        margin-right: 2rem;
+    }
+    #questionnaire-index .rp-banner {
+        min-height: 150px;
+        border-bottom: 5px solid var(--prodovi-orange);
+        border-radius: 0;
+        background: #242426;
+    }
+    #questionnaire-index .rp-banner-overlay {
+        display: none;
+    }
+    #questionnaire-index .hero-content { position: relative; z-index: 2; max-width: 720px; }
+    #questionnaire-index .hero-title { margin: 0; color: #fff; font-size: clamp(1.65rem, 3vw, 2.35rem); font-weight: 800; line-height: 1.08; letter-spacing: -.035em; }
+    #questionnaire-index .hero-title span { color: var(--prodovi-orange); }
+    #questionnaire-index .hero-description { max-width: 620px; margin-top: 11px; color: #96969c; font-size: .86rem; line-height: 1.55; }
+    #questionnaire-index .back-button { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 13px; padding: 9px 14px; border: 1px solid rgba(255,255,255,.22); border-radius: 3px; background: rgba(255,255,255,.1); color: #fff; font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; transition: .2s ease; }
+    #questionnaire-index .back-button:hover { border-color: var(--prodovi-orange); background: var(--prodovi-orange); transform: translateX(-2px); }
+    #questionnaire-index .login-mosaic { position: relative; z-index: 2; width: 144px; height: 96px; flex: 0 0 auto; display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(2,1fr); }
+    #questionnaire-index .login-mosaic span { display: block; }
+    #questionnaire-index .login-mosaic span:nth-child(1) { background: var(--prodovi-orange); border-radius: 100% 0 0 0; }
+    #questionnaire-index .login-mosaic span:nth-child(2) { background: #F5A900; border-radius: 0 0 0 100%; }
+    #questionnaire-index .login-mosaic span:nth-child(3) { background: var(--prodovi-purple); border-radius: 100% 0 100% 0; }
+    #questionnaire-index .login-mosaic span:nth-child(4) { background: var(--prodovi-turquoise); border-radius: 0 100% 0 100%; }
+    #questionnaire-index .login-mosaic span:nth-child(5) { background: #7DA533; border-radius: 50%; }
+    #questionnaire-index .login-mosaic span:nth-child(6) { border: 12px solid #607078; border-top-color: transparent; border-left-color: transparent; border-radius: 50%; transform: rotate(45deg); }
+    #questionnaire-index .page-actions { margin-top: 2rem; }
+    #questionnaire-index .new-topic-button {
+        border-radius: 3px;
+        background: linear-gradient(135deg, var(--prodovi-orange), #dc5710);
+        box-shadow: none;
+    }
+    #questionnaire-index .new-topic-button:hover { background: #ff7d32; }
+    #questionnaire-index .status-alert {
+        margin-top: 2rem;
+        border-radius: 3px;
+    }
+    #questionnaire-index .topics-panel {
+        margin-top: 2rem;
+        border-top: 1px solid #d9d2dc;
+        border-bottom: 1px solid #d9d2dc;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    #questionnaire-index .topics-toolbar {
+        border-left: 4px solid var(--prodovi-purple);
+        background: #f7f5f8;
+    }
+    #questionnaire-index .topic-row {
+        border-left: 4px solid transparent;
+        background: #fff;
+    }
+    #questionnaire-index .topic-row:hover {
+        border-left-color: var(--prodovi-orange);
+        background: #faf8fb;
+    }
+    #questionnaire-index .topic-number,
+    #questionnaire-index .topic-id,
+    #questionnaire-index .topic-action { border-radius: 2px; }
+    #questionnaire-index .topic-number {
+        background: var(--prodovi-purple);
+        color: #fff;
+    }
+    #questionnaire-index #temas-list > li:last-child a,
+    #questionnaire-index #temas-list > li:last-child button { border-radius: 3px; }
+    #questionnaire-index .topic-row { cursor: pointer; }
+    #questionnaire-index .topic-row:focus-visible {
+        outline: 3px solid rgba(91,43,118,.2);
+        outline-offset: -3px;
+    }
+
+    .preview-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+    }
+    .preview-modal.hidden { display: none; }
+    .preview-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(18,14,20,.72);
+        backdrop-filter: blur(5px);
+    }
+    .preview-dialog {
+        position: relative;
+        width: min(880px, 100%);
+        max-height: calc(100vh - 48px);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,.15);
+        border-radius: 3px;
+        background: #fff;
+        box-shadow: 0 28px 80px rgba(0,0,0,.32);
+    }
+    .preview-side-art {
+        position: absolute;
+        z-index: 4;
+        top: 160px;
+        bottom: 78px;
+        display: none;
+        align-content: center;
+        gap: 8px;
+        width: 54px;
+        pointer-events: none;
+    }
+    .preview-modal.is-cover .preview-side-art { display: grid; }
+    .preview-side-left { left: 18px; }
+    .preview-side-right { right: 18px; }
+    .preview-shape {
+        width: 54px;
+        height: 48px;
+        display: block;
+        border-radius: 7px;
+        opacity: .92;
+    }
+    .preview-shape.shape-01 {
+        background: #EF6C22;
+        clip-path: polygon(0 0, 100% 0, 100% 68%, 68% 68%, 68% 100%, 0 100%);
+    }
+    .preview-shape.shape-02 {
+        background: #F5A900;
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 24% 100%, 24% 76%, 0 76%);
+    }
+    .preview-shape.shape-03 {
+        background: #5B2B76;
+        clip-path: polygon(18% 0, 100% 0, 100% 82%, 82% 100%, 0 100%, 0 18%);
+    }
+    .preview-shape.shape-04 {
+        background: #117E8C;
+        clip-path: polygon(0 0, 74% 0, 74% 24%, 100% 24%, 100% 100%, 0 100%);
+    }
+    .preview-shape.shape-05 {
+        background: #7DA533;
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 34% 100%, 34% 66%, 0 66%);
+    }
+    .preview-header {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 26px 30px;
+        border-bottom: 5px solid #EF6C22;
+        background: #242426;
+        color: #fff;
+    }
+    .preview-header > div:first-child { min-width: 0; flex: 1; }
+    .preview-kicker {
+        display: block;
+        margin-bottom: 8px;
+        color: #EF6C22;
+        font-size: .68rem;
+        font-weight: 900;
+        letter-spacing: .13em;
+        text-transform: uppercase;
+    }
+    .preview-accessible-title {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0,0,0,0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+    }
+    .preview-timeline {
+        display: flex;
+        align-items: center;
+        max-width: 100%;
+        padding: 5px 2px 2px;
+        overflow-x: auto;
+        scrollbar-width: thin;
+    }
+    .preview-timeline-step {
+        position: relative;
+        width: 30px;
+        height: 30px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 30px;
+        margin-right: 34px;
+        border: 1px solid #666269;
+        border-radius: 50%;
+        background: #343436;
+        color: #aaa5ad;
+        font-size: .7rem;
+        font-weight: 900;
+        transition: .25s ease;
+    }
+    .preview-timeline-step:last-child { margin-right: 0; }
+    .preview-timeline-step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 30px;
+        width: 34px;
+        height: 2px;
+        background: #555158;
+        transition: .25s ease;
+    }
+    .preview-timeline-step.is-active {
+        border-color: #EF6C22;
+        background: #EF6C22;
+        color: #fff;
+        box-shadow: 0 0 0 4px rgba(239,108,34,.16);
+    }
+    .preview-timeline-step.is-complete {
+        border-color: #117E8C;
+        background: #117E8C;
+        color: #fff;
+    }
+    .preview-timeline-step.is-complete::after { background: #117E8C; }
+    .preview-header h2 {
+        margin: 0;
+        font-size: clamp(1.35rem, 3vw, 1.9rem);
+        font-weight: 800;
+        line-height: 1.15;
+    }
+    .preview-header p { margin-top: 8px; color: #aaa5ad; font-size: .86rem; }
+    .preview-close {
+        width: 38px;
+        height: 38px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        border: 1px solid rgba(255,255,255,.2);
+        border-radius: 2px;
+        background: rgba(255,255,255,.08);
+        color: #fff;
+        transition: .2s ease;
+    }
+    .preview-close:hover { border-color: #EF6C22; background: #EF6C22; }
+    .preview-body {
+        overflow-y: auto;
+        min-height: 330px;
+        padding: 8px 30px;
+        background: #fff;
+    }
+    .preview-cover {
+        min-height: 314px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 48px 92px;
+        text-align: center;
+    }
+    .preview-cover.hidden { display: none; }
+    .preview-cover-label {
+        margin-bottom: 14px;
+        color: #EF6C22;
+        font-size: .68rem;
+        font-weight: 900;
+        letter-spacing: .13em;
+        text-transform: uppercase;
+    }
+    .preview-cover h3 {
+        max-width: 650px;
+        margin: 0;
+        color: #29222c;
+        font-size: clamp(1.7rem, 4vw, 2.6rem);
+        font-weight: 900;
+        line-height: 1.08;
+        letter-spacing: -.035em;
+    }
+    .preview-cover p {
+        max-width: 620px;
+        margin-top: 16px;
+        color: #756b7a;
+        font-size: .95rem;
+        line-height: 1.65;
+    }
+    .preview-cover-meta {
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid #e5e0e7;
+        color: #5B2B76;
+        font-size: .78rem;
+        font-weight: 800;
+    }
+    .preview-cover-meta i { margin-right: 7px; color: #117E8C; }
+    .preview-question {
+        display: grid;
+        grid-template-columns: 34px minmax(0,1fr);
+        gap: 16px;
+        padding: 24px 0;
+        border-bottom: 1px solid #e5e0e7;
+    }
+    .preview-question:last-child { border-bottom: 0; }
+    .preview-question.hidden { display: none; }
+    .preview-question-number {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border-radius: 2px;
+        background: #5B2B76;
+        color: #fff;
+        font-size: .78rem;
+        font-weight: 900;
+    }
+    .preview-question-content > label {
+        display: block;
+        margin-bottom: 7px;
+        color: #28222b;
+        font-size: .95rem;
+        font-weight: 800;
+    }
+    .preview-question-content > p { margin-bottom: 10px; color: #817786; font-size: .78rem; }
+    .preview-required { margin-left: 4px; color: #dc4d3f; }
+    .preview-optional { margin-left: 7px; color: #938799; font-size: .76rem; font-weight: 600; }
+    .preview-question input[type="text"],
+    .preview-question textarea,
+    .preview-select-trigger {
+        width: 100%;
+        min-height: 46px;
+        padding: 11px 14px;
+        border: 1px solid #d8cfdc;
+        border-radius: 3px;
+        background: #fff;
+        color: #342c38;
+        font-size: .88rem;
+        outline: none;
+    }
+    .preview-question input[type="text"]:focus,
+    .preview-question textarea:focus,
+    .preview-select-trigger:focus { border-color: #5B2B76; box-shadow: 0 0 0 3px rgba(91,43,118,.1); }
+    .preview-question textarea { resize: vertical; }
+    .preview-question .preview-auto-grow {
+        overflow-y: hidden;
+        resize: none;
+    }
+    .preview-question .preview-short-answer { min-height: 46px; }
+    .preview-custom-select { position: relative; }
+    .preview-select-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text-align: left;
+        cursor: pointer;
+    }
+    .preview-select-trigger i { color: #5B2B76; transition: transform .2s ease; }
+    .preview-custom-select.is-open .preview-select-trigger { border-color: #5B2B76; }
+    .preview-custom-select.is-open .preview-select-trigger i { transform: rotate(180deg); }
+    .preview-select-menu {
+        position: absolute;
+        z-index: 20;
+        top: calc(100% + 5px);
+        right: 0;
+        left: 0;
+        display: grid;
+        gap: 4px;
+        padding: 8px;
+        border: 1px solid #d8cfdc;
+        border-radius: 3px;
+        background: #fff;
+        box-shadow: 0 16px 35px rgba(44,30,50,.18);
+    }
+    .preview-custom-select:not(.is-open) .preview-select-menu { display: none; }
+    .preview-select-menu label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 10px;
+        color: #514557;
+        font-size: .85rem;
+        cursor: pointer;
+    }
+    .preview-select-menu label:hover,
+    .preview-select-menu label.is-selected { background: #f5eff7; color: #5B2B76; }
+    .preview-select-menu input { position: absolute; opacity: 0; pointer-events: none; }
+    .preview-select-menu label > i { margin-left: auto; color: #5B2B76; opacity: 0; }
+    .preview-select-menu label.is-selected > i { opacity: 1; }
+    .preview-checkboxes { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+    .preview-checkboxes label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 46px;
+        padding: 10px 12px;
+        border: 1px solid #d8cfdc;
+        border-radius: 3px;
+        color: #514557;
+        font-size: .85rem;
+        cursor: pointer;
+        transition: .18s ease;
+    }
+    .preview-checkboxes label:hover { border-color: #5B2B76; background: #faf7fb; }
+    .preview-checkboxes input { position: absolute; opacity: 0; pointer-events: none; }
+    .preview-checkbox-mark {
+        width: 20px;
+        height: 20px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        border: 1px solid #bfb4c3;
+        border-radius: 2px;
+        color: transparent;
+        font-size: .65rem;
+    }
+    .preview-checkboxes input:checked + .preview-checkbox-mark { border-color: #5B2B76; background: #5B2B76; color: #fff; }
+    .preview-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 16px 30px;
+        border-top: 1px solid #e5e0e7;
+        background: #f7f5f8;
+        color: #756a7a;
+        font-size: .78rem;
+    }
+    .preview-progress { color: #756a7a; font-size: .78rem; font-weight: 800; }
+    .preview-nav-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border: 1px solid #d4cad8;
+        border-radius: 3px;
+        font-size: .8rem;
+        font-weight: 800;
+    }
+    .preview-prev { background: #fff; color: #5f5464; }
+    .preview-prev.is-hidden { visibility: hidden; }
+    .preview-next { border-color: #5B2B76; background: #5B2B76; color: #fff; }
+    .preview-next:hover { background: #3d174f; }
+    .preview-empty { padding: 70px 20px; color: #8b818f; text-align: center; }
+    .preview-empty i { margin-bottom: 12px; color: #117E8C; font-size: 1.8rem; }
+
     /* Estilo para el drag */
     .sortable-ghost {
         opacity: 0.4;
@@ -246,19 +928,27 @@
     }
 
     @media (max-width: 640px) {
+        .preview-modal { padding: 10px; }
+        .preview-dialog { max-height: calc(100vh - 20px); }
+        .preview-side-art { display: none !important; }
+        .preview-cover { padding: 42px 18px; }
+        .preview-header, .preview-body, .preview-footer { padding-left: 18px; padding-right: 18px; }
+        .preview-question { grid-template-columns: 28px minmax(0,1fr); gap: 11px; }
+        .preview-question-number { width: 28px; height: 28px; }
+        .preview-footer { align-items: stretch; flex-direction: column; }
+        .preview-checkboxes { grid-template-columns: 1fr; }
+        .preview-nav-button { flex: 1; }
+        #questionnaire-index > .w-full > :not(.rp-banner) {
+            margin-left: 1rem;
+            margin-right: 1rem;
+        }
         .rp-banner .px-8 { 
             padding-left: 1.25rem; 
             padding-right: 1.25rem; 
         }
-        .rp-banner .flex.flex-col.sm\:flex-row {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-        .rp-banner a {
-            justify-content: center;
-            width: 100%;
-        }
+        #questionnaire-index .login-mosaic { display: none; }
+        #questionnaire-index .back-button { width: auto; justify-content: flex-start; }
+        #questionnaire-index .page-actions .new-topic-button { width: 100%; justify-content: center; }
     }
 </style>
 @endsection

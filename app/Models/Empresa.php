@@ -14,8 +14,10 @@ class Empresa extends Model
 
     protected $fillable = [
         'usuario_id',
+        'suscripcion_id',
         'nombre_empresa',
         'tipo_empresa',
+        'direccion',
         'descripcion',
         'logo',
         'cuestionario_completado',
@@ -28,6 +30,11 @@ class Empresa extends Model
     public function usuario()
     {
         return $this->belongsTo(User::class, 'usuario_id');
+    }
+
+    public function suscripcion()
+    {
+        return $this->belongsTo(Suscripcion::class);
     }
 
     /**
@@ -54,5 +61,10 @@ class Empresa extends Model
     public function planesMarketing(): HasMany // <-- USA EL TIPO CORRECTO
     {
         return $this->hasMany(PlanMarketing::class);
+    }
+
+    public function recursos(): HasMany
+    {
+        return $this->hasMany(RecursoEmpresa::class);
     }
 }

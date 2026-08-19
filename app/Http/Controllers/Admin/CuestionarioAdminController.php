@@ -50,14 +50,22 @@ class CuestionarioAdminController extends Controller
         $rules = [];
 
         foreach ($preguntas as $pregunta) {
-            $rules["respuesta_{$pregunta->id}"] = $pregunta->requerido ? 'required|string' : 'nullable|string';
+            if ($pregunta->tipo_respuesta === 'checkbox') {
+                $rules["respuesta_{$pregunta->id}"] = $pregunta->requerido ? 'required' : 'nullable';
+            } else {
+                $rules["respuesta_{$pregunta->id}"] = ($pregunta->requerido ? 'required' : 'nullable').'|string';
+            }
+            $rules["respuesta_{$pregunta->id}_otro"] = 'nullable|string|max:500';
         }
 
         $request->validate($rules);
 
         DB::transaction(function () use ($request, $empresa, $preguntas) {
             foreach ($preguntas as $pregunta) {
-                $respuestaTexto = $request->input("respuesta_{$pregunta->id}");
+                $respuestaTexto = $this->formatAnswer(
+                    $request->input("respuesta_{$pregunta->id}"),
+                    $request->input("respuesta_{$pregunta->id}_otro")
+                );
 
                 $respuesta = RespuestaCuestionario::withTrashed()->firstOrNew([
                     'empresa_id' => $empresa->id,
@@ -85,5 +93,17 @@ class CuestionarioAdminController extends Controller
 
         return redirect()->route('administrador.empresas.cuestionario.show', $empresa->id)
             ->with('success', 'Las respuestas del cuestionario se han guardado correctamente.');
+    }
+
+    private function formatAnswer($answer, ?string $other): string
+    {
+        $values = is_array($answer) ? $answer : [$answer];
+        $values = collect($values)->filter(fn ($value) => filled($value))->map(fn ($value) => trim((string) $value));
+
+        if (filled($other) && $values->contains('Otro')) {
+            $values = $values->reject(fn ($value) => $value === 'Otro')->push('Otro: '.trim($other));
+        }
+
+        return $values->implode(' | ');
     }
 }

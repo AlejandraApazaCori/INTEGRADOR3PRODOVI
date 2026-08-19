@@ -3,7 +3,20 @@
 @section('title', 'Analiticas')
 
 @section('content')
-<div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+<div id="client-analytics" class="min-h-screen">
+    <header class="analytics-hero">
+        <div class="analytics-hero-content">
+            <span class="analytics-kicker">Resultados de tu estrategia</span>
+            <h1>Analíticas de <span>rendimiento</span></h1>
+            <p>Consulta el desempeño de tu campaña y descubre cómo está creciendo tu presencia digital.</p>
+        </div>
+        <div class="analytics-hero-side">
+            <div class="analytics-status"><small>Estado</small><strong>{{ $campaniaActual ? 'Campaña activa' : 'En preparación' }}</strong></div>
+            <div class="login-mosaic" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+    </header>
+    <main class="analytics-content">
+    <section class="analytics-panel {{ $campaniaActual ? '' : 'is-waiting' }}">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
             <h2 class="text-2xl font-bold text-gray-800">Analiticas de Rendimiento</h2>
@@ -34,12 +47,61 @@
             @include('clientes.analiticas.partials.analiticas')
         </div>
     @else
-        <div class="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center">
-            <p class="text-base font-semibold text-gray-700">Aun no se empezo con la campaña.</p>
-            <p class="mt-2 text-sm text-gray-500">Cuando tu campaña este activa, aqui veras sus analiticas de rendimiento.</p>
-        </div>
+        <section class="analytics-wait" aria-labelledby="analytics-wait-title">
+            <div class="analytics-wait-icon" aria-hidden="true"><i class="fas fa-chart-line"></i></div>
+            <h2 id="analytics-wait-title">Aún no comenzó tu campaña</h2>
+            <p>Cuando tu campaña esté activa, aquí verás sus analíticas de rendimiento.</p>
+        </section>
     @endif
+    </section>
+    </main>
 </div>
+
+<style>
+    #client-analytics { --purple:#5B2B76; --orange:#EF6C22; --green:#7DA533; --turquoise:#117E8C; padding-bottom:42px; background:#fff; color:#17131d; }
+    #client-analytics .analytics-hero { min-height:150px; display:flex; align-items:center; justify-content:space-between; gap:32px; padding:28px 32px; background:#242426; color:#fff; }
+    #client-analytics .analytics-hero-content { max-width:730px; }
+    #client-analytics .analytics-kicker { display:block; margin-bottom:10px; color:#4fc3ca; font-size:.68rem; font-weight:900; letter-spacing:.13em; text-transform:uppercase; }
+    #client-analytics .analytics-hero h1 { margin:0; font-size:clamp(1.65rem,3vw,2.35rem); font-weight:800; line-height:1.08; letter-spacing:-.035em; }
+    #client-analytics .analytics-hero h1 span { color:#4fc3ca; }
+    #client-analytics .analytics-hero p { max-width:650px; margin-top:11px; color:#aaa5ad; font-size:.86rem; line-height:1.55; }
+    #client-analytics .analytics-hero-side { display:flex; align-items:center; gap:26px; }
+    #client-analytics .analytics-status { min-width:138px; padding:13px 16px; border-left:4px solid var(--turquoise); background:#303033; }
+    #client-analytics .analytics-status small, #client-analytics .analytics-status strong { display:block; }
+    #client-analytics .analytics-status small { color:#aaa5ad; font-size:.63rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    #client-analytics .analytics-status strong { margin-top:4px; color:#fff; font-size:.82rem; }
+    #client-analytics .login-mosaic { width:144px; height:96px; display:grid; flex:0 0 auto; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(2,1fr); }
+    #client-analytics .login-mosaic span:nth-child(1) { background:var(--orange); border-radius:100% 0 0 0; }
+    #client-analytics .login-mosaic span:nth-child(2) { background:#F5A900; border-radius:0 0 0 100%; }
+    #client-analytics .login-mosaic span:nth-child(3) { background:var(--purple); border-radius:100% 0 100% 0; }
+    #client-analytics .login-mosaic span:nth-child(4) { background:var(--turquoise); border-radius:0 100% 0 100%; }
+    #client-analytics .login-mosaic span:nth-child(5) { background:var(--green); border-radius:50%; }
+    #client-analytics .login-mosaic span:nth-child(6) { border:12px solid #607078; border-top-color:transparent; border-left-color:transparent; border-radius:50%; transform:rotate(45deg); }
+    #client-analytics .analytics-content { margin:32px; }
+    #client-analytics .analytics-panel { padding:24px; border-top:1px solid #d9d2dc; border-bottom:1px solid #d9d2dc; background:#fff; }
+    #client-analytics .analytics-panel.is-waiting { padding:0; border:0; background:transparent; }
+    #client-analytics .analytics-panel.is-waiting > div:first-child { display:none; }
+    #client-analytics .analytics-wait { padding:58px 24px 48px; text-align:center; }
+    #client-analytics .analytics-wait-icon { width:68px; height:68px; display:grid; place-items:center; margin:0 auto 18px; border-radius:50%; background:#e5f2f3; color:var(--turquoise); font-size:1.7rem; }
+    #client-analytics .analytics-wait h2 { margin:0; color:#302834; font-size:1.25rem; font-weight:900; letter-spacing:-.025em; }
+    #client-analytics .analytics-wait p { max-width:580px; margin:9px auto 0; color:#756a7a; font-size:.9rem; line-height:1.65; }
+    html[data-client-theme="dark"] #client-analytics { background:#141216; color:#e9e5eb; }
+    html[data-client-theme="dark"] #client-analytics .analytics-panel { border-color:#3b3540; background:#1e1b21; }
+    html[data-client-theme="dark"] #client-analytics .analytics-panel.is-waiting { background:transparent; }
+    html[data-client-theme="dark"] #client-analytics .analytics-wait-icon { background:#19383c; color:#78c3cb; }
+    html[data-client-theme="dark"] #client-analytics .analytics-wait h2 { color:#f1edf3; }
+    html[data-client-theme="dark"] #client-analytics .analytics-wait p { color:#b4abb8; }
+    @media (max-width:720px) {
+        #client-analytics .analytics-hero { padding:26px 20px; }
+        #client-analytics .login-mosaic { display:none; }
+        #client-analytics .analytics-content { margin:20px 16px; }
+        #client-analytics .analytics-panel { padding:18px; }
+    }
+    @media (max-width:500px) {
+        #client-analytics .analytics-hero { align-items:flex-start; flex-direction:column; }
+        #client-analytics .analytics-hero-side, #client-analytics .analytics-status { width:100%; }
+    }
+</style>
 
 @if($campaniaActual)
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

@@ -29,7 +29,11 @@ class PlanController extends Controller
             ])
             ->where('usuario_id', $userId)
             ->where('estado', 'activa')
-            ->where('fecha_fin', '>', now())
+            ->where(function ($query) {
+                $query->whereNull('vigencia_activada_at')
+                    ->orWhere('fecha_fin', '>', now());
+            })
+            ->latest('id')
             ->first();
 
         if (!$suscripcion) {
@@ -68,12 +72,20 @@ class PlanController extends Controller
             ->where('es_destacado', true)
             ->take(3);
 
+        $vigenciaActivada = $suscripcion->vigencia_activada_at !== null;
+        $pagoConfirmado = $suscripcion->pagos()
+            ->where('estado', 'completado')
+            ->latest('fecha_pago')
+            ->first();
+
         return response()->json([
             'plan' => [
                 'nombre' => $suscripcion->plan->nombre,
                 'descripcion' => $suscripcion->plan->descripcion,
-                'fecha_inicio' => Carbon::parse($suscripcion->fecha_inicio)->format('d/m/Y'),
-                'fecha_fin' => Carbon::parse($suscripcion->fecha_fin)->format('d/m/Y'),
+                'vigencia_activada' => $vigenciaActivada,
+                'fecha_inicio' => $vigenciaActivada ? Carbon::parse($suscripcion->fecha_inicio)->format('d/m/Y') : null,
+                'fecha_fin' => $vigenciaActivada ? Carbon::parse($suscripcion->fecha_fin)->format('d/m/Y') : null,
+                'fecha_pago' => $pagoConfirmado?->fecha_pago?->format('d/m/Y'),
                 'estado' => $suscripcion->estado,
                 'caracteristicas' => $caracteristicasDestacadas,
                 'todas_caracteristicas' => $todasCaracteristicas

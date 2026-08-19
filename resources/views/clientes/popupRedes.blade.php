@@ -12,6 +12,7 @@
     <style>
         :root { --purple:#7130a7; --purple-dark:#431760; --orange:#f47b20; --green:#72bf44; --turquoise:#19b9b2; --ink:#17131d; --muted:#716978; --soft:#f7f4f8; color-scheme:light; }
         * { box-sizing:border-box; }
+        .hidden { display:none!important; }
         html, body { min-height:100%; }
         body { margin:0; min-width:320px; background:#0e0b12; color:var(--ink); font-family:'Varela Round',sans-serif; }
         button, input, textarea { font:inherit; }
@@ -34,6 +35,7 @@
         .step-indicator { display:grid; grid-template-columns:42px 1fr; gap:12px; align-items:center; width:100%; padding:12px; border:0; border-radius:14px; background:transparent; color:#aaa2af; text-align:left; cursor:default; transition:.25s ease; }
         .step-indicator.is-active { color:#fff; background:rgba(255,255,255,.09); transform:translateX(4px); }
         .step-indicator.is-complete { color:#e4dfe7; }
+        .step-indicator.is-active,.step-indicator.is-complete { cursor:pointer; }
         .step-number { width:38px; height:38px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.16); border-radius:12px; font-family:'Rowdies',sans-serif; }
         .is-active .step-number { border-color:var(--orange); background:var(--orange); color:#fff; box-shadow:0 8px 20px rgba(244,123,32,.25); }
         .is-complete .step-number { border-color:var(--green); background:rgba(114,191,68,.15); color:var(--green); }
@@ -113,6 +115,8 @@
         .company-logo img { width:100%; height:100%; object-fit:cover; }
         .existing-company h3 { margin:0 0 5px; font-family:'Rowdies',sans-serif; }
         .existing-company p { margin:0; color:var(--muted); font-size:.83rem; }
+        .company-edit-button { width:40px; height:40px; display:grid; place-items:center; flex:0 0 auto; margin-left:auto; border:1px solid #d9cedd; border-radius:10px; background:#fff; color:var(--purple); text-decoration:none; transition:.2s ease; }
+        .company-edit-button:hover { border-color:var(--orange); background:var(--orange); color:#fff; transform:translateY(-2px); }
         .finish { text-align:center; }
         .finish-mark { width:94px; height:94px; display:grid; place-items:center; margin:0 auto 25px; border-radius:28px; background:var(--green); color:#fff; font-size:2.55rem; box-shadow:0 18px 40px rgba(114,191,68,.3); transform:rotate(-4deg); }
         .finish .lead { margin-inline:auto; }
@@ -348,11 +352,56 @@
                     <p class="lead">Usaremos esta información para reconocer la marca que publica y adaptar cada propuesta a su personalidad.</p>
                     @if(session('onboarding_success'))<div class="notice notice-success"><i class="fa-solid fa-circle-check"></i> {{ session('onboarding_success') }}</div>@endif
                     @if($empresa)
-                        <div class="existing-company">
-                            <span class="company-logo">@if($empresa->logo)<img src="{{ asset('storage/' . $empresa->logo) }}" alt="Logo de {{ $empresa->nombre_empresa }}">@else<i class="fa-solid fa-building"></i>@endif</span>
-                            <div><h3>{{ $empresa->nombre_empresa }}</h3><p>{{ $empresa->tipo_empresa }} · Esta empresa ya está lista para trabajar con PRODOVI.</p></div>
+                        <div id="existing-company-summary" class="{{ $errors->any() ? 'hidden' : '' }}">
+                            <div class="existing-company">
+                                <span class="company-logo">@if($empresa->logo)<img src="{{ asset('storage/' . $empresa->logo) }}" alt="Logo de {{ $empresa->nombre_empresa }}">@else<i class="fa-solid fa-building"></i>@endif</span>
+                                <div><h3>{{ $empresa->nombre_empresa }}</h3><p>{{ $empresa->tipo_empresa }} · Esta empresa ya está lista para trabajar con PRODOVI.</p></div>
+                                <button type="button" id="edit-existing-company" class="company-edit-button" title="Editar empresa" aria-label="Editar empresa"><i class="fa-solid fa-pen"></i></button>
+                            </div>
+                            <div class="actions"><button type="button" class="btn btn-secondary" data-next="2"><i class="fa-solid fa-arrow-left"></i> Atrás</button><button type="button" class="btn btn-primary" data-next="4">Continuar <i class="fa-solid fa-arrow-right"></i></button></div>
                         </div>
-                        <div class="actions"><button type="button" class="btn btn-secondary" data-next="2"><i class="fa-solid fa-arrow-left"></i> Atrás</button><button type="button" class="btn btn-primary" data-next="4">Continuar <i class="fa-solid fa-arrow-right"></i></button></div>
+                        <form id="existing-company-edit-form" class="form-card {{ $errors->any() ? '' : 'hidden' }}" action="{{ route('empresas.update', $empresa->id) }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            @method('PUT')
+                            <input type="hidden" name="return_to_onboarding" value="1">
+                            <div class="form-head"><span class="form-head-icon"><i class="fa-solid fa-pen"></i></span><span><strong>Editar empresa</strong><small>Actualiza los datos sin salir de este paso</small></span></div>
+                            <div class="form-body"><div class="form-grid">
+                                <div class="field-full">
+                                    <label for="nombre_empresa">Nombre de la empresa *</label>
+                                    <div class="field-shell"><i class="field-icon fa-solid fa-store"></i><input id="nombre_empresa" name="nombre_empresa" type="text" required maxlength="255" value="{{ old('nombre_empresa', $empresa->nombre_empresa) }}" placeholder="Ej: Mi negocio"></div>
+                                    @error('nombre_empresa')<p class="field-error">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label id="tipo_empresa_label">Tipo de empresa *</label>
+                                    <div class="custom-select" id="company-type-select">
+                                        <i class="field-icon fa-solid fa-briefcase"></i>
+                                        <input id="tipo_empresa" name="tipo_empresa" type="hidden" value="{{ old('tipo_empresa', $empresa->tipo_empresa) }}" required>
+                                        <button class="select-trigger has-value" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="tipo_empresa_label company-type-value"><span id="company-type-value">{{ old('tipo_empresa', $empresa->tipo_empresa) }}</span><i class="fa-solid fa-chevron-down"></i></button>
+                                        <div class="select-menu" role="listbox">
+                                            @foreach([['Tecnología','fa-laptop-code'],['Comercio','fa-cart-shopping'],['Servicios','fa-handshake'],['Gastronomía','fa-utensils'],['Salud','fa-heart-pulse'],['Educación','fa-graduation-cap'],['Belleza','fa-spa'],['Inmobiliaria','fa-house'],['Otro','fa-shapes']] as [$type,$icon])
+                                                <button type="button" class="select-option {{ old('tipo_empresa', $empresa->tipo_empresa) === $type ? 'is-selected' : '' }}" role="option" data-value="{{ $type }}"><i class="fa-solid {{ $icon }}"></i>{{ $type }}</button>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    @error('tipo_empresa')<p class="field-error">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label for="logo">Logo de la empresa</label>
+                                    <div class="logo-drop"><input id="logo" name="logo" type="file" accept="image/jpeg,image/png,image/gif"><span class="logo-preview" id="company-logo-preview">@if($empresa->logo)<img src="{{ asset('storage/'.$empresa->logo) }}" alt="">@else<i class="fa-solid fa-cloud-arrow-up"></i>@endif</span><span class="logo-copy"><strong id="company-logo-name">Cambiar logo</strong><small>PNG, JPG o GIF · Máx. 2 MB</small></span></div>
+                                    @error('logo')<p class="field-error">{{ $message }}</p>@enderror
+                                </div>
+                                <div class="field-full">
+                                    <label for="direccion">Dirección de la empresa <span style="font-weight:400;color:#8b818f;">(Opcional)</span></label>
+                                    <div class="field-shell"><i class="field-icon fa-solid fa-location-dot"></i><input id="direccion" name="direccion" type="text" maxlength="500" value="{{ old('direccion', $empresa->direccion) }}" placeholder="Ej: Av. Principal #123, Zona Central"></div>
+                                    @error('direccion')<p class="field-error">{{ $message }}</p>@enderror
+                                </div>
+                                <div class="field-full">
+                                    <label for="descripcion">Descripción</label>
+                                    <div class="field-shell"><i class="field-icon textarea-icon fa-solid fa-align-left"></i><textarea id="descripcion" name="descripcion" placeholder="Cuéntanos qué hace tu empresa...">{{ old('descripcion', $empresa->descripcion) }}</textarea></div>
+                                    @error('descripcion')<p class="field-error">{{ $message }}</p>@enderror
+                                </div>
+                            </div><div class="actions"><button type="button" id="cancel-company-edit" class="btn btn-secondary">Cancelar</button><button type="submit" class="btn btn-primary">Guardar cambios <i class="fa-solid fa-check"></i></button></div></div>
+                        </form>
                     @else
                         <form class="form-card" action="{{ route('clientes.onboarding.empresa') }}" method="POST" enctype="multipart/form-data">
                             @csrf
@@ -393,6 +442,11 @@
                                     @error('logo')<p class="field-error">{{ $message }}</p>@enderror
                                 </div>
                                 <div class="field-full">
+                                    <label for="direccion">Dirección de la empresa <span style="font-weight:400;color:#8b818f;">(Opcional)</span></label>
+                                    <div class="field-shell"><i class="field-icon fa-solid fa-location-dot"></i><input id="direccion" name="direccion" type="text" maxlength="500" value="{{ old('direccion') }}" placeholder="Ej: Av. Principal #123, Zona Central"></div>
+                                    @error('direccion')<p class="field-error">{{ $message }}</p>@enderror
+                                </div>
+                                <div class="field-full">
                                     <label for="descripcion">Descripción</label>
                                     <div class="field-shell"><i class="field-icon textarea-icon fa-solid fa-align-left"></i><textarea id="descripcion" name="descripcion" placeholder="Cuéntanos qué hace tu empresa, sus servicios y sus objetivos...">{{ old('descripcion') }}</textarea></div>
                                     @error('descripcion')<p class="field-error">{{ $message }}</p>@enderror
@@ -406,7 +460,7 @@
                     <div class="finish-mark"><i class="fa-solid fa-check"></i></div><span class="eyebrow">Configuración completada</span>
                     <h2>Gracias por configurar <span>tu cuenta.</span></h2><p class="lead">Ya conocemos tu empresa y tenemos el canal necesario para comenzar a construir su presencia digital.</p>
                     <div class="summary"><span><i class="fa-solid fa-check"></i> {{ $anyAccountLinked ? 'Red social vinculada' : 'Redes para más adelante' }}</span><span><i class="fa-solid fa-check"></i> Empresa registrada</span><span><i class="fa-solid fa-check"></i> Espacio preparado</span></div>
-                    <form class="actions" action="{{ route('clientes.onboarding.complete') }}" method="POST">@csrf<button type="submit" class="btn btn-green">Empezar en PRODOVI <i class="fa-solid fa-arrow-right"></i></button></form>
+                    <form class="actions" action="{{ route('clientes.onboarding.complete') }}" method="POST">@csrf<button type="submit" class="btn btn-green">Empezar<i class="fa-solid fa-arrow-right"></i></button></form>
                 </div></article>
             </div>
 
@@ -455,6 +509,7 @@ document.addEventListener('DOMContentLoaded',function(){
     const progressBar=document.getElementById('progress-bar');
     const maximumStep={{ $canContinueSocialSetup ? ($empresa ? 4 : 3) : 2 }};
     let currentStep=Math.min({{ $initialStep }},maximumStep);
+    let furthestStep=currentStep;
 
     const customSelect=document.getElementById('company-type-select');
     if(customSelect){
@@ -488,15 +543,27 @@ document.addEventListener('DOMContentLoaded',function(){
         reader.onload=event=>{logoPreview.innerHTML=`<img src="${event.target.result}" alt="Vista previa del logo">`;};
         reader.readAsDataURL(file);
     });
+    const companySummary=document.getElementById('existing-company-summary');
+    const companyEditForm=document.getElementById('existing-company-edit-form');
+    document.getElementById('edit-existing-company')?.addEventListener('click',()=>{
+        companySummary?.classList.add('hidden');
+        companyEditForm?.classList.remove('hidden');
+    });
+    document.getElementById('cancel-company-edit')?.addEventListener('click',()=>{
+        companyEditForm?.classList.add('hidden');
+        companySummary?.classList.remove('hidden');
+    });
     function showStep(step){
         currentStep=Math.max(1,Math.min(Number(step),maximumStep));
+        furthestStep=Math.max(furthestStep,currentStep);
         slides.forEach(slide=>slide.classList.toggle('is-active',Number(slide.dataset.step)===currentStep));
         visualScenes.forEach(scene=>scene.classList.toggle('is-active',Number(scene.dataset.visual)===currentStep));
-        indicators.forEach(indicator=>{const stepNumber=Number(indicator.dataset.indicator);indicator.classList.toggle('is-active',stepNumber===currentStep);indicator.classList.toggle('is-complete',stepNumber<currentStep);indicator.querySelector('.step-number').textContent=stepNumber<currentStep?'✓':stepNumber;});
+        indicators.forEach(indicator=>{const stepNumber=Number(indicator.dataset.indicator);const complete=stepNumber<=furthestStep&&stepNumber!==currentStep;indicator.classList.toggle('is-active',stepNumber===currentStep);indicator.classList.toggle('is-complete',complete);indicator.setAttribute('aria-disabled',stepNumber>furthestStep?'true':'false');indicator.querySelector('.step-number').textContent=complete?'✓':stepNumber;});
         progressBar.style.width=(currentStep*25)+'%';
         window.scrollTo({top:0,behavior:'smooth'});
     }
     document.querySelectorAll('[data-next]').forEach(button=>button.addEventListener('click',()=>{if(!button.disabled)showStep(button.dataset.next);}));
+    indicators.forEach(indicator=>indicator.addEventListener('click',()=>{const targetStep=Number(indicator.dataset.indicator);if(targetStep<=furthestStep&&targetStep<=maximumStep)showStep(targetStep);}));
     showStep(currentStep);
 });
 </script>

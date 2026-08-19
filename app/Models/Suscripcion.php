@@ -21,6 +21,7 @@ class Suscripcion extends Model
         'estado',
         'fecha_inicio',
         'fecha_fin',
+        'vigencia_activada_at',
         'fecha_cancelacion',
         'metodo_pago'
     ];
@@ -28,6 +29,7 @@ class Suscripcion extends Model
     protected $casts = [
         'fecha_inicio' => 'datetime',
         'fecha_fin' => 'datetime',
+        'vigencia_activada_at' => 'datetime',
         'fecha_cancelacion' => 'datetime',
     ];
 
@@ -37,7 +39,7 @@ class Suscripcion extends Model
 
         static::saving(function ($suscripcion) {
             if ($suscripcion->isDirty('fecha_fin') || $suscripcion->isDirty('estado')) {
-                if ($suscripcion->fecha_fin < now() && $suscripcion->estado == 'activa') {
+                if ($suscripcion->vigencia_activada_at && $suscripcion->fecha_fin < now() && $suscripcion->estado == 'activa') {
                     $suscripcion->estado = 'finalizada';
                     $suscripcion->fecha_cancelacion = now();
                 }
@@ -45,7 +47,7 @@ class Suscripcion extends Model
         });
 
         static::retrieved(function ($suscripcion) {
-            if ($suscripcion->fecha_fin < now() && $suscripcion->estado == 'activa') {
+            if ($suscripcion->vigencia_activada_at && $suscripcion->fecha_fin < now() && $suscripcion->estado == 'activa') {
                 $suscripcion->estado = 'finalizada';
                 $suscripcion->fecha_cancelacion = now();
                 $suscripcion->saveQuietly();
@@ -68,6 +70,16 @@ class Suscripcion extends Model
         return $this->hasMany(Pago::class);
     }
 
+    public function empresa(): HasOne
+    {
+        return $this->hasOne(Empresa::class);
+    }
+
+    public function campanias()
+    {
+        return $this->hasMany(Campania::class);
+    }
+
     /**
      * Obtiene el plan de marketing asociado a esta suscripción.
      */
@@ -78,11 +90,12 @@ class Suscripcion extends Model
 
     public function getEstaActivaAttribute()
     {
-        return $this->estado == 'activa' && $this->fecha_fin > now();
+        return $this->estado == 'activa'
+            && (! $this->vigencia_activada_at || $this->fecha_fin > now());
     }
 
     public function getEstaVencidaAttribute()
     {
-        return $this->fecha_fin < now();
+        return $this->vigencia_activada_at && $this->fecha_fin < now();
     }
 }

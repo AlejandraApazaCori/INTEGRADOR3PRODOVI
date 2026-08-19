@@ -20,7 +20,8 @@ class Campania extends Model
         'visto',
         'usuario_creador_id',
         'community_manager_id',
-        'usuario_cliente_id'
+        'usuario_cliente_id',
+        'suscripcion_id',
     ];
 
     protected $dates = ['fecha_inicio', 'fecha_fin', 'deleted_at'];
@@ -41,6 +42,10 @@ class Campania extends Model
     public function cliente()
     {
         return $this->belongsTo(User::class, 'usuario_cliente_id');
+    }
+    public function suscripcion()
+    {
+        return $this->belongsTo(Suscripcion::class);
     }
     public function tareas()
     {
