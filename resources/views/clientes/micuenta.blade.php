@@ -141,8 +141,26 @@
                                         ? $empresa->socialAccounts->keyBy('provider')
                                         : collect();
                                     $legacySocialAccounts = $loop->first ? $globalSocialAccounts : collect();
-                                    $companyFacebookLinked = filled(($companySocialAccounts->get('facebook') ?? $legacySocialAccounts->get('facebook'))?->provider_user_id);
-                                    $companyInstagramLinked = filled(($companySocialAccounts->get('instagram') ?? $legacySocialAccounts->get('instagram'))?->provider_user_id);
+                                    $companyFacebookAccount = $companySocialAccounts->get('facebook') ?? $legacySocialAccounts->get('facebook');
+                                    $companyFacebookPage = $companySocialAccounts->get('facebook_page') ?? $legacySocialAccounts->get('facebook_page');
+                                    $companyInstagramAccount = $companySocialAccounts->get('instagram') ?? $legacySocialAccounts->get('instagram');
+                                    $companyFacebookLinked = filled($companyFacebookAccount?->provider_user_id)
+                                        || filled($companyFacebookPage?->provider_user_id);
+                                    $companyInstagramLinked = filled($companyInstagramAccount?->provider_user_id);
+                                    $companyFacebookAccountName = $companyFacebookPage?->display_name
+                                        ?? data_get($companyFacebookPage?->metadata, 'page_name')
+                                        ?? $companyFacebookAccount?->display_name
+                                        ?? $companyFacebookAccount?->username
+                                        ?? $companyFacebookAccount?->provider_user_id;
+                                    $companyFacebookAccountDetail = $companyFacebookPage
+                                        ? 'Página autorizada de Facebook'
+                                        : 'Perfil autorizado de Facebook';
+                                    $companyInstagramAccountName = $companyInstagramAccount?->display_name
+                                        ?? $companyInstagramAccount?->username
+                                        ?? $companyInstagramAccount?->provider_user_id;
+                                    $companyInstagramAccountDetail = filled($companyInstagramAccount?->username)
+                                        ? '@'.ltrim($companyInstagramAccount->username, '@')
+                                        : 'Perfil de Instagram';
                                 @endphp
                                 <div class="company-social-card bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                                     <button type="button" class="open-company-social-modal"
@@ -150,6 +168,10 @@
                                         data-company-name="{{ $empresa->nombre_empresa }}"
                                         data-facebook-linked="{{ $companyFacebookLinked ? '1' : '0' }}"
                                         data-instagram-linked="{{ $companyInstagramLinked ? '1' : '0' }}"
+                                        data-facebook-account-name="{{ $companyFacebookAccountName }}"
+                                        data-facebook-account-detail="{{ $companyFacebookAccountDetail }}"
+                                        data-instagram-account-name="{{ $companyInstagramAccountName }}"
+                                        data-instagram-account-detail="{{ $companyInstagramAccountDetail }}"
                                         data-facebook-url="{{ route('clientes.social.redirect', ['provider' => 'facebook', 'empresa_id' => $empresa->id]) }}"
                                         data-instagram-url="{{ route('clientes.social.redirect', ['provider' => 'instagram', 'empresa_id' => $empresa->id]) }}">
                                         <i class="fas fa-share-nodes"></i> Vincular redes
@@ -300,11 +322,15 @@
             <div class="company-social-grid">
                 <a href="#" id="company-facebook-option" class="company-social-option facebook">
                     <div><span class="company-social-platform-icon"><i class="fab fa-facebook-f"></i></span><span class="company-social-badge">Disponible</span></div>
-                    <h4>Facebook</h4><p>Autoriza la página de esta empresa y permite que PRODOVI la reconozca.</p><strong>Conectar con Facebook <i class="fas fa-arrow-right"></i></strong>
+                    <h4>Facebook</h4><p>Autoriza la página de esta empresa y permite que PRODOVI la reconozca.</p>
+                    <div class="company-social-linked-account is-hidden"><span><i class="fas fa-circle-check"></i></span><div><small>Cuenta vinculada</small><b></b><em></em></div></div>
+                    <strong>Conectar con Facebook <i class="fas fa-arrow-right"></i></strong>
                 </a>
                 <a href="#" id="company-instagram-option" class="company-social-option instagram is-disabled" aria-disabled="true">
                     <div><span class="company-social-platform-icon"><i class="fab fa-instagram"></i></span><span class="company-social-badge">Bloqueado</span></div>
-                    <h4>Instagram</h4><p>Conecta el perfil de Instagram asociado al negocio después de Facebook.</p><strong>Esperando Facebook</strong>
+                    <h4>Instagram</h4><p>Conecta el perfil de Instagram asociado al negocio después de Facebook.</p>
+                    <div class="company-social-linked-account is-hidden"><span><i class="fas fa-circle-check"></i></span><div><small>Cuenta vinculada</small><b></b><em></em></div></div>
+                    <strong>Esperando Facebook</strong>
                 </a>
             </div>
         </div>
@@ -523,6 +549,13 @@
     .company-social-badge { padding:5px 7px; border-radius:2px; background:#edf7f8; color:#117e8c; font-size:.58rem; font-weight:900; text-transform:uppercase; }
     .company-social-option h4 { margin:14px 0 0; font-size:.96rem; font-weight:900; }
     .company-social-option p { flex:1; margin:6px 0 14px; color:#756a7a; font-size:.7rem; line-height:1.5; }
+    .company-social-linked-account { display:flex !important; align-items:center !important; justify-content:flex-start !important; gap:10px !important; margin:0 0 14px; padding:10px; border:1px solid #cdddaf; border-radius:3px; background:#fff; }
+    .company-social-linked-account.is-hidden { display:none !important; }
+    .company-social-linked-account > span { width:31px; height:31px; display:grid; place-items:center; flex:0 0 auto; border-radius:50%; background:#eaf3da; color:#587923; }
+    .company-social-linked-account > div { min-width:0; display:flex; flex-direction:column; align-items:flex-start; }
+    .company-social-linked-account small { color:#6c7e4c; font-size:.54rem; font-style:normal; font-weight:900; letter-spacing:.06em; text-transform:uppercase; }
+    .company-social-linked-account b { max-width:100%; overflow:hidden; color:#35451b; font-size:.72rem; font-weight:900; text-overflow:ellipsis; white-space:nowrap; }
+    .company-social-linked-account em { color:#778064; font-size:.58rem; font-style:normal; }
     .company-social-option > strong { color:#5b2b76; font-size:.68rem; font-weight:900; }
     .company-social-option.is-linked { border-color:#7da533; border-top-color:#7da533; background:#f7faF1; }
     .company-social-option.is-linked .company-social-badge { background:#eaf3da; color:#587923; }
@@ -536,6 +569,9 @@
     html[data-client-theme="dark"] .company-social-option { border-color:#403943; background:#29252c; color:#f1edf3; }
     html[data-client-theme="dark"] .company-social-option p { color:#b4abb8; }
     html[data-client-theme="dark"] .company-social-option.is-linked { border-color:#627f2f; background:#28321f; }
+    html[data-client-theme="dark"] .company-social-linked-account { border-color:#526b2b; background:#20291a; }
+    html[data-client-theme="dark"] .company-social-linked-account b { color:#dcebbf; }
+    html[data-client-theme="dark"] .company-social-linked-account em { color:#aab892; }
     html[data-client-theme="dark"] .company-social-option.is-disabled { border-color:#403943; background:#242127; }
     html[data-client-theme="dark"] .company-social-footer { border-color:#403943; background:#29252c; }
 
@@ -701,12 +737,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.body.appendChild(companySocialModal);
 
-    function configureSocialOption(option, linked, enabled, url, platform) {
+    function configureSocialOption(option, linked, enabled, url, platform, accountName, accountDetail) {
         option.classList.toggle('is-linked', linked);
         option.classList.toggle('is-disabled', !enabled);
         option.setAttribute('aria-disabled', enabled ? 'false' : 'true');
         option.href = enabled ? url : '#';
         option.querySelector('.company-social-badge').textContent = linked ? 'Vinculado' : (enabled ? 'Disponible' : 'Bloqueado');
+        const linkedAccount = option.querySelector('.company-social-linked-account');
+        linkedAccount.classList.toggle('is-hidden', !linked);
+        linkedAccount.querySelector('b').textContent = accountName || `Cuenta de ${platform}`;
+        linkedAccount.querySelector('em').textContent = accountDetail || '';
         option.querySelector('strong').innerHTML = linked
             ? (platform === 'Facebook' ? 'Vinculado · Volver a conectar <i class="fas fa-arrow-right"></i>' : 'Cuenta conectada <i class="fas fa-check"></i>')
             : (enabled ? `Conectar con ${platform} <i class="fas fa-arrow-right"></i>` : 'Esperando Facebook');
@@ -717,8 +757,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const facebookLinked = button.dataset.facebookLinked === '1';
         const instagramLinked = button.dataset.instagramLinked === '1';
         companySocialName.textContent = button.dataset.companyName;
-        configureSocialOption(facebookOption, facebookLinked, true, button.dataset.facebookUrl, 'Facebook');
-        configureSocialOption(instagramOption, instagramLinked, facebookLinked, button.dataset.instagramUrl, 'Instagram');
+        configureSocialOption(facebookOption, facebookLinked, true, button.dataset.facebookUrl, 'Facebook', button.dataset.facebookAccountName, button.dataset.facebookAccountDetail);
+        configureSocialOption(instagramOption, instagramLinked, facebookLinked, button.dataset.instagramUrl, 'Instagram', button.dataset.instagramAccountName, button.dataset.instagramAccountDetail);
         companySocialModal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
         window.setTimeout(() => companySocialModal.querySelector('.company-social-header > button').focus(), 50);
