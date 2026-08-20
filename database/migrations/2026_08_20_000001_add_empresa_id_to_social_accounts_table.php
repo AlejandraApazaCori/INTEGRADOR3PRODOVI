@@ -8,6 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // MySQL necesita otro indice sobre user_id antes de eliminar el indice
+        // unico compuesto que actualmente utiliza para la clave foranea.
+        if (! Schema::hasIndex('social_accounts', 'social_accounts_user_id_lookup_index')) {
+            Schema::table('social_accounts', function (Blueprint $table) {
+                $table->index('user_id', 'social_accounts_user_id_lookup_index');
+            });
+        }
+
         Schema::table('social_accounts', function (Blueprint $table) {
             $table->dropUnique(['user_id', 'provider']);
             $table->dropUnique(['provider', 'provider_user_id']);
@@ -26,5 +34,11 @@ return new class extends Migration
             $table->unique(['user_id', 'provider']);
             $table->unique(['provider', 'provider_user_id']);
         });
+
+        if (Schema::hasIndex('social_accounts', 'social_accounts_user_id_lookup_index')) {
+            Schema::table('social_accounts', function (Blueprint $table) {
+                $table->dropIndex('social_accounts_user_id_lookup_index');
+            });
+        }
     }
 };

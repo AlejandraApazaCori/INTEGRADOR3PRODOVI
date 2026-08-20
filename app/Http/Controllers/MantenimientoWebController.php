@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -9,6 +10,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 class MantenimientoWebController extends Controller
@@ -266,6 +268,10 @@ class MantenimientoWebController extends Controller
         }
 
         try {
+            if ($operation === 'migrate') {
+                $this->prepareSocialAccountsMigration();
+            }
+
             $exitCode = Artisan::call($definition['command'], $definition['parameters']);
             $output = trim(Artisan::output());
 
@@ -303,5 +309,26 @@ class MantenimientoWebController extends Controller
             flock($lockHandle, LOCK_UN);
             fclose($lockHandle);
         }
+    }
+
+    /**
+     * Evita el error 1553 de MySQL cuando el indice unico anterior tambien
+     * esta siendo utilizado como soporte de la clave foranea de user_id.
+     */
+    private function prepareSocialAccountsMigration(): void
+    {
+        if (! Schema::hasTable('social_accounts')
+            || ! Schema::hasColumn('social_accounts', 'user_id')
+            || Schema::hasColumn('social_accounts', 'empresa_id')
+            || ! Schema::hasIndex('social_accounts', 'social_accounts_user_id_provider_unique')
+            || Schema::hasIndex('social_accounts', 'social_accounts_user_id_lookup_index')) {
+            return;
+        }
+
+        Schema::table('social_accounts', function (Blueprint $table) {
+            $table->index('user_id', 'social_accounts_user_id_lookup_index');
+        });
+
+        Log::notice('Se preparo el indice auxiliar requerido para migrar social_accounts.');
     }
 }
