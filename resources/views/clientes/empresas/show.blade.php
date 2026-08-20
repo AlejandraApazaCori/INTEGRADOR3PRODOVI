@@ -42,6 +42,10 @@
             <div class="company-alert"><i class="fas fa-circle-check"></i><span>{{ session('success') }}</span></div>
         @endif
 
+        <div class="company-back-row">
+            <a href="{{ route('clientes.micuenta') }}" class="company-back-top"><i class="fas fa-arrow-left"></i><span>Volver a Mi cuenta</span></a>
+        </div>
+
         <div class="company-layout">
             <section class="company-panel">
                 <div class="company-panel-heading">
@@ -99,7 +103,6 @@
                         <span><strong>{{ $empresa->cuestionario_completado ? 'Ver cuestionario' : 'Completar cuestionario' }}</strong><small>{{ $empresa->cuestionario_completado ? 'Consulta tus respuestas' : 'Proporciona los datos pendientes' }}</small></span>
                         <i class="fas fa-chevron-right"></i>
                     </a>
-                    <a href="{{ route('clientes.micuenta') }}" class="company-action-back"><i class="fas fa-arrow-left"></i><span><strong>Volver a Mi cuenta</strong><small>Regresar al listado</small></span></a>
                 </nav>
 
                 <section class="company-social-section">
@@ -171,6 +174,9 @@
     #company-detail .company-mosaic span:nth-child(6) { border:12px solid #607078; border-top-color:transparent; border-left-color:transparent; border-radius:50%; transform:rotate(45deg); }
     #company-detail .company-content { margin:32px; }
     #company-detail .company-alert { display:flex; align-items:center; gap:9px; margin:0 auto 18px; max-width:1280px; padding:13px 16px; border-left:4px solid var(--green); background:#f3f7eb; color:#587923; font-size:.8rem; font-weight:800; }
+    #company-detail .company-back-row { max-width:1280px; margin:0 auto 12px; }
+    #company-detail .company-back-top { display:inline-flex; align-items:center; gap:8px; padding:9px 13px; border:1px solid #ded7e1; border-radius:4px; background:#fff; color:#5b2b76; font-size:.72rem; font-weight:900; text-decoration:none; transition:.18s ease; }
+    #company-detail .company-back-top:hover { border-color:var(--purple); background:#f7f5f8; transform:translateX(-2px); }
     #company-detail .company-layout { display:grid; grid-template-columns:minmax(0,1fr) 310px; align-items:start; gap:24px; max-width:1280px; margin:0 auto; }
     #company-detail .company-panel, #company-detail .company-actions-panel { overflow:hidden; border:1px solid #ded7e1; border-radius:5px; background:#fff; box-shadow:0 10px 28px #ded9e0; }
     #company-detail .company-panel-heading, #company-detail .company-actions-heading { display:flex; align-items:center; gap:12px; padding:17px 20px; border-bottom:1px solid #ded7e1; border-left:4px solid var(--turquoise); background:#f7f5f8; }
@@ -216,7 +222,6 @@
     #company-detail .company-actions a:hover { border-color:var(--turquoise); transform:translateX(2px); }
     #company-detail .company-actions .company-action-primary { border-color:var(--purple); background:var(--purple); color:#fff; }
     #company-detail .company-actions .company-action-primary > i, #company-detail .company-actions .company-action-primary small { color:#fff; }
-    #company-detail .company-actions .company-action-back { grid-template-columns:34px 1fr; margin-top:6px; border:0; border-top:1px solid #ded7e1; border-radius:0; }
     #company-detail .company-social-section { padding:18px; border-top:1px solid #ded7e1; }
     #company-detail .company-social-title { display:flex; align-items:center; gap:10px; margin-bottom:13px; }
     #company-detail .company-social-title > i { width:34px; height:34px; display:grid; place-items:center; border-radius:3px; background:var(--turquoise); color:#fff; }
@@ -286,7 +291,8 @@
     html[data-client-theme="dark"] #company-detail .company-actions a { border-color:#4a434e; color:#ddd6df; }
     html[data-client-theme="dark"] #company-detail .company-actions a small { color:#aaa1ae; }
     html[data-client-theme="dark"] #company-detail .company-actions .company-action-primary { border-color:#754391; background:#754391; }
-    html[data-client-theme="dark"] #company-detail .company-actions .company-action-back { border-top-color:#403943; }
+    html[data-client-theme="dark"] #company-detail .company-back-top { border-color:#4a434e; background:#29252c; color:#c89cdd; }
+    html[data-client-theme="dark"] #company-detail .company-back-top:hover { border-color:#754391; background:#332b37; }
     html[data-client-theme="dark"] #company-detail .company-alert { background:#28321f; color:#b5d17e; }
     html[data-client-theme="dark"] #company-detail .company-social-section { border-color:#403943; }
     html[data-client-theme="dark"] #company-detail .company-social-title h3 { color:#f1edf3; }
