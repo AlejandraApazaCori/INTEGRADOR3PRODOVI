@@ -81,8 +81,24 @@ class EmpresaController extends Controller
      */
     public function show($id)
     {
-        $empresa = Empresa::where('usuario_id', Auth::id())->findOrFail($id);
-        return view('clientes.empresas.show', compact('empresa'));
+        $user = Auth::user();
+        $empresa = Empresa::where('usuario_id', $user->id)->findOrFail($id);
+
+        if ($user->socialAccountsTableExists()) {
+            $empresa->load('socialAccounts');
+        }
+
+        $companySocialAccounts = $empresa->relationLoaded('socialAccounts')
+            ? $empresa->socialAccounts->keyBy('provider')
+            : collect();
+        $isFirstCompany = (int) $user->empresas()->oldest('id')->value('id') === (int) $empresa->id;
+        $legacySocialAccounts = $isFirstCompany ? $user->linkedSocialAccounts() : collect();
+
+        return view('clientes.empresas.show', compact(
+            'empresa',
+            'companySocialAccounts',
+            'legacySocialAccounts'
+        ));
     }
 
     /**

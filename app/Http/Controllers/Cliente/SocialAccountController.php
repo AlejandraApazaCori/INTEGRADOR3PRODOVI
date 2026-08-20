@@ -28,9 +28,11 @@ class SocialAccountController extends Controller
         $empresa = $request->filled('empresa_id')
             ? $user->empresas()->findOrFail($request->integer('empresa_id'))
             : null;
-        $returnUrl = $empresa
-            ? route('clientes.micuenta', ['redes_empresa' => $empresa->id])
-            : url()->previous();
+        $returnUrl = $empresa && $request->input('return_to') === 'empresa'
+            ? route('empresas.show', $empresa->id)
+            : ($empresa
+                ? route('clientes.micuenta', ['redes_empresa' => $empresa->id])
+                : url()->previous());
 
         if (! $user->socialAccountsTableExists()) {
             return redirect($returnUrl)->with('social_accounts_error', 'La integración de redes sociales aún no está disponible en este entorno porque falta la tabla social_accounts. Ejecuta las migraciones del sistema.');

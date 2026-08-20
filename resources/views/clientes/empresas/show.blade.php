@@ -5,6 +5,25 @@
 @section('content')
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
+@php
+    $facebookAccount = $companySocialAccounts->get('facebook') ?? $legacySocialAccounts->get('facebook');
+    $facebookPage = $companySocialAccounts->get('facebook_page') ?? $legacySocialAccounts->get('facebook_page');
+    $instagramAccount = $companySocialAccounts->get('instagram') ?? $legacySocialAccounts->get('instagram');
+    $facebookLinked = filled($facebookAccount?->provider_user_id) || filled($facebookPage?->provider_user_id);
+    $instagramLinked = filled($instagramAccount?->provider_user_id);
+    $facebookName = $facebookPage?->display_name
+        ?? data_get($facebookPage?->metadata, 'page_name')
+        ?? $facebookAccount?->display_name
+        ?? $facebookAccount?->username
+        ?? $facebookAccount?->provider_user_id;
+    $instagramName = $instagramAccount?->display_name
+        ?? $instagramAccount?->username
+        ?? $instagramAccount?->provider_user_id;
+    $instagramUsername = filled($instagramAccount?->username)
+        ? '@'.ltrim($instagramAccount->username, '@')
+        : null;
+@endphp
+
 <div id="company-detail" class="min-h-screen">
     <header class="company-hero">
         <div class="company-hero-content">
@@ -82,9 +101,52 @@
                     </a>
                     <a href="{{ route('clientes.micuenta') }}" class="company-action-back"><i class="fas fa-arrow-left"></i><span><strong>Volver a Mi cuenta</strong><small>Regresar al listado</small></span></a>
                 </nav>
+
+                <section class="company-social-section">
+                    <div class="company-social-title"><i class="fas fa-share-nodes"></i><div><h3>Redes sociales</h3><p>Canales vinculados a esta empresa</p></div></div>
+                    <button type="button" id="open-company-social"><i class="fas fa-link"></i> Conectar redes</button>
+
+                    <div class="company-social-connected">
+                        @if($facebookLinked)
+                            <article class="facebook"><span><i class="fab fa-facebook-f"></i></span><div><small>Facebook conectado</small><strong>{{ $facebookName ?: 'Cuenta de Facebook' }}</strong><em>{{ $facebookPage ? 'Página autorizada' : 'Perfil autorizado' }}</em></div><i class="fas fa-circle-check"></i></article>
+                        @endif
+                        @if($instagramLinked)
+                            <article class="instagram"><span><i class="fab fa-instagram"></i></span><div><small>Instagram conectado</small><strong>{{ $instagramName ?: 'Cuenta de Instagram' }}</strong>@if($instagramUsername)<em>{{ $instagramUsername }}</em>@endif</div><i class="fas fa-circle-check"></i></article>
+                        @endif
+                        @unless($facebookLinked || $instagramLinked)
+                            <p class="company-social-empty"><i class="fas fa-circle-info"></i> Aún no hay redes conectadas.</p>
+                        @endunless
+                    </div>
+                </section>
             </aside>
         </div>
     </main>
+</div>
+
+<div id="company-social-modal" class="company-social-modal hidden" role="dialog" aria-modal="true" aria-labelledby="company-social-modal-title">
+    <div class="company-social-backdrop" data-close-company-social></div>
+    <div class="company-social-dialog">
+        <header><span><i class="fas fa-share-nodes"></i></span><div><small>CANALES DE TU EMPRESA</small><h3 id="company-social-modal-title">Conectar redes sociales</h3></div><button type="button" data-close-company-social aria-label="Cerrar"><i class="fas fa-xmark"></i></button></header>
+        <div class="company-social-modal-body">
+            <div class="company-social-company"><i class="fas fa-building"></i> Configurarás las redes de <strong>{{ $empresa->nombre_empresa }}</strong></div>
+            @if(session('social_accounts_success'))<div class="company-social-notice success"><i class="fas fa-circle-check"></i><span>{{ session('social_accounts_success') }}</span></div>@endif
+            @if(session('social_accounts_error'))<div class="company-social-notice error"><i class="fas fa-circle-exclamation"></i><span>{{ session('social_accounts_error') }}</span></div>@endif
+            <p class="company-social-intro">Conecta Facebook y sincroniza automáticamente la cuenta profesional de Instagram asociada a la misma página.</p>
+            <div class="company-social-options">
+                <a class="company-social-option facebook {{ $facebookLinked ? 'is-linked' : '' }}" href="{{ route('clientes.social.redirect', ['provider' => 'facebook', 'empresa_id' => $empresa->id, 'return_to' => 'empresa']) }}">
+                    <div><span><i class="fab fa-facebook-f"></i></span><b>{{ $facebookLinked ? 'Vinculado' : 'Disponible' }}</b></div><h4>Facebook</h4><p>Autoriza la página de esta empresa para conectarla con PRODOVI.</p>
+                    @if($facebookLinked)<aside><i class="fas fa-circle-check"></i><span><small>Cuenta vinculada</small><strong>{{ $facebookName ?: 'Cuenta de Facebook' }}</strong></span></aside>@endif
+                    <em>{{ $facebookLinked ? 'Volver a conectar' : 'Conectar con Facebook' }} <i class="fas fa-arrow-right"></i></em>
+                </a>
+                <a class="company-social-option instagram {{ $instagramLinked ? 'is-linked' : '' }} {{ !$facebookLinked ? 'is-disabled' : '' }}" href="{{ $facebookLinked ? route('clientes.social.redirect', ['provider' => 'instagram', 'empresa_id' => $empresa->id, 'return_to' => 'empresa']) : '#' }}" aria-disabled="{{ $facebookLinked ? 'false' : 'true' }}">
+                    <div><span><i class="fab fa-instagram"></i></span><b>{{ $instagramLinked ? 'Vinculado' : ($facebookLinked ? 'Disponible' : 'Bloqueado') }}</b></div><h4>Instagram</h4><p>Sincroniza el perfil profesional asociado a la página de Facebook.</p>
+                    @if($instagramLinked)<aside><i class="fas fa-circle-check"></i><span><small>Cuenta vinculada</small><strong>{{ $instagramName ?: 'Cuenta de Instagram' }}</strong></span></aside>@endif
+                    <em>{{ $instagramLinked ? 'Volver a sincronizar' : ($facebookLinked ? 'Conectar con Instagram' : 'Primero conecta Facebook') }} @if($facebookLinked)<i class="fas fa-arrow-right"></i>@endif</em>
+                </a>
+            </div>
+        </div>
+        <footer><button type="button" data-close-company-social>Listo</button></footer>
+    </div>
 </div>
 
 <style>
@@ -155,6 +217,60 @@
     #company-detail .company-actions .company-action-primary { border-color:var(--purple); background:var(--purple); color:#fff; }
     #company-detail .company-actions .company-action-primary > i, #company-detail .company-actions .company-action-primary small { color:#fff; }
     #company-detail .company-actions .company-action-back { grid-template-columns:34px 1fr; margin-top:6px; border:0; border-top:1px solid #ded7e1; border-radius:0; }
+    #company-detail .company-social-section { padding:18px; border-top:1px solid #ded7e1; }
+    #company-detail .company-social-title { display:flex; align-items:center; gap:10px; margin-bottom:13px; }
+    #company-detail .company-social-title > i { width:34px; height:34px; display:grid; place-items:center; border-radius:3px; background:var(--turquoise); color:#fff; }
+    #company-detail .company-social-title h3 { margin:0; color:#302834; font-size:.88rem; font-weight:900; }
+    #company-detail .company-social-title p { margin:2px 0 0; color:#918696; font-size:.64rem; }
+    #company-detail #open-company-social { width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:11px; border:1px solid var(--turquoise); border-radius:4px; background:var(--turquoise); color:#fff; font-size:.73rem; font-weight:900; cursor:pointer; transition:.18s ease; }
+    #company-detail #open-company-social:hover { background:#0d6671; transform:translateY(-1px); }
+    #company-detail .company-social-connected { display:grid; gap:8px; margin-top:12px; }
+    #company-detail .company-social-connected article { display:grid; grid-template-columns:34px minmax(0,1fr) auto; align-items:center; gap:9px; padding:10px; border:1px solid #d9e8c0; border-radius:4px; background:#f7faf1; }
+    #company-detail .company-social-connected article > span { width:32px; height:32px; display:grid; place-items:center; border-radius:50%; background:#1877f2; color:#fff; }
+    #company-detail .company-social-connected article.instagram > span { background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045); }
+    #company-detail .company-social-connected small, #company-detail .company-social-connected strong, #company-detail .company-social-connected em { display:block; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    #company-detail .company-social-connected small { color:#6c7e4c; font-size:.53rem; font-weight:900; text-transform:uppercase; }
+    #company-detail .company-social-connected strong { color:#35451b; font-size:.68rem; }
+    #company-detail .company-social-connected em { color:#778064; font-size:.56rem; font-style:normal; }
+    #company-detail .company-social-connected article > i { color:var(--green); font-size:.75rem; }
+    #company-detail .company-social-empty { margin:0; padding:10px; background:#f3f1f4; color:#817585; font-size:.66rem; text-align:center; }
+
+    .company-social-modal { position:fixed; z-index:2147483001; inset:0; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .company-social-modal.hidden { display:none; }
+    .company-social-backdrop { position:absolute; inset:0; background:rgba(18,14,20,.76); backdrop-filter:blur(5px); }
+    .company-social-dialog { position:relative; width:min(690px,100%); max-height:calc(100vh - 40px); display:flex; flex-direction:column; overflow:hidden; border-radius:5px; background:#fff; box-shadow:0 28px 80px rgba(0,0,0,.38); }
+    .company-social-dialog > header { display:flex; align-items:center; gap:12px; padding:19px 22px; border-bottom:5px solid #117e8c; background:#242426; color:#fff; }
+    .company-social-dialog > header > span { width:40px; height:40px; display:grid; place-items:center; border-radius:3px; background:#117e8c; }
+    .company-social-dialog > header > div { flex:1; }
+    .company-social-dialog header small { display:block; color:#76c5ce; font-size:.6rem; font-weight:900; letter-spacing:.12em; }
+    .company-social-dialog header h3 { margin:3px 0 0; font-size:1.12rem; font-weight:900; }
+    .company-social-dialog > header button { width:36px; height:36px; border:1px solid #565259; border-radius:3px; background:#343436; color:#fff; cursor:pointer; }
+    .company-social-modal-body { overflow-y:auto; padding:22px; }
+    .company-social-company { margin-bottom:14px; padding:11px 13px; border-left:4px solid #ee9f2b; background:#fff5e6; color:#70572f; font-size:.75rem; }
+    .company-social-company i { margin-right:7px; color:#ee9f2b; }
+    .company-social-intro { margin:0 0 16px; color:#756a7a; font-size:.77rem; line-height:1.55; }
+    .company-social-notice { display:flex; gap:8px; margin-bottom:13px; padding:11px; border-left:4px solid; font-size:.72rem; font-weight:800; }
+    .company-social-notice.success { border-color:#7da533; background:#f3f7eb; color:#587923; }
+    .company-social-notice.error { border-color:#b63b3b; background:#fff1f1; color:#9b2929; }
+    .company-social-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px; }
+    .company-social-option { display:flex; flex-direction:column; padding:17px; border:1px solid #ded7e1; border-top:4px solid #1877f2; border-radius:4px; color:#302834; text-decoration:none; transition:.2s ease; }
+    .company-social-option.instagram { border-top-color:#d62976; }
+    .company-social-option:hover { transform:translateY(-2px); box-shadow:0 10px 22px #ded9e0; }
+    .company-social-option > div { display:flex; align-items:center; justify-content:space-between; }
+    .company-social-option > div > span { width:37px; height:37px; display:grid; place-items:center; border-radius:50%; background:#1877f2; color:#fff; }
+    .company-social-option.instagram > div > span { background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045); }
+    .company-social-option > div > b { padding:5px 7px; background:#edf7f8; color:#117e8c; font-size:.57rem; text-transform:uppercase; }
+    .company-social-option h4 { margin:13px 0 0; font-size:.94rem; font-weight:900; }
+    .company-social-option > p { flex:1; margin:6px 0 13px; color:#756a7a; font-size:.69rem; line-height:1.5; }
+    .company-social-option > em { color:#5b2b76; font-size:.67rem; font-style:normal; font-weight:900; }
+    .company-social-option aside { display:flex; align-items:center; gap:8px; margin-bottom:13px; padding:9px; border:1px solid #cdddaf; background:#f7faf1; color:#587923; }
+    .company-social-option aside span, .company-social-option aside small, .company-social-option aside strong { display:block; }
+    .company-social-option aside small { font-size:.52rem; font-weight:900; text-transform:uppercase; }
+    .company-social-option aside strong { color:#35451b; font-size:.68rem; }
+    .company-social-option.is-linked { border-color:#7da533; border-top-color:#7da533; }
+    .company-social-option.is-disabled { background:#f4f2f5; opacity:.58; pointer-events:none; }
+    .company-social-dialog > footer { display:flex; justify-content:flex-end; padding:13px 22px; border-top:1px solid #ded7e1; background:#f7f5f8; }
+    .company-social-dialog > footer button { padding:9px 17px; border:0; border-radius:3px; background:#5b2b76; color:#fff; font-size:.73rem; font-weight:900; cursor:pointer; }
 
     html[data-client-theme="dark"] #company-detail { background:#141216; color:#e9e5eb; }
     html[data-client-theme="dark"] #company-detail .company-panel, html[data-client-theme="dark"] #company-detail .company-actions-panel { border-color:#403943; background:#1e1b21; box-shadow:0 10px 28px #0d0b0e; }
@@ -172,9 +288,52 @@
     html[data-client-theme="dark"] #company-detail .company-actions .company-action-primary { border-color:#754391; background:#754391; }
     html[data-client-theme="dark"] #company-detail .company-actions .company-action-back { border-top-color:#403943; }
     html[data-client-theme="dark"] #company-detail .company-alert { background:#28321f; color:#b5d17e; }
+    html[data-client-theme="dark"] #company-detail .company-social-section { border-color:#403943; }
+    html[data-client-theme="dark"] #company-detail .company-social-title h3 { color:#f1edf3; }
+    html[data-client-theme="dark"] #company-detail .company-social-connected article { border-color:#526b2b; background:#28321f; }
+    html[data-client-theme="dark"] #company-detail .company-social-connected strong { color:#dcebbf; }
+    html[data-client-theme="dark"] #company-detail .company-social-empty { background:#29252c; color:#aaa1ae; }
+    html[data-client-theme="dark"] .company-social-dialog { background:#1e1b21; color:#f1edf3; }
+    html[data-client-theme="dark"] .company-social-company { background:#3a3020; color:#efcf9e; }
+    html[data-client-theme="dark"] .company-social-intro { color:#b4abb8; }
+    html[data-client-theme="dark"] .company-social-option { border-color:#403943; background:#29252c; color:#f1edf3; }
+    html[data-client-theme="dark"] .company-social-option > p { color:#b4abb8; }
+    html[data-client-theme="dark"] .company-social-option.is-linked { border-color:#627f2f; }
+    html[data-client-theme="dark"] .company-social-option aside { border-color:#526b2b; background:#20291a; }
+    html[data-client-theme="dark"] .company-social-dialog > footer { border-color:#403943; background:#29252c; }
 
     @media (max-width:900px) { #company-detail .company-layout { grid-template-columns:1fr; } #company-detail .company-actions-panel { position:static; } }
     @media (max-width:720px) { #company-detail .company-hero { min-height:190px; padding:26px 20px; } #company-detail .company-hero-side { margin-left:auto; } #company-detail .company-mosaic { display:none; } #company-detail .company-content { margin:20px 16px; } }
-    @media (max-width:520px) { #company-detail .company-hero { align-items:flex-start; flex-direction:column; gap:20px; } #company-detail .company-hero-side, #company-detail .company-hero-status { width:100%; margin-left:0; } #company-detail .company-profile { padding:19px; } #company-detail .company-identity { align-items:flex-start; } #company-detail .company-logo { width:64px; height:64px; } #company-detail .company-data-grid { grid-template-columns:1fr; } }
+    @media (max-width:520px) { #company-detail .company-hero { align-items:flex-start; flex-direction:column; gap:20px; } #company-detail .company-hero-side, #company-detail .company-hero-status { width:100%; margin-left:0; } #company-detail .company-profile { padding:19px; } #company-detail .company-identity { align-items:flex-start; } #company-detail .company-logo { width:64px; height:64px; } #company-detail .company-data-grid, .company-social-options { grid-template-columns:1fr; } }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('company-social-modal');
+    const openButton = document.getElementById('open-company-social');
+    const closeButtons = modal.querySelectorAll('[data-close-company-social]');
+
+    function openModal() {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        modal.querySelector('header button').focus();
+    }
+
+    function closeModal() {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+        openButton.focus();
+    }
+
+    openButton.addEventListener('click', openModal);
+    closeButtons.forEach(button => button.addEventListener('click', closeModal));
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+    });
+
+    @if(session('social_accounts_success') || session('social_accounts_error'))
+        openModal();
+    @endif
+});
+</script>
 @endsection
