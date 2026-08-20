@@ -318,7 +318,7 @@
             <div class="company-social-company"><i class="fas fa-building"></i><span>Configurarás las redes de <strong id="company-social-name"></strong></span></div>
             @if(session('social_accounts_success'))<div class="company-social-notice success"><i class="fas fa-circle-check"></i>{{ session('social_accounts_success') }}</div>@endif
             @if(session('social_accounts_error'))<div class="company-social-notice error"><i class="fas fa-circle-exclamation"></i>{{ session('social_accounts_error') }}</div>@endif
-            <p class="company-social-intro">Conecta los perfiles que representan a esta empresa. Facebook debe vincularse antes de habilitar Instagram.</p>
+            <p class="company-social-intro">Conecta Facebook y sincroniza automáticamente la cuenta profesional de Instagram asociada a la misma página.</p>
             <div class="company-social-grid">
                 <a href="#" id="company-facebook-option" class="company-social-option facebook">
                     <div><span class="company-social-platform-icon"><i class="fab fa-facebook-f"></i></span><span class="company-social-badge">Disponible</span></div>
@@ -328,7 +328,7 @@
                 </a>
                 <a href="#" id="company-instagram-option" class="company-social-option instagram is-disabled" aria-disabled="true">
                     <div><span class="company-social-platform-icon"><i class="fab fa-instagram"></i></span><span class="company-social-badge">Bloqueado</span></div>
-                    <h4>Instagram</h4><p>Conecta el perfil de Instagram asociado al negocio después de Facebook.</p>
+                    <h4>Instagram</h4><p>Sincroniza el perfil profesional asociado a la página de Facebook de esta empresa.</p>
                     <div class="company-social-linked-account is-hidden"><span><i class="fas fa-circle-check"></i></span><div><small>Cuenta vinculada</small><b></b><em></em></div></div>
                     <strong>Esperando Facebook</strong>
                 </a>
@@ -748,7 +748,7 @@ document.addEventListener('DOMContentLoaded', function() {
         linkedAccount.querySelector('b').textContent = accountName || `Cuenta de ${platform}`;
         linkedAccount.querySelector('em').textContent = accountDetail || '';
         option.querySelector('strong').innerHTML = linked
-            ? (platform === 'Facebook' ? 'Vinculado · Volver a conectar <i class="fas fa-arrow-right"></i>' : 'Cuenta conectada <i class="fas fa-check"></i>')
+            ? (platform === 'Facebook' ? 'Vinculado · Volver a conectar <i class="fas fa-arrow-right"></i>' : 'Vinculado · Volver a sincronizar <i class="fas fa-rotate"></i>')
             : (enabled ? `Conectar con ${platform} <i class="fas fa-arrow-right"></i>` : 'Esperando Facebook');
     }
 
@@ -773,7 +773,7 @@ document.addEventListener('DOMContentLoaded', function() {
     companySocialButtons.forEach(button => button.addEventListener('click', () => showCompanySocialModal(button)));
     document.querySelectorAll('[data-close-company-social]').forEach(button => button.addEventListener('click', hideCompanySocialModal));
     [facebookOption, instagramOption].forEach(option => option.addEventListener('click', event => {
-        if (option.classList.contains('is-disabled') || (option === instagramOption && option.classList.contains('is-linked'))) event.preventDefault();
+        if (option.classList.contains('is-disabled')) event.preventDefault();
     }));
 
     document.addEventListener('keydown', event => {
