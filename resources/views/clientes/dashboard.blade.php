@@ -23,6 +23,19 @@
     $dashboardInstagramName = $dashboardInstagramAccount?->display_name
         ?? $dashboardInstagramAccount?->username
         ?? 'Instagram';
+    $dashboardFacebookIdentifier = $dashboardFacebookPage?->provider_user_id
+        ?? $dashboardFacebookAccount?->provider_user_id
+        ?? $dashboardFacebookAccount?->username;
+    $dashboardInstagramUsername = ltrim((string) $dashboardInstagramAccount?->username, '@');
+    $dashboardInstagramTooltip = filled($dashboardInstagramUsername)
+        ? '@'.$dashboardInstagramUsername
+        : $dashboardInstagramName;
+    $dashboardFacebookUrl = filled($dashboardFacebookIdentifier)
+        ? 'https://www.facebook.com/'.rawurlencode($dashboardFacebookIdentifier)
+        : 'https://www.facebook.com/';
+    $dashboardInstagramUrl = filled($dashboardInstagramUsername)
+        ? 'https://www.instagram.com/'.rawurlencode($dashboardInstagramUsername).'/'
+        : 'https://www.instagram.com/';
 @endphp
 
 <div id="client-dashboard" class="min-h-screen">
@@ -64,11 +77,12 @@
                     <small>Redes sociales</small>
                     @if($dashboardHasSocialAccounts)
                         <div class="social-metric-links">
-                            @if($dashboardFacebookLinked)<span title="{{ $dashboardFacebookName }}"><i class="fab fa-facebook-f"></i> Facebook</span>@endif
-                            @if($dashboardInstagramLinked)<span title="{{ $dashboardInstagramName }}"><i class="fab fa-instagram"></i> Instagram</span>@endif
+                            @if($dashboardFacebookLinked)<a class="social-pill facebook" href="{{ $dashboardFacebookUrl }}" target="_blank" rel="noopener noreferrer" data-tooltip="{{ $dashboardFacebookName }}" aria-label="Abrir Facebook: {{ $dashboardFacebookName }}"><i class="fab fa-facebook-f"></i> Facebook</a>@endif
+                            @if($dashboardInstagramLinked)<a class="social-pill instagram" href="{{ $dashboardInstagramUrl }}" target="_blank" rel="noopener noreferrer" data-tooltip="{{ $dashboardInstagramTooltip }}" aria-label="Abrir Instagram: {{ $dashboardInstagramTooltip }}"><i class="fab fa-instagram"></i> Instagram</a>@endif
                         </div>
+                        <button type="button" id="open-dashboard-social" class="edit-social-links" aria-label="Editar redes vinculadas" title="Editar redes vinculadas"><i class="fas fa-pen"></i></button>
                     @else
-                        <button type="button" id="open-dashboard-social"><i class="fas fa-link"></i> Vincular cuentas</button>
+                        <button type="button" id="open-dashboard-social" class="connect-social-links"><i class="fas fa-link"></i> Vincular cuentas</button>
                     @endif
                 </div>
             </article>
@@ -294,10 +308,17 @@
     #client-dashboard .social-metric-content { min-width:0; }
     #client-dashboard .social-metric-content > small { display:block; }
     #client-dashboard .social-metric-links { display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; }
-    #client-dashboard .social-metric-links span { display:inline-flex; align-items:center; gap:5px; padding:4px 6px; border-radius:2px; background:#edf7f8; color:#117e8c; font-size:.6rem; font-weight:900; }
-    #client-dashboard .social-metric-links span:first-child i { color:#1877f2; }
-    #client-dashboard .social-metric-links span:last-child i { color:#d62976; }
-    #client-dashboard #open-dashboard-social { display:inline-flex; align-items:center; gap:5px; margin-top:5px; padding:5px 7px; border:1px solid #117e8c; border-radius:3px; background:#117e8c; color:#fff; font-size:.61rem; font-weight:900; cursor:pointer; }
+    #client-dashboard .social-pill { position:relative; display:inline-flex; align-items:center; gap:5px; padding:4px 6px; border-radius:2px; background:#edf7f8; color:#117e8c; font-size:.6rem; font-weight:900; text-decoration:none; }
+    #client-dashboard .social-pill.facebook i { color:#1877f2; }
+    #client-dashboard .social-pill.instagram i { color:#d62976; }
+    #client-dashboard .social-pill::after { content:attr(data-tooltip); position:absolute; z-index:40; bottom:calc(100% + 8px); left:50%; width:max-content; max-width:210px; padding:7px 9px; border-radius:3px; background:#242426; color:#fff; font-size:.62rem; font-weight:700; line-height:1.25; text-align:center; opacity:0; pointer-events:none; transform:translate(-50%,4px); transition:.16s ease; }
+    #client-dashboard .social-pill::before { content:''; position:absolute; z-index:41; bottom:calc(100% + 3px); left:50%; border:5px solid transparent; border-top-color:#242426; opacity:0; pointer-events:none; transform:translateX(-50%); transition:.16s ease; }
+    #client-dashboard .social-pill:hover::after, #client-dashboard .social-pill:hover::before, #client-dashboard .social-pill:focus-visible::after, #client-dashboard .social-pill:focus-visible::before { opacity:1; transform:translate(-50%,0); }
+    #client-dashboard .social-pill:hover { background:#dff0f2; }
+    #client-dashboard .dashboard-metrics article.social-networks-metric { position:relative; padding-right:48px; }
+    #client-dashboard .connect-social-links { display:inline-flex; align-items:center; gap:5px; margin-top:5px; padding:5px 7px; border:1px solid #117e8c; border-radius:3px; background:#117e8c; color:#fff; font-size:.61rem; font-weight:900; cursor:pointer; }
+    #client-dashboard .edit-social-links { position:absolute; top:8px; right:8px; width:30px; height:30px; display:grid; place-items:center; border:0; border-radius:50%; background:transparent; color:#756a7a; cursor:pointer; transition:.18s ease; }
+    #client-dashboard .edit-social-links:hover { background:rgba(17,126,140,.11); color:#117e8c; }
     #client-dashboard .active-company-metric { position: relative; padding-right: 50px; }
     #client-dashboard .company-options { position: absolute; z-index: 20; right: 8px; bottom: 7px; }
     #client-dashboard .company-options summary { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; color: #756a7a; cursor: pointer; list-style: none; }
@@ -377,7 +398,9 @@
     .dashboard-social-option > div { display:flex; align-items:center; justify-content:space-between; }.dashboard-social-option > div > span { width:37px; height:37px; display:grid; place-items:center; border-radius:50%; background:#1877f2; color:#fff; }.dashboard-social-option.instagram > div > span { background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045); }.dashboard-social-option > div > b { padding:5px 7px; background:#edf7f8; color:#117e8c; font-size:.57rem; text-transform:uppercase; }.dashboard-social-option h4 { margin:13px 0 0; font-size:.94rem; font-weight:900; }.dashboard-social-option > p { flex:1; margin:6px 0 13px; color:#756a7a; font-size:.69rem; line-height:1.5; }.dashboard-social-option > em { color:#5b2b76; font-size:.67rem; font-style:normal; font-weight:900; }
     .dashboard-social-option aside { display:flex; align-items:center; gap:8px; margin-bottom:13px; padding:9px; border:1px solid #cdddaf; background:#f7faf1; color:#587923; }.dashboard-social-option aside span,.dashboard-social-option aside small,.dashboard-social-option aside strong { display:block; }.dashboard-social-option aside small { font-size:.52rem; font-weight:900; text-transform:uppercase; }.dashboard-social-option aside strong { color:#35451b; font-size:.68rem; }.dashboard-social-option.is-linked { border-color:#7da533; border-top-color:#7da533; }.dashboard-social-option.is-disabled { background:#f4f2f5; opacity:.58; pointer-events:none; }
     .dashboard-social-dialog > footer { display:flex; justify-content:flex-end; padding:13px 22px; border-top:1px solid #ded7e1; background:#f7f5f8; }.dashboard-social-dialog > footer button { padding:9px 17px; border:0; border-radius:3px; background:#5b2b76; color:#fff; font-size:.73rem; font-weight:900; cursor:pointer; }
-    html[data-client-theme="dark"] #client-dashboard .social-metric-links span { background:#173136; color:#78c3cb; }
+    html[data-client-theme="dark"] #client-dashboard .social-pill { background:#173136; color:#78c3cb; }
+    html[data-client-theme="dark"] #client-dashboard .social-pill:hover { background:#21444a; }
+    html[data-client-theme="dark"] #client-dashboard .edit-social-links { color:#b4abb8; }
     html[data-client-theme="dark"] .dashboard-social-dialog { background:#1e1b21; color:#f1edf3; } html[data-client-theme="dark"] .dashboard-social-company { background:#3a3020; color:#efcf9e; } html[data-client-theme="dark"] .dashboard-social-body > p { color:#b4abb8; } html[data-client-theme="dark"] .dashboard-social-option { border-color:#403943; background:#29252c; color:#f1edf3; } html[data-client-theme="dark"] .dashboard-social-option > p { color:#b4abb8; } html[data-client-theme="dark"] .dashboard-social-option.is-linked { border-color:#627f2f; } html[data-client-theme="dark"] .dashboard-social-option aside { border-color:#526b2b; background:#20291a; } html[data-client-theme="dark"] .dashboard-social-dialog > footer { border-color:#403943; background:#29252c; }
 
     @media (max-width: 1100px) and (min-width: 641px) {
