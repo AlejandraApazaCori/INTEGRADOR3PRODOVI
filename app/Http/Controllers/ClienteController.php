@@ -25,31 +25,35 @@ class ClienteController extends Controller
     public function home()
     {
         $user = Auth::user();
-        $planes = Plan::all();
+
+        $tieneSuscripcionActiva = Suscripcion::where('usuario_id', $user->id)
+            ->where('estado', 'activa')
+            ->where(function ($query) {
+                $query->whereNull('vigencia_activada_at')
+                    ->orWhere('fecha_fin', '>', now());
+            })
+            ->exists();
+
+        if ($tieneSuscripcionActiva) {
+            return redirect()->route('clientes.dashboard');
+        }
 
         $data = [
-            'planes' => $planes,
-            'tieneSuscripcionActiva' => false,
+            'planes' => Plan::all(),
+            'tieneSuscripcionActiva' => $tieneSuscripcionActiva,
             'tieneSuscripcionPendiente' => false,
             'suscripcionPendiente' => null,
             'pagoPendiente' => null,
         ];
 
-        if ($user) {
-            $data['tieneSuscripcionActiva'] = Suscripcion::where('usuario_id', $user->id)
-                ->where('estado', 'activa')
-                ->where('fecha_fin', '>', now())
-                ->exists();
-
-            $data['pagoPendiente'] = Pago::with(['codigoPago', 'plan', 'suscripcion'])
-                ->where('usuario_id', $user->id)
-                ->where('estado', 'pendiente')
-                ->whereHas('suscripcion', fn ($query) => $query->where('estado', 'pendiente'))
-                ->latest('id')
-                ->first();
-            $data['suscripcionPendiente'] = $data['pagoPendiente']?->suscripcion;
-            $data['tieneSuscripcionPendiente'] = $data['pagoPendiente'] !== null;
-        }
+        $data['pagoPendiente'] = Pago::with(['codigoPago', 'plan', 'suscripcion'])
+            ->where('usuario_id', $user->id)
+            ->where('estado', 'pendiente')
+            ->whereHas('suscripcion', fn ($query) => $query->where('estado', 'pendiente'))
+            ->latest('id')
+            ->first();
+        $data['suscripcionPendiente'] = $data['pagoPendiente']?->suscripcion;
+        $data['tieneSuscripcionPendiente'] = $data['pagoPendiente'] !== null;
 
         return view('clientes.home', $data);
     }
@@ -62,7 +66,14 @@ class ClienteController extends Controller
             ->orderBy('id')
             ->get();
 
-        return view('clientes.comprar-plan', compact('planes'));
+        $pagoPendiente = Pago::with(['plan', 'codigoPago'])
+            ->where('usuario_id', Auth::id())
+            ->where('metodo', 'fisico')
+            ->where('estado', 'pendiente')
+            ->latest('id')
+            ->first();
+
+        return view('clientes.comprar-plan', compact('planes', 'pagoPendiente'));
     }
 
     public function dashboard()
@@ -76,14 +87,22 @@ class ClienteController extends Controller
         $suscripcionActiva = Suscripcion::with(['plan', 'empresa'])
             ->where('usuario_id', $user->id)
             ->where('estado', 'activa')
-            ->where('fecha_fin', '>', now())
+            ->where(function ($query) {
+                $query->whereNull('vigencia_activada_at')
+                    ->orWhere('fecha_fin', '>', now());
+            })
             ->latest('id')
             ->firstOrFail();
 
-        $fechaFin = Carbon::parse($suscripcionActiva->fecha_fin);
-        $diasRestantes = now()->diffInDays($fechaFin, false);
-        $diasTotales = $suscripcionActiva->fecha_inicio->diffInDays($fechaFin);
-        $porcentajeRestante = $diasRestantes > 0 ? round(($diasRestantes / $diasTotales) * 100) : 0;
+        $diasRestantes = null;
+        $porcentajeRestante = null;
+
+        if ($suscripcionActiva->vigencia_activada_at) {
+            $fechaFin = Carbon::parse($suscripcionActiva->fecha_fin);
+            $diasRestantes = now()->diffInDays($fechaFin, false);
+            $diasTotales = max(1, $suscripcionActiva->fecha_inicio->diffInDays($fechaFin));
+            $porcentajeRestante = $diasRestantes > 0 ? round(($diasRestantes / $diasTotales) * 100) : 0;
+        }
 
         $empresas = $user->empresas;
         $empresaActiva = $suscripcionActiva->empresa;
@@ -138,7 +157,10 @@ class ClienteController extends Controller
         $suscripcionActiva = $user->suscripciones()
             ->with('empresa')
             ->where('estado', 'activa')
-            ->where('fecha_fin', '>', now())
+            ->where(function ($query) {
+                $query->whereNull('vigencia_activada_at')
+                    ->orWhere('fecha_fin', '>', now());
+            })
             ->latest('id')
             ->first();
         $empresa = $suscripcionActiva?->empresa;
@@ -196,7 +218,10 @@ class ClienteController extends Controller
         $suscripcionActiva = $user->suscripciones()
             ->with('empresa')
             ->where('estado', 'activa')
-            ->where('fecha_fin', '>', now())
+            ->where(function ($query) {
+                $query->whereNull('vigencia_activada_at')
+                    ->orWhere('fecha_fin', '>', now());
+            })
             ->latest('id')
             ->first();
 
@@ -259,7 +284,10 @@ class ClienteController extends Controller
         $suscripcionActiva = $user->suscripciones()
             ->with('empresa')
             ->where('estado', 'activa')
-            ->where('fecha_fin', '>', now())
+            ->where(function ($query) {
+                $query->whereNull('vigencia_activada_at')
+                    ->orWhere('fecha_fin', '>', now());
+            })
             ->latest('id')
             ->first();
 
@@ -283,17 +311,20 @@ class ClienteController extends Controller
         $suscripcionActiva = Suscripcion::with('plan')
             ->where('usuario_id', $user->id)
             ->where('estado', 'activa')
-            ->where('fecha_fin', '>', now())
+            ->where(function ($query) {
+                $query->whereNull('vigencia_activada_at')
+                    ->orWhere('fecha_fin', '>', now());
+            })
             ->first();
 
         // Calcular días restantes si hay suscripción activa
-        $diasRestantes = 0;
-        $porcentajeRestante = 0;
+        $diasRestantes = null;
+        $porcentajeRestante = null;
 
-        if ($suscripcionActiva) {
+        if ($suscripcionActiva?->vigencia_activada_at) {
             $fechaFin = Carbon::parse($suscripcionActiva->fecha_fin);
             $diasRestantes = now()->diffInDays($fechaFin, false);
-            $diasTotales = $suscripcionActiva->fecha_inicio->diffInDays($fechaFin);
+            $diasTotales = max(1, $suscripcionActiva->fecha_inicio->diffInDays($fechaFin));
             $porcentajeRestante = $diasRestantes > 0 ? round(($diasRestantes / $diasTotales) * 100) : 0;
         }
 

@@ -52,6 +52,7 @@ class PagoClienteController extends Controller
             'planMoneda' => $planModel->moneda,
             'planPeriodo' => $planModel->periodo_facturacion,
             'planNombre' => $planModel->nombre,
+            'returnToBuyPlans' => $request->query('origen') === 'comprar-plan',
             'libelulaTransaction' => $pendingTransaction
                 ? $this->safeTransactionData($pendingTransaction)
                 : null,
@@ -445,7 +446,7 @@ class PagoClienteController extends Controller
             $this->deletePendingPhysicalPayment($pagoPendiente);
         });
 
-        return redirect()->route('clientes.historial.pagos')
+        return redirect()->back()
             ->with('success', 'El pedido pendiente fue eliminado correctamente.');
     }
 

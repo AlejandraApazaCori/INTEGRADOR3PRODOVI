@@ -143,6 +143,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/clientes/micuenta', [ClienteController::class, 'miCuenta'])->name('clientes.micuenta');
     Route::get('/clientes/recursos', [RecursoClienteController::class, 'index'])->name('clientes.recursos');
     Route::post('/clientes/recursos', [RecursoClienteController::class, 'store'])->name('clientes.recursos.store');
+    Route::patch('/clientes/recursos/{recurso}/nombre', [RecursoClienteController::class, 'updateName'])->name('clientes.recursos.update-name');
     Route::delete('/clientes/recursos/{recurso}', [RecursoClienteController::class, 'destroy'])->name('clientes.recursos.destroy');
     Route::patch('/clientes/micuenta/datos', [ClienteController::class, 'updateAccountData'])->name('clientes.micuenta.datos');
     Route::post('/clientes/micuenta/cambio-contrasena', [ClienteController::class, 'requestPasswordChange'])

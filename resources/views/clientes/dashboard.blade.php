@@ -39,7 +39,7 @@
                 </details>
             </article>
             <article><i class="fas fa-crown"></i><span><small>Plan contratado</small><strong>{{ $plan->nombre }}</strong></span></article>
-            <article><i class="fas fa-calendar-check"></i><span><small>Tiempo disponible</small><strong>{{ max(0, intval($diasRestantes)) }} días</strong></span></article>
+            <article><i class="fas fa-calendar-check"></i><span><small>Tiempo disponible</small>@if($suscripcionActiva->vigencia_activada_at)<strong>{{ max(0, intval($diasRestantes)) }} días</strong>@else<strong class="time-pending-label">No definido hasta que comience la campaña</strong>@endif</span></article>
             <article><i class="fas fa-signal"></i><span><small>Estado del servicio</small><strong class="capitalize">{{ $suscripcionActiva->estado }}</strong></span></article>
         </section>
 
@@ -224,6 +224,7 @@
     #client-dashboard .dashboard-metrics span { min-width: 0; }
     #client-dashboard .dashboard-metrics small { display: block; color: #8a7f8e; font-size: .68rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
     #client-dashboard .dashboard-metrics strong { display: block; overflow: hidden; margin-top: 3px; color: #302834; font-size: .92rem; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
+    #client-dashboard .dashboard-metrics .time-pending-label { overflow: visible; max-width: 190px; font-size: .72rem; line-height: 1.35; text-overflow: clip; white-space: normal; }
     #client-dashboard .active-company-metric { position: relative; padding-right: 50px; }
     #client-dashboard .company-options { position: absolute; z-index: 20; top: 8px; right: 8px; }
     #client-dashboard .company-options summary { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; color: #756a7a; cursor: pointer; list-style: none; }

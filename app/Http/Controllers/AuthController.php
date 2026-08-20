@@ -52,7 +52,10 @@ class AuthController extends Controller
 
             $tieneSuscripcionActiva = Suscripcion::where('usuario_id', $user->id)
                 ->where('estado', 'activa')
-                ->where('fecha_fin', '>', now())
+                ->where(function ($query) {
+                    $query->whereNull('vigencia_activada_at')
+                        ->orWhere('fecha_fin', '>', now());
+                })
                 ->exists();
 
             if ($tieneSuscripcionActiva) {

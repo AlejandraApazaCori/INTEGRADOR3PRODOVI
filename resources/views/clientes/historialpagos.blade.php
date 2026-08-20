@@ -111,7 +111,7 @@
                                     <td><div class="payment-code"><span><i class="fas fa-receipt"></i></span><strong>{{ $pago->comprobantePago->numero_formateado ?? 'N/A' }}</strong></div></td>
                                     <td><span class="payment-company"><i class="fas fa-building"></i>{{ $pago->suscripcion?->empresa?->nombre_empresa ?? 'Sin asignar' }}</span></td>
                                     <td>{{ $pago->plan->nombre ?? 'N/A' }}</td>
-                                    <td><strong class="payment-amount">{{ $pago->moneda }} {{ number_format($pago->monto, 2) }}</strong></td>
+                                    <td><strong class="payment-amount">{{ number_format($pago->monto, 2, ',', '.') }} {{ strtoupper($pago->moneda) === 'BS' ? 'Bs.' : $pago->moneda }}</strong></td>
                                     <td><span class="payment-badge method-{{ $pago->metodo === 'qr' ? 'qr' : 'other' }}"><i class="fas {{ $pago->metodo === 'qr' ? 'fa-qrcode' : 'fa-money-bill-wave' }}"></i>{{ ucfirst($pago->metodo) }}</span></td>
                                     <td>
                                         @php

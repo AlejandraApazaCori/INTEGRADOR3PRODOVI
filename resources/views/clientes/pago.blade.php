@@ -179,6 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const qrStatus = document.getElementById('qr-status');
     let transaction = @json($libelulaTransaction);
     let physicalPayment = @json($physicalPayment);
+    const physicalContinueUrl = @json($returnToBuyPlans ? route('clientes.planes.comprar') : null);
     let pollTimer = null;
 
     const buttonContent = (icon, label) => `<i class="fas ${icon}"></i> ${label}`;
@@ -284,6 +285,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('close-physical-btn').addEventListener('click', function () {
         if (!physicalPayment?.downloaded) return;
+
+        if (physicalContinueUrl) {
+            window.location.href = physicalContinueUrl;
+            return;
+        }
+
         document.getElementById('physical-modal').style.display = 'none';
     });
 

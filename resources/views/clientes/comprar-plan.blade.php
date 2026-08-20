@@ -17,6 +17,37 @@
     </header>
 
     <main class="plans-content">
+        @if($pagoPendiente)
+            <section class="pending-payment-notice" aria-label="Pago pendiente">
+                <div class="pending-payment-icon"><i class="fas fa-clock"></i></div>
+                <div class="pending-payment-copy">
+                    <span>Pago físico pendiente</span>
+                    <h2>Tienes una solicitud esperando confirmación</h2>
+                    <p>
+                        Plan <strong>{{ $pagoPendiente->plan->nombre ?? 'seleccionado' }}</strong>
+                        por <strong>{{ number_format($pagoPendiente->monto, 2, ',', '.') }} {{ strtoupper($pagoPendiente->moneda) === 'BS' ? 'Bs.' : $pagoPendiente->moneda }}</strong>.
+                        Presenta tu código para completar el pago.
+                    </p>
+                </div>
+                <div class="pending-payment-data">
+                    <span class="pending-status"><i class="fas fa-clock"></i> Pendiente</span>
+                    @if($pagoPendiente->codigoPago)
+                        <small>Código de pago</small>
+                        <strong>{{ $pagoPendiente->codigoPago->codigo }}</strong>
+                        <a href="{{ route('pago.fisico.codigo.pdf', $pagoPendiente) }}"><i class="fas fa-download"></i> Descargar código</a>
+                    @else
+                        <span class="pending-code-loading"><i class="fas fa-spinner fa-spin"></i> Generando código</span>
+                    @endif
+                    <a class="pending-history-link" href="{{ route('clientes.historial.pagos', ['estado' => 'pendiente']) }}">Ver en historial</a>
+                </div>
+                <form class="pending-delete-form" action="{{ route('clientes.pagos.pendientes.eliminar', $pagoPendiente) }}" method="POST" onsubmit="return confirm('¿Deseas eliminar esta solicitud pendiente? Esta acción no se puede deshacer.')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="pending-delete-button" aria-label="Eliminar solicitud" title="Eliminar solicitud"><i class="fas fa-trash-can" aria-hidden="true"></i></button>
+                </form>
+            </section>
+        @endif
+
         <div class="plans-heading">
             <div>
                 <span>Planes PRODOVI</span>
@@ -40,12 +71,12 @@
                         <p class="plan-subtitle">{{ $plan->subtitulo ?: $plan->descripcion }}</p>
 
                         <div class="plan-price-row">
-                            <strong>{{ number_format($plan->precio, 0, ',', '.') }} <small>{{ $plan->moneda === 'BS' ? 'Bs' : '$' }}</small></strong>
+                            <strong>{{ number_format($plan->precio, 0, ',', '.') }} <small>{{ strtoupper($plan->moneda) === 'BS' ? 'Bs.' : '$' }}</small></strong>
                             <span>/ {{ $plan->periodo_facturacion }}</span>
                         </div>
 
                         <p class="plan-helper"><i class="fas fa-building"></i> Incluye el registro de una nueva empresa.</p>
-                        <a href="{{ route('clientes.pago', \Illuminate\Support\Str::slug($plan->nombre)) }}" class="choose-plan-button">
+                        <a href="{{ route('clientes.pago', ['plan' => \Illuminate\Support\Str::slug($plan->nombre), 'origen' => 'comprar-plan']) }}" class="choose-plan-button">
                             Elegir este plan <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>
@@ -106,6 +137,27 @@
     #buy-plan-page .login-mosaic span:nth-child(5) { background:var(--green); border-radius:50%; }
     #buy-plan-page .login-mosaic span:nth-child(6) { border:12px solid #607078; border-top-color:transparent; border-left-color:transparent; border-radius:50%; transform:rotate(45deg); }
     #buy-plan-page .plans-content { margin:34px 32px 0; }
+    #buy-plan-page .pending-payment-notice { position:relative; display:grid; grid-template-columns:auto minmax(0,1fr) minmax(220px,auto); align-items:stretch; gap:0; overflow:hidden; margin-bottom:30px; border:1px solid #ded7e1; border-top:5px solid var(--turquoise); border-radius:4px; background:#fff; box-shadow:0 15px 36px #e5dfe7; }
+    #buy-plan-page .pending-payment-icon { width:54px; height:54px; display:grid; place-items:center; align-self:center; margin:22px 0 22px 22px; border-radius:3px; background:#242426; color:#f5a900; font-size:1.2rem; box-shadow:inset 0 -4px 0 var(--orange); }
+    #buy-plan-page .pending-payment-copy { align-self:center; padding:22px 24px 22px 18px; }
+    #buy-plan-page .pending-payment-copy > span { display:block; color:var(--turquoise); font-size:.65rem; font-weight:900; letter-spacing:.12em; text-transform:uppercase; }
+    #buy-plan-page .pending-payment-copy h2 { margin:6px 0 0; color:#302834; font-size:clamp(1.05rem,2vw,1.28rem); font-weight:900; letter-spacing:-.02em; }
+    #buy-plan-page .pending-payment-copy p { max-width:660px; margin:7px 0 0; color:#756a7a; font-size:.78rem; line-height:1.55; }
+    #buy-plan-page .pending-payment-copy p strong { color:#514557; }
+    #buy-plan-page .pending-payment-data { min-width:220px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:6px; padding:42px 22px 18px; border-left:1px solid #e5dfe7; background:#f7f5f8; }
+    #buy-plan-page .pending-status { display:inline-flex; align-items:center; gap:6px; margin-bottom:3px; padding:5px 8px; border-radius:2px; background:#fff0c7; color:#765700; font-size:.62rem; font-weight:900; letter-spacing:.07em; text-transform:uppercase; }
+    #buy-plan-page .pending-payment-data small { color:#887d8c; font-size:.6rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+    #buy-plan-page .pending-payment-data > strong { color:#302834; font-size:1.05rem; font-weight:900; letter-spacing:.08em; }
+    #buy-plan-page .pending-payment-data > a { display:inline-flex; align-items:center; gap:6px; color:var(--turquoise); font-size:.7rem; font-weight:900; text-decoration:none; transition:.2s ease; }
+    #buy-plan-page .pending-payment-data > a:not(.pending-history-link) { margin-top:2px; padding:7px 10px; border-radius:3px; background:var(--turquoise); color:#fff; }
+    #buy-plan-page .pending-payment-data > a:not(.pending-history-link):hover { filter:brightness(.9); transform:translateY(-1px); }
+    #buy-plan-page .pending-payment-data .pending-history-link { margin-top:2px; color:var(--purple); }
+    #buy-plan-page .pending-payment-data .pending-history-link:hover { text-decoration:underline; }
+    #buy-plan-page .pending-delete-form { position:absolute; z-index:2; top:12px; right:12px; margin:0; }
+    #buy-plan-page .pending-delete-button { width:32px; height:32px; display:grid; place-items:center; padding:0; border:1px solid #dfb4b4; border-radius:50%; background:#fff; color:#b63b3b; font-size:.76rem; cursor:pointer; transition:.2s ease; }
+    #buy-plan-page .pending-delete-button:hover { border-color:#b63b3b; background:#b63b3b; color:#fff; transform:translateY(-1px); }
+    #buy-plan-page .pending-delete-button:focus-visible { outline:2px solid #b63b3b; outline-offset:4px; }
+    #buy-plan-page .pending-code-loading { display:inline-flex; align-items:center; gap:6px; color:var(--turquoise); font-size:.72rem; font-weight:800; }
     #buy-plan-page .plans-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:30px; margin-bottom:24px; padding-bottom:18px; border-bottom:1px solid #ded7e1; }
     #buy-plan-page .plans-heading > div > span { color:var(--green); font-size:.67rem; font-weight:900; letter-spacing:.12em; text-transform:uppercase; }
     #buy-plan-page .plans-heading h2 { max-width:680px; margin:7px 0 0; color:#302834; font-size:clamp(1.35rem,2.5vw,2rem); font-weight:900; letter-spacing:-.035em; }
@@ -151,6 +203,17 @@
 
     html[data-client-theme="dark"] #buy-plan-page { background:#141216; color:#e9e5eb; }
     html[data-client-theme="dark"] #buy-plan-page .plans-heading { border-color:#3b3540; }
+    html[data-client-theme="dark"] #buy-plan-page .pending-payment-notice { border-color:#403944; border-top-color:var(--turquoise); background:#1e1b21; box-shadow:0 15px 36px #0d0b0e; }
+    html[data-client-theme="dark"] #buy-plan-page .pending-payment-data { border-color:#413a45; background:#29252c; }
+    html[data-client-theme="dark"] #buy-plan-page .pending-status { background:#4a3e1d; color:#f7d36d; }
+    html[data-client-theme="dark"] #buy-plan-page .pending-payment-copy h2,
+    html[data-client-theme="dark"] #buy-plan-page .pending-payment-data > strong { color:#f1edf3; }
+    html[data-client-theme="dark"] #buy-plan-page .pending-payment-copy p,
+    html[data-client-theme="dark"] #buy-plan-page .pending-payment-data small { color:#c6bca7; }
+    html[data-client-theme="dark"] #buy-plan-page .pending-payment-copy p strong { color:#e0d9e3; }
+    html[data-client-theme="dark"] #buy-plan-page .pending-payment-data .pending-history-link { color:#d0a8e2; }
+    html[data-client-theme="dark"] #buy-plan-page .pending-delete-button { border-color:#754d52; background:#29252c; color:#e58b8b; }
+    html[data-client-theme="dark"] #buy-plan-page .pending-delete-button:hover { border-color:#b63b3b; background:#b63b3b; color:#fff; }
     html[data-client-theme="dark"] #buy-plan-page .plans-heading h2,
     html[data-client-theme="dark"] #buy-plan-page .plan-summary h3,
     html[data-client-theme="dark"] #buy-plan-page .plan-price-row strong { color:#f1edf3; }
@@ -173,10 +236,17 @@
         #buy-plan-page .plans-content { margin:24px 16px 0; }
         #buy-plan-page .plans-heading { align-items:flex-start; flex-direction:column; }
         #buy-plan-page .plans-grid { grid-template-columns:1fr; }
+        #buy-plan-page .pending-payment-notice { grid-template-columns:auto minmax(0,1fr); }
+        #buy-plan-page .pending-payment-icon { align-self:start; margin:20px 0 20px 20px; }
+        #buy-plan-page .pending-payment-copy { padding:20px 18px; }
+        #buy-plan-page .pending-payment-data { grid-column:1/-1; width:100%; min-width:0; padding:17px 20px; border-top:1px solid #e5dfe7; border-left:0; }
     }
     @media (max-width:500px) {
         #buy-plan-page .plans-hero { align-items:flex-start; flex-direction:column; }
         #buy-plan-page .plans-hero-side, #buy-plan-page .plans-count { width:100%; }
+        #buy-plan-page .pending-payment-notice { grid-template-columns:1fr; }
+        #buy-plan-page .pending-payment-icon { width:46px; height:46px; margin:18px 18px 0; }
+        #buy-plan-page .pending-payment-copy { padding:14px 18px 20px; }
     }
 </style>
 @endsection

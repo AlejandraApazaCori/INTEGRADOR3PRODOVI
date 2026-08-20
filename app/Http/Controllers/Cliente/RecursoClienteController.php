@@ -66,4 +66,18 @@ class RecursoClienteController extends Controller
 
         return redirect()->route('clientes.recursos', ['empresa_id' => $empresaId])->with('success', 'Recurso eliminado correctamente.');
     }
+
+    public function updateName(Request $request, RecursoEmpresa $recurso)
+    {
+        abort_unless($recurso->empresa()->where('usuario_id', $request->user()->id)->exists(), 403);
+
+        $validated = $request->validate([
+            'nombre' => ['required', 'string', 'max:255'],
+        ]);
+
+        $recurso->update(['nombre' => trim($validated['nombre'])]);
+
+        return redirect()->route('clientes.recursos', ['empresa_id' => $recurso->empresa_id])
+            ->with('success', 'El nombre del recurso fue actualizado correctamente.');
+    }
 }

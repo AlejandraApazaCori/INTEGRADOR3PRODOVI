@@ -769,6 +769,128 @@
 
         .container1 .hero-reactions { display: block; }
     }
+
+    /* Cards geométricas inspiradas en el mosaico de login */
+    .container2 .service-card {
+        position: relative;
+        isolation: isolate;
+        overflow: visible;
+        min-height: 320px;
+        padding: 2.7rem 2.25rem;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        transition: transform .3s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .container2 .service-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        border: 1px solid rgba(255, 255, 255, .18);
+        background: var(--card-shape-color);
+        clip-path: var(--card-shape);
+        box-shadow: 0 22px 45px rgba(0, 0, 0, .22);
+        transition: filter .3s ease, transform .3s ease;
+    }
+
+    .container2 .service-card::after {
+        content: "";
+        position: absolute;
+        right: 1.2rem;
+        bottom: 1.2rem;
+        z-index: -1;
+        width: 48px;
+        height: 48px;
+        border: 9px solid rgba(255, 255, 255, .18);
+        border-radius: 7px;
+        transform: rotate(12deg);
+        pointer-events: none;
+    }
+
+    .container2 .service-card > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    .container2 .service-card:hover {
+        transform: translateY(-10px) rotate(-.5deg);
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .container2 .service-card:hover::before {
+        filter: brightness(1.1) saturate(1.08);
+        transform: scale(1.025);
+    }
+
+    .container2 .service-card:nth-child(1) {
+        --card-shape-color: linear-gradient(145deg, #87aa39, #5f7e20);
+        --card-shape: polygon(0 0, 82% 0, 82% 13%, 100% 13%, 100% 100%, 18% 100%, 18% 88%, 0 88%);
+    }
+
+    .container2 .service-card:nth-child(2) {
+        --card-shape-color: linear-gradient(145deg, #1595a5, #0b6773);
+        --card-shape: polygon(0 0, 82% 0, 82% 13%, 100% 13%, 100% 100%, 18% 100%, 18% 88%, 0 88%);
+    }
+
+    .container2 .service-card:nth-child(3) {
+        --card-shape-color: linear-gradient(145deg, #713791, #4b1f65);
+        --card-shape: polygon(0 0, 82% 0, 82% 13%, 100% 13%, 100% 100%, 18% 100%, 18% 88%, 0 88%);
+    }
+
+    .container2 .service-card:nth-child(4) {
+        --card-shape-color: linear-gradient(145deg, #cf5418, #8f3210);
+        --card-shape: polygon(0 0, 82% 0, 82% 13%, 100% 13%, 100% 100%, 18% 100%, 18% 88%, 0 88%);
+    }
+
+    .container2 .service-card:nth-child(5) {
+        --card-shape-color: linear-gradient(145deg, #f58a38, #ef6c22);
+        --card-shape: polygon(0 0, 82% 0, 82% 13%, 100% 13%, 100% 100%, 18% 100%, 18% 88%, 0 88%);
+    }
+
+    .container2 .service-card:nth-child(6) {
+        --card-shape-color: linear-gradient(145deg, #c7c7c7, #8f8f8f);
+        --card-shape: polygon(0 0, 82% 0, 82% 13%, 100% 13%, 100% 100%, 18% 100%, 18% 88%, 0 88%);
+    }
+
+    .container2 .service-title,
+    .container2 .service-description,
+    .container2 .service-icon {
+        color: #fff;
+    }
+
+    .container2 .service-description {
+        color: rgba(255, 255, 255, .86);
+    }
+
+    .container2 .service-icon {
+        border: 1px solid rgba(255, 255, 255, .28);
+        background: rgba(20, 15, 18, .2);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2);
+    }
+
+    @media (max-width: 768px) {
+        .container2 .service-card {
+            min-height: 270px;
+            padding: 2rem 1.4rem;
+        }
+    }
+
+    @media (max-width: 420px) {
+        .container2 .service-card {
+            min-height: 245px;
+            padding: 1.65rem 1rem;
+        }
+
+        .container2 .service-card::after {
+            width: 34px;
+            height: 34px;
+            border-width: 6px;
+        }
+    }
 </style>
 
      <div class="container1 animate-container slide-left" id="inicio">

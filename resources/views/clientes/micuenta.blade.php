@@ -447,10 +447,48 @@
     html[data-client-theme="dark"] .account-password-title p,
     html[data-client-theme="dark"] .account-edit-field small { color:#aaa1ae; }
 
+    /* Detalles del plan */
+    #plan-modal { position:fixed !important; z-index:2147483000 !important; inset:0 !important; display:flex; align-items:center; justify-content:center; overflow:auto; padding:20px; }
+    #plan-modal.hidden { display:none !important; }
+    #plan-modal > div { min-height:0 !important; display:contents !important; padding:0 !important; text-align:left !important; }
+    #plan-modal > div > div:first-child { position:fixed !important; z-index:0; inset:0 !important; background:rgba(18,14,20,.76); backdrop-filter:blur(5px); }
+    #plan-modal > div > div:first-child > div { position:absolute; inset:0; background:transparent !important; }
+    #plan-modal > div > div:nth-child(2) { position:relative; z-index:1; width:min(720px,100%) !important; max-width:none !important; max-height:calc(100vh - 40px); display:flex !important; flex-direction:column; overflow:hidden !important; margin:0 !important; border:1px solid #ded7e1 !important; border-radius:5px !important; background:#fff !important; box-shadow:0 28px 80px rgba(0,0,0,.38) !important; transform:none !important; }
+    #plan-modal > div > div:nth-child(2) > div:first-child { flex:0 0 auto; padding:20px 24px !important; border-bottom:5px solid #ee9f2b; background:#242426 !important; }
+    #plan-modal #modal-plan-title { margin:0; color:#fff; font-size:1.15rem; font-weight:900; }
+    #plan-modal #close-modal { width:36px; height:36px; display:grid; place-items:center; padding:0 !important; border:1px solid #565259; border-radius:3px !important; background:#343436; color:#fff; cursor:pointer; }
+    #plan-modal #close-modal:hover { border-color:#ee9f2b; background:#ee9f2b; color:#242426; }
+    #plan-modal > div > div:nth-child(2) > div:nth-child(2) { flex:1 1 auto; overflow-y:auto; padding:24px !important; background:#fff !important; }
+    #plan-modal > div > div:nth-child(2) > div:nth-child(2) > div:first-child { margin-bottom:20px !important; padding:16px 18px !important; border:1px solid #c9e1e4 !important; border-left:5px solid #117e8c !important; border-radius:4px !important; background:#edf7f8 !important; }
+    #plan-modal > div > div:nth-child(2) > div:nth-child(2) > div:nth-child(2) { margin-bottom:22px !important; padding-bottom:20px; border-bottom:1px solid #ded7e1; }
+    #plan-modal > div > div:nth-child(2) h4 { color:#302834 !important; font-size:.82rem; font-weight:900; }
+    #plan-modal > div > div:nth-child(2) h4 svg { color:#5b2b76 !important; }
+    #plan-modal #modal-plan-dates { color:#514557 !important; font-size:.82rem; }
+    #plan-modal #modal-plan-description { color:#756a7a !important; font-size:.8rem; line-height:1.65; }
+    #plan-modal #modal-plan-features { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+    #plan-modal #modal-plan-features > div { min-width:0; margin:0 !important; padding:11px 12px !important; border:1px solid #e2dce4 !important; border-radius:4px !important; background:#f7f5f8 !important; box-shadow:none !important; }
+    #plan-modal > div > div:nth-child(2) > div:last-child { flex:0 0 auto; padding:14px 22px !important; border-top:1px solid #ded7e1 !important; background:#f7f5f8 !important; }
+    #plan-modal #close-modal-footer { padding:10px 18px !important; border:1px solid #5b2b76; border-radius:3px !important; background:#5b2b76 !important; color:#fff; font-size:.76rem; font-weight:900; box-shadow:none !important; transform:none !important; cursor:pointer; }
+    #plan-modal #close-modal-footer:hover { background:#432056 !important; }
+    html[data-client-theme="dark"] #plan-modal > div > div:nth-child(2) { border-color:#403943 !important; background:#1e1b21 !important; }
+    html[data-client-theme="dark"] #plan-modal > div > div:nth-child(2) > div:nth-child(2) { background:#1e1b21 !important; }
+    html[data-client-theme="dark"] #plan-modal > div > div:nth-child(2) > div:nth-child(2) > div:first-child { border-color:#376b72 !important; background:#173136 !important; }
+    html[data-client-theme="dark"] #plan-modal > div > div:nth-child(2) > div:nth-child(2) > div:nth-child(2) { border-color:#403943; }
+    html[data-client-theme="dark"] #plan-modal > div > div:nth-child(2) h4,
+    html[data-client-theme="dark"] #plan-modal #modal-plan-dates { color:#f1edf3 !important; }
+    html[data-client-theme="dark"] #plan-modal #modal-plan-description { color:#b4abb8 !important; }
+    html[data-client-theme="dark"] #plan-modal #modal-plan-features > div { border-color:#403943 !important; background:#29252c !important; }
+    html[data-client-theme="dark"] #plan-modal > div > div:nth-child(2) > div:last-child { border-color:#403943 !important; background:#29252c !important; }
+
     @media (max-width: 720px) {
         #mi-cuenta-page .cuenta-banner { min-height: 190px; padding: 26px 20px; }
         #mi-cuenta-page .cuenta-banner-side { margin-left: auto; }
         #mi-cuenta-page .cuenta-banner-mosaic { display: none; }
+        #plan-modal { padding:10px; }
+        #plan-modal > div > div:nth-child(2) { max-height:calc(100vh - 20px); }
+        #plan-modal > div > div:nth-child(2) > div:first-child,
+        #plan-modal > div > div:nth-child(2) > div:nth-child(2) { padding:18px !important; }
+        #plan-modal #modal-plan-features { grid-template-columns:1fr; }
     }
     @media (max-width: 500px) {
         #mi-cuenta-page .cuenta-banner { align-items: flex-start; flex-direction: column; gap: 20px; }
@@ -708,6 +746,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const verDetallesBtn = document.getElementById('ver-detalles-btn');
         const closeModalBtn = document.getElementById('close-modal');
         const closeModalFooterBtn = document.getElementById('close-modal-footer');
+        const modalDialog = modal.querySelector(':scope > div > div:nth-child(2)');
+
+        document.body.appendChild(modal);
         
         // Llenar datos del modal
         document.getElementById('modal-plan-title').textContent = `Plan ${plan.nombre}`;
@@ -765,16 +806,18 @@ document.addEventListener('DOMContentLoaded', function() {
         function openModal() {
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
+            window.setTimeout(() => closeModalBtn.focus(), 50);
         }
         
         function closeModal() {
             modal.classList.add('hidden');
-            document.body.style.overflow = 'auto';
+            document.body.style.overflow = '';
+            verDetallesBtn.focus();
         }
         
-        verDetallesBtn.addEventListener('click', openModal);
-        closeModalBtn.addEventListener('click', closeModal);
-        closeModalFooterBtn.addEventListener('click', closeModal);
+        verDetallesBtn?.addEventListener('click', openModal);
+        closeModalBtn?.addEventListener('click', closeModal);
+        closeModalFooterBtn?.addEventListener('click', closeModal);
         
         // Cerrar con Escape
         document.addEventListener('keydown', (e) => {
@@ -783,9 +826,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Cerrar al hacer clic fuera del modal
+        // Cerrar al hacer clic en el fondo, fuera del contenido.
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
+            if (!modalDialog.contains(e.target)) {
                 closeModal();
             }
         });
