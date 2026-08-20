@@ -121,7 +121,7 @@ class User extends Authenticatable
             return collect();
         }
 
-        return $this->socialAccounts()->get()->keyBy('provider');
+        return $this->socialAccounts()->whereNull('empresa_id')->get()->keyBy('provider');
     }
 
     public function hasLinkedSocialAccount(string $provider): bool
@@ -131,6 +131,7 @@ class User extends Authenticatable
         }
 
         return $this->socialAccounts()
+            ->whereNull('empresa_id')
             ->where('provider', $provider)
             ->whereNotNull('provider_user_id')
             ->exists();

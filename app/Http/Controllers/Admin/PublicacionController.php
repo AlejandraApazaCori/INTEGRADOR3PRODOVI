@@ -30,7 +30,22 @@ class PublicacionController extends Controller
 
         $tarea = $this->loadPublishingTask($tareaId);
         $cliente = $tarea->campania?->cliente;
-        $facebookPage = $cliente?->socialAccounts()->where('provider', 'facebook_page')->first();
+        $empresaId = $tarea->campania?->suscripcion?->empresa?->id;
+        $facebookPage = $cliente?->socialAccounts()
+            ->where('provider', 'facebook_page')
+            ->when(
+                $empresaId,
+                fn ($query) => $query->where('empresa_id', $empresaId),
+                fn ($query) => $query->whereNull('empresa_id')
+            )
+            ->first();
+
+        if (! $facebookPage && $empresaId) {
+            $facebookPage = $cliente?->socialAccounts()
+                ->whereNull('empresa_id')
+                ->where('provider', 'facebook_page')
+                ->first();
+        }
 
         return view('administrador.publicacion.publicar', compact('tarea', 'cliente', 'facebookPage'));
     }
@@ -111,6 +126,7 @@ class PublicacionController extends Controller
                 $query->where('estado', 'aprobado');
             },
             'campania.cliente.socialAccounts',
+            'campania.suscripcion.empresa.socialAccounts',
         ])->findOrFail($tareaId);
     }
 }

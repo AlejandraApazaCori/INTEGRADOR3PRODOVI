@@ -89,7 +89,8 @@ class FacebookService
 
     public function publishTaskForUser(User $user, Tarea $tarea, string $message): array
     {
-        [$pageId, $pageAccessToken, $error] = $this->resolveUserPageCredentials($user);
+        $empresaId = $tarea->campania?->suscripcion?->empresa?->id;
+        [$pageId, $pageAccessToken, $error] = $this->resolveUserPageCredentials($user, $empresaId);
 
         if ($error) {
             return $error;
@@ -181,11 +182,23 @@ class FacebookService
         }
     }
 
-    private function resolveUserPageCredentials(User $user): array
+    private function resolveUserPageCredentials(User $user, ?int $empresaId = null): array
     {
         $pageAccount = $user->socialAccounts()
             ->where('provider', 'facebook_page')
+            ->when(
+                $empresaId,
+                fn ($query) => $query->where('empresa_id', $empresaId),
+                fn ($query) => $query->whereNull('empresa_id')
+            )
             ->first();
+
+        if (! $pageAccount && $empresaId) {
+            $pageAccount = $user->socialAccounts()
+                ->whereNull('empresa_id')
+                ->where('provider', 'facebook_page')
+                ->first();
+        }
 
         if (! $pageAccount) {
             return [

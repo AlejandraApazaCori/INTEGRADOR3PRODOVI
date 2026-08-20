@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Cliente;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -15,28 +16,41 @@ class SocialAccountController extends Controller
 {
     private const SUPPORTED_PROVIDERS = ['facebook', 'instagram'];
 
-    public function redirect(string $provider)
+    public function redirect(Request $request, string $provider)
     {
         abort_unless(in_array($provider, self::SUPPORTED_PROVIDERS, true), 404);
 
         $user = Auth::user();
+        $empresa = $request->filled('empresa_id')
+            ? $user->empresas()->findOrFail($request->integer('empresa_id'))
+            : null;
+        $returnUrl = $empresa
+            ? route('clientes.micuenta', ['redes_empresa' => $empresa->id])
+            : url()->previous();
 
         if (! $user->socialAccountsTableExists()) {
-            return redirect()->back()->with('social_accounts_error', 'La integraciÓn de redes sociales aÚn no esté disponible en este entorno porque falta la tabla social_accounts. Ejecuta las migraciones del sistema.');
+            return redirect($returnUrl)->with('social_accounts_error', 'La integración de redes sociales aún no está disponible en este entorno porque falta la tabla social_accounts. Ejecuta las migraciones del sistema.');
         }
 
-        if ($provider === 'instagram' && ! $user->hasLinkedSocialAccount('facebook')) {
-            return redirect()->back()->with('social_accounts_error', 'Primero debes vincular Facebook antes de continuar con Instagram.');
+        $facebookLinked = $empresa
+            ? $empresa->socialAccounts()->where('provider', 'facebook')->whereNotNull('provider_user_id')->exists()
+            : $user->hasLinkedSocialAccount('facebook');
+
+        if ($provider === 'instagram' && ! $facebookLinked) {
+            return redirect($returnUrl)->with('social_accounts_error', 'Primero debes vincular Facebook antes de continuar con Instagram.');
         }
 
         if (! $this->providerIsConfigured($provider)) {
-            return redirect()->back()->with('social_accounts_error', 'La configuración OAuth de ' . ucfirst($provider) . ' todavía no está completa.');
+            return redirect($returnUrl)->with('social_accounts_error', 'La configuración OAuth de ' . ucfirst($provider) . ' todavía no está completa.');
         }
 
-        session(['social_accounts.return_url' => url()->previous()]);
+        session([
+            'social_accounts.return_url' => $returnUrl,
+            'social_accounts.empresa_id' => $empresa?->id,
+        ]);
 
         if ($provider === 'instagram') {
-            return redirect()->back()->with('social_accounts_error', 'Instagram OAuth quedó preparado, pero el callback específico se conectará en el siguiente paso.');
+            return redirect($returnUrl)->with('social_accounts_error', 'Instagram OAuth quedó preparado, pero el callback específico se conectará en el siguiente paso.');
         }
 
         return Socialite::driver('facebook')
@@ -58,6 +72,7 @@ class SocialAccountController extends Controller
         abort_unless(in_array($provider, self::SUPPORTED_PROVIDERS, true), 404);
 
         $returnUrl = session()->pull('social_accounts.return_url', route('clientes.home'));
+        $empresaId = session()->pull('social_accounts.empresa_id');
 
         if ($provider !== 'facebook') {
             return redirect($returnUrl)->with('social_accounts_error', 'El callback OAuth de Instagram se conectará en el siguiente paso.');
@@ -70,12 +85,18 @@ class SocialAccountController extends Controller
         try {
             $socialUser = Socialite::driver('facebook')->user();
             $user = Auth::user();
+            $empresa = $empresaId ? $user->empresas()->find($empresaId) : null;
+
+            if ($empresaId && ! $empresa) {
+                return redirect($returnUrl)->with('social_accounts_error', 'La empresa seleccionada ya no está disponible.');
+            }
+
             $facebookPages = $this->fetchFacebookPages($socialUser->token);
             $primaryPage = $facebookPages[0] ?? null;
             $rawUserData = method_exists($socialUser, 'user') ? ($socialUser->user ?? []) : [];
 
             $user->socialAccounts()->updateOrCreate(
-                ['provider' => 'facebook'],
+                ['empresa_id' => $empresa?->id, 'provider' => 'facebook'],
                 [
                     'provider_user_id' => $socialUser->getId(),
                     'username' => $socialUser->getNickname(),
@@ -97,13 +118,16 @@ class SocialAccountController extends Controller
             );
 
             if (! $primaryPage) {
-                $user->socialAccounts()->where('provider', 'facebook_page')->delete();
+                $user->socialAccounts()
+                    ->where('empresa_id', $empresa?->id)
+                    ->where('provider', 'facebook_page')
+                    ->delete();
 
                 return redirect($returnUrl)->with('social_accounts_error', 'Facebook fue vinculado, pero no se encontró ninguna página autorizada. Asegúrate de seleccionar una página y otorgar permisos de publicación.');
             }
 
             $user->socialAccounts()->updateOrCreate(
-                ['provider' => 'facebook_page'],
+                ['empresa_id' => $empresa?->id, 'provider' => 'facebook_page'],
                 [
                     'provider_user_id' => $primaryPage['id'],
                     'username' => $primaryPage['name'],
@@ -209,6 +233,3 @@ class SocialAccountController extends Controller
         return substr($token, 0, 4) . str_repeat('*', max(strlen($token) - 8, 4)) . substr($token, -4);
     }
 }
-
-
-

@@ -11,6 +11,7 @@ class SocialAccount extends Model
 
     protected $fillable = [
         'user_id',
+        'empresa_id',
         'provider',
         'provider_user_id',
         'username',
@@ -34,5 +35,10 @@ class SocialAccount extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class);
     }
 }

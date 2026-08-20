@@ -136,7 +136,24 @@
                     @if($empresas->count() > 0)
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             @foreach($empresas as $empresa)
-                                <div class="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                @php
+                                    $companySocialAccounts = $empresa->relationLoaded('socialAccounts')
+                                        ? $empresa->socialAccounts->keyBy('provider')
+                                        : collect();
+                                    $legacySocialAccounts = $loop->first ? $globalSocialAccounts : collect();
+                                    $companyFacebookLinked = filled(($companySocialAccounts->get('facebook') ?? $legacySocialAccounts->get('facebook'))?->provider_user_id);
+                                    $companyInstagramLinked = filled(($companySocialAccounts->get('instagram') ?? $legacySocialAccounts->get('instagram'))?->provider_user_id);
+                                @endphp
+                                <div class="company-social-card bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                    <button type="button" class="open-company-social-modal"
+                                        data-company-id="{{ $empresa->id }}"
+                                        data-company-name="{{ $empresa->nombre_empresa }}"
+                                        data-facebook-linked="{{ $companyFacebookLinked ? '1' : '0' }}"
+                                        data-instagram-linked="{{ $companyInstagramLinked ? '1' : '0' }}"
+                                        data-facebook-url="{{ route('clientes.social.redirect', ['provider' => 'facebook', 'empresa_id' => $empresa->id]) }}"
+                                        data-instagram-url="{{ route('clientes.social.redirect', ['provider' => 'instagram', 'empresa_id' => $empresa->id]) }}">
+                                        <i class="fas fa-share-nodes"></i> Vincular redes
+                                    </button>
                                     <div class="p-6">
                                         <div class="flex items-center space-x-4 mb-4">
                                             @if($empresa->logo)
@@ -264,6 +281,34 @@
                 </form>
             </section>
         </div>
+    </div>
+</div>
+
+<div id="company-social-modal" class="company-social-modal hidden" role="dialog" aria-modal="true" aria-labelledby="company-social-title">
+    <div class="company-social-backdrop" data-close-company-social></div>
+    <div class="company-social-dialog">
+        <header class="company-social-header">
+            <div class="company-social-header-icon"><i class="fas fa-share-nodes"></i></div>
+            <div><span>CANALES DE TU EMPRESA</span><h3 id="company-social-title">Vincular redes sociales</h3></div>
+            <button type="button" data-close-company-social aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+        </header>
+        <div class="company-social-body">
+            <div class="company-social-company"><i class="fas fa-building"></i><span>Configurarás las redes de <strong id="company-social-name"></strong></span></div>
+            @if(session('social_accounts_success'))<div class="company-social-notice success"><i class="fas fa-circle-check"></i>{{ session('social_accounts_success') }}</div>@endif
+            @if(session('social_accounts_error'))<div class="company-social-notice error"><i class="fas fa-circle-exclamation"></i>{{ session('social_accounts_error') }}</div>@endif
+            <p class="company-social-intro">Conecta los perfiles que representan a esta empresa. Facebook debe vincularse antes de habilitar Instagram.</p>
+            <div class="company-social-grid">
+                <a href="#" id="company-facebook-option" class="company-social-option facebook">
+                    <div><span class="company-social-platform-icon"><i class="fab fa-facebook-f"></i></span><span class="company-social-badge">Disponible</span></div>
+                    <h4>Facebook</h4><p>Autoriza la página de esta empresa y permite que PRODOVI la reconozca.</p><strong>Conectar con Facebook <i class="fas fa-arrow-right"></i></strong>
+                </a>
+                <a href="#" id="company-instagram-option" class="company-social-option instagram is-disabled" aria-disabled="true">
+                    <div><span class="company-social-platform-icon"><i class="fab fa-instagram"></i></span><span class="company-social-badge">Bloqueado</span></div>
+                    <h4>Instagram</h4><p>Conecta el perfil de Instagram asociado al negocio después de Facebook.</p><strong>Esperando Facebook</strong>
+                </a>
+            </div>
+        </div>
+        <footer class="company-social-footer"><button type="button" data-close-company-social>Listo</button></footer>
     </div>
 </div>
 
@@ -447,6 +492,53 @@
     html[data-client-theme="dark"] .account-password-title p,
     html[data-client-theme="dark"] .account-edit-field small { color:#aaa1ae; }
 
+    .company-social-card { position:relative; }
+    .company-social-card > .p-6 { padding-top:4.4rem; }
+    .open-company-social-modal { position:absolute; z-index:2; top:14px; right:14px; display:inline-flex; align-items:center; gap:7px; padding:8px 10px; border:1px solid #c9e1e4; border-radius:3px; background:#edf7f8; color:#117e8c; font-size:.68rem; font-weight:900; cursor:pointer; transition:.2s ease; }
+    .open-company-social-modal:hover { border-color:#117e8c; background:#117e8c; color:#fff; transform:translateY(-1px); }
+    .company-social-modal { position:fixed; z-index:2147483001; inset:0; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .company-social-modal.hidden { display:none; }
+    .company-social-backdrop { position:absolute; inset:0; background:rgba(18,14,20,.76); backdrop-filter:blur(5px); }
+    .company-social-dialog { position:relative; width:min(690px,100%); max-height:calc(100vh - 40px); display:flex; flex-direction:column; overflow:hidden; border-radius:5px; background:#fff; box-shadow:0 28px 80px rgba(0,0,0,.38); }
+    .company-social-header { display:flex; align-items:center; gap:13px; padding:20px 22px; border-bottom:5px solid #117e8c; background:#242426; color:#fff; }
+    .company-social-header-icon { width:40px; height:40px; display:grid; place-items:center; flex:0 0 auto; border-radius:3px; background:#117e8c; }
+    .company-social-header > div:nth-child(2) { flex:1; }
+    .company-social-header span { display:block; color:#76c5ce; font-size:.6rem; font-weight:900; letter-spacing:.12em; }
+    .company-social-header h3 { margin:4px 0 0; font-size:1.15rem; font-weight:900; }
+    .company-social-header > button { width:36px; height:36px; display:grid; place-items:center; border:1px solid #565259; border-radius:3px; background:#343436; color:#fff; cursor:pointer; }
+    .company-social-body { overflow-y:auto; padding:22px; }
+    .company-social-company { display:flex; align-items:center; gap:10px; margin-bottom:15px; padding:11px 13px; border-left:4px solid #ee9f2b; background:#fff5e6; color:#70572f; font-size:.75rem; }
+    .company-social-company > i { color:#ee9f2b; }
+    .company-social-intro { margin:0 0 17px; color:#756a7a; font-size:.78rem; line-height:1.55; }
+    .company-social-notice { display:flex; align-items:flex-start; gap:9px; margin-bottom:14px; padding:11px 13px; border-left:4px solid; font-size:.73rem; font-weight:800; }
+    .company-social-notice.success { border-color:#7da533; background:#f3f7eb; color:#587923; }
+    .company-social-notice.error { border-color:#b63b3b; background:#fff1f1; color:#9b2929; }
+    .company-social-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px; }
+    .company-social-option { min-width:0; display:flex; flex-direction:column; padding:18px; border:1px solid #ded7e1; border-top:4px solid #1877f2; border-radius:4px; background:#fff; color:#302834; text-decoration:none; transition:.2s ease; }
+    .company-social-option.instagram { border-top-color:#d62976; }
+    .company-social-option:hover { transform:translateY(-3px); box-shadow:0 12px 25px #ded9e0; }
+    .company-social-option > div { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .company-social-platform-icon { width:38px; height:38px; display:grid; place-items:center; border-radius:50%; background:#1877f2; color:#fff; }
+    .company-social-option.instagram .company-social-platform-icon { background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045); }
+    .company-social-badge { padding:5px 7px; border-radius:2px; background:#edf7f8; color:#117e8c; font-size:.58rem; font-weight:900; text-transform:uppercase; }
+    .company-social-option h4 { margin:14px 0 0; font-size:.96rem; font-weight:900; }
+    .company-social-option p { flex:1; margin:6px 0 14px; color:#756a7a; font-size:.7rem; line-height:1.5; }
+    .company-social-option > strong { color:#5b2b76; font-size:.68rem; font-weight:900; }
+    .company-social-option.is-linked { border-color:#7da533; border-top-color:#7da533; background:#f7faF1; }
+    .company-social-option.is-linked .company-social-badge { background:#eaf3da; color:#587923; }
+    .company-social-option.is-disabled { border-color:#ddd8df; background:#f4f2f5; opacity:.62; cursor:not-allowed; transform:none; box-shadow:none; }
+    .company-social-footer { display:flex; justify-content:flex-end; padding:14px 22px; border-top:1px solid #ded7e1; background:#f7f5f8; }
+    .company-social-footer button { padding:10px 18px; border:1px solid #5b2b76; border-radius:3px; background:#5b2b76; color:#fff; font-size:.74rem; font-weight:900; cursor:pointer; }
+    html[data-client-theme="dark"] .open-company-social-modal { border-color:#376b72; background:#173136; color:#78c3cb; }
+    html[data-client-theme="dark"] .company-social-dialog { background:#1e1b21; color:#e9e5eb; }
+    html[data-client-theme="dark"] .company-social-company { background:#3a3020; color:#efcf9e; }
+    html[data-client-theme="dark"] .company-social-intro { color:#b4abb8; }
+    html[data-client-theme="dark"] .company-social-option { border-color:#403943; background:#29252c; color:#f1edf3; }
+    html[data-client-theme="dark"] .company-social-option p { color:#b4abb8; }
+    html[data-client-theme="dark"] .company-social-option.is-linked { border-color:#627f2f; background:#28321f; }
+    html[data-client-theme="dark"] .company-social-option.is-disabled { border-color:#403943; background:#242127; }
+    html[data-client-theme="dark"] .company-social-footer { border-color:#403943; background:#29252c; }
+
     /* Detalles del plan */
     #plan-modal { position:fixed !important; z-index:2147483000 !important; inset:0 !important; display:flex; align-items:center; justify-content:center; overflow:auto; padding:20px; }
     #plan-modal.hidden { display:none !important; }
@@ -489,6 +581,9 @@
         #plan-modal > div > div:nth-child(2) > div:first-child,
         #plan-modal > div > div:nth-child(2) > div:nth-child(2) { padding:18px !important; }
         #plan-modal #modal-plan-features { grid-template-columns:1fr; }
+        .company-social-modal { padding:10px; }
+        .company-social-dialog { max-height:calc(100vh - 20px); }
+        .company-social-grid { grid-template-columns:1fr; }
     }
     @media (max-width: 500px) {
         #mi-cuenta-page .cuenta-banner { align-items: flex-start; flex-direction: column; gap: 20px; }
@@ -596,11 +691,65 @@ document.addEventListener('DOMContentLoaded', function() {
 
     openAccountModal?.addEventListener('click', showAccountModal);
     closeAccountModalButtons.forEach(button => button.addEventListener('click', hideAccountModal));
+
+    const companySocialModal = document.getElementById('company-social-modal');
+    const companySocialName = document.getElementById('company-social-name');
+    const facebookOption = document.getElementById('company-facebook-option');
+    const instagramOption = document.getElementById('company-instagram-option');
+    const companySocialButtons = document.querySelectorAll('.open-company-social-modal');
+    let activeCompanySocialButton = null;
+
+    document.body.appendChild(companySocialModal);
+
+    function configureSocialOption(option, linked, enabled, url, platform) {
+        option.classList.toggle('is-linked', linked);
+        option.classList.toggle('is-disabled', !enabled);
+        option.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+        option.href = enabled ? url : '#';
+        option.querySelector('.company-social-badge').textContent = linked ? 'Vinculado' : (enabled ? 'Disponible' : 'Bloqueado');
+        option.querySelector('strong').innerHTML = linked
+            ? (platform === 'Facebook' ? 'Vinculado · Volver a conectar <i class="fas fa-arrow-right"></i>' : 'Cuenta conectada <i class="fas fa-check"></i>')
+            : (enabled ? `Conectar con ${platform} <i class="fas fa-arrow-right"></i>` : 'Esperando Facebook');
+    }
+
+    function showCompanySocialModal(button) {
+        activeCompanySocialButton = button;
+        const facebookLinked = button.dataset.facebookLinked === '1';
+        const instagramLinked = button.dataset.instagramLinked === '1';
+        companySocialName.textContent = button.dataset.companyName;
+        configureSocialOption(facebookOption, facebookLinked, true, button.dataset.facebookUrl, 'Facebook');
+        configureSocialOption(instagramOption, instagramLinked, facebookLinked, button.dataset.instagramUrl, 'Instagram');
+        companySocialModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        window.setTimeout(() => companySocialModal.querySelector('.company-social-header > button').focus(), 50);
+    }
+
+    function hideCompanySocialModal() {
+        companySocialModal.classList.add('hidden');
+        document.body.style.overflow = '';
+        activeCompanySocialButton?.focus();
+    }
+
+    companySocialButtons.forEach(button => button.addEventListener('click', () => showCompanySocialModal(button)));
+    document.querySelectorAll('[data-close-company-social]').forEach(button => button.addEventListener('click', hideCompanySocialModal));
+    [facebookOption, instagramOption].forEach(option => option.addEventListener('click', event => {
+        if (option.classList.contains('is-disabled') || (option === instagramOption && option.classList.contains('is-linked'))) event.preventDefault();
+    }));
+
     document.addEventListener('keydown', event => {
         if (event.key === 'Escape' && !accountModal.classList.contains('hidden')) {
             hideAccountModal();
         }
+        if (event.key === 'Escape' && !companySocialModal.classList.contains('hidden')) {
+            hideCompanySocialModal();
+        }
     });
+
+    const requestedSocialCompany = @json((string) request('redes_empresa', ''));
+    if (requestedSocialCompany) {
+        const requestedButton = Array.from(companySocialButtons).find(button => button.dataset.companyId === requestedSocialCompany);
+        if (requestedButton) showCompanySocialModal(requestedButton);
+    }
 
     @if($errors->any())
         showAccountModal();

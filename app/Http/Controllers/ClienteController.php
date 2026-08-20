@@ -331,12 +331,18 @@ class ClienteController extends Controller
         // NUEVO: Obtener todas las empresas del usuario
         $empresas = $user->empresas;
 
+        if ($user->socialAccountsTableExists()) {
+            $empresas->load('socialAccounts');
+        }
+        $globalSocialAccounts = $user->linkedSocialAccounts();
+
         return view('clientes.micuenta', compact(
             'user',
             'suscripcionActiva',
             'diasRestantes',
             'porcentajeRestante',
-            'empresas'
+            'empresas',
+            'globalSocialAccounts'
         ));
     }
 
