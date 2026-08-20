@@ -76,7 +76,7 @@ class ClienteController extends Controller
         return view('clientes.comprar-plan', compact('planes', 'pagoPendiente'));
     }
 
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         $user = Auth::user();
 
@@ -84,15 +84,23 @@ class ClienteController extends Controller
             return redirect()->route('clientes.onboarding');
         }
 
-        $suscripcionActiva = Suscripcion::with(['plan', 'empresa'])
+        $suscripcionesDisponibles = Suscripcion::with(['plan', 'empresa'])
             ->where('usuario_id', $user->id)
-            ->where('estado', 'activa')
-            ->where(function ($query) {
-                $query->whereNull('vigencia_activada_at')
-                    ->orWhere('fecha_fin', '>', now());
-            })
+            ->whereHas('empresa')
             ->latest('id')
-            ->firstOrFail();
+            ->get();
+
+        $empresaSolicitadaId = $request->integer('empresa');
+        $suscripcionActiva = $empresaSolicitadaId
+            ? $suscripcionesDisponibles->first(fn ($suscripcion) => (int) $suscripcion->empresa?->id === $empresaSolicitadaId)
+            : null;
+        $suscripcionActiva ??= $suscripcionesDisponibles->first(fn ($suscripcion) => $suscripcion->esta_activa);
+        $suscripcionActiva ??= $suscripcionesDisponibles->firstOrFail();
+        $dashboardCompanies = $suscripcionesDisponibles
+            ->pluck('empresa')
+            ->filter()
+            ->unique('id')
+            ->values();
 
         $diasRestantes = null;
         $porcentajeRestante = null;
@@ -106,6 +114,18 @@ class ClienteController extends Controller
 
         $empresas = $user->empresas;
         $empresaActiva = $suscripcionActiva->empresa;
+        $dashboardSocialAccounts = collect();
+
+        if ($empresaActiva && $user->socialAccountsTableExists()) {
+            $empresaActiva->load('socialAccounts');
+            $dashboardSocialAccounts = $empresaActiva->socialAccounts->keyBy('provider');
+
+            $isFirstCompany = (int) $empresas->sortBy('id')->first()?->id === (int) $empresaActiva->id;
+            if ($isFirstCompany) {
+                $dashboardSocialAccounts = $dashboardSocialAccounts
+                    ->union($user->linkedSocialAccounts());
+            }
+        }
         $empresaCuestionario = $empresaActiva && ! $empresaActiva->cuestionario_completado
             ? $empresaActiva
             : null;
@@ -135,6 +155,8 @@ class ClienteController extends Controller
             'porcentajeRestante',
             'empresas',
             'empresaActiva',
+            'dashboardCompanies',
+            'dashboardSocialAccounts',
             'empresaCuestionario',
             'temasCuestionario',
             'respuestasCuestionario',
