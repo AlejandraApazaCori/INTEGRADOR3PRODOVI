@@ -278,8 +278,8 @@
                     <div><input id="account-name" name="name" type="text" value="{{ old('name', Auth::user()->name) }}" required><i class="fas fa-pencil"></i></div>
                 </div>
                 <div class="account-edit-field">
-                    <label for="account-phone">Teléfono</label>
-                    <div><input id="account-phone" name="phone" type="tel" value="{{ old('phone', Auth::user()->phone) }}" placeholder="Ej. +591 70000000"><i class="fas fa-pencil"></i></div>
+                    <label for="account-phone">Celular</label>
+                    <div><input id="account-phone" name="phone" type="tel" value="{{ old('phone', Auth::user()->phone) }}" placeholder="Ej. 70000000" inputmode="numeric" pattern="[0-9]*" maxlength="30" title="Ingresa únicamente números" oninput="this.value = this.value.replace(/[^0-9]/g, '')"><i class="fas fa-pencil"></i></div>
                 </div>
                 <div class="account-edit-field is-locked">
                     <label for="account-email">Correo electrónico</label>

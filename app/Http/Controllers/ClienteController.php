@@ -350,11 +350,11 @@ class ClienteController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:30', 'regex:/^[0-9+()\-\s]+$/'],
+            'phone' => ['nullable', 'string', 'max:30', 'regex:/^[0-9]+$/'],
         ], [
             'name.required' => 'El nombre es obligatorio.',
             'name.min' => 'El nombre debe tener al menos 2 caracteres.',
-            'phone.regex' => 'Ingresa un número de teléfono válido.',
+            'phone.regex' => 'El celular solo debe contener números.',
         ]);
 
         $request->user()->update($validated);
