@@ -1,3 +1,9 @@
+@php
+    $navbarEmpresas = auth()->user()->empresas()
+        ->orderBy('nombre_empresa')
+        ->get(['id', 'nombre_empresa']);
+@endphp
+
 <header class="client-navbar" id="client-navbar">
     <div class="client-navbar-inner">
         <a href="{{ route('clientes.dashboard') }}" class="client-brand" aria-label="Ir al dashboard"><img src="{{ asset('imagenes/logoblanco.png') }}" alt="PRODOVI"></a>
@@ -14,6 +20,16 @@
             </div>
             <a href="{{ route('clientes.analiticas') }}" class="client-nav-link {{ request()->routeIs('clientes.analiticas') ? 'is-active' : '' }}"><i class="fas fa-chart-line"></i><span>Analíticas</span></a>
             <a href="{{ route('clientes.recursos') }}" class="client-nav-link {{ request()->routeIs('clientes.recursos*') ? 'is-active' : '' }}"><i class="fas fa-folder-open"></i><span>Recursos</span></a>
+            @if($navbarEmpresas->isNotEmpty())
+                <div class="client-nav-dropdown">
+                    <button type="button" class="client-nav-link {{ request()->routeIs('empresas.*') ? 'is-active' : '' }}" data-nav-dropdown aria-expanded="false"><i class="fas fa-building"></i><span>Empresa</span><i class="fas fa-chevron-down client-chevron"></i></button>
+                    <div class="client-nav-menu client-company-menu">
+                        @foreach($navbarEmpresas as $navbarEmpresa)
+                            <a href="{{ route('empresas.show', $navbarEmpresa->id) }}" class="{{ request()->routeIs('empresas.show') && (int) request()->route('id') === (int) $navbarEmpresa->id ? 'is-current' : '' }}"><i class="fas fa-building-circle-check"></i><span>{{ $navbarEmpresa->nombre_empresa }}</span></a>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
             <a href="{{ route('clientes.micuenta') }}" class="client-nav-link {{ request()->routeIs('clientes.micuenta') ? 'is-active' : '' }}"><i class="fas fa-user-gear"></i><span>Mi cuenta</span></a>
         </nav>
 
@@ -66,7 +82,7 @@
     .client-navbar-inner{width:100%;min-height:72px;display:flex;align-items:center;gap:28px;padding:0 28px}.client-brand{display:flex;flex:0 0 auto}.client-brand img{width:136px;height:auto}
     .client-nav-links{display:flex;align-items:stretch;align-self:stretch;gap:3px;flex:1}.client-nav-link{position:relative;display:flex;align-items:center;gap:8px;padding:0 15px;border:0;background:transparent;color:#aaa5ad;font-size:.82rem;font-weight:800;text-decoration:none;cursor:pointer;transition:.2s}.client-nav-link:hover{background:transparent;color:#fff}.client-nav-link.is-active{background:linear-gradient(to top,rgba(17,126,140,.14) 0%,rgba(17,126,140,.055) 28%,transparent 58%);color:#fff}.client-nav-link.is-active::after{content:'';position:absolute;right:15px;bottom:0;left:15px;height:3px;background:var(--client-turquoise);box-shadow:0 -5px 14px rgba(17,126,140,.34)}.client-nav-link>i:first-child{color:var(--client-orange)}.client-chevron,.client-user-chevron{font-size:.62rem;transition:.2s}.is-open .client-chevron,.is-open .client-user-chevron{transform:rotate(180deg)}
     .client-nav-dropdown,.client-notifications,.client-user-dropdown{position:relative;display:flex}.client-nav-menu,.notification-menu,.client-user-menu{position:absolute;z-index:20;top:calc(100% + 10px);display:none;border:1px solid #ded7e1;border-radius:3px;background:#fff;color:#4c4350;box-shadow:0 18px 42px rgba(28,19,32,.2)}.is-open>.client-nav-menu,.is-open>.notification-menu,.is-open>.client-user-menu{display:block;animation:clientDrop .18s ease both}@keyframes clientDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
-    .client-nav-menu{left:0;min-width:210px;padding:7px}.client-nav-menu a{display:flex;align-items:center;gap:9px;padding:11px 12px;color:#514557;text-decoration:none;font-size:.8rem;font-weight:700}.client-nav-menu a:hover{background:#f4edf7;color:var(--client-purple)}.client-nav-menu i{color:var(--client-orange)}
+    .client-nav-menu{left:0;min-width:210px;padding:7px}.client-nav-menu a{display:flex;align-items:center;gap:9px;padding:11px 12px;color:#514557;text-decoration:none;font-size:.8rem;font-weight:700}.client-nav-menu a:hover,.client-nav-menu a.is-current{background:#f4edf7;color:var(--client-purple)}.client-nav-menu i{color:var(--client-orange)}.client-company-menu{width:max-content;min-width:230px;max-width:320px}.client-company-menu a span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .client-navbar-actions{display:flex;align-items:center;gap:10px;flex:0 0 auto}.notification-button,.theme-toggle-button{width:42px;height:42px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.16);border-radius:3px;background:rgba(255,255,255,.07);color:#fff;cursor:pointer;transition:.2s}.notification-button:hover,.client-notifications.is-open .notification-button{border-color:var(--client-orange);background:var(--client-orange)}.theme-toggle-button:hover{border-color:var(--client-turquoise);background:var(--client-turquoise)}.theme-toggle-button .fa-sun{color:#ffc14c}
     .notification-menu{right:0;width:310px}.notification-head{padding:16px 18px;border-bottom:1px solid #e8e2ea}.notification-head strong,.notification-head span{display:block}.notification-head strong{color:#2e2731}.notification-head span{margin-top:2px;color:#918694;font-size:.7rem}.notification-empty{display:flex;align-items:center;gap:11px;padding:22px 18px;color:#837888;font-size:.78rem}.notification-empty i{width:34px;height:34px;display:grid;place-items:center;border-radius:2px;background:rgba(17,126,140,.1);color:var(--client-turquoise)}
     .client-user-chip{display:flex;align-items:center;gap:10px;min-width:210px;padding:7px 10px;border:1px solid rgba(255,255,255,.14);border-radius:3px;background:rgba(255,255,255,.07);color:#fff;text-align:left;cursor:pointer}.client-user-avatar{width:34px;height:34px;display:grid;place-items:center;flex:0 0 auto;border-radius:2px;background:var(--client-purple);font-size:.76rem;font-weight:900}.client-user-copy{min-width:0;flex:1}.client-user-copy strong,.client-user-copy small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.client-user-copy strong{font-size:.78rem}.client-user-copy small{margin-top:2px;color:#aaa5ad;font-size:.65rem}
@@ -108,10 +124,11 @@ document.addEventListener('DOMContentLoaded',()=>{
     syncThemeButton();
     const notifications=document.querySelector('.client-notifications'),notificationButton=document.getElementById('notification-button');
     const user=document.querySelector('.client-user-dropdown'),userButton=document.getElementById('client-user-chip');
-    const nav=document.querySelector('.client-nav-dropdown'),navButton=document.querySelector('[data-nav-dropdown]');
-    const menus=[notifications,user,nav],closeMenus=except=>menus.forEach(menu=>{if(menu!==except)menu?.classList.remove('is-open')});
+    const navDropdowns=Array.from(document.querySelectorAll('.client-nav-dropdown'));
+    const dropdownPairs=[[notifications,notificationButton],[user,userButton],...navDropdowns.map(dropdown=>[dropdown,dropdown.querySelector('[data-nav-dropdown]')])];
+    const closeMenus=except=>dropdownPairs.forEach(([menu,button])=>{if(menu!==except){menu?.classList.remove('is-open');button?.setAttribute('aria-expanded','false')}});
     mobile?.addEventListener('click',()=>{const open=navbar.classList.toggle('is-mobile-open');mobile.setAttribute('aria-expanded',String(open))});
-    [[notifications,notificationButton],[user,userButton],[nav,navButton]].forEach(([menu,button])=>button?.addEventListener('click',event=>{event.stopPropagation();const open=!menu.classList.contains('is-open');closeMenus(menu);menu.classList.toggle('is-open',open);button.setAttribute('aria-expanded',String(open))}));
+    dropdownPairs.forEach(([menu,button])=>button?.addEventListener('click',event=>{event.stopPropagation();const open=!menu.classList.contains('is-open');closeMenus(menu);menu.classList.toggle('is-open',open);button.setAttribute('aria-expanded',String(open))}));
     document.addEventListener('click',()=>closeMenus());
     const confirmation=document.getElementById('client-logout-confirmation'),cancel=document.getElementById('client-cancel-logout');
     document.getElementById('client-logout-button')?.addEventListener('click',()=>{confirmation.classList.add('is-open');confirmation.setAttribute('aria-hidden','false')});
