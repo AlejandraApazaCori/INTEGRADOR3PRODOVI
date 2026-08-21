@@ -288,7 +288,7 @@
     </header>
     <section class="shell" aria-label="Configuración inicial">
         <aside class="sidebar">
-            <p class="sidebar-kicker">Primeros pasos</p><h3 class="sidebar-title">Preparemos todo para comenzar.</h3>
+            <p class="sidebar-kicker">Primeros pasos</p><h3 class="sidebar-title">{{ $isReturningSetup ? 'Preparemos tu nueva marca.' : 'Preparemos todo para comenzar.' }}</h3>
             <nav class="steps" aria-label="Progreso de configuración">
                 <button type="button" class="step-indicator" data-indicator="1"><span class="step-number">1</span><span><strong>Bienvenida</strong><small>Conoce la experiencia</small></span></button>
                 <button type="button" class="step-indicator" data-indicator="2"><span class="step-number">2</span><span><strong>Redes sociales</strong><small>Conecta tu comunidad</small></span></button>
@@ -301,9 +301,15 @@
             <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
             <div class="slides">
                 <article class="slide" data-step="1"><div class="content">
-                    <span class="eyebrow">Bienvenido a PRODOVI</span>
-                    <h1>Nos encargaremos del manejo de <span>tus redes.</span></h1>
-                    <p class="lead">Configuremos tu cuenta para conocer tu negocio, conectar con tu comunidad y convertir tus objetivos en una estrategia digital clara.</p>
+                    @if($isReturningSetup)
+                        <span class="eyebrow">Gracias por seguir confiando en PRODOVI</span>
+                        <h1>Gracias por confiar nuevamente en <span>nuestros servicios.</span></h1>
+                        <p class="lead">Tu nuevo plan ya está listo. Configuremos el espacio de tu nueva empresa para comenzar esta siguiente etapa juntos.</p>
+                    @else
+                        <span class="eyebrow">Bienvenido a PRODOVI</span>
+                        <h1>Nos encargaremos del manejo de <span>tus redes.</span></h1>
+                        <p class="lead">Configuremos tu cuenta para conocer tu negocio, conectar con tu comunidad y convertir tus objetivos en una estrategia digital clara.</p>
+                    @endif
                     <div class="promise-grid">
                         <div class="promise"><i class="fa-solid fa-wand-magic-sparkles"></i><strong>Contenido con propósito</strong><small>Publicaciones alineadas con la identidad de tu marca.</small></div>
                         <div class="promise"><i class="fa-solid fa-chart-line"></i><strong>Decisiones con datos</strong><small>Seguimiento sencillo del rendimiento de tus redes.</small></div>
@@ -466,7 +472,7 @@
 
             <aside class="visual-panel" aria-hidden="true">
                 <section class="visual-scene" data-visual="1">
-                    <h3 class="visual-copy">Tu estrategia social, <span>en buenas manos.</span></h3>
+                    <h3 class="visual-copy">{{ $isReturningSetup ? 'Una nueva etapa para tu marca,' : 'Tu estrategia social,' }} <span>{{ $isReturningSetup ? 'gracias por elegirnos.' : 'en buenas manos.' }}</span></h3>
                     <img class="hero-person" src="{{ asset('imagenes/hombre-color.png') }}" alt="">
                     <div class="floating-ui float-like"><i class="fa-solid fa-heart"></i> 2.3K</div>
                     <div class="floating-ui float-growth"><small>Crecimiento mensual</small><strong>+34%</strong></div>
@@ -503,6 +509,11 @@
 </main>
 <script>
 document.addEventListener('DOMContentLoaded',function(){
+    @if(request()->boolean('inicio'))
+        const canonicalUrl=new URL(window.location.href);
+        canonicalUrl.searchParams.delete('inicio');
+        window.history.replaceState({},'',canonicalUrl);
+    @endif
     const slides=Array.from(document.querySelectorAll('[data-step]'));
     const indicators=Array.from(document.querySelectorAll('[data-indicator]'));
     const visualScenes=Array.from(document.querySelectorAll('[data-visual]'));

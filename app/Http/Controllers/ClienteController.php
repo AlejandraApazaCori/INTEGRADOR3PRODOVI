@@ -79,10 +79,25 @@ class ClienteController extends Controller
     public function dashboard(Request $request)
     {
         $user = Auth::user();
+        $hasExistingCompany = $user->empresas()->exists();
 
-        if (! $this->hasCompletedInitialSetup($user)) {
+        if (! $this->hasCompletedInitialSetup($user) && ! $hasExistingCompany) {
             return redirect()->route('clientes.onboarding');
         }
+
+        $pendingSetupSubscription = $hasExistingCompany
+            ? $user->suscripciones()
+                ->with('plan')
+                ->where('estado', 'activa')
+                ->where(function ($query) {
+                    $query->whereNull('vigencia_activada_at')
+                        ->orWhere('fecha_fin', '>', now());
+                })
+                ->whereDoesntHave('empresa')
+                ->whereHas('pagos', fn ($query) => $query->where('estado', 'completado'))
+                ->latest('id')
+                ->first()
+            : null;
 
         $suscripcionesDisponibles = Suscripcion::with(['plan', 'empresa'])
             ->where('usuario_id', $user->id)
@@ -157,6 +172,7 @@ class ClienteController extends Controller
             'empresaActiva',
             'dashboardCompanies',
             'dashboardSocialAccounts',
+            'pendingSetupSubscription',
             'empresaCuestionario',
             'temasCuestionario',
             'respuestasCuestionario',
@@ -176,23 +192,55 @@ class ClienteController extends Controller
         $anyAccountLinked = $facebookLinked || $instagramLinked;
         $socialSetupSkipped = (bool) $user->social_setup_skipped;
         $canContinueSocialSetup = $anyAccountLinked || $socialSetupSkipped;
-        $suscripcionActiva = $user->suscripciones()
+        $requestedSubscriptionId = $request->integer('suscripcion');
+        if ($requestedSubscriptionId > 0) {
+            $request->session()->put('onboarding.subscription_id', $requestedSubscriptionId);
+        }
+
+        $onboardingSubscriptionId = (int) $request->session()->get('onboarding.subscription_id', 0);
+        $subscriptionQuery = $user->suscripciones()
             ->with('empresa')
             ->where('estado', 'activa')
             ->where(function ($query) {
                 $query->whereNull('vigencia_activada_at')
                     ->orWhere('fecha_fin', '>', now());
-            })
-            ->latest('id')
-            ->first();
+            });
+
+        if ($onboardingSubscriptionId > 0) {
+            $subscriptionQuery->whereKey($onboardingSubscriptionId);
+        }
+
+        $suscripcionActiva = $subscriptionQuery->latest('id')->first();
+        if (! $suscripcionActiva && $onboardingSubscriptionId > 0) {
+            $request->session()->forget('onboarding.subscription_id');
+            $suscripcionActiva = $user->suscripciones()
+                ->with('empresa')
+                ->where('estado', 'activa')
+                ->where(function ($query) {
+                    $query->whereNull('vigencia_activada_at')
+                        ->orWhere('fecha_fin', '>', now());
+                })
+                ->latest('id')
+                ->first();
+        }
+
+        $onboardingSubscriptionId = $suscripcionActiva?->id;
+        if ($onboardingSubscriptionId) {
+            $request->session()->put('onboarding.subscription_id', $onboardingSubscriptionId);
+        }
         $empresa = $suscripcionActiva?->empresa;
+        $isReturningSetup = ! $empresa && $user->empresas()
+            ->when($onboardingSubscriptionId, fn ($query) => $query->where('suscripcion_id', '!=', $onboardingSubscriptionId))
+            ->exists();
         $suggestedCompanyName = $empresa?->nombre_empresa
             ?? $facebookPage?->display_name
             ?? data_get($facebookPage?->metadata, 'page_name')
             ?? '';
 
         $initialStep = 1;
-        if ($request->query('empresa') === 'editada' && $empresa) {
+        if ($request->boolean('inicio')) {
+            $initialStep = 1;
+        } elseif ($request->query('empresa') === 'editada' && $empresa) {
             $initialStep = 3;
         } elseif ($request->query('empresa') === 'creada' && $empresa) {
             $initialStep = 4;
@@ -214,16 +262,20 @@ class ClienteController extends Controller
             'socialSetupSkipped',
             'canContinueSocialSetup',
             'empresa',
+            'onboardingSubscriptionId',
+            'isReturningSetup',
             'suggestedCompanyName',
             'initialStep'
         ));
     }
 
-    public function skipSocialAccounts()
+    public function skipSocialAccounts(Request $request)
     {
         Auth::user()->update(['social_setup_skipped' => true]);
 
-        return redirect()->route('clientes.onboarding');
+        return redirect()->route('clientes.onboarding', [
+            'suscripcion' => $request->session()->get('onboarding.subscription_id'),
+        ]);
     }
 
     public function storeOnboardingCompany(Request $request)
@@ -237,8 +289,10 @@ class ClienteController extends Controller
                 ->with('onboarding_error', 'Vincula al menos una red social antes de crear tu empresa.');
         }
 
+        $onboardingSubscriptionId = (int) $request->session()->get('onboarding.subscription_id', 0);
         $suscripcionActiva = $user->suscripciones()
             ->with('empresa')
+            ->when($onboardingSubscriptionId > 0, fn ($query) => $query->whereKey($onboardingSubscriptionId))
             ->where('estado', 'activa')
             ->where(function ($query) {
                 $query->whereNull('vigencia_activada_at')
@@ -253,7 +307,7 @@ class ClienteController extends Controller
         }
 
         if ($suscripcionActiva->empresa) {
-            return redirect()->route('clientes.onboarding', ['empresa' => 'creada'])
+            return redirect()->route('clientes.onboarding', ['empresa' => 'creada', 'suscripcion' => $suscripcionActiva->id])
                 ->with('onboarding_success', 'Esta empresa ya está asociada a tu plan.');
         }
 
@@ -280,20 +334,30 @@ class ClienteController extends Controller
 
         $empresa->save();
 
-        return redirect()->route('clientes.onboarding', ['empresa' => 'creada'])
+        return redirect()->route('clientes.onboarding', ['empresa' => 'creada', 'suscripcion' => $suscripcionActiva->id])
             ->with('onboarding_success', 'Tu empresa fue creada correctamente.');
     }
 
-    public function completeOnboarding()
+    public function completeOnboarding(Request $request)
     {
         $user = Auth::user();
+        $onboardingSubscriptionId = (int) $request->session()->get('onboarding.subscription_id', 0);
+        $completedSubscription = $onboardingSubscriptionId > 0
+            ? $user->suscripciones()->with('empresa')->find($onboardingSubscriptionId)
+            : null;
+        $hasSocialAccount = $user->social_setup_skipped
+            || $user->hasLinkedSocialAccount('facebook')
+            || $user->hasLinkedSocialAccount('instagram');
 
-        if (! $this->hasCompletedInitialSetup($user)) {
-            return redirect()->route('clientes.onboarding')
+        if (! $hasSocialAccount || ! $completedSubscription?->empresa) {
+            return redirect()->route('clientes.onboarding', ['suscripcion' => $onboardingSubscriptionId ?: null])
                 ->with('onboarding_error', 'Completa la vinculación y crea tu empresa antes de continuar.');
         }
 
-        return redirect()->route('clientes.dashboard')
+        $empresaId = $completedSubscription->empresa->id;
+        $request->session()->forget('onboarding.subscription_id');
+
+        return redirect()->route('clientes.dashboard', ['empresa' => $empresaId])
             ->with('success', '¡Configuración completada! Ya puedes comenzar.');
     }
 

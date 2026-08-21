@@ -54,10 +54,10 @@
         <section class="dashboard-metrics" aria-label="Resumen de tu servicio">
             <article class="active-company-metric">
                 <i class="fas fa-building"></i>
-                <span><small>Marca activa</small><strong>{{ $empresaActiva?->nombre_empresa ?? 'Por registrar' }}</strong></span>
+                <span><small>Empresa</small><strong>{{ $empresaActiva?->nombre_empresa ?? 'Por registrar' }}</strong></span>
                 @if($dashboardCompanies->count() > 1)
                     <details class="company-options">
-                        <summary aria-label="Cambiar empresa" title="Cambiar empresa"><i class="fas fa-chevron-down"></i></summary>
+                        <summary aria-label="Opciones de empresa" title="Cambiar empresa"><i class="fas fa-ellipsis-vertical"></i></summary>
                         <div class="company-options-menu">
                             <small>Cambiar empresa</small>
                             @foreach($dashboardCompanies as $dashboardCompany)
@@ -100,6 +100,19 @@
 
     </div>
 </div>
+
+@if($pendingSetupSubscription)
+    <div id="payment-approved-modal" class="payment-approved-modal" role="dialog" aria-modal="true" aria-labelledby="payment-approved-title">
+        <div class="payment-approved-backdrop"></div>
+        <div class="payment-approved-dialog">
+            <span class="payment-approved-icon"><i class="fas fa-circle-check"></i></span>
+            <small>PAGO CONFIRMADO</small>
+            <h2 id="payment-approved-title">Tu pago ha sido aprobado</h2>
+            <p>Gracias por seguir confiando en PRODOVI. Tu plan <strong>{{ $pendingSetupSubscription->plan?->nombre }}</strong> ya está disponible; solo falta preparar los datos de tu nueva empresa.</p>
+            <a href="{{ route('clientes.onboarding', ['suscripcion' => $pendingSetupSubscription->id, 'inicio' => 1]) }}">Realizar configuración <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </div>
+@endif
 
 <div id="plan-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -320,13 +333,11 @@
     #client-dashboard .edit-social-links { position:absolute; top:8px; right:8px; width:30px; height:30px; display:grid; place-items:center; border:0; border-radius:50%; background:transparent; color:#756a7a; cursor:pointer; transition:.18s ease; }
     #client-dashboard .edit-social-links:hover { background:rgba(17,126,140,.11); color:#117e8c; }
     #client-dashboard .active-company-metric { position: relative; padding-right: 50px; }
-    #client-dashboard .company-options { position: absolute; z-index: 20; right: 8px; bottom: 7px; }
+    #client-dashboard .company-options { position: absolute; z-index: 20; top: 8px; right: 8px; }
     #client-dashboard .company-options summary { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; color: #756a7a; cursor: pointer; list-style: none; }
     #client-dashboard .company-options summary::-webkit-details-marker { display: none; }
     #client-dashboard .company-options summary:hover { background: rgba(91,43,118,.1); color: var(--prodovi-purple); }
     #client-dashboard .company-options[open] summary { background:rgba(91,43,118,.1); color:var(--prodovi-purple); }
-    #client-dashboard .company-options[open] summary i { transform:rotate(180deg); }
-    #client-dashboard .company-options summary i { transition:.18s ease; }
     #client-dashboard .company-options-menu { position: absolute; top: 34px; right: 0; width: 230px; padding: 6px; border: 1px solid #ded7e1; background: #fff; box-shadow: 0 12px 30px rgba(28,19,32,.18); }
     #client-dashboard .company-options-menu > small { padding:7px 10px 6px; color:#918696; font-size:.58rem; }
     #client-dashboard .company-options-menu a { display: flex; align-items: center; gap: 9px; min-width:0; padding: 10px; color: #514557; font-size: .78rem; font-weight: 700; text-decoration: none; }
@@ -383,6 +394,21 @@
     #plan-modal .bg-gray-50.rounded-xl { border-width: 0 0 0 4px; border-radius: 0; border-left-color: #117E8C; background: #f7f5f8; }
     #plan-modal #modal-plan-features > * { border-radius: 2px !important; box-shadow: none !important; }
     #plan-modal #close-modal-footer { border-radius: 3px; background: #5B2B76 !important; box-shadow: none; }
+
+    .payment-approved-modal { position:fixed; z-index:2147483003; inset:0; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .payment-approved-backdrop { position:absolute; inset:0; background:rgba(18,14,20,.82); backdrop-filter:blur(6px); }
+    .payment-approved-dialog { position:relative; width:min(470px,100%); padding:34px 32px 30px; border-top:5px solid #7da533; border-radius:5px; background:#fff; color:#302834; text-align:center; box-shadow:0 30px 90px rgba(0,0,0,.4); }
+    .payment-approved-icon { width:60px; height:60px; display:grid; place-items:center; margin:0 auto 17px; border-radius:50%; background:#eaf3da; color:#6b922f; font-size:1.55rem; }
+    .payment-approved-dialog > small { display:block; color:#6b922f; font-size:.62rem; font-weight:900; letter-spacing:.13em; }
+    .payment-approved-dialog h2 { margin:7px 0 10px; color:#302834; font-size:1.35rem; font-weight:900; }
+    .payment-approved-dialog p { margin:0; color:#756a7a; font-size:.82rem; line-height:1.65; }
+    .payment-approved-dialog p strong { color:#5b2b76; }
+    .payment-approved-dialog > a { display:inline-flex; align-items:center; justify-content:center; gap:8px; margin-top:23px; padding:11px 18px; border-radius:4px; background:#5b2b76; color:#fff; font-size:.76rem; font-weight:900; text-decoration:none; transition:.18s ease; }
+    .payment-approved-dialog > a:hover { background:#432056; transform:translateY(-1px); }
+    html[data-client-theme="dark"] .payment-approved-dialog { background:#1e1b21; color:#f1edf3; }
+    html[data-client-theme="dark"] .payment-approved-dialog h2 { color:#f1edf3; }
+    html[data-client-theme="dark"] .payment-approved-dialog p { color:#b4abb8; }
+    html[data-client-theme="dark"] .payment-approved-icon { background:#28321f; color:#a9cb68; }
 
     .dashboard-social-modal { position:fixed; z-index:2147483001; inset:0; display:flex; align-items:center; justify-content:center; padding:20px; }
     .dashboard-social-modal.hidden { display:none; }
@@ -442,6 +468,9 @@
 <script src="/js/dashboardcliente.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    @if($pendingSetupSubscription)
+        document.body.style.overflow = 'hidden';
+    @endif
     const modal = document.getElementById('dashboard-social-modal');
     const openButton = document.getElementById('open-dashboard-social');
     const closeButtons = modal?.querySelectorAll('[data-close-dashboard-social]') ?? [];

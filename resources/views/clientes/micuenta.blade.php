@@ -92,12 +92,12 @@
                 <!-- Plan Contratado Section -->
                 <div class="cuenta-panel overflow-hidden">
                     <div class="px-8 py-6 cuenta-panel-header">
-                        <h2 class="text-2xl font-bold">Plan Contratado</h2>
-                        <p class="text-indigo-100 mt-1">Detalles de tu suscripción actual</p>
+                        <h2 class="text-2xl font-bold">Planes contratados</h2>
+                        <p class="text-indigo-100 mt-1">Tus suscripciones activas</p>
                     </div>
                     
                     <div class="p-8">
-                        <div class="cuenta-plan-container rounded-2xl" id="plan-contratado-container">
+                        <div id="plan-contratado-container">
                             <div class="text-center py-16">
                                 <div class="relative inline-block">
                                     <div class="w-20 h-20 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl mx-auto flex items-center justify-center animate-pulse shadow-xl">
@@ -447,7 +447,24 @@
         text-decoration: none;
     }
     #mi-cuenta-page .cuenta-button:hover { background: #6a3488; transform: translateY(-1px); }
-    #mi-cuenta-page .cuenta-plan-container { border: 1px solid #ded7e1; background: #faf9fb; }
+    #mi-cuenta-page .active-plans-grid { display:grid; grid-template-columns:1fr; gap:20px; }
+    #mi-cuenta-page .active-plan-card { min-width:0; padding:32px; border:1px solid #cabbd2; border-radius:12px; background:linear-gradient(135deg,#fff 0%,#faf9fb 100%); box-shadow:0 8px 20px rgba(48,40,52,.09); transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease; }
+    #mi-cuenta-page .active-plan-card:hover { border-color:#8b62a1; box-shadow:0 14px 28px rgba(48,40,52,.13); transform:translateY(-2px); }
+    #mi-cuenta-page .active-plan-main { display:flex; align-items:flex-start; justify-content:space-between; gap:32px; }
+    #mi-cuenta-page .active-plan-content { min-width:0; flex:1; }
+    #mi-cuenta-page .active-plan-heading { display:flex; align-items:center; gap:12px; }
+    #mi-cuenta-page .active-plan-heading > span { width:48px; height:48px; display:grid; place-items:center; flex:0 0 auto; border-radius:16px; background:var(--cuenta-purple); color:#fff; box-shadow:0 8px 18px rgba(91,43,118,.24); }
+    #mi-cuenta-page .active-plan-heading h3 { margin:0; color:#302834; font-size:1.35rem; font-weight:900; }
+    #mi-cuenta-page .active-plan-description { margin:4px 0 0; color:#756a7a; font-size:.78rem; line-height:1.5; }
+    #mi-cuenta-page .active-plan-dates { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-top:18px; padding:16px; border:1px solid #ded7e1; border-radius:12px; background:rgba(255,255,255,.68); }
+    #mi-cuenta-page .active-plan-date-list { display:grid; gap:8px; }
+    #mi-cuenta-page .active-plan-date-list > span { display:flex; align-items:center; gap:8px; color:#756a7a; font-size:.72rem; }
+    #mi-cuenta-page .active-plan-date-list i { width:18px; color:#918696; text-align:center; }
+    #mi-cuenta-page .active-plan-date-list strong { color:#514557; font-weight:900; }
+    #mi-cuenta-page .active-plan-actions { flex:0 0 auto; padding-top:4px; }
+    #mi-cuenta-page .view-plan-details { display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 24px; border:1px solid var(--cuenta-purple); border-radius:16px; background:var(--cuenta-purple); color:#fff; font-size:.72rem; font-weight:900; white-space:nowrap; cursor:pointer; box-shadow:0 9px 20px rgba(91,43,118,.22); transition:.18s ease; }
+    #mi-cuenta-page .view-plan-details:hover { background:#432056; transform:translateY(-1px); }
+    #mi-cuenta-page .active-plans-empty { display:flex; align-items:center; justify-content:center; gap:9px; padding:40px 20px; color:#817585; font-size:.78rem; }
     #mi-cuenta-page .text-indigo-600 { color: var(--cuenta-purple) !important; }
     #mi-cuenta-page .bg-gradient-to-br.from-indigo-500,
     #mi-cuenta-page .bg-gradient-to-r.from-indigo-600 { background: var(--cuenta-purple) !important; }
@@ -459,7 +476,13 @@
     html[data-client-theme="dark"] #mi-cuenta-page .cuenta-panel { border-color: #403943; background: #1e1b21; box-shadow: 0 10px 28px #0d0b0e; }
     html[data-client-theme="dark"] #mi-cuenta-page .cuenta-panel-header { border-bottom-color: #403943; background: #29252c; color: #f3eef5; }
     html[data-client-theme="dark"] #mi-cuenta-page .cuenta-panel-header p { color: #b4abb8; }
-    html[data-client-theme="dark"] #mi-cuenta-page .cuenta-plan-container { border-color: #403943; background: #242127; }
+    html[data-client-theme="dark"] #mi-cuenta-page .active-plan-card { border-color:#644b70; background:linear-gradient(135deg,#29252c 0%,#242127 100%); box-shadow:0 8px 20px rgba(0,0,0,.24); }
+    html[data-client-theme="dark"] #mi-cuenta-page .active-plan-card:hover { border-color:#9b62b5; box-shadow:0 14px 28px rgba(0,0,0,.32); }
+    html[data-client-theme="dark"] #mi-cuenta-page .active-plan-heading h3 { color:#f1edf3; }
+    html[data-client-theme="dark"] #mi-cuenta-page .active-plan-description { color:#b4abb8; }
+    html[data-client-theme="dark"] #mi-cuenta-page .active-plan-dates { border-color:#4a434e; background:#242127; }
+    html[data-client-theme="dark"] #mi-cuenta-page .active-plan-date-list > span { color:#b4abb8; }
+    html[data-client-theme="dark"] #mi-cuenta-page .active-plan-date-list strong { color:#ddd6df; }
     html[data-client-theme="dark"] #mi-cuenta-page .text-gray-900,
     html[data-client-theme="dark"] #mi-cuenta-page .text-gray-800,
     html[data-client-theme="dark"] #mi-cuenta-page .text-gray-700 { color: #f0ebf2 !important; }
@@ -518,8 +541,11 @@
     html[data-client-theme="dark"] .account-password-title p,
     html[data-client-theme="dark"] .account-edit-field small { color:#aaa1ae; }
 
-    .company-social-card { position:relative; }
-    .company-social-card > .p-6 { padding-top:4.4rem; }
+    .company-social-card { position:relative; display:flex; flex-direction:column; border:1px solid #cabbd2 !important; border-radius:12px !important; background:linear-gradient(135deg,#fff 0%,#faf9fb 100%) !important; box-shadow:0 8px 20px rgba(48,40,52,.09) !important; transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease !important; }
+    .company-social-card:hover { border-color:#8b62a1 !important; box-shadow:0 14px 28px rgba(48,40,52,.13) !important; transform:translateY(-2px) !important; }
+    .company-social-card > .p-6 { flex:1 1 auto; padding-top:4.4rem; }
+    .company-social-card > .px-6 { border-top-color:#ded7e1 !important; background:rgba(247,245,248,.88) !important; }
+    .company-social-card > .px-6 a { font-weight:900; }
     .open-company-social-modal { position:absolute; z-index:2; top:14px; right:14px; display:inline-flex; align-items:center; gap:7px; padding:8px 10px; border:1px solid #c9e1e4; border-radius:3px; background:#edf7f8; color:#117e8c; font-size:.68rem; font-weight:900; cursor:pointer; transition:.2s ease; }
     .open-company-social-modal:hover { border-color:#117e8c; background:#117e8c; color:#fff; transform:translateY(-1px); }
     .company-social-modal { position:fixed; z-index:2147483001; inset:0; display:flex; align-items:center; justify-content:center; padding:20px; }
@@ -563,6 +589,9 @@
     .company-social-footer { display:flex; justify-content:flex-end; padding:14px 22px; border-top:1px solid #ded7e1; background:#f7f5f8; }
     .company-social-footer button { padding:10px 18px; border:1px solid #5b2b76; border-radius:3px; background:#5b2b76; color:#fff; font-size:.74rem; font-weight:900; cursor:pointer; }
     html[data-client-theme="dark"] .open-company-social-modal { border-color:#376b72; background:#173136; color:#78c3cb; }
+    html[data-client-theme="dark"] .company-social-card { border-color:#644b70 !important; background:linear-gradient(135deg,#29252c 0%,#242127 100%) !important; box-shadow:0 8px 20px rgba(0,0,0,.24) !important; }
+    html[data-client-theme="dark"] .company-social-card:hover { border-color:#9b62b5 !important; box-shadow:0 14px 28px rgba(0,0,0,.32) !important; }
+    html[data-client-theme="dark"] .company-social-card > .px-6 { border-top-color:#403943 !important; background:#242127 !important; }
     html[data-client-theme="dark"] .company-social-dialog { background:#1e1b21; color:#e9e5eb; }
     html[data-client-theme="dark"] .company-social-company { background:#3a3020; color:#efcf9e; }
     html[data-client-theme="dark"] .company-social-intro { color:#b4abb8; }
@@ -612,6 +641,11 @@
         #mi-cuenta-page .cuenta-banner { min-height: 190px; padding: 26px 20px; }
         #mi-cuenta-page .cuenta-banner-side { margin-left: auto; }
         #mi-cuenta-page .cuenta-banner-mosaic { display: none; }
+        #mi-cuenta-page .active-plans-grid { gap:16px; }
+        #mi-cuenta-page .active-plan-card { padding:22px 18px; }
+        #mi-cuenta-page .active-plan-main { flex-direction:column; gap:18px; }
+        #mi-cuenta-page .active-plan-actions, #mi-cuenta-page .view-plan-details { width:100%; }
+        #mi-cuenta-page .active-plan-dates { align-items:flex-start; flex-direction:column; }
         #plan-modal { padding:10px; }
         #plan-modal > div > div:nth-child(2) { max-height:calc(100vh - 20px); }
         #plan-modal > div > div:nth-child(2) > div:first-child,
@@ -806,8 +840,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(data => {
-                renderPlanContratado(data.plan);
-                setupPlanModal(data.plan);
+                const activePlans = Array.isArray(data.plans) ? data.plans : [data.plan].filter(Boolean);
+                renderPlanesActivos(activePlans);
+                setupPlanModal(activePlans);
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -815,6 +850,41 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
+    function renderPlanesActivos(plans) {
+        const container = document.getElementById('plan-contratado-container');
+
+        if (!plans.length) {
+            container.innerHTML = '<div class="active-plans-empty"><i class="fas fa-circle-info"></i><span>No tienes planes activos en este momento.</span></div>';
+            return;
+        }
+
+        container.innerHTML = `<div class="active-plans-grid">${plans.map((plan, index) => `
+            <article class="active-plan-card">
+                <div class="active-plan-main">
+                    <div class="active-plan-content">
+                        <div class="active-plan-heading">
+                            <span><i class="fas fa-wand-magic-sparkles"></i></span>
+                            <div>
+                                <h3>${plan.nombre}</h3>
+                                <p class="active-plan-description">${plan.descripcion || 'Plan de marketing digital'}</p>
+                            </div>
+                        </div>
+                        <div class="active-plan-dates">
+                            <div class="active-plan-date-list">
+                                <span><i class="fas fa-calendar-days"></i>Fecha de pago: <strong>${plan.fecha_pago || 'No registrada'}</strong></span>
+                                <span><i class="fas fa-clock"></i>Ciclo actual: <strong>${plan.vigencia_activada ? `${plan.fecha_inicio} - ${plan.fecha_fin}` : 'No definido'}</strong></span>
+                                <span><i class="fas fa-building"></i>Empresa: <strong>${plan.empresa || 'Pendiente de configuración'}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="active-plan-actions">
+                        <button type="button" class="view-plan-details" data-plan-index="${index}"><i class="fas fa-circle-info"></i> Ver detalles</button>
+                    </div>
+                </div>
+            </article>
+        `).join('')}</div>`;
+    }
+
     function renderPlanContratado(plan) {
         const container = document.getElementById('plan-contratado-container');
         
@@ -930,7 +1000,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
     
-    function setupPlanModal(plan) {
+    function setupLegacyPlanModal(plan) {
         const modal = document.getElementById('plan-modal');
         const verDetallesBtn = document.getElementById('ver-detalles-btn');
         const closeModalBtn = document.getElementById('close-modal');
@@ -1023,6 +1093,84 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }  
         
+    function setupPlanModal(plans) {
+        const modal = document.getElementById('plan-modal');
+        const closeModalBtn = document.getElementById('close-modal');
+        const closeModalFooterBtn = document.getElementById('close-modal-footer');
+        const modalDialog = modal.querySelector(':scope > div > div:nth-child(2)');
+        let activeTrigger = null;
+
+        document.body.appendChild(modal);
+
+        function populatePlanModal(plan) {
+            document.getElementById('modal-plan-title').textContent = `Plan ${plan.nombre}`;
+            document.getElementById('modal-plan-dates').textContent = plan.vigencia_activada
+                ? `${plan.fecha_inicio} - ${plan.fecha_fin}`
+                : 'No definido hasta que comience la campaña';
+            document.getElementById('modal-plan-status').innerHTML = `Estado: <span class="font-semibold">${plan.estado}</span>`;
+            document.getElementById('modal-plan-description').textContent = plan.descripcion || 'No hay descripción disponible';
+
+            const featuresList = document.getElementById('modal-plan-features');
+            featuresList.innerHTML = '';
+
+            if (plan.todas_caracteristicas?.length) {
+                plan.todas_caracteristicas.forEach(caracteristica => {
+                    const item = document.createElement('div');
+                    item.className = 'flex items-center p-3 bg-gradient-to-r from-gray-50 to-indigo-50 rounded-xl border border-gray-200';
+                    const icon = document.createElement('i');
+                    icon.className = `fas ${caracteristica.es_destacado ? 'fa-star text-yellow-500' : 'fa-circle-check text-indigo-500'} mr-3`;
+                    const copy = document.createElement('div');
+                    const name = document.createElement('span');
+                    name.className = 'font-medium text-gray-800';
+                    name.textContent = caracteristica.nombre;
+                    const amount = document.createElement('span');
+                    amount.className = 'text-gray-600';
+                    amount.textContent = `: ${caracteristica.cantidad}${caracteristica.unidad || ''}`;
+                    copy.append(name, amount);
+                    if (caracteristica.frecuencia) {
+                        const frequency = document.createElement('span');
+                        frequency.className = 'text-sm text-gray-500 block';
+                        frequency.textContent = caracteristica.frecuencia;
+                        copy.appendChild(frequency);
+                    }
+                    item.append(icon, copy);
+                    featuresList.appendChild(item);
+                });
+            } else {
+                featuresList.innerHTML = '<div class="flex items-center justify-center p-6 text-gray-500"><i class="fas fa-circle-info mr-2"></i>No se encontraron características</div>';
+            }
+        }
+
+        function openModal(plan, trigger) {
+            activeTrigger = trigger;
+            populatePlanModal(plan);
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            window.setTimeout(() => closeModalBtn.focus(), 50);
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+            activeTrigger?.focus();
+        }
+
+        document.querySelectorAll('.view-plan-details').forEach(button => {
+            button.addEventListener('click', () => {
+                const plan = plans[Number(button.dataset.planIndex)];
+                if (plan) openModal(plan, button);
+            });
+        });
+        closeModalBtn?.addEventListener('click', closeModal);
+        closeModalFooterBtn?.addEventListener('click', closeModal);
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+        });
+        modal.addEventListener('click', event => {
+            if (!modalDialog.contains(event.target)) closeModal();
+        });
+    }
+
     function renderErrorPlanContratado(message) {
         const container = document.getElementById('plan-contratado-container');
         container.innerHTML = `
