@@ -252,7 +252,7 @@
                                                         </label>
                                                         <select name="community_manager_id" id="cm-{{ $cliente['suscripcion_id'] }}" 
                                                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
-                                                            <option value=">Seleccione un Community Manager</option>
+                                                            <option value="">Seleccione un Community Manager</option>
                                                             @foreach($communityManagers as $cm)
                                                                 <option value="{{ $cm->id }}">{{ $cm->name }}</option>
                                                             @endforeach

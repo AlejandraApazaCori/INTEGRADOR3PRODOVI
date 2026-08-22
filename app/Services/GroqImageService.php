@@ -35,7 +35,11 @@ class GroqImageService
             ->latest()
             ->first();
 
-        $contextoPlanMarketing = $planMarketing ? $planMarketing->contenido : "No hay un plan de marketing generado aún.";
+        $contextoPlanMarketing = SocialContentPolicy::sanitize(
+            $planMarketing ? $planMarketing->contenido : 'No hay un plan de marketing generado aun.'
+        );
+        $descripcionCampania = SocialContentPolicy::sanitize((string) $tarea->campania->descripcion);
+        $reglasCanales = SocialContentPolicy::promptRules();
 
         // 3. Construir el contexto enriquecido
         $contextoAdicional = <<<EOT
@@ -48,7 +52,7 @@ class GroqImageService
         {$contextoPlanMarketing}
         
         **CAMPAÑA ACTUAL:** {$tarea->campania->nombre}
-        **DESCRIPCIÓN DE LA CAMPAÑA:** {$tarea->campania->descripcion}
+        **DESCRIPCIÓN DE LA CAMPAÑA:** {$descripcionCampania}
         **TAREA ESPECÍFICA:** {$tarea->nombre}
         ---
         EOT;
@@ -62,6 +66,7 @@ class GroqImageService
         {$contextoAdicional}
 
         **INSTRUCCIONES:**
+        {$reglasCanales}
         1. Comprende el tono de voz y los objetivos definidos en el Plan de Marketing.
         2. Alinea el mensaje con la descripción de la campaña y la tarea específica.
         3. Genera 3 opciones de copy que sean creativas, profesionales y orientadas a la conversión.
@@ -103,7 +108,9 @@ class GroqImageService
         // 7. Procesar la respuesta
         if ($response->successful()) {
             $data = $response->json();
-            return $data['choices'][0]['message']['content'] ?? 'No se pudo generar el copy.';
+            return SocialContentPolicy::sanitize(
+                $data['choices'][0]['message']['content'] ?? 'No se pudo generar el copy.'
+            );
         } else {
             Log::error('Error en la API de Groq para generación de copy: ' . $response->body());
             return 'Hubo un error al generar el copy basado en el Plan de Marketing.';

@@ -73,6 +73,10 @@ class MarketingPlanService
             $orden = $caracteristica['orden'] ?? null;
             $esDestacado = (bool) ($caracteristica['es_destacado'] ?? false);
 
+            if (SocialContentPolicy::containsExcludedChannel($nombre . ' ' . $descripcion)) {
+                continue;
+            }
+
             $partes = ["recurso: {$nombre}"];
 
             if ($cantidad !== null && $cantidad > 0) {
@@ -122,6 +126,7 @@ class MarketingPlanService
             $caracteristicasNormalizadas,
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT
         );
+        $reglasCanales = SocialContentPolicy::promptRules();
 
         // 4. Construir el prompt para generar el plan de marketing.
         $prompt = <<<EOT
@@ -138,6 +143,9 @@ FORMATO DE SALIDA:
 - Usa Markdown.
 - Tono profesional, claro, accionable y especifico.
 - Maximo 1,800 palabras.
+- No uses tablas Markdown ni tablas de ningun tipo.
+
+{$reglasCanales}
 
 FUENTE 1: BRIEF ESTRATEGICO EJECUTIVO
 ---
@@ -171,7 +179,7 @@ REGLAS ESTRICTAS:
 2. Respeta exactamente cantidades, frecuencias y alcances cuando esten disponibles.
 3. Si el plan indica recursos semanales, distribuyelos exactamente por cada una de las 4 semanas del mes.
 4. Si el plan indica recursos mensuales, distribuyelos de forma logica y explicita dentro del mes.
-5. No agregues servicios, canales, formatos, piezas, campañas o acciones que no esten incluidos en los recursos listados.
+5. No agregues servicios, formatos, piezas, campañas o acciones que no esten incluidos en los recursos listados. Los unicos canales permitidos son Facebook, Instagram y TikTok.
 6. No propongas publicidad pagada si el plan no la incluye explicitamente.
 7. No inventes presupuestos, porcentajes, ROI, ingresos, CAC, ROAS ni proyecciones financieras.
 8. No inventes competidores, datos externos de mercado ni resultados esperados.
@@ -211,7 +219,7 @@ ENTREGABLE OBLIGATORIO:
 ## 6 Embudo de marketing
 - Divide en reconocimiento, consideracion y conversion.
 - Para cada etapa indica objetivo, tipo de mensaje, formatos permitidos por el plan y CTA recomendado.
-- Si existe catalogo de WhatsApp, fotografia, videos, GIFs, TikTok u otros recursos, explica su papel exacto en el embudo.
+- Explica el papel exacto de las publicaciones de Facebook, Instagram y TikTok dentro del embudo.
 
 ## 7 Calendario operativo mensual
 Esta debe ser la seccion mas detallada.
@@ -236,7 +244,7 @@ Reglas operativas del calendario:
 - Si incluye videos mensuales, define tema, objetivo, guion breve y CTA para cada video.
 - Si incluye TikTok semanal, define ideas concretas por semana y respeta exactamente la cantidad.
 - Si incluye fotografia mensual, indica que fotos tomar y en que piezas se reutilizaran.
-- Si incluye catalogo de WhatsApp, indica que actualizar, que productos o servicios priorizar y como usarlo para conversion.
+- Toda pieza del calendario debe asignarse a Facebook, Instagram o TikTok.
 - No uses rangos vagos cuando exista cantidad exacta.
 
 ## 8 Uso exacto de recursos contratados
@@ -253,7 +261,7 @@ Reglas operativas del calendario:
 - Define entre 5 y 8 KPIs realistas.
 - Deben corresponder a los recursos realmente contratados y a los objetivos del brief.
 - Indica como medir cada KPI.
-- Si no hay datos financieros, usa indicadores no financieros como interaccion, clics a WhatsApp, consultas, leads, alcance, guardados, reproducciones, conversiones a contacto o avance del catalogo.
+- Si no hay datos financieros, usa indicadores de Facebook, Instagram y TikTok como interacciones, alcance, guardados, reproducciones, crecimiento de comunidad y conversiones atribuibles a publicaciones.
 
 ## 10 Recomendaciones finales
 - Cierra con recomendaciones accionables y priorizadas.
@@ -293,7 +301,9 @@ EOT;
         if ($response->successful()) {
             $data = $response->json();
 
-            return $data['choices'][0]['message']['content'] ?? 'No se pudo generar el plan de marketing.';
+            return SocialContentPolicy::sanitize(
+                $data['choices'][0]['message']['content'] ?? 'No se pudo generar el plan de marketing.'
+            );
         }
 
         Log::error('Error en la API de Groq al generar plan de marketing: ' . $response->body());

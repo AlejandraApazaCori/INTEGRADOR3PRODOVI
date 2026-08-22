@@ -44,6 +44,9 @@ class GroqService
             $contextoCuestionario = 'No se recibieron respuestas validas del cuestionario.';
         }
 
+        $contextoCuestionario = SocialContentPolicy::sanitize($contextoCuestionario);
+        $reglasCanales = SocialContentPolicy::promptRules();
+
         // 2. Construir el prompt preciso para generar un brief ejecutivo.
         $prompt = <<<EOT
 Actua como un consultor senior de marketing estrategico y analisis comercial. Tu tarea es redactar un "Brief estrategico ejecutivo" para la empresa "{$nombreEmpresa}" a partir de un cuestionario tipo brief.
@@ -64,6 +67,9 @@ FORMATO DE SALIDA:
 - Usa Markdown.
 - Manten un tono profesional, claro, sobrio y ejecutivo.
 - Maximo 1,200 palabras.
+- No uses tablas Markdown ni tablas de ningun tipo.
+
+{$reglasCanales}
 
 ESTRUCTURA OBLIGATORIA:
 
@@ -158,7 +164,9 @@ EOT;
         if ($response->successful()) {
             $data = $response->json();
 
-            return $data['choices'][0]['message']['content'] ?? 'No se pudo generar el resumen.';
+            return SocialContentPolicy::sanitize(
+                $data['choices'][0]['message']['content'] ?? 'No se pudo generar el resumen.'
+            );
         } else {
             Log::error('Error en la API de Groq: ' . $response->body());
 

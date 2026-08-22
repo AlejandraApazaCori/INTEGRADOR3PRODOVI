@@ -7,6 +7,7 @@ use App\Models\Campania;
 use App\Models\PlanMarketing;
 use App\Models\Tarea;
 use App\Models\User;
+use App\Services\SocialContentPolicy;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -133,6 +134,8 @@ class TareaController extends Controller
         if ($seccionCalendario === '') {
             return response()->json(['error' => 'No se encontro la seccion de calendario operativo mensual en el plan de marketing.'], 422);
         }
+        $seccionCalendario = SocialContentPolicy::sanitize($seccionCalendario);
+        $reglasCanales = SocialContentPolicy::promptRules();
 
         $prompt = <<<EOT
 Actua como coordinador senior de operaciones de marketing. Debes recomendar UNA sola tarea concreta y ejecutable para una campaña, usando exclusivamente la seccion "## 7 Calendario operativo mensual" del plan de marketing proporcionado.
@@ -154,6 +157,7 @@ SECCION DEL PLAN DE MARKETING A USAR:
 ---
 
 INSTRUCCIONES ESTRICTAS:
+{$reglasCanales}
 - Usa solo la informacion del calendario operativo mensual.
 - No inventes acciones fuera del calendario.
 - No devuelvas varias tareas. Solo una.
@@ -208,8 +212,8 @@ EOT;
         }
 
         return response()->json([
-            'titulo' => trim((string) ($recomendacion['titulo'] ?? '')),
-            'descripcion' => trim((string) ($recomendacion['descripcion'] ?? '')),
+            'titulo' => SocialContentPolicy::sanitize(trim((string) ($recomendacion['titulo'] ?? ''))),
+            'descripcion' => SocialContentPolicy::sanitize(trim((string) ($recomendacion['descripcion'] ?? ''))),
             'prioridad' => trim((string) ($recomendacion['prioridad'] ?? 'media')),
             'fecha_inicio' => trim((string) ($recomendacion['fecha_inicio'] ?? $fechaInicioCampania)),
             'fecha_limite' => trim((string) ($recomendacion['fecha_limite'] ?? $fechaFinCampania)),

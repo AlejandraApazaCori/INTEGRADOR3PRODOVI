@@ -7,9 +7,11 @@ use App\Models\Campania;
 use App\Models\User;
 use App\Models\Pago;
 use App\Models\PlanMarketing;
+use App\Services\SocialContentPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class CampañasController extends Controller
@@ -273,32 +275,43 @@ class CampañasController extends Controller
                 return response()->json(['error' => 'No se encontró un plan de marketing para este cliente.'], 404);
             }
 
-            $contenido = $plan->contenido;
-            
-            // Extraer Objetivos SMART (Sección 3)
-            $objetivos = '';
-            if (preg_match('/##\s+3\s+Objetivos SMART(.*?)(?=##|$)/si', $contenido, $matches)) {
-                $objetivos = trim($matches[1]);
+            $contenido = (string) $plan->contenido;
+            $diagnostico = $this->extraerSeccionPlan($contenido, [
+                'diagnostico estrategico',
+                'resumen ejecutivo',
+                'conclusiones',
+                'recomendaciones finales',
+            ]);
+            $objetivos = $this->extraerSeccionPlan($contenido, ['objetivos smart', 'objetivos']);
+
+            $descripcionBreve = $this->resumirSeccionCampania($diagnostico, 1, 320);
+            $objetivosBreves = $this->resumirSeccionCampania($objetivos, 3, 650, true);
+
+            if ($descripcionBreve !== '') {
+                $descripcionBreve = Str::limit($descripcionBreve, 235, '')
+                    . ' Enfoque: Facebook, Instagram y TikTok.';
             }
 
-            // Extraer Conclusiones (Sección 7) para la "mini descripción"
-            $miniDescripcion = '';
-            if (preg_match('/##\s+7[#\s]+Conclusiones(.*?)(?=##|$)/si', $contenido, $matches)) {
-                $miniDescripcion = trim($matches[1]);
+            $partesDescripcion = [];
+            if ($descripcionBreve !== '') {
+                $partesDescripcion[] = "DESCRIPCIÓN:\n" . $descripcionBreve;
+            }
+            if ($objetivosBreves !== '') {
+                $partesDescripcion[] = "OBJETIVOS:\n" . $objetivosBreves;
             }
 
-            // Limpiar Markdown y separadores
-            $descripcion = "";
-            if (!empty($miniDescripcion)) {
-                $descripcion .= $miniDescripcion . "\n\n";
+            // Si el documento cambia de formato, usar su contenido limpio como respaldo.
+            if ($partesDescripcion === []) {
+                $partesDescripcion[] = $this->resumirSeccionCampania($contenido, 3, 850);
             }
-            
-            $descripcion .= "OBJETIVOS:\n" . $objetivos;
-            
-            // Eliminar líneas de separación y etiquetas HTML residuales
-            $descripcion = str_replace('---', '', $descripcion);
-            $descripcion = strip_tags($descripcion);
-            $descripcion = trim($descripcion);
+
+            $descripcion = trim(implode("\n\n", array_filter($partesDescripcion)));
+
+            if ($descripcion === '') {
+                return response()->json([
+                    'error' => 'El plan de marketing no contiene información suficiente para crear la campaña.',
+                ], 422);
+            }
             
             return response()->json([
                 'nombre' => 'Campaña Estratégica: ' . $empresa->nombre_empresa,
@@ -308,6 +321,112 @@ class CampañasController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al procesar el plan: ' . $e->getMessage()], 500);
         }
+    }
+
+    private function extraerSeccionPlan(string $contenido, array $titulosBuscados): string
+    {
+        preg_match_all(
+            '/^##(?!#)\s*(.+?)\s*\R(.*?)(?=^##(?!#)\s|\z)/msu',
+            str_replace(["\r\n", "\r"], "\n", $contenido),
+            $secciones,
+            PREG_SET_ORDER
+        );
+
+        $titulosNormalizados = array_map(
+            fn (string $titulo) => Str::lower(Str::ascii($titulo)),
+            $titulosBuscados
+        );
+
+        foreach ($secciones as $seccion) {
+            $titulo = preg_replace('/^[\s*_`#]*(?:\d+[\s.)\-:]*)?/u', '', $seccion[1]);
+            $titulo = preg_replace('/[*_`]+/u', '', (string) $titulo);
+            $tituloNormalizado = Str::lower(Str::ascii(trim((string) $titulo)));
+
+            foreach ($titulosNormalizados as $buscado) {
+                if (str_contains($tituloNormalizado, $buscado)) {
+                    return trim($seccion[2]);
+                }
+            }
+        }
+
+        return '';
+    }
+
+    private function limpiarMarkdownPlan(string $contenido): string
+    {
+        $contenido = html_entity_decode(strip_tags($contenido), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $contenido = preg_replace('/^-{3,}\s*$/m', '', $contenido);
+        $contenido = preg_replace('/^#{1,6}\s*/m', '', (string) $contenido);
+        $contenido = preg_replace('/[*_`]+/u', '', (string) $contenido);
+        $contenido = preg_replace('/[ \t]+$/m', '', (string) $contenido);
+        $contenido = preg_replace('/\n{3,}/', "\n\n", (string) $contenido);
+
+        return SocialContentPolicy::sanitize(trim((string) $contenido));
+    }
+
+    private function resumirSeccionCampania(
+        string $contenido,
+        int $maxLineas,
+        int $maxCaracteres,
+        bool $usarVinetas = false
+    ): string {
+        $contenido = $this->limpiarMarkdownPlan($contenido);
+        $lineasResultado = [];
+        $encabezadosTabla = [
+            '#', 'elemento', 'objetivo', 'objetivo smart', 'especifico', 'medible', 'alcanzable',
+            'relevante', 'temporal', 'indicador', 'meta', 'plazo',
+        ];
+
+        foreach (preg_split('/\R/u', $contenido) ?: [] as $linea) {
+            $linea = trim($linea);
+            if ($linea === '' || preg_match('/^\|?[\s:|\-]+\|?$/u', $linea)) {
+                continue;
+            }
+
+            if (str_contains($linea, '|')) {
+                $celdas = array_values(array_filter(
+                    array_map('trim', explode('|', trim($linea, '| '))),
+                    fn (string $celda) => $celda !== ''
+                ));
+                $primeraCelda = $celdas[0] ?? '';
+                $primeraNormalizada = Str::lower(Str::ascii(trim($primeraCelda, " *_`")));
+
+                if (in_array($primeraNormalizada, $encabezadosTabla, true)) {
+                    continue;
+                }
+
+                if (preg_match('/^\d+[.)]?$/', $primeraCelda) && isset($celdas[1])) {
+                    $linea = $celdas[1];
+                } elseif (isset($celdas[1])) {
+                    $linea = trim($primeraCelda, " *_`") . ': ' . $celdas[1];
+                } else {
+                    $linea = $primeraCelda;
+                }
+            }
+
+            $linea = preg_replace('/^(?:[-•]+|\d+[.)])\s*/u', '', $linea);
+            $linea = trim(preg_replace('/\s+/u', ' ', (string) $linea));
+            $normalizada = Str::lower(Str::ascii($linea));
+
+            if ($linea === '' || in_array($normalizada, $encabezadosTabla, true)) {
+                continue;
+            }
+
+            $linea = Str::limit($linea, 220, '');
+            if (! in_array($linea, $lineasResultado, true)) {
+                $lineasResultado[] = $linea;
+            }
+
+            if (count($lineasResultado) >= $maxLineas) {
+                break;
+            }
+        }
+
+        if ($usarVinetas) {
+            $lineasResultado = array_map(fn (string $linea) => '- ' . $linea, $lineasResultado);
+        }
+
+        return Str::limit(implode("\n", $lineasResultado), $maxCaracteres, '');
     }
 
     public function destroy(Campania $campania)
