@@ -13,21 +13,31 @@ class StaffUsersSeeder extends Seeder
     public static function accountGroups(): array
     {
         return [
-            'Community Manager' => collect(range(1, 5))
-                ->map(fn (int $number) => [
-                    'name' => sprintf('Community Manager %02d', $number),
-                    'email' => sprintf('community.manager%02d@prodovidigital.com', $number),
-                ])
-                ->all(),
-            'Diseñador' => collect(range(1, 12))
-                ->map(fn (int $number) => [
-                    'name' => sprintf('Diseñador %02d', $number),
-                    'email' => sprintf('disenador%02d@prodovidigital.com', $number),
-                ])
-                ->all(),
+            'Community Manager' => [
+                ['name' => 'Carla Mendoza', 'email' => 'carla_mendoza_cm@prodovidigital.com', 'legacy_email' => 'community.manager01@prodovidigital.com'],
+                ['name' => 'Diego Rojas', 'email' => 'diego_rojas_cm@prodovidigital.com', 'legacy_email' => 'community.manager02@prodovidigital.com'],
+                ['name' => 'Valeria Quiroga', 'email' => 'valeria_quiroga_cm@prodovidigital.com', 'legacy_email' => 'community.manager03@prodovidigital.com'],
+                ['name' => 'Andrés Vargas', 'email' => 'andres_vargas_cm@prodovidigital.com', 'legacy_email' => 'community.manager04@prodovidigital.com'],
+                ['name' => 'Sofía Castro', 'email' => 'sofia_castro_cm@prodovidigital.com', 'legacy_email' => 'community.manager05@prodovidigital.com'],
+            ],
+            'Diseñador' => [
+                ['name' => 'Manuel Paye', 'email' => 'manuel_paye_disenador@prodovidigital.com', 'legacy_email' => 'disenador01@prodovidigital.com'],
+                ['name' => 'Camila Flores', 'email' => 'camila_flores_disenador@prodovidigital.com', 'legacy_email' => 'disenador02@prodovidigital.com'],
+                ['name' => 'Mateo Condori', 'email' => 'mateo_condori_disenador@prodovidigital.com', 'legacy_email' => 'disenador03@prodovidigital.com'],
+                ['name' => 'Daniela Paredes', 'email' => 'daniela_paredes_disenador@prodovidigital.com', 'legacy_email' => 'disenador04@prodovidigital.com'],
+                ['name' => 'Nicolás Mamani', 'email' => 'nicolas_mamani_disenador@prodovidigital.com', 'legacy_email' => 'disenador05@prodovidigital.com'],
+                ['name' => 'Fernanda Salazar', 'email' => 'fernanda_salazar_disenador@prodovidigital.com', 'legacy_email' => 'disenador06@prodovidigital.com'],
+                ['name' => 'Gabriel Choque', 'email' => 'gabriel_choque_disenador@prodovidigital.com', 'legacy_email' => 'disenador07@prodovidigital.com'],
+                ['name' => 'Mariana Alarcón', 'email' => 'mariana_alarcon_disenador@prodovidigital.com', 'legacy_email' => 'disenador08@prodovidigital.com'],
+                ['name' => 'Sebastián Lima', 'email' => 'sebastian_lima_disenador@prodovidigital.com', 'legacy_email' => 'disenador09@prodovidigital.com'],
+                ['name' => 'Luciana Arce', 'email' => 'luciana_arce_disenador@prodovidigital.com', 'legacy_email' => 'disenador10@prodovidigital.com'],
+                ['name' => 'Rodrigo Villca', 'email' => 'rodrigo_villca_disenador@prodovidigital.com', 'legacy_email' => 'disenador11@prodovidigital.com'],
+                ['name' => 'Paola Gutiérrez', 'email' => 'paola_gutierrez_disenador@prodovidigital.com', 'legacy_email' => 'disenador12@prodovidigital.com'],
+            ],
             'Administrador' => [[
-                'name' => 'Administrador Operativo',
-                'email' => 'administrador.operativo@prodovidigital.com',
+                'name' => 'Lucía Fernández',
+                'email' => 'lucia_fernandez_administrador@prodovidigital.com',
+                'legacy_email' => 'administrador.operativo@prodovidigital.com',
             ]],
         ];
     }
@@ -49,8 +59,11 @@ class StaffUsersSeeder extends Seeder
                 $role->save();
 
                 foreach ($accounts as $account) {
-                    $user = User::withTrashed()->firstOrNew(['email' => $account['email']]);
+                    $user = User::withTrashed()->where('email', $account['email'])->first()
+                        ?? User::withTrashed()->where('email', $account['legacy_email'])->first()
+                        ?? new User();
                     $user->name = $account['name'];
+                    $user->email = $account['email'];
                     $user->password = $password;
                     $user->email_verified_at = now();
                     $user->deleted_at = null;

@@ -22,7 +22,7 @@ class StaffUsersSeederTest extends TestCase
         $this->assertSame(12, User::whereHas('roles', fn ($query) => $query->where('nombre_rol', 'Diseñador'))->count());
         $this->assertSame(1, User::whereHas('roles', fn ($query) => $query->where('nombre_rol', 'Administrador'))->count());
 
-        $administrator = User::where('email', 'administrador.operativo@prodovidigital.com')->firstOrFail();
+        $administrator = User::where('email', 'lucia_fernandez_administrador@prodovidigital.com')->firstOrFail();
 
         $this->assertSame(['Administrador'], $administrator->roles->pluck('nombre_rol')->all());
         $this->assertTrue(Hash::check('Temporal#Equipo2026', $administrator->password));
@@ -42,7 +42,28 @@ class StaffUsersSeederTest extends TestCase
         $this->assertSame(18, User::whereIn('email', $seedEmails)->count());
         $this->assertTrue(Hash::check(
             'NuevaClave#Equipo2026',
-            User::where('email', 'community.manager01@prodovidigital.com')->firstOrFail()->password
+            User::where('email', 'carla_mendoza_cm@prodovidigital.com')->firstOrFail()->password
         ));
+    }
+
+    public function test_it_renames_the_previous_generic_accounts_instead_of_duplicating_them(): void
+    {
+        User::factory()->create([
+            'name' => 'Diseñador 01',
+            'email' => 'disenador01@prodovidigital.com',
+        ]);
+        config(['seeding.staff_password' => 'Temporal#Equipo2026']);
+
+        $this->seed(StaffUsersSeeder::class);
+
+        $this->assertDatabaseMissing('users', ['email' => 'disenador01@prodovidigital.com']);
+        $this->assertDatabaseHas('users', [
+            'name' => 'Manuel Paye',
+            'email' => 'manuel_paye_disenador@prodovidigital.com',
+        ]);
+        $this->assertSame(18, User::whereIn(
+            'email',
+            collect(StaffUsersSeeder::accountGroups())->flatten(1)->pluck('email')
+        )->count());
     }
 }
