@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Database\Seeders\StaffUsersSeeder;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -163,6 +164,76 @@ class MantenimientoWebController extends Controller
                 'success' => false,
                 'message' => 'Ocurrió un error al crear los datos iniciales: '.$exception->getMessage(),
             ]);
+        }
+    }
+
+    public function seedStaffUsers(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'staff_password' => ['required', 'string', 'min:12', 'max:255', 'confirmed'],
+        ]);
+
+        $lockDirectory = storage_path('framework/cache');
+        File::ensureDirectoryExists($lockDirectory);
+        $lockHandle = fopen($lockDirectory.DIRECTORY_SEPARATOR.'mantenimiento-web-staff-seeder.lock', 'c');
+
+        if ($lockHandle === false || ! flock($lockHandle, LOCK_EX | LOCK_NB)) {
+            if (is_resource($lockHandle)) {
+                fclose($lockHandle);
+            }
+
+            return redirect()->route('mantenimiento.web.index')->with('staff_seed_result', [
+                'success' => false,
+                'message' => 'El seeder del equipo ya se está ejecutando. Espera a que termine.',
+            ]);
+        }
+
+        try {
+            config(['seeding.staff_password' => $validated['staff_password']]);
+
+            $exitCode = Artisan::call('db:seed', [
+                '--class' => StaffUsersSeeder::class,
+                '--force' => true,
+            ]);
+            $output = trim(Artisan::output());
+
+            Log::notice('Seeder del equipo ejecutado desde mantenimiento web.', [
+                'exit_code' => $exitCode,
+                'ip' => $request->ip(),
+            ]);
+
+            if ($exitCode !== 0) {
+                return redirect()->route('mantenimiento.web.index')->with('staff_seed_result', [
+                    'success' => false,
+                    'message' => 'El seeder del equipo no terminó correctamente.',
+                    'output' => $output,
+                ]);
+            }
+
+            return redirect()->route('mantenimiento.web.index')
+                ->with('staff_seed_result', [
+                    'success' => true,
+                    'message' => 'Se crearon o actualizaron 5 Community Managers, 12 Diseñadores y 1 Administrador.',
+                    'output' => $output,
+                ])
+                ->with('staff_credentials', [
+                    'groups' => StaffUsersSeeder::accountGroups(),
+                    'password' => $validated['staff_password'],
+                ]);
+        } catch (Throwable $exception) {
+            Log::error('Falló el seeder del equipo desde mantenimiento web.', [
+                'ip' => $request->ip(),
+                'message' => $exception->getMessage(),
+            ]);
+
+            return redirect()->route('mantenimiento.web.index')->with('staff_seed_result', [
+                'success' => false,
+                'message' => 'Ocurrió un error al crear el equipo: '.$exception->getMessage(),
+            ]);
+        } finally {
+            config(['seeding.staff_password' => null]);
+            flock($lockHandle, LOCK_UN);
+            fclose($lockHandle);
         }
     }
 

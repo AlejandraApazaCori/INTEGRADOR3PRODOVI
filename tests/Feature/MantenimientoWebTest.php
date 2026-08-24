@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Database\Seeders\StaffUsersSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
@@ -15,7 +16,8 @@ class MantenimientoWebTest extends TestCase
             ->assertOk()
             ->assertHeader('X-Robots-Tag', 'noindex, nofollow, noarchive')
             ->assertSee('php artisan migrate')
-            ->assertSee('php artisan storage:link');
+            ->assertSee('php artisan storage:link')
+            ->assertSee('Ejecutar seeder del equipo');
     }
 
     public function test_migrate_can_be_executed_and_its_output_is_returned(): void
@@ -46,5 +48,30 @@ class MantenimientoWebTest extends TestCase
 
         $this->post('/ejecutar-migraciones-Ma73027456Lpz/config-clear')
             ->assertNotFound();
+    }
+
+    public function test_the_staff_seeder_can_be_executed_with_a_password(): void
+    {
+        Artisan::shouldReceive('call')
+            ->once()
+            ->with('db:seed', [
+                '--class' => StaffUsersSeeder::class,
+                '--force' => true,
+            ])
+            ->andReturn(0);
+
+        Artisan::shouldReceive('output')
+            ->once()
+            ->andReturn('Equipo creado correctamente.');
+
+        $response = $this->post(route('mantenimiento.web.seed-staff'), [
+            'staff_password' => 'Temporal#Equipo2026',
+            'staff_password_confirmation' => 'Temporal#Equipo2026',
+        ]);
+
+        $response
+            ->assertRedirect(route('mantenimiento.web.index'))
+            ->assertSessionHas('staff_seed_result', fn (array $result): bool => $result['success'] === true)
+            ->assertSessionHas('staff_credentials', fn (array $credentials): bool => $credentials['password'] === 'Temporal#Equipo2026');
     }
 }

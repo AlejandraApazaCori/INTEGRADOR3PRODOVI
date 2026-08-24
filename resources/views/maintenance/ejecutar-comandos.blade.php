@@ -109,6 +109,22 @@
         .mail-result.error { border-color: #ef6c22; }
         .mail-result p { margin: 0; line-height: 1.55; }
         .mail-result pre { margin-top: 10px; }
+        .staff-panel { margin-top: 24px; padding: 20px; border: 1px solid rgba(91,43,118,.8); border-radius: 12px; background: rgba(91,43,118,.1); }
+        .staff-panel h2 { margin: 0 0 8px; color: #d9b8eb; font-size: 19px; }
+        .staff-panel > p { margin: 0 0 16px; color: #c5b8cb; font-size: 14px; line-height: 1.55; }
+        .staff-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+        .staff-summary span { padding: 7px 10px; border: 1px solid rgba(217,184,235,.3); border-radius: 999px; color: #eadcf1; font-size: 12px; font-weight: 700; }
+        .staff-password-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-bottom: 12px; }
+        .staff-password-grid label { display: block; color: #d8cbdc; font-size: 12px; font-weight: 700; }
+        .staff-password-grid input { width: 100%; margin-top: 7px; padding: 11px 12px; border: 1px solid #57485d; border-radius: 8px; outline: 0; background: #0b0c0d; color: #fff; }
+        .staff-password-grid input:focus { border-color: #b57bd1; box-shadow: 0 0 0 3px rgba(181,123,209,.14); }
+        .staff-panel button { border-color: #b57bd1; background: #5b2b76; }
+        .staff-panel button:hover { background: #713994; }
+        .field-error { margin: 8px 0 0; color: #fca5a5; font-size: 12px; }
+        .staff-accounts { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; margin-top: 16px; }
+        .staff-account-group { padding: 14px; border: 1px solid rgba(125,165,51,.35); border-radius: 9px; background: rgba(9,12,13,.5); }
+        .staff-account-group h4 { margin: 0 0 9px; color: #cfe5a8; }
+        .staff-account-group code { display: block; margin-top: 5px; color: #dce8ea; font-size: 12px; overflow-wrap: anywhere; }
         .danger-zone { margin-top: 28px; padding: 22px; border: 1px solid #dc2626; border-radius: 12px; background: rgba(127,29,29,.12); }
         .danger-zone h2 { margin: 0 0 8px; color: #fca5a5; font-size: 20px; }
         .danger-intro { margin: 0 0 18px; color: #fecaca; font-size: 13px; line-height: 1.6; }
@@ -129,7 +145,7 @@
         .credential-row { display: grid; grid-template-columns: 95px 1fr; gap: 10px; margin-top: 8px; color: #eef7df; font: 14px/1.5 Consolas,monospace; overflow-wrap: anywhere; }
         .credential-row strong { color: #f5a900; }
         .credentials a { display: inline-block; margin-top: 16px; color: #5fc2ce; font-weight: 700; }
-        @media (max-width: 640px) { .commands, .mail-config, .danger-steps { grid-template-columns: 1fr; } .command-card p, .danger-step p { min-height: 0; } }
+        @media (max-width: 640px) { .commands, .mail-config, .danger-steps, .staff-password-grid, .staff-accounts { grid-template-columns: 1fr; } .command-card p, .danger-step p { min-height: 0; } }
     </style>
 </head>
 <body>
@@ -162,6 +178,55 @@
                         <button type="submit">php artisan storage:link</button>
                     </form>
                 </article>
+            </section>
+
+            <section class="staff-panel">
+                <h2>Crear equipo operativo</h2>
+                <p>Crea o actualiza cuentas predeterminadas para el equipo. Puede ejecutarse nuevamente sin duplicar usuarios; al repetirlo, se actualizará la contraseña de estas cuentas.</p>
+                <div class="staff-summary">
+                    <span>5 Community Managers</span>
+                    <span>12 Diseñadores</span>
+                    <span>1 Administrador</span>
+                    <span>0 Super Administradores</span>
+                </div>
+                <form method="POST" action="{{ route('mantenimiento.web.seed-staff') }}" data-command-form onsubmit="return confirm('¿Deseas crear o actualizar las 18 cuentas del equipo?');">
+                    @csrf
+                    <div class="staff-password-grid">
+                        <label>Contraseña temporal
+                            <input type="password" name="staff_password" minlength="12" maxlength="255" autocomplete="new-password" required>
+                        </label>
+                        <label>Confirmar contraseña
+                            <input type="password" name="staff_password_confirmation" minlength="12" maxlength="255" autocomplete="new-password" required>
+                        </label>
+                    </div>
+                    @error('staff_password')<p class="field-error">{{ $message }}</p>@enderror
+                    <button type="submit">Ejecutar seeder del equipo</button>
+                </form>
+
+                @if(session('staff_seed_result'))
+                    @php($staffResult = session('staff_seed_result'))
+                    <div class="result {{ $staffResult['success'] ? '' : 'error' }}" aria-live="polite">
+                        <h2>{{ $staffResult['success'] ? 'Equipo creado correctamente' : 'El seeder del equipo falló' }}</h2>
+                        <p>{{ $staffResult['message'] }}</p>
+                        @if(!empty($staffResult['output']))<pre>{{ $staffResult['output'] }}</pre>@endif
+                    </div>
+                @endif
+
+                @if(session('staff_credentials'))
+                    @php($staffCredentials = session('staff_credentials'))
+                    <div class="credentials" aria-live="polite">
+                        <h3>Credenciales del equipo</h3>
+                        <div class="credential-row"><strong>Contraseña:</strong><span>{{ $staffCredentials['password'] }}</span></div>
+                        <div class="staff-accounts">
+                            @foreach($staffCredentials['groups'] as $roleName => $accounts)
+                                <div class="staff-account-group">
+                                    <h4>{{ $roleName }} ({{ count($accounts) }})</h4>
+                                    @foreach($accounts as $account)<code>{{ $account['email'] }}</code>@endforeach
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </section>
 
             <section class="mail-panel">
