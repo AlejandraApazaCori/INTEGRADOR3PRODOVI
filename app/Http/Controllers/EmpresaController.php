@@ -44,8 +44,12 @@ class EmpresaController extends Controller
         $suscripcion = Suscripcion::query()
             ->where('usuario_id', Auth::id())
             ->where('estado', 'activa')
-            ->where('fecha_fin', '>', now())
-            ->whereDoesntHave('empresa')
+            ->where(function ($query) {
+                $query->whereNull('vigencia_activada_at')
+                    ->orWhere('fecha_fin', '>', now());
+            })
+            ->whereHas('pagos', fn ($query) => $query->where('estado', 'completado'))
+            ->whereDoesntHave('empresa', fn ($query) => $query->withTrashed())
             ->latest('id')
             ->first();
 

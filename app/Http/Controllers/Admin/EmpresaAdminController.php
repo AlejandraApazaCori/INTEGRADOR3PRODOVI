@@ -9,6 +9,7 @@ use App\Models\Suscripcion;
 use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class EmpresaAdminController extends Controller
@@ -124,11 +125,33 @@ class EmpresaAdminController extends Controller
     /**
      * Mostrar formulario para crear empresa para un usuario específico
      */
-    public function crearParaUsuario($usuario_id)
+    public function crearParaUsuario(Request $request, $usuario_id)
     {
         $user = User::findOrFail($usuario_id);
         $temas = \App\Models\TemaCuestionario::with('preguntas')->orderBy('orden')->get();
-        return view('administrador.empresas.crear-para-usuario', compact('user', 'temas'));
+        $suscripcionesDisponibles = $user->suscripciones()
+            ->with('plan')
+            ->where('estado', 'activa')
+            ->where(function ($query) {
+                $query->whereNull('vigencia_activada_at')
+                    ->orWhere('fecha_fin', '>', now());
+            })
+            ->whereHas('pagos', fn ($query) => $query->where('estado', 'completado'))
+            ->whereDoesntHave('empresa', fn ($query) => $query->withTrashed())
+            ->latest('id')
+            ->get();
+        $suscripcionSeleccionadaId = $request->integer('suscripcion_id');
+
+        if (! $suscripcionesDisponibles->contains('id', $suscripcionSeleccionadaId)) {
+            $suscripcionSeleccionadaId = $suscripcionesDisponibles->first()?->id;
+        }
+
+        return view('administrador.empresas.crear-para-usuario', compact(
+            'user',
+            'temas',
+            'suscripcionesDisponibles',
+            'suscripcionSeleccionadaId'
+        ));
     }
 
     /**
@@ -202,14 +225,35 @@ class EmpresaAdminController extends Controller
     {
         $request->validate([
             'usuario_id' => 'required|exists:users,id',
+            'suscripcion_id' => 'required|exists:suscripciones,id',
             'nombre_empresa' => 'required|string|max:255',
             'tipo_empresa' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
         ]);
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($request) {
+            $suscripcion = Suscripcion::query()
+                ->whereKey($request->integer('suscripcion_id'))
+                ->where('usuario_id', $request->integer('usuario_id'))
+                ->where('estado', 'activa')
+                ->where(function ($query) {
+                    $query->whereNull('vigencia_activada_at')
+                        ->orWhere('fecha_fin', '>', now());
+                })
+                ->whereHas('pagos', fn ($query) => $query->where('estado', 'completado'))
+                ->whereDoesntHave('empresa', fn ($query) => $query->withTrashed())
+                ->lockForUpdate()
+                ->first();
+
+            if (! $suscripcion) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'suscripcion_id' => 'La suscripción seleccionada no está disponible o ya tiene una empresa asociada.',
+                ]);
+            }
+
             $empresa = Empresa::create([
                 'usuario_id' => $request->usuario_id,
+                'suscripcion_id' => $suscripcion->id,
                 'nombre_empresa' => $request->nombre_empresa,
                 'tipo_empresa' => $request->tipo_empresa,
                 'descripcion' => $request->descripcion,

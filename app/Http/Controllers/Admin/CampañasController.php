@@ -267,7 +267,7 @@ class CampañasController extends Controller
     {
         try {
             $request->validate(['suscripcion_id' => 'required|integer|exists:suscripciones,id']);
-            $pago = Pago::with('suscripcion')
+            $pago = Pago::with(['suscripcion.plan.planCaracteristicas.caracteristica'])
                 ->where('usuario_id', $empresa->usuario_id)
                 ->where('suscripcion_id', $request->integer('suscripcion_id'))
                 ->where('estado', 'completado')
@@ -292,10 +292,8 @@ class CampañasController extends Controller
                     ->latest()
                     ->first();
 
-            if (!$plan) {
-                return response()->json([
-                    'error' => "La empresa {$empresa->nombre_empresa} no tiene un plan de marketing activo.",
-                ], 404);
+            if (! $plan) {
+                return response()->json($this->crearCampaniaDesdePlanContratado($empresa, $pago->suscripcion));
             }
 
             $contenido = (string) $plan->contenido;
@@ -344,6 +342,52 @@ class CampañasController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al procesar el plan: ' . $e->getMessage()], 500);
         }
+    }
+
+    private function crearCampaniaDesdePlanContratado(Empresa $empresa, Suscripcion $suscripcion): array
+    {
+        $planContratado = $suscripcion->plan;
+        $contextoEmpresa = $empresa->resumen_ejecutivo ?: $empresa->descripcion;
+        $descripcionEmpresa = $this->resumirSeccionCampania((string) $contextoEmpresa, 2, 600);
+        $recursos = $planContratado?->planCaracteristicas
+            ?->map(function ($planCaracteristica) {
+                $nombre = $planCaracteristica->caracteristica?->nombre;
+                if (! $nombre) {
+                    return null;
+                }
+
+                $cantidad = $planCaracteristica->cantidad
+                    ? $planCaracteristica->cantidad.' '
+                    : '';
+                $frecuencia = $planCaracteristica->frecuencia
+                    ? ' '.$planCaracteristica->frecuencia
+                    : '';
+
+                return trim($cantidad.$nombre.$frecuencia);
+            })
+            ->filter()
+            ->take(6)
+            ->implode(', ');
+
+        $partes = [
+            'DESCRIPCIÓN:',
+            $descripcionEmpresa !== ''
+                ? $descripcionEmpresa
+                : "Campaña digital para {$empresa->nombre_empresa}.",
+            '',
+            'OBJETIVOS:',
+            '- Fortalecer la presencia digital de la empresa.',
+            '- Ejecutar las acciones incluidas en el plan '.($planContratado?->nombre ?? 'contratado').'.',
+        ];
+
+        if ($recursos !== '') {
+            $partes[] = '- Recursos contratados: '.$recursos.'.';
+        }
+
+        return [
+            'nombre' => 'Campaña '.($planContratado?->nombre ?? 'Digital').': '.$empresa->nombre_empresa,
+            'descripcion' => mb_substr(implode("\n", $partes), 0, 2500),
+        ];
     }
 
     private function extraerSeccionPlan(string $contenido, array $titulosBuscados): string

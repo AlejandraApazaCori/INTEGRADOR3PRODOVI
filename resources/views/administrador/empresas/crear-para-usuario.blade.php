@@ -20,6 +20,26 @@
             @csrf
             <input type="hidden" name="usuario_id" value="{{ $user->id }}">
 
+            <div class="mb-6 rounded-2xl border border-indigo-100 bg-indigo-50 p-5">
+                <label for="suscripcion_id" class="mb-2 block text-sm font-semibold text-indigo-950">Plan pagado que se asociará a la empresa</label>
+                @if($suscripcionesDisponibles->isNotEmpty())
+                    <select id="suscripcion_id" name="suscripcion_id" required
+                            class="w-full rounded-xl border border-indigo-200 bg-white px-4 py-3 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
+                        @foreach($suscripcionesDisponibles as $suscripcion)
+                            <option value="{{ $suscripcion->id }}" @selected((int) $suscripcionSeleccionadaId === (int) $suscripcion->id)>
+                                {{ $suscripcion->plan?->nombre ?? 'Plan' }} · Suscripción #{{ $suscripcion->id }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="mt-2 text-xs text-indigo-700">Esta relación se conservará para la campaña, las tareas y los recursos contratados.</p>
+                @else
+                    <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+                        Este cliente no tiene una suscripción pagada disponible para asociar a una nueva empresa.
+                    </div>
+                @endif
+                @error('suscripcion_id')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+            </div>
+
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
                 <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
                     <h2 class="text-xl font-bold text-white">Información Básica de la Empresa</h2>
@@ -101,7 +121,7 @@
                     @endforeach
 
                     <div class="flex justify-end pt-6 border-t border-gray-100">
-                        <button type="submit" class="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1">
+                        <button type="submit" @disabled($suscripcionesDisponibles->isEmpty()) class="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-50">
                             Guardar Empresa y Cuestionario
                         </button>
                     </div>
@@ -118,4 +138,3 @@
     }
 </style>
 @endsection
-

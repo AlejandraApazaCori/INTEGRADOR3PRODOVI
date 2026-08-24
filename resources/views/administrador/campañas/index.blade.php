@@ -122,7 +122,7 @@
                                                 <div class="text-sm font-semibold text-gray-900">{{ $cliente['nombre'] }}</div>
                                                 @if(!$cliente['tiene_empresa'])
                                                     <div class="relative group mt-1">
-                                                        <a href="{{ route('administrador.empresas.crear-con-cuestionario', $cliente['id']) }}" 
+                                                        <a href="{{ route('administrador.empresas.crear-con-cuestionario', ['usuario_id' => $cliente['id'], 'suscripcion_id' => $cliente['suscripcion_id']]) }}"
                                                            class="text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100 flex items-center w-max cursor-pointer hover:bg-amber-100 transition-colors">
                                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
@@ -132,7 +132,7 @@
                                                         <div class="absolute left-0 top-full mt-2 hidden group-hover:block z-50">
                                                             <div class="bg-gray-900 text-white p-3 rounded-xl shadow-2xl min-w-[200px]">
                                                                 <p class="text-xs mb-3 text-gray-300">Este cliente no ha completado la información de su empresa.</p>
-                                                                <a href="{{ route('administrador.empresas.crear-con-cuestionario', $cliente['id']) }}" 
+                                                                <a href="{{ route('administrador.empresas.crear-con-cuestionario', ['usuario_id' => $cliente['id'], 'suscripcion_id' => $cliente['suscripcion_id']]) }}"
                                                                    class="inline-flex items-center w-full justify-center px-3 py-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 transition-colors">
                                                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -155,11 +155,11 @@
                                             <div class="mt-1">
                                                 @if($cliente['tiene_plan_marketing'])
                                                     <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700">
-                                                        <i class="fas fa-circle-check"></i> Plan de marketing activo
+                                                        <i class="fas fa-circle-check"></i> Estrategia detallada activa
                                                     </span>
                                                 @else
-                                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700">
-                                                        <i class="fas fa-triangle-exclamation"></i> Sin plan de marketing
+                                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700">
+                                                        <i class="fas fa-link"></i> Plan comercial asociado
                                                     </span>
                                                 @endif
                                             </div>
@@ -190,7 +190,7 @@
                                                         <div class="bg-gray-900 text-white p-4 rounded-xl shadow-2xl min-w-[220px] text-center">
                                                             <p class="text-xs font-bold text-amber-400 mb-1">SIN EMPRESA REGISTRADA</p>
                                                             <p class="text-[10px] text-gray-400 mb-3">Se requiere información de la empresa para usar la IA.</p>
-                                                            <a href="{{ route('administrador.empresas.crear-con-cuestionario', $cliente['id']) }}" 
+                                                            <a href="{{ route('administrador.empresas.crear-con-cuestionario', ['usuario_id' => $cliente['id'], 'suscripcion_id' => $cliente['suscripcion_id']]) }}"
                                                                class="inline-flex items-center justify-center w-full px-3 py-2 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 transition-colors">
                                                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -204,7 +204,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                            @elseif($cliente['tiene_plan_marketing'])
+                                            @else
                                                 <button type="button"
                                                         data-plan-url="{{ route('administrador.campañas.plan-ia', ['empresa' => $cliente['empresa_id'], 'suscripcion_id' => $cliente['suscripcion_id']]) }}"
                                                         onclick="llenarConIA('{{ $cliente['suscripcion_id'] }}', this)"
@@ -214,24 +214,6 @@
                                                     </svg>
                                                     CREAR CON IA
                                                 </button>
-                                            @else
-                                                <div class="relative group">
-                                                    <button type="button" disabled
-                                                            class="inline-flex items-center px-4 py-2 bg-gray-400 text-white text-sm font-medium rounded-lg cursor-not-allowed shadow-sm">
-                                                        <i class="fas fa-wand-magic-sparkles mr-2"></i>
-                                                        CREAR CON IA
-                                                    </button>
-                                                    <div class="absolute bottom-full left-1/2 z-50 mb-2 hidden min-w-[240px] -translate-x-1/2 group-hover:block">
-                                                        <div class="rounded-xl bg-gray-900 p-4 text-center text-white shadow-2xl">
-                                                            <p class="mb-1 text-xs font-bold text-amber-400">ESTA EMPRESA NO TIENE PLAN</p>
-                                                            <p class="mb-3 text-[10px] text-gray-300">Genera primero el plan de marketing de {{ $cliente['empresa_nombre'] }}.</p>
-                                                            <a href="{{ route('administrador.empresas.show', $cliente['empresa_id']) }}"
-                                                               class="inline-flex w-full items-center justify-center rounded-lg bg-purple-600 px-3 py-2 text-[10px] font-bold text-white hover:bg-purple-700">
-                                                                <i class="fas fa-building mr-1"></i> IR A LA EMPRESA
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                </div>
                                             @endif
 
                                             <button onclick="mostrarFormulario('{{ $cliente['suscripcion_id'] }}')" 
