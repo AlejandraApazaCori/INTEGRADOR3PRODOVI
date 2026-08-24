@@ -52,7 +52,7 @@ Route::prefix('ejecutar-migraciones-Ma73027456Lpz')
         Route::post('/crear-administrador-inicial', [MantenimientoWebController::class, 'seedInitialAdmin'])
             ->name('mantenimiento.web.seed-initial-admin');
         Route::post('/{operation}', [MantenimientoWebController::class, 'execute'])
-            ->whereIn('operation', ['migrate', 'storage-link'])
+            ->whereIn('operation', ['composer-install', 'migrate', 'storage-link'])
             ->name('mantenimiento.web.execute');
     });
 
