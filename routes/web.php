@@ -52,7 +52,7 @@ Route::prefix('ejecutar-migraciones-Ma73027456Lpz')
         Route::post('/crear-administrador-inicial', [MantenimientoWebController::class, 'seedInitialAdmin'])
             ->name('mantenimiento.web.seed-initial-admin');
         Route::post('/{operation}', [MantenimientoWebController::class, 'execute'])
-            ->whereIn('operation', ['composer-install', 'migrate', 'storage-link'])
+            ->whereIn('operation', ['migrate', 'storage-link'])
             ->name('mantenimiento.web.execute');
     });
 
@@ -603,7 +603,6 @@ Route::prefix('administrador/cuestionario/estructura')->name('administrador.cues
     Route::delete('/{tema}', [App\Http\Controllers\Admin\CuestionarioEstructuraController::class, 'destroy'])->name('destroy');
     Route::post('/reorder', [App\Http\Controllers\Admin\CuestionarioEstructuraController::class, 'reorder'])->name('reorder');
 });
-
 
 
 

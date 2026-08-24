@@ -146,15 +146,6 @@
 
             <section class="commands">
                 <article class="command-card">
-                    <h2>Instalar dependencias</h2>
-                    <p>Instala desde <code>composer.lock</code> las librerías de producción, incluida la API de Google Drive, y limpia la caché de Laravel.</p>
-                    <form method="POST" action="{{ route('mantenimiento.web.execute', 'composer-install') }}" data-command-form>
-                        @csrf
-                        <button type="submit">Ejecutar composer install</button>
-                    </form>
-                </article>
-
-                <article class="command-card">
                     <h2>Ejecutar migraciones</h2>
                     <p>Aplica todas las migraciones pendientes con la opción segura para producción.</p>
                     <form method="POST" action="{{ route('mantenimiento.web.execute', 'migrate') }}" data-command-form>

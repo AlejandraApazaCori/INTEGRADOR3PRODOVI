@@ -268,10 +268,16 @@ class CampañasController extends Controller
                 return response()->json(['error' => 'El cliente no tiene una empresa registrada.'], 404);
             }
 
+            // Priorizar el plan de la suscripción seleccionada. Los registros
+            // creados antes de vincular empresas y suscripciones pueden conservar
+            // otro suscripcion_id aunque el plan sí pertenezca a esta empresa.
             $plan = PlanMarketing::where('empresa_id', $empresa->id)
                 ->where('suscripcion_id', $pago->suscripcion_id)
                 ->latest()
-                ->first();
+                ->first()
+                ?? PlanMarketing::where('empresa_id', $empresa->id)
+                    ->latest()
+                    ->first();
 
             if (!$plan) {
                 return response()->json(['error' => 'No se encontró un plan de marketing para este cliente.'], 404);

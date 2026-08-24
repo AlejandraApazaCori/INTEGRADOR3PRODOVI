@@ -38,7 +38,12 @@ class PlanMarketingController extends Controller
             return back()->with('error', 'No se puede crear un plan de marketing sin un resumen ejecutivo generado primero.');
         }
 
-        $suscripcionActiva = $empresa->usuario->suscripciones()->where('estado', 'activa')->first();
+        $suscripcionActiva = $empresa->suscripcion_id
+            ? $empresa->suscripcion()->where('estado', 'activa')->first()
+            : $empresa->usuario->suscripciones()
+                ->where('estado', 'activa')
+                ->latest()
+                ->first();
 
         if (!$suscripcionActiva) {
             return back()->with('error', 'El usuario no tiene una suscripción activa para generar un plan de marketing.');
@@ -71,7 +76,11 @@ class PlanMarketingController extends Controller
             'plan.planCaracteristicas.caracteristica',
         ])->findOrFail($request->suscripcion_id);
 
-        if ($suscripcion->usuario_id !== $empresa->usuario_id || $suscripcion->estado !== 'activa') {
+        if (
+            $suscripcion->usuario_id !== $empresa->usuario_id
+            || $suscripcion->estado !== 'activa'
+            || ($empresa->suscripcion_id && $suscripcion->id !== $empresa->suscripcion_id)
+        ) {
             return back()->with('error', 'Suscripción no válida para esta empresa.');
         }
 

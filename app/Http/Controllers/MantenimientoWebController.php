@@ -10,10 +10,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Schema;
-use RuntimeException;
-use Symfony\Component\Process\ExecutableFinder;
 use Throwable;
 
 class MantenimientoWebController extends Controller
@@ -21,9 +18,6 @@ class MantenimientoWebController extends Controller
     private const FORMAT_CONFIRMATION = 'FORMATEAR PRODOVI';
 
     private const OPERATIONS = [
-        'composer-install' => [
-            'label' => 'composer install --no-dev --prefer-dist --optimize-autoloader',
-        ],
         'migrate' => [
             'command' => 'migrate',
             'parameters' => ['--force' => true],
@@ -274,21 +268,12 @@ class MantenimientoWebController extends Controller
         }
 
         try {
-            if ($operation === 'composer-install') {
-                [$exitCode, $output] = $this->runComposerInstall();
-
-                if ($exitCode === 0) {
-                    Artisan::call('optimize:clear');
-                    $output = trim($output.PHP_EOL.PHP_EOL.Artisan::output());
-                }
-            } else {
-                if ($operation === 'migrate') {
-                    $this->prepareSocialAccountsMigration();
-                }
-
-                $exitCode = Artisan::call($definition['command'], $definition['parameters']);
-                $output = trim(Artisan::output());
+            if ($operation === 'migrate') {
+                $this->prepareSocialAccountsMigration();
             }
+
+            $exitCode = Artisan::call($definition['command'], $definition['parameters']);
+            $output = trim(Artisan::output());
 
             Log::notice('Comando de mantenimiento ejecutado desde la ruta web protegida.', [
                 'operation' => $operation,
@@ -324,56 +309,6 @@ class MantenimientoWebController extends Controller
             flock($lockHandle, LOCK_UN);
             fclose($lockHandle);
         }
-    }
-
-    private function runComposerInstall(): array
-    {
-        $composer = $this->findComposerExecutable();
-        $command = str_ends_with(strtolower($composer), '.phar')
-            ? [PHP_BINARY, $composer]
-            : [$composer];
-
-        array_push(
-            $command,
-            'install',
-            '--no-dev',
-            '--prefer-dist',
-            '--optimize-autoloader',
-            '--no-interaction',
-            '--no-progress',
-        );
-
-        $result = Process::path(base_path())
-            ->timeout(600)
-            ->env([
-                'COMPOSER_MEMORY_LIMIT' => '-1',
-                'COMPOSER_NO_INTERACTION' => '1',
-            ])
-            ->run($command);
-
-        return [
-            $result->exitCode(),
-            trim($result->output().PHP_EOL.$result->errorOutput()),
-        ];
-    }
-
-    private function findComposerExecutable(): string
-    {
-        $localComposer = base_path('composer.phar');
-
-        if (File::isFile($localComposer)) {
-            return $localComposer;
-        }
-
-        $composer = (new ExecutableFinder)->find('composer');
-
-        if (is_string($composer) && $composer !== '') {
-            return $composer;
-        }
-
-        throw new RuntimeException(
-            'Composer no está disponible para el usuario del servidor web. Sube composer.phar a la raíz del proyecto o solicita al hosting que habilite Composer.'
-        );
     }
 
     /**
