@@ -1,945 +1,305 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
-@section('title', 'Dashboard del Administrador')
+@section('title', 'Centro de control')
 
-@section('head')
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-
-        .glass-morphism {
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-        }
-
-        .floating-card {
-            animation: float 6s ease-in-out infinite;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-
-        .card-hover {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .card-hover:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        }
-
-        .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .morphing-border {
-            border-radius: 20px;
-            background: linear-gradient(45deg, #f093fb 0%, #f5576c 25%, #4facfe 50%, #00f2fe 75%, #f093fb 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 8s ease infinite;
-            padding: 2px;
-        }
-
-        @keyframes gradientShift {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
-        .inner-card {
-            border-radius: 18px;
-            height: 100%;
-        }
-
-        .icon-glow {
-            filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.5));
-        }
-
-        .pulse-ring {
-            animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
-        }
-
-        @keyframes pulse-ring {
-            0% {
-                transform: scale(0.8);
-                opacity: 1;
-            }
-
-            80%,
-            100% {
-                transform: scale(1.2);
-                opacity: 0;
-            }
-        }
-
-        .diagonal-pattern {
-            background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.1) 75%, transparent 75%, transparent);
-            background-size: 20px 20px;
-        }
-
-        .neon-glow {
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3), 0 0 40px rgba(99, 102, 241, 0.2);
-        }
-
-        /* Nuevos estilos para los contenedores de grÃ¡ficos */
-        .chart-container {
-            position: relative;
-            height: 300px;
-            /* Altura fija para el grÃ¡fico mensual */
-            width: 100%;
-        }
-
-        .chart-container-small {
-            position: relative;
-            height: 250px;
-            /* Altura fija para el grÃ¡fico anual */
-            width: 100%;
-        }
-
-        .chart-container-donut {
-            position: relative;
-            height: 250px;
-            /* Altura fija para el grÃ¡fico de dona */
-            width: 100%;
-            max-width: 250px;
-            /* Ancho mÃ¡ximo para el grÃ¡fico de dona */
-            margin: 0 auto;
-            /* Centrar el grÃ¡fico de dona */
-        }
-    </style>
-@endsection
+@push('styles')
+<style>
+    :root{--ad-purple:#5b2b76;--ad-purple-dark:#3d174f;--ad-orange:#ef6c22;--ad-turquoise:#117e8c;--ad-green:#7da533;--ad-ink:#242426;--ad-muted:#746b78;--ad-line:#e4dee6;--ad-surface:#fff;--ad-soft:#f5f2f6}
+    .admin-control{min-height:100vh;padding:0 24px 48px;background:#f4f1f5;color:var(--ad-ink);font-family:Inter,'Segoe UI',sans-serif}
+    .admin-control-shell{width:min(1480px,100%);margin:0 auto}
+    .admin-control a{text-decoration:none}.admin-control button,.admin-control select{font:inherit}
+    .control-hero{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:28px;padding:30px 34px;background:#242426;color:#fff;border-left:6px solid var(--ad-orange);box-shadow:0 14px 34px rgba(36,36,38,.16)}
+    .control-hero:after{content:'';position:absolute;right:-55px;bottom:-95px;width:250px;height:250px;border:34px solid rgba(17,126,140,.34);border-radius:50%}
+    .control-hero-copy{position:relative;z-index:1}.control-eyebrow{display:block;margin-bottom:7px;color:#74c8cf;font-size:.68rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase}.control-hero h1{margin:0;font-size:clamp(1.55rem,3vw,2.25rem);font-weight:900;letter-spacing:-.04em}.control-hero p{max-width:700px;margin:8px 0 0;color:#bbb6be;font-size:.84rem;line-height:1.55}
+    .quick-actions{position:relative;z-index:1;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}.quick-action{display:inline-flex;align-items:center;gap:8px;padding:11px 14px;border:1px solid rgba(255,255,255,.16);border-radius:3px;background:rgba(255,255,255,.08);color:#fff;font-size:.72rem;font-weight:900;transition:.18s}.quick-action.primary{border-color:var(--ad-orange);background:var(--ad-orange)}.quick-action:hover{transform:translateY(-2px);background:var(--ad-turquoise);border-color:var(--ad-turquoise)}
+    .dashboard-section{margin-top:24px}.section-heading{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:12px}.section-heading small{display:block;margin-bottom:3px;color:var(--ad-turquoise);font-size:.62rem;font-weight:900;letter-spacing:.11em;text-transform:uppercase}.section-heading h2{margin:0;color:#302832;font-size:1.08rem;font-weight:900;letter-spacing:-.02em}.section-heading p{margin:3px 0 0;color:#8b818f;font-size:.7rem}.section-link{color:var(--ad-purple);font-size:.7rem;font-weight:900}
+    .kpi-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}.kpi-card{position:relative;overflow:hidden;min-height:130px;padding:18px;border:1px solid var(--ad-line);border-top:4px solid var(--accent);background:#fff;box-shadow:0 8px 20px rgba(49,34,55,.055)}.kpi-icon{width:38px;height:38px;display:grid;place-items:center;margin-bottom:14px;border-radius:3px;background:var(--accent);color:#fff}.kpi-card strong{display:block;color:#302832;font-size:1.55rem;font-weight:900;line-height:1}.kpi-card span{display:block;margin-top:6px;color:#716775;font-size:.7rem;font-weight:800;line-height:1.3}.kpi-card small{display:block;margin-top:5px;color:#9a919d;font-size:.6rem}.kpi-campaigns{--accent:var(--ad-purple)}.kpi-risk{--accent:#c64733}.kpi-clients{--accent:var(--ad-orange)}.kpi-tasks{--accent:var(--ad-turquoise)}.kpi-payments{--accent:var(--ad-orange)}.kpi-expiring{--accent:var(--ad-green)}.kpi-income{--accent:#b78700}
+    .panel{border:1px solid var(--ad-line);background:#fff;box-shadow:0 9px 24px rgba(49,34,55,.06)}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 18px;border-bottom:1px solid var(--ad-line);background:#faf8fb}.panel-head h3{margin:0;color:#352e38;font-size:.86rem;font-weight:900}.panel-head span{color:#918795;font-size:.64rem}.panel-body{padding:18px}
+    .alert-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.control-alert{display:grid;grid-template-columns:36px minmax(0,1fr) auto;align-items:center;gap:10px;padding:13px;border:1px solid var(--alert-line);border-left:4px solid var(--alert);background:var(--alert-bg);color:#413944}.control-alert i{width:36px;height:36px;display:grid;place-items:center;background:#fff;color:var(--alert)}.control-alert strong{display:block;font-size:.72rem}.control-alert p{margin:3px 0 0;color:#756c79;font-size:.61rem;line-height:1.35}.control-alert b{font-size:1.15rem;color:var(--alert)}.control-alert.danger{--alert:#c64733;--alert-bg:#fff5f3;--alert-line:#f2d1ca}.control-alert.warning{--alert:#d46c19;--alert-bg:#fff8f1;--alert-line:#efd8c1}.control-alert.info{--alert:#117e8c;--alert-bg:#f1fafb;--alert-line:#c8e1e4}.all-clear{display:flex;align-items:center;gap:12px;padding:16px;border:1px solid #d7e7bc;background:#f7faef;color:#526f25;font-size:.76rem;font-weight:800}.all-clear i{font-size:1.1rem}
+    .followup-list{display:grid;gap:9px}.followup-item{display:flex;align-items:center;gap:11px;padding:11px;border:1px solid #e6e0e8;background:#fff;color:#4a414e}.followup-item i{width:34px;height:34px;display:grid;place-items:center;flex:0 0 auto;background:#f1edf3;color:var(--ad-purple)}.followup-item span{min-width:0;flex:1;font-size:.68rem;font-weight:800}.followup-item strong{color:#2f2831;font-size:1rem}
+    .campaign-table-wrap{overflow-x:auto}.campaign-table{width:100%;border-collapse:collapse;min-width:940px}.campaign-table th{padding:10px 14px;background:#f6f3f7;color:#817786;text-align:left;font-size:.59rem;font-weight:900;letter-spacing:.07em;text-transform:uppercase}.campaign-table td{padding:14px;border-top:1px solid #eee9ef;color:#524957;font-size:.68rem;vertical-align:middle}.campaign-name{display:block;color:#302834;font-size:.72rem;font-weight:900}.campaign-client{display:block;margin-top:3px;color:#918795;font-size:.6rem}.manager-chip{display:inline-flex;align-items:center;gap:7px}.manager-avatar{width:27px;height:27px;display:grid;place-items:center;border-radius:2px;background:var(--ad-purple);color:#fff;font-size:.57rem;font-weight:900}.status-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;border-radius:2px;font-size:.58rem;font-weight:900;text-transform:uppercase}.status-badge.active{background:#edf7f8;color:#0e6c78}.status-badge.risk{background:#fff0ed;color:#b23e2c}.status-badge.paused{background:#fff3e8;color:#c15816}.status-badge.done{background:#eef5e3;color:#587923}.progress-track{width:110px;height:5px;background:#e8e3e9}.progress-track i{display:block;height:100%;background:var(--ad-turquoise)}.progress-label{display:block;margin-top:5px;color:#817786;font-size:.58rem}.days-left{font-weight:900}.days-left.risk{color:#bd412e}.table-action{width:30px;height:30px;display:grid;place-items:center;background:#f1edf3;color:var(--ad-purple)}.empty-state{padding:36px;text-align:center;color:#8a808e}.empty-state i{display:block;margin-bottom:9px;color:#c4bac7;font-size:1.5rem}.empty-state p{margin:0;font-size:.72rem}
+    .split-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.manager-list{display:grid;gap:2px}.manager-row{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,82px);align-items:center;gap:8px;padding:11px 0;border-bottom:1px solid #eee9ef}.manager-row:last-child{border-bottom:0}.manager-person{display:flex;align-items:center;gap:9px;min-width:0}.manager-person .manager-avatar{width:34px;height:34px;background:var(--ad-turquoise)}.manager-person strong{display:block;overflow:hidden;color:#37303a;font-size:.7rem;text-overflow:ellipsis;white-space:nowrap}.manager-stat{text-align:center}.manager-stat strong{display:block;font-size:.82rem}.manager-stat small{display:block;margin-top:2px;color:#948a98;font-size:.52rem;text-transform:uppercase}.manager-stat.overdue strong{color:#c64733}
+    .finance-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:13px}.finance-stat{padding:10px;background:#f7f5f8}.finance-stat small{display:block;color:#8c828f;font-size:.55rem;font-weight:800;text-transform:uppercase}.finance-stat strong{display:block;margin-top:4px;color:#332b35;font-size:.82rem}.chart-box{position:relative;height:220px}.chart-box.small{height:190px}.plan-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:11px;border-left:4px solid var(--ad-orange);background:#f7f5f8}.plan-summary small,.plan-summary strong{display:block}.plan-summary small{color:#8a808e;font-size:.56rem;text-transform:uppercase}.plan-summary strong{margin-top:3px;color:#392f3c;font-size:.7rem}.plan-summary b{color:var(--ad-purple);font-size:1rem}
+    .plan-income-list{display:grid;gap:7px;margin-top:13px}.plan-income-row{display:grid;grid-template-columns:100px minmax(0,1fr) auto;align-items:center;gap:8px;color:#5b515f;font-size:.6rem;font-weight:800}.plan-income-row>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.plan-income-track{height:5px;background:#ebe6ec}.plan-income-track i{display:block;height:100%;background:linear-gradient(90deg,var(--ad-purple),var(--ad-turquoise))}.plan-income-row b{color:#332b35;font-size:.62rem}
+    .timeline-list{display:grid}.timeline-item{position:relative;display:grid;grid-template-columns:52px 30px minmax(0,1fr);gap:9px;align-items:center;padding:9px 0;color:#4b424f}.timeline-item:not(:last-child):after{content:'';position:absolute;top:39px;bottom:-9px;left:66px;width:1px;background:#e2dce4}.timeline-date{text-align:center}.timeline-date strong{display:block;color:#312a34;font-size:.8rem}.timeline-date small{display:block;color:#958b99;font-size:.52rem;text-transform:uppercase}.timeline-icon{width:30px;height:30px;display:grid;place-items:center;z-index:1;background:#edf7f8;color:var(--ad-turquoise);font-size:.65rem}.timeline-item.deadline .timeline-icon{background:#fff0ed;color:#c64733}.timeline-item.task .timeline-icon{background:#f1edf3;color:var(--ad-purple)}.timeline-item.subscription .timeline-icon{background:#fff3e8;color:#c15816}.timeline-item.publication .timeline-icon{background:#eef5e3;color:#587923}.timeline-copy strong{display:block;font-size:.68rem}.timeline-copy small{display:block;margin-top:2px;overflow:hidden;color:#918795;font-size:.58rem;text-overflow:ellipsis;white-space:nowrap}
+    .activity-list{display:grid}.activity-item{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid #eee9ef;color:#4b424f}.activity-item:last-child{border-bottom:0}.activity-icon{width:32px;height:32px;display:grid;place-items:center;background:#edf7f8;color:var(--ad-turquoise)}.activity-item.campaign .activity-icon{background:#f1edf3;color:var(--ad-purple)}.activity-item.task .activity-icon{background:#eef5e3;color:#587923}.activity-copy strong{display:block;font-size:.68rem}.activity-copy span{display:block;margin-top:3px;color:#8c828f;font-size:.59rem;line-height:1.35}.activity-item time{color:#a097a3;font-size:.54rem;white-space:nowrap}
+    .ai-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.ai-panel{position:relative;overflow:hidden}.ai-panel .panel-head i{width:34px;height:34px;display:grid;place-items:center;background:var(--ad-turquoise);color:#fff}.ai-panel:nth-child(2) .panel-head i{background:var(--ad-purple)}.ai-note{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;color:#827887;font-size:.6rem}.ai-peak{padding:5px 7px;background:#edf7f8;color:#0f707d;font-weight:900}
+    /* Lenguaje visual del dashboard anterior: azul claro, gradientes y tarjetas suaves */
+    .admin-control{background:#eff6ff;color:#1f2937}.admin-control-shell{width:min(1280px,100%)}
+    .control-hero{border:0;border-radius:1rem;background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);box-shadow:0 16px 35px rgba(79,70,229,.22)}
+    .control-hero:after{right:-45px;bottom:-115px;width:280px;height:280px;border-color:rgba(255,255,255,.12)}.control-eyebrow{color:#dbeafe}.control-hero p{color:#e0e7ff}
+    .quick-action{border-radius:.65rem;background:rgba(255,255,255,.12)}.quick-action.primary{border-color:#fff;background:#fff;color:#4f46e5}.quick-action:hover{border-color:#fff;background:#fff;color:#4f46e5;box-shadow:0 8px 20px rgba(31,41,55,.16)}
+    .section-heading small{color:#6366f1}.section-heading h2{color:#1f2937}.section-heading p{color:#6b7280}.section-link{color:#4f46e5}
+    .kpi-grid{gap:16px}.kpi-card{min-height:145px;border:1px solid #f3f4f6;border-top:1px solid #f3f4f6;border-radius:1rem;box-shadow:0 10px 22px rgba(15,23,42,.08);transition:all .3s ease}.kpi-card:hover{transform:translateY(-6px);box-shadow:0 20px 35px rgba(15,23,42,.14)}.kpi-icon{width:46px;height:46px;border-radius:.75rem}.kpi-card strong{color:#1f2937}.kpi-card span{color:#4b5563}.kpi-card small{color:#9ca3af}.kpi-campaigns .kpi-icon{background:#ffedd5;color:#ea580c}.kpi-risk .kpi-icon{background:#fee2e2;color:#dc2626}.kpi-tasks .kpi-icon{background:#cffafe;color:#0891b2}.kpi-payments .kpi-icon{background:#fef3c7;color:#d97706}.kpi-expiring .kpi-icon{background:#ede9fe;color:#7c3aed}.kpi-income .kpi-icon{background:#dcfce7;color:#16a34a}
+    .kpi-heatmap-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(350px,.65fr);gap:18px;align-items:stretch}.kpi-heatmap-layout .kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr));align-content:start}.delivery-heatmap{display:flex;flex-direction:column;padding:18px;border:1px solid #e5e7eb;border-radius:1rem;background:#f9fafb;box-shadow:0 10px 22px rgba(15,23,42,.07)}.heatmap-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:13px}.heatmap-head small{display:block;color:#6366f1;font-size:.57rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.heatmap-head h3{margin:3px 0 0;color:#1f2937;font-size:.85rem;font-weight:900}.heatmap-month{padding:5px 8px;border-radius:999px;background:#eef2ff;color:#4f46e5;font-size:.58rem;font-weight:900;text-transform:capitalize}.heatmap-weekdays,.heatmap-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.heatmap-weekdays{margin-bottom:5px}.heatmap-weekdays span{color:#9ca3af;text-align:center;font-size:.52rem;font-weight:900;text-transform:uppercase}.heatmap-day{position:relative;height:34px;display:grid;place-items:center;border-radius:.45rem;background:#e5e7eb;color:#6b7280;font-size:.58rem;font-weight:900;transition:.18s}.heatmap-day:hover{z-index:2;transform:scale(1.08);box-shadow:0 6px 14px rgba(15,23,42,.15)}.heatmap-day.level-1{background:#dbeafe;color:#1d4ed8}.heatmap-day.level-2{background:#93c5fd;color:#1e3a8a}.heatmap-day.level-3{background:#6366f1;color:#fff}.heatmap-day.level-4{background:#4338ca;color:#fff}.heatmap-day.outside-month{opacity:.32}.heatmap-day.is-today{outline:2px solid #f97316;outline-offset:2px}.heatmap-day b{position:absolute;top:2px;right:3px;min-width:13px;height:13px;display:grid;place-items:center;border-radius:999px;background:rgba(255,255,255,.9);color:#3730a3;font-size:.46rem}.heatmap-legend{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-top:auto;padding-top:12px;color:#9ca3af;font-size:.52rem}.heatmap-legend i{width:11px;height:11px;border-radius:3px;background:#e5e7eb}.heatmap-legend i:nth-of-type(2){background:#dbeafe}.heatmap-legend i:nth-of-type(3){background:#93c5fd}.heatmap-legend i:nth-of-type(4){background:#6366f1}.heatmap-legend i:nth-of-type(5){background:#4338ca}
+    .panel{border-color:#f3f4f6;border-radius:1rem;box-shadow:0 10px 24px rgba(15,23,42,.08);overflow:hidden}.panel-head{border-color:#f3f4f6;background:#fff}.panel-head h3{color:#1f2937}.panel-head span{color:#6b7280}
+    .control-alert{border-radius:.85rem;box-shadow:0 6px 16px rgba(15,23,42,.05);transition:.25s}.control-alert:hover{transform:translateY(-3px);box-shadow:0 12px 24px rgba(15,23,42,.1)}.control-alert i{border-radius:.65rem}.all-clear{border-radius:.85rem}
+    .followup-item{border-color:#e5e7eb;border-radius:.75rem;color:#374151;transition:.2s}.followup-item:hover{border-color:#c7d2fe;background:#eef2ff}.followup-item i{border-radius:.6rem;background:#eef2ff;color:#4f46e5}.followup-item strong{color:#1f2937}
+    .campaign-table th{background:#f9fafb;color:#6b7280}.campaign-table td{border-color:#f3f4f6;color:#4b5563}.campaign-table tbody tr{transition:.18s}.campaign-table tbody tr:hover{background:#f9fafb}.campaign-name{color:#1f2937}.campaign-client{color:#9ca3af}.manager-avatar{border-radius:.55rem;background:linear-gradient(135deg,#6366f1,#8b5cf6)}.status-badge{border-radius:999px}.status-badge.active{background:#dcfce7;color:#15803d}.status-badge.risk{background:#fee2e2;color:#b91c1c}.status-badge.paused{background:#fef3c7;color:#b45309}.status-badge.done{background:#f3f4f6;color:#4b5563}.progress-track{border-radius:999px;background:#e5e7eb}.progress-track i{border-radius:999px;background:linear-gradient(90deg,#3b82f6,#6366f1)}.table-action{border-radius:.55rem;background:#eef2ff;color:#4f46e5}.table-action:hover{background:#4f46e5;color:#fff}
+    .manager-row{border-color:#f3f4f6;border-radius:.65rem;padding:11px 8px}.manager-row:hover{background:#f9fafb}.manager-person .manager-avatar{background:linear-gradient(135deg,#3b82f6,#6366f1)}.manager-person strong,.finance-stat strong{color:#1f2937}.manager-stat small,.finance-stat small{color:#9ca3af}.finance-stat{border-radius:.65rem;background:#f9fafb}.chart-box{height:250px}.plan-income-track{border-radius:999px;background:#e5e7eb}.plan-income-track i{border-radius:999px;background:linear-gradient(90deg,#6366f1,#3b82f6)}.plan-summary{border:0;border-radius:.75rem;background:linear-gradient(135deg,#eef2ff,#f5f3ff)}.plan-summary b{color:#4f46e5}
+    .timeline-icon,.activity-icon{border-radius:.65rem}.timeline-item.deadline .timeline-icon{background:#fee2e2;color:#dc2626}.timeline-item.task .timeline-icon{background:#eef2ff;color:#4f46e5}.timeline-item.subscription .timeline-icon{background:#fef3c7;color:#d97706}.timeline-item.publication .timeline-icon{background:#dcfce7;color:#16a34a}.timeline-copy strong,.activity-copy strong{color:#1f2937}.timeline-copy small,.activity-copy span{color:#6b7280}.activity-item{border-color:#f3f4f6;border-radius:.65rem;padding:10px 8px}.activity-item:hover{background:#f9fafb}.activity-icon{background:#dcfce7;color:#16a34a}.activity-item.campaign .activity-icon{background:#ede9fe;color:#7c3aed}.activity-item.task .activity-icon{background:#dbeafe;color:#2563eb}
+    .ai-panel .panel-head i{border-radius:.7rem;background:linear-gradient(135deg,#06b6d4,#2563eb)}.ai-panel:nth-child(2) .panel-head i{background:linear-gradient(135deg,#8b5cf6,#db2777)}.ai-peak{border-radius:999px;background:#ecfeff;color:#0e7490}
+    /* Lienzo abierto: fondo blanco, banner completo y menos contenedores tipo tarjeta */
+    .admin-control{padding:0 0 48px;background:#fff}.admin-control-shell{width:100%;max-width:none}
+    .control-hero{width:100%;min-height:180px;align-items:center;padding:30px 48px;border-radius:0;background:linear-gradient(135deg,#4f46e5 25%,transparent 25%) -50px 0,linear-gradient(225deg,#4f46e5 25%,transparent 25%) -50px 0,linear-gradient(315deg,#4f46e5 25%,transparent 25%),linear-gradient(45deg,#4f46e5 25%,transparent 25%),linear-gradient(to bottom,#3b82f6 0%,#2563eb 100%);background-color:#1d4ed8;background-size:100px 100px,100px 100px,100px 100px,100px 100px,100% 100%;box-shadow:none}
+    .control-hero:after{pointer-events:none;inset:0;width:auto;height:auto;border:0;border-radius:0;background:linear-gradient(rgba(15,23,42,.22),rgba(15,23,42,.22)),radial-gradient(circle at 0% 0%,rgba(255,255,255,.2) 0%,transparent 50%),radial-gradient(circle at 100% 0%,rgba(255,255,255,.2) 0%,transparent 50%),radial-gradient(circle at 100% 100%,rgba(255,255,255,.2) 0%,transparent 50%),radial-gradient(circle at 0% 100%,rgba(255,255,255,.2) 0%,transparent 50%);background-repeat:no-repeat;background-position:0 0,0 0,100% 0,100% 100%,0 100%;background-size:100% 100%,50% 50%,50% 50%,50% 50%,50% 50%}
+    .control-hero-copy,.quick-actions{align-self:center}
+    .dashboard-section{margin:26px 24px 0}
+    .panel{overflow:visible;border:0;border-top:1px solid #e5e7eb;border-radius:0;box-shadow:none}.panel-head{padding:16px 0;border-bottom:1px solid #f3f4f6;background:transparent}.panel-body{padding:18px 0}
+    .followup-list{gap:0}.followup-item{padding:13px 4px;border:0;border-bottom:1px solid #f3f4f6;border-radius:0}.followup-item:hover{background:#f9fafb}
+    .campaign-table-wrap{border-bottom:1px solid #e5e7eb}.manager-row{border-radius:0}.finance-stat{border-radius:0;border-left:3px solid #c7d2fe;background:#f9fafb}.plan-summary{border-radius:0}
+    .timeline-item,.activity-item{border-radius:0}.ai-panel{overflow:hidden;border:1px solid #f3f4f6;border-radius:1rem;box-shadow:0 10px 24px rgba(15,23,42,.08)}.ai-panel .panel-head{padding:16px 18px}.ai-panel .panel-body{padding:18px}
+    /* Métricas compactas inspiradas en el panel de referencia */
+    .kpi-card{min-height:118px;display:flex;flex-direction:column;justify-content:space-between;padding:14px 15px;border:1px solid #eeeee5;border-radius:.85rem;background:#fdfdf8;box-shadow:0 5px 14px rgba(54,58,39,.065)}
+    .kpi-card:hover{transform:translateY(-3px);border-color:#e2e4d5;box-shadow:0 12px 24px rgba(54,58,39,.11)}
+    .kpi-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.kpi-top span{min-width:0;margin:0;overflow:hidden;color:#45463f;font-size:.63rem;font-weight:800;text-overflow:ellipsis;white-space:nowrap}.kpi-open{width:24px;height:24px;display:grid;place-items:center;flex:0 0 auto;border:1px solid #ecece3;border-radius:50%;background:#fff;color:#66695c;font-size:.55rem;box-shadow:0 2px 6px rgba(54,58,39,.06);transform:rotate(45deg)}
+    .kpi-body{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:13px}.kpi-copy{min-width:0}.kpi-card .kpi-copy strong{color:#22231f;font-size:1.52rem;font-weight:500;letter-spacing:-.045em;white-space:nowrap}.kpi-card .kpi-copy small{max-width:115px;margin-top:5px;overflow:hidden;color:#9a9b91;font-size:.55rem;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
+    .kpi-visual{height:46px;min-width:61px;display:flex;align-items:flex-end;justify-content:flex-end;gap:3px;padding:5px 6px;border-radius:.7rem;background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 10%,#fff),#fff);overflow:hidden}.kpi-visual i{width:5px;border-radius:4px 4px 1px 1px;background:var(--accent);opacity:.92}.kpi-visual i:nth-child(1){height:25%}.kpi-visual i:nth-child(2){height:48%;opacity:.68}.kpi-visual i:nth-child(3){height:76%}.kpi-visual i:nth-child(4){height:56%;opacity:.7}.kpi-visual i:nth-child(5){height:92%}.kpi-risk .kpi-visual i:nth-child(1),.kpi-risk .kpi-visual i:nth-child(5){height:82%}.kpi-tasks .kpi-visual i:nth-child(1){height:90%}.kpi-tasks .kpi-visual i:nth-child(2){height:68%}.kpi-tasks .kpi-visual i:nth-child(3){height:48%}.kpi-tasks .kpi-visual i:nth-child(4){height:32%}.kpi-tasks .kpi-visual i:nth-child(5){height:18%}.kpi-income .kpi-visual i:nth-child(1){height:20%}.kpi-income .kpi-visual i:nth-child(2){height:38%}.kpi-income .kpi-visual i:nth-child(3){height:54%}.kpi-income .kpi-visual i:nth-child(4){height:72%}.kpi-income .kpi-visual i:nth-child(5){height:94%}
+    /* Identidad visual PRODOVI para las métricas */
+    .kpi-card{--accent:#117e8c;--soft:#e6f4f5;--accent-rgb:17,126,140;position:relative;isolation:isolate;overflow:hidden;min-height:132px;padding:16px 17px;border:1px solid rgba(var(--accent-rgb),.22);border-radius:1rem;background:linear-gradient(135deg,#fff 35%,var(--soft));box-shadow:inset 0 4px 0 var(--accent),0 10px 24px rgba(45,66,34,.09);transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+    .kpi-card:before{content:'';position:absolute;z-index:-1;top:-45px;right:-38px;width:125px;height:125px;border:22px solid rgba(var(--accent-rgb),.09);border-radius:50%}.kpi-card:after{content:'';position:absolute;z-index:-1;right:12px;bottom:6px;width:86px;height:44px;opacity:.2;background-image:radial-gradient(circle,var(--accent) 1.4px,transparent 1.6px);background-size:9px 9px;transform:rotate(-5deg)}.kpi-card:hover{transform:translateY(-5px);border-color:rgba(var(--accent-rgb),.38);box-shadow:inset 0 4px 0 var(--accent),0 17px 32px rgba(var(--accent-rgb),.16)}
+    .kpi-card>*{position:relative;z-index:1}.kpi-top span{color:#50594a;font-weight:900;letter-spacing:.025em;text-transform:uppercase}.kpi-open{width:26px;height:26px;border-color:rgba(var(--accent-rgb),.2);color:var(--accent);box-shadow:0 3px 8px rgba(var(--accent-rgb),.12);transition:.22s}.kpi-card:hover .kpi-open{transform:rotate(45deg) scale(1.08)}.kpi-card .kpi-copy strong{color:#263024;font-size:1.65rem;font-weight:900}.kpi-card .kpi-copy small{max-width:145px;margin-top:6px;color:#7f8878;font-weight:650}
+    .kpi-visual{height:50px;min-width:64px;justify-content:center;gap:4px;padding:8px;border:1px solid rgba(255,255,255,.55);border-radius:.8rem;background:var(--accent);box-shadow:0 8px 17px rgba(var(--accent-rgb),.25),inset 0 1px 0 rgba(255,255,255,.28);transition:transform .22s}.kpi-card:hover .kpi-visual{transform:rotate(-4deg) scale(1.04)}.kpi-visual i{background:#fff}
+    .kpi-campaigns{--accent:#117e8c;--soft:#e6f4f5;--accent-rgb:17,126,140}.kpi-clients{--accent:#7da533;--soft:#f0f6e7;--accent-rgb:125,165,51}.kpi-tasks{--accent:#e3a122;--soft:#fff6df;--accent-rgb:227,161,34}.kpi-payments{--accent:#e37225;--soft:#fff0e6;--accent-rgb:227,114,37}.kpi-expiring{--accent:#117e8c;--soft:#e6f4f5;--accent-rgb:17,126,140}.kpi-income{--accent:#7da533;--soft:#f0f6e7;--accent-rgb:125,165,51}
+    .kpi-followup-layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(360px,.7fr);gap:18px;align-items:stretch}.kpi-followup-layout .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));align-content:start}
+    .client-followup-card{position:relative;overflow:hidden;display:flex;flex-direction:column;padding:21px;border:1px solid #eee8f0;border-radius:1rem;background:#fff;color:#302832;box-shadow:0 9px 22px rgba(61,23,79,.07)}.client-followup-head{position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:16px}.client-followup-head small{display:block;color:#817786;font-size:.57rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.client-followup-head h3{margin:4px 0 0;color:#302832;font-size:1rem;font-weight:900}.client-followup-head h3:after,.workload-chart-head h2:after,.finance-dashboard-card .panel-head h3:after{content:'';display:block;width:44px;height:3px;margin-top:7px;border-radius:999px;background:var(--ad-turquoise)}.client-followup-head>a{display:inline-flex;align-items:center;gap:6px;padding:7px 9px;border:1px solid #e5e7eb;border-radius:.55rem;background:#f9fafb;color:#4f4653;font-size:.58rem;font-weight:900}.client-followup-head>a:hover{background:var(--ad-orange);border-color:var(--ad-orange);color:#fff}
+    .client-followup-card .followup-list{position:relative;z-index:1;display:grid;gap:9px;margin-top:auto}.client-followup-card .followup-item{--follow-accent:var(--ad-turquoise);min-height:58px;display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:11px;padding:10px 12px;border:1px solid #e5e7eb;border-radius:.75rem;background:#f9fafb;color:#374151}.client-followup-card .followup-item:nth-child(2){--follow-accent:var(--ad-orange)}.client-followup-card .followup-item:nth-child(3){--follow-accent:var(--ad-green)}.client-followup-card .followup-item:nth-child(4){--follow-accent:#d69ce9}.client-followup-card .followup-item:hover{border-color:#d1d5db;background:#f3f4f6;transform:translateX(3px)}.client-followup-card .followup-item i{width:38px;height:38px;display:grid;place-items:center;border-radius:.65rem;background:var(--follow-accent);color:#fff}.client-followup-card .followup-item span{margin:0;color:#4b5563;font-size:.65rem;font-weight:800}.client-followup-card .followup-item strong{min-width:28px;color:#1f2937;font-size:1.08rem;text-align:right}
+    .workload-chart-panel{padding:22px 24px;border:1px solid #eee8f0;border-radius:1rem;background:linear-gradient(135deg,#fff 0%,#fbf8fc 58%,#f2fbfa 100%);box-shadow:0 9px 22px rgba(61,23,79,.07)}.workload-chart-head{margin-bottom:12px}.workload-chart-head h2{margin:0;color:#302832;font-size:1.05rem;font-weight:900}.workload-chart-box{position:relative;min-height:240px}
+    .workload-finance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:stretch}.workload-finance-grid>*{min-width:0}.finance-dashboard-card{overflow:hidden;border:1px solid #eee8f0;border-radius:1rem;background:linear-gradient(135deg,#fff 0%,#fbf8fc 58%,#f2fbfa 100%);box-shadow:0 9px 22px rgba(61,23,79,.07)}.finance-dashboard-card .panel-head{padding:22px 24px 0;border:0}.finance-dashboard-card .panel-head h3{color:#302832;font-size:1.05rem}.finance-dashboard-card .panel-head .section-link{padding:7px 10px;border-radius:999px;background:#f0e8f4;color:var(--ad-purple)}.finance-dashboard-card .panel-head .section-link:hover{background:var(--ad-purple);color:#fff}.finance-dashboard-card .panel-body{padding:18px 24px 22px}.finance-dashboard-card .finance-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.finance-dashboard-card .finance-stat{border:0;border-radius:.75rem;background:#f0e8f4}.finance-dashboard-card .finance-stat:nth-child(2){background:#e4f3f4}.finance-dashboard-card .finance-stat:nth-child(1) strong{color:var(--ad-purple)}.finance-dashboard-card .finance-stat:nth-child(2) strong{color:var(--ad-turquoise)}.income-plan-controls{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin:10px 0 2px}.income-plan-control{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid #e8e0eb;border-radius:999px;background:#fff;color:#4f4653;font-size:.57rem;font-weight:800;cursor:pointer;transition:.18s}.income-plan-control:hover{border-color:#cdbbd4;background:#faf7fb}.income-plan-control input{width:13px;height:13px;margin:0;cursor:pointer}.income-plan-dot{width:8px;height:8px;flex:0 0 auto;border-radius:50%}.income-plan-control.is-hidden .income-plan-name{text-decoration:line-through;opacity:.5}.income-plan-control.is-hidden .income-plan-dot{opacity:.35}.finance-dashboard-card .plan-income-track i{background:linear-gradient(90deg,var(--ad-purple),var(--ad-turquoise))}.finance-dashboard-card .plan-summary{background:linear-gradient(135deg,#f0e8f4,#eaf7f6)}.finance-dashboard-card .plan-summary b{color:var(--ad-orange)}
+    .income-plan-controls:empty{display:none}
+    .campaign-insights-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:stretch}.campaign-flow-card,.campaign-insights-grid .delivery-heatmap{min-width:0;padding:22px 24px;border:1px solid #eee8f0;border-radius:1rem;background:linear-gradient(135deg,#fff 0%,#fbf8fc 58%,#f2fbfa 100%);box-shadow:0 9px 22px rgba(61,23,79,.07)}.campaign-insight-head,.campaign-insights-grid .heatmap-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}.campaign-insight-head h2,.campaign-insights-grid .heatmap-head h3{margin:0;color:#302832;font-size:1.05rem;font-weight:900}.campaign-insight-head h2:after,.campaign-insights-grid .heatmap-head h3:after{content:'';display:block;width:44px;height:3px;margin-top:7px;border-radius:999px;background:var(--ad-turquoise)}.campaign-insight-head span{color:#817786;font-size:.62rem}.campaign-donut-layout{display:grid;grid-template-columns:minmax(180px,.8fr) minmax(190px,1fr);align-items:center;gap:20px}.campaign-donut-box{position:relative;height:230px}.campaign-donut-center{pointer-events:none;position:absolute;inset:50% auto auto 50%;transform:translate(-50%,-50%);text-align:center}.campaign-donut-center strong{display:block;color:var(--ad-purple);font-size:1.65rem;font-weight:900}.campaign-donut-center span{display:block;margin-top:3px;color:#8b818f;font-size:.56rem;font-weight:800;text-transform:uppercase}.campaign-flow-legend{display:grid;gap:8px}.campaign-flow-legend-item{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;gap:9px;padding:8px 10px;border-radius:.65rem;background:rgba(255,255,255,.72);color:#5d5361;font-size:.62rem;font-weight:800}.campaign-flow-legend-item i{width:9px;height:9px;border-radius:50%;background:var(--flow-color)}.campaign-flow-legend-item strong{color:#302832;font-size:.78rem}.campaign-insights-grid .delivery-heatmap{display:flex;flex-direction:column}.campaign-insights-grid .heatmap-head small{color:var(--ad-turquoise)}.campaign-insights-grid .heatmap-month{background:#e4f3f4;color:var(--ad-turquoise)}.campaign-insights-grid .heatmap-day.level-1{background:#dceff1;color:#0f6e79}.campaign-insights-grid .heatmap-day.level-2{background:#8cc9ce;color:#24484c}.campaign-insights-grid .heatmap-day.level-3{background:var(--ad-turquoise);color:#fff}.campaign-insights-grid .heatmap-day.level-4{background:var(--ad-purple);color:#fff}.campaign-insights-grid .heatmap-day.is-today{outline-color:var(--ad-orange)}.campaign-insights-grid .heatmap-legend i:nth-of-type(2){background:#dceff1}.campaign-insights-grid .heatmap-legend i:nth-of-type(3){background:#8cc9ce}.campaign-insights-grid .heatmap-legend i:nth-of-type(4){background:var(--ad-turquoise)}.campaign-insights-grid .heatmap-legend i:nth-of-type(5){background:var(--ad-purple)}
+    .heatmap-month-nav{display:flex;align-items:center;gap:5px}.heatmap-nav-button{width:27px;height:27px;display:grid;place-items:center;border:1px solid #d9e8e9;border-radius:50%;background:#fff;color:var(--ad-turquoise);font-size:.58rem;transition:.18s}.heatmap-nav-button:hover{border-color:var(--ad-turquoise);background:var(--ad-turquoise);color:#fff}.heatmap-nav-button.is-disabled{cursor:not-allowed;opacity:.35}.heatmap-month-nav .heatmap-month{min-width:92px;text-align:center}
+    .campaign-monitoring-card{overflow:hidden;border:1px solid #e2ead5;border-radius:1rem;background:#fff;box-shadow:0 9px 22px rgba(72,97,34,.08)}.campaign-monitoring-card .campaign-table-wrap{border:0}.campaign-monitoring-card .campaign-table th{padding:13px 14px;border-right:1px solid rgba(255,255,255,.28);background:var(--ad-green);color:#fff}.campaign-monitoring-card .campaign-table th:last-child,.campaign-monitoring-card .campaign-table td:last-child{border-right:0}.campaign-monitoring-card .campaign-table td{border-top:1px solid #dfe8d1;border-right:1px solid #d8e3c7;color:#494f40}.campaign-monitoring-card .campaign-table tbody tr:nth-child(odd){background:#fff}.campaign-monitoring-card .campaign-table tbody tr:nth-child(even){background:#f1f7e8}.campaign-monitoring-card .campaign-table tbody tr:hover{background:#e6f0d8}.campaign-monitoring-card .progress-track i{background:linear-gradient(90deg,var(--ad-green),var(--ad-turquoise))}.campaign-monitoring-card .table-action{background:#edf4e4;color:#62872a}.campaign-monitoring-card .table-action:hover{background:var(--ad-green);color:#fff}
+    .updates-grid{gap:18px;align-items:stretch}.updates-card{overflow:hidden!important;border:1px solid #eee8f0!important;border-top:1px solid #eee8f0!important;border-radius:1rem!important;background:linear-gradient(135deg,#fff 0%,#fbf8fc 58%,#f2fbfa 100%)!important;box-shadow:0 9px 22px rgba(61,23,79,.07)!important}.updates-card .panel-head{padding:20px 22px 14px;border-bottom:1px solid #ece7ee;background:transparent}.updates-card .panel-head h3{color:#302832;font-size:1.02rem}.updates-card .panel-head h3:after{content:'';display:block;width:44px;height:3px;margin-top:7px;border-radius:999px;background:var(--ad-turquoise)}.updates-card .panel-head span{color:#817786}.updates-card .panel-body{padding:10px 22px 18px}.updates-card .timeline-item{min-height:58px;padding:9px 5px;border-radius:.65rem;color:#4b424f}.updates-card .timeline-item:hover{background:rgba(255,255,255,.75)}.updates-card .timeline-item:not(:last-child):after{top:42px;bottom:-10px;left:80px;width:2px;background:linear-gradient(var(--ad-turquoise),#dcebea)}.updates-card .timeline-date strong{color:var(--ad-purple)}.updates-card .timeline-icon{border-radius:50%;background:#e4f3f4;color:var(--ad-turquoise);box-shadow:0 0 0 4px #fff}.updates-card .timeline-item.deadline .timeline-icon{background:#fff0e7;color:var(--ad-orange)}.updates-card .timeline-item.task .timeline-icon{background:#f0e8f4;color:var(--ad-purple)}.updates-card .timeline-item.subscription .timeline-icon{background:#edf4e4;color:var(--ad-green)}.updates-card .timeline-item.publication .timeline-icon{background:#e4f3f4;color:var(--ad-turquoise)}.updates-card .activity-list{display:grid;gap:0}.updates-card .activity-item{padding:11px 7px;border-bottom:1px solid #ebe7ed;border-radius:.6rem;color:#4b424f}.updates-card .activity-item:hover{background:rgba(255,255,255,.78)}.updates-card .activity-icon{background:#e4f3f4;color:var(--ad-turquoise)}.updates-card .activity-item.campaign .activity-icon{background:#f0e8f4;color:var(--ad-purple)}.updates-card .activity-item.task .activity-icon{background:#edf4e4;color:var(--ad-green)}
+    .ai-section-title{margin:0 0 14px;color:#302832;font-size:1.08rem;font-weight:900}.ai-section-title:after{content:'';display:block;width:44px;height:3px;margin-top:7px;border-radius:999px;background:var(--ad-turquoise)}.ai-panel{overflow:hidden!important;border:1px solid #eee8f0!important;border-top:1px solid #eee8f0!important;border-radius:1rem!important;background:linear-gradient(135deg,#fff 0%,#fbf8fc 58%,#f2fbfa 100%)!important;box-shadow:0 9px 22px rgba(61,23,79,.07)!important}.ai-panel .panel-head{padding:19px 22px 14px;border-bottom:1px solid #ece7ee;background:transparent}.ai-panel .panel-head h3{color:#302832;font-size:.9rem}.ai-panel .panel-head span{color:#817786}.ai-panel .panel-head i{border-radius:.7rem;background:var(--ad-turquoise)!important;color:#fff}.ai-panel:nth-child(2) .panel-head i{background:var(--ad-purple)!important}.ai-panel .panel-body{padding:18px 22px 20px}.ai-panel .chart-box{height:240px}.ai-note{padding-top:9px;border-top:1px solid #ece7ee}.ai-peak{background:#e4f3f4;color:var(--ad-turquoise)}.ai-panel:nth-child(2) .ai-peak{background:#f0e8f4;color:var(--ad-purple)}
+    @media(max-width:1250px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.alert-grid{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:980px){.control-hero{min-height:205px;align-items:center;justify-content:center;flex-direction:column;text-align:center}.quick-actions{justify-content:center}.kpi-heatmap-layout,.kpi-followup-layout,.workload-finance-grid,.campaign-insights-grid,.split-grid,.ai-grid{grid-template-columns:1fr}.alert-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:640px){.admin-control{padding:0 0 34px}.control-hero{padding:24px 20px}.dashboard-section{margin-right:12px;margin-left:12px}.kpi-grid,.kpi-heatmap-layout .kpi-grid,.kpi-followup-layout .kpi-grid,.alert-grid{grid-template-columns:1fr}.quick-actions{width:100%}.quick-action{flex:1;justify-content:center}.manager-row{grid-template-columns:minmax(0,1fr) repeat(3,56px)}.manager-stat small{font-size:.45rem}.finance-summary{grid-template-columns:1fr}.section-heading{align-items:flex-start;flex-direction:column}.delivery-heatmap{padding:14px}.heatmap-day{height:31px}.client-followup-card,.workload-chart-panel,.campaign-flow-card,.campaign-insights-grid .delivery-heatmap{padding:17px}.finance-dashboard-card .panel-head{padding:17px 17px 0}.finance-dashboard-card .panel-body{padding:16px 17px 17px}.workload-chart-head{flex-direction:column}.workload-chart-box{overflow-x:auto}.workload-chart-box canvas{min-width:560px}.campaign-donut-layout{grid-template-columns:1fr}.campaign-donut-box{height:210px}}
+</style>
+@endpush
 
 @section('content')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <div class="min-h-screen bg-blue-50">
-        <div class="relative overflow-hidden">
-            
+@php
+    $pipelineTotal = array_sum($pipeline);
+@endphp
+<div class="admin-control">
+    <div class="admin-control-shell">
+        <header class="control-hero">
+            <div class="control-hero-copy">
+                <span class="control-eyebrow">Dashboard administrativo</span>
+                <h1>Centro de control operativo</h1>
+            </div>
+            <div class="quick-actions" aria-label="Acciones rápidas">
+                <a class="quick-action primary" href="{{ route('administrador.campañas.index') }}"><i class="fas fa-plus"></i>Nueva campaña</a>
+                <a class="quick-action" href="{{ route('administrador.pagos.manual.crear') }}"><i class="fas fa-cash-register"></i>Registrar pago</a>
+                <a class="quick-action" href="{{ route('administrador.pagos.pendientes-fisicos') }}"><i class="fas fa-receipt"></i>Revisar pendientes</a>
+            </div>
+        </header>
 
-            <div class="relative z-10 p-6 max-w-7xl mx-auto">
-                @if (session('success'))
-                    <div class="mb-6 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm font-medium text-green-800 shadow-sm">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if (session('error'))
-                    <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-800 shadow-sm">
-                        {{ session('error') }}
-                    </div>
-                @endif
-
-           
-                 <!-- Sección de Estadísticas de IA -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-
-                    <!-- Predicción de Horarios Óptimos de Publicación -->
-                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="bg-gradient-to-br from-cyan-500 to-blue-600 p-2.5 rounded-xl">
-                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-gray-800">Predicción de Horarios de Publicación</h3>
-                                <p class="text-xs text-gray-500">Modelo LSTM — Engagement estimado para Facebook</p>
-                            </div>
-                        </div>
-                        <div style="position:relative; height:280px; width:100%;">
-                            <canvas id="engagementChart"></canvas>
-                        </div>
-                        <div class="mt-4 flex items-center justify-between text-xs text-gray-500">
-                            <div class="flex items-center gap-4">
-                                <span class="flex items-center gap-1">
-                                    <span class="w-3 h-0.5 bg-blue-500 rounded"></span> Datos reales
-                                </span>
-                                <span class="flex items-center gap-1">
-                                    <span class="w-3 h-0.5 bg-emerald-500 rounded" style="border-bottom:2px dashed #10b981"></span> Predicción LSTM
-                                </span>
-                            </div>
-                            <span id="lstmPeakText" class="bg-cyan-50 text-cyan-700 px-2 py-0.5 rounded-full font-medium">Cargando picos LSTM...</span>
-                        </div>
-                        <p class="mt-2 text-xs text-gray-500">Prediccion basada en modelo LSTM entrenado con patrones temporales de publicaciones en Facebook.</p>
-                    </div>
-
-                    <!-- Evaluación de Rendimiento del Modelo PLN -->
-                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="bg-gradient-to-br from-purple-500 to-pink-600 p-2.5 rounded-xl">
-                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-gray-800">Evaluación del Modelo PLN</h3>
-                                <p class="text-xs text-gray-500">Métricas de rendimiento del procesamiento de lenguaje</p>
-                            </div>
-                        </div>
-                        <div style="position:relative; height:280px; width:100%;">
-                            <canvas id="radarPlnChart"></canvas>
-                        </div>
-                        <div class="mt-4 grid grid-cols-5 gap-2 text-center">
-                            <div>
-                                <p class="text-lg font-bold text-indigo-600">85%</p>
-                                <p class="text-[10px] text-gray-500 leading-tight">Coherencia</p>
-                            </div>
-                            <div>
-                                <p class="text-lg font-bold text-blue-600">88%</p>
-                                <p class="text-[10px] text-gray-500 leading-tight">Relevancia</p>
-                            </div>
-                            <div>
-                                <p class="text-lg font-bold text-cyan-600">90%</p>
-                                <p class="text-[10px] text-gray-500 leading-tight">Fluidez</p>
-                            </div>
-                            <div>
-                                <p class="text-lg font-bold text-teal-600">80%</p>
-                                <p class="text-[10px] text-gray-500 leading-tight">Diversidad</p>
-                            </div>
-                            <div>
-                                <p class="text-lg font-bold text-purple-600">87%</p>
-                                <p class="text-[10px] text-gray-500 leading-tight">Precisión</p>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-                <!-- Sección de Estadísticas Principales -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    
-                    <!-- Campañas Activas -->
-                    <a href="{{ route('administrador.campañas.index') }}" class="card-hover">
-                        <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 h-full">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="bg-orange-100 p-3 rounded-xl">
-                                    <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
-                                    </svg>
-                                </div>
-                                <span class="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-1 rounded-full">Ver
-                                    todas</span>
-                            </div>
-                            <h3 class="text-3xl font-bold text-gray-800 mb-1">{{ $activeCampaigns }}</h3>
-                            <p class="text-gray-600 font-medium">Campañas Activas</p>
-                        </div>
-                    </a>
-
-                    <!-- Usuarios Registrados -->
-                    <a href="{{ route('administrador.usuarios.index') }}" class="card-hover">
-                        <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 h-full">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="bg-blue-100 p-3 rounded-xl">
-                                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13.5 5.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z">
-                                        </path>
-                                    </svg>
-                                </div>
-                                <span class="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">Ver
-                                    todos</span>
-                            </div>
-                            <h3 class="text-3xl font-bold text-gray-800 mb-1">{{ $totalUsers }}</h3>
-                            <p class="text-gray-600 font-medium">Usuarios Registrados</p>
-                        </div>
-                    </a>
-
-                    <!-- Empresas Registradas -->
-                    <a href="#" class="card-hover">
-                        <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 h-full">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="bg-purple-100 p-3 rounded-xl">
-                                    <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                                        </path>
-                                    </svg>
-                                </div>
-                                <span class="text-xs font-semibold text-purple-600 bg-purple-100 px-2 py-1 rounded-full">Ver
-                                    todas</span>
-                            </div>
-                            <h3 class="text-3xl font-bold text-gray-800 mb-1">{{ $totalCompanies }}</h3>
-                            <p class="text-gray-600 font-medium">Empresas Registradas</p>
-                        </div>
-                    </a>
-
-                    <!-- Ingresos Mensuales -->
-                    <a href="{{ route('administrador.pagos.index') }}" class="card-hover">
-                        <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 h-full">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="bg-green-100 p-3 rounded-xl">
-                                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                                        </path>
-                                    </svg>
-                                </div>
-                                <span class="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full">Ver
-                                    detalles</span>
-                            </div>
-                            <h3 class="text-3xl font-bold text-gray-800 mb-1">
-                                {{ number_format($currentMonthIncome, 2, ',', '.') }}Bs</h3>
-                            <p class="text-gray-600 font-medium">Ingresos Mensuales</p>
-                            <div class="mt-2">
-                                @if($monthlyIncomeChangePercentage !== null)
-                                    @if($monthlyIncomeChangePercentage > 0)
-                                        <span class="text-xs text-green-600 font-semibold">
-                                            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                                            </svg>
-                                            +{{ round($monthlyIncomeChangePercentage, 1) }}% vs mes anterior
-                                        </span>
-                                    @else
-                                        <span class="text-xs text-red-600 font-semibold">
-                                            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
-                                            </svg>
-                                            {{ round(abs($monthlyIncomeChangePercentage), 1) }}% vs mes anterior
-                                        </span>
-                                    @endif
-                                @else
-                                    <span class="text-xs text-gray-500 font-semibold">
-                                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        Sin datos del mes anterior
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                                <!-- GrÃ¡ficos en una sola fila -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                    <!-- GrÃ¡fico Mensual -->
-                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                        <h3 class="text-xl font-bold text-gray-800 mb-4">Ingresos Mensuales</h3>
-                        <div class="chart-container">
-                            <canvas id="monthlyChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Gráfico de Dona - Distribución de Pagos -->
-                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                        <h3 class="text-xl font-bold text-gray-800 mb-4">Distribución de Pagos</h3>
-                        <div class="chart-container-donut">
-                            <canvas id="donutChart"></canvas>
-                        </div>
-                        <div class="mt-4 text-center">
-                            <div class="flex justify-center space-x-4">
-                                <div class="flex items-center">
-                                    <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                                    <span class="text-sm text-gray-600">Activos ({{ $countActivos }})</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-                                    <span class="text-sm text-gray-600">Pendientes ({{ $countPendientes }})</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <div class="w-3 h-3 bg-gray-500 rounded-full mr-2"></div>
-                                    <span class="text-sm text-gray-600">Finalizados ({{ $countFinalizados }})</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Gráfico Anual -->
-                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                        <h3 class="text-xl font-bold text-gray-800 mb-4">Ingresos Anuales</h3>
-                        <div class="chart-container-small">
-                            <canvas id="yearlyChart"></canvas>
-                        </div>
-                    </div>
+        <section class="dashboard-section" aria-label="Indicadores principales y seguimiento de clientes">
+            <div class="kpi-followup-layout">
+                <div class="kpi-grid">
+                    <a class="kpi-card kpi-campaigns" href="{{ route('administrador.campañas.index') }}"><div class="kpi-top"><span>Campañas en curso</span><i class="kpi-open fas fa-arrow-up"></i></div><div class="kpi-body"><div class="kpi-copy"><strong>{{ $activeCampaigns }}</strong><small>Dentro del cronograma actual</small></div><div class="kpi-visual" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div></a>
+                    <a class="kpi-card kpi-clients" href="{{ route('administrador.campañas.index') }}"><div class="kpi-top"><span>Clientes sin campaña</span><i class="kpi-open fas fa-arrow-up"></i></div><div class="kpi-body"><div class="kpi-copy"><strong>{{ $clientsWithoutCampaign }}</strong><small>Con plan activo y empresa registrada</small></div><div class="kpi-visual" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div></a>
+                    <a class="kpi-card kpi-tasks" href="#campaign-monitoring"><div class="kpi-top"><span>Tareas que vencen hoy</span><i class="kpi-open fas fa-arrow-up"></i></div><div class="kpi-body"><div class="kpi-copy"><strong>{{ $tasksDueToday }}</strong><small>{{ $overdueTasks }} vencidas acumuladas</small></div><div class="kpi-visual" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div></a>
+                    <a class="kpi-card kpi-payments" href="{{ route('administrador.pagos.pendientes-fisicos') }}"><div class="kpi-top"><span>Pagos pendientes</span><i class="kpi-open fas fa-arrow-up"></i></div><div class="kpi-body"><div class="kpi-copy"><strong>{{ $pendingPayments }}</strong><small>Requieren validación manual</small></div><div class="kpi-visual" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div></a>
+                    <a class="kpi-card kpi-expiring" href="{{ route('administrador.pagos.index', ['payment_status' => 'completado', 'subscription_status' => 'activa']) }}"><div class="kpi-top"><span>Suscripciones por vencer</span><i class="kpi-open fas fa-arrow-up"></i></div><div class="kpi-body"><div class="kpi-copy"><strong>{{ $expiringSubscriptions }}</strong><small>Durante los próximos 7 días</small></div><div class="kpi-visual" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div></a>
+                    <a class="kpi-card kpi-income" href="{{ route('administrador.pagos.index') }}"><div class="kpi-top"><span>Ingresos del mes</span><i class="kpi-open fas fa-arrow-up"></i></div><div class="kpi-body"><div class="kpi-copy"><strong>{{ number_format($currentMonthIncome,0,',','.') }} Bs</strong><small>{{ $completedPaymentsThisMonth }} pagos completados</small></div><div class="kpi-visual" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div></a>
                 </div>
 
-                <!-- Sección de Suscripciones -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <!-- Suscripciones Activas -->
-                    <div
-                        class="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1">
-                        <div class="bg-gradient-to-r from-green-500 to-green-600 h-2"></div>
-                        <div class="p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="bg-green-100 rounded-full p-3">
-                                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-3xl font-bold text-gray-800">{{ $countActivos }}</div>
-                                </div>
-                            </div>
-                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Suscripciones Activas</h3>
-                            <p class="text-gray-600 text-sm mb-4">Usuarios con pagos al día</p>
-                            <a href="{{ route('administrador.pagos.realizados') }}"
-                                class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors duration-200">
-                                <i class="fas fa-eye mr-2"></i>
-                                Ver detalles
-                            </a>
-                        </div>
+                <aside class="client-followup-card" aria-labelledby="client-followup-title">
+                    <div class="client-followup-head">
+                        <div><h3 id="client-followup-title">Seguimiento de clientes</h3></div>
+                        <a href="{{ route('administrador.usuarios.index') }}">Ver clientes <i class="fas fa-arrow-right"></i></a>
                     </div>
-
-                    <!-- Pagos Pendientes -->
-                    <div
-                        class="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1">
-                        <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 h-2"></div>
-                        <div class="p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="bg-yellow-100 rounded-full p-3">
-                                    <i class="fas fa-clock text-yellow-600 text-xl"></i>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-3xl font-bold text-gray-800">{{ $countPendientes }}</div>
-                                </div>
-                            </div>
-                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Pagos Pendientes</h3>
-                            <p class="text-gray-600 text-sm mb-4">Requieren atención inmediata</p>
-                            <a href="{{ route('administrador.pagos.pendientes-fisicos') }}"
-                                class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors duration-200">
-                                <i class="fas fa-clock mr-2"></i>
-                                Ver detalles
-                            </a>
-                        </div>
+                    <div class="followup-list">
+                        <a class="followup-item" href="{{ route('administrador.campañas.index') }}"><i class="fas fa-bullhorn"></i><span>Con plan activo y sin campaña</span><strong>{{ $clientsWithoutCampaign }}</strong></a>
+                        <a class="followup-item" href="{{ route('administrador.empresas.index') }}"><i class="fas fa-building"></i><span>Con plan activo y sin empresa</span><strong>{{ $clientsWithoutCompany }}</strong></a>
+                        <a class="followup-item" href="{{ route('administrador.empresas.index') }}"><i class="fas fa-share-nodes"></i><span>Empresas sin redes vinculadas</span><strong>{{ $companiesWithoutSocial }}</strong></a>
+                        <a class="followup-item" href="{{ route('administrador.campañas.index') }}"><i class="fas fa-clock-rotate-left"></i><span>Clientes sin actividad en 7 días</span><strong>{{ $clientsWithoutRecentActivity }}</strong></a>
                     </div>
+                </aside>
+            </div>
+        </section>
 
-                    <!-- Finalizados/Cancelados -->
-                    <div
-                        class="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1">
-                        <div class="bg-gradient-to-r from-gray-500 to-gray-600 h-2"></div>
-                        <div class="p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="bg-gray-100 rounded-full p-3">
-                                    <i class="fas fa-archive text-gray-600 text-xl"></i>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-3xl font-bold text-gray-800">{{ $countFinalizados }}</div>
-                                </div>
-                            </div>
-                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Finalizados/Cancelados</h3>
-                            <p class="text-gray-600 text-sm mb-4">Suscripciones completadas</p>
-                            <a href="{{ route('administrador.pagos.finalizados') }}"
-                                class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors duration-200">
-                                <i class="fas fa-archive mr-2"></i>
-                                Ver detalles
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-
-
-
-
-
-
-                <!-- Plan Más Contratado -->
-                <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 mb-8">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">Plan más contratado</h3>
-                    @if($mostContractedPlan)
-                        <div class="text-center">
-                            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-6 text-white mb-4">
-                                <h4 class="text-2xl font-bold mb-2">{{ $mostContractedPlan->nombre }}</h4>
-                                <p class="text-3xl font-bold">{{ number_format($mostContractedPlan->precio, 2, ',', '.') }}Bs
-                                </p>
-                                <p class="text-sm opacity-90 mt-2">{{ $mostContractedPlan->subtitulo }}</p>
-                            </div>
-                            <p class="text-gray-600">
-                                <span class="font-bold">{{ $mostContractedPlan->activas_count }}</span> suscripciones
-                                activas
-                            </p>
+        <section class="dashboard-section" aria-labelledby="workload-chart-title">
+            <div class="workload-finance-grid">
+                <div class="workload-chart-panel">
+                    <div class="workload-chart-head"><h2 id="workload-chart-title">Campañas asignadas por Community Manager</h2></div>
+                    @if($managerWorkload->isNotEmpty())
+                        <div class="workload-chart-box" style="height:{{ max(240, $managerWorkload->count() * 52 + 60) }}px">
+                            <canvas id="managerWorkloadChart" aria-label="Gráfica horizontal de campañas asignadas por Community Manager" role="img"></canvas>
                         </div>
                     @else
-                        <div class="text-center text-gray-500">
-                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                </path>
-                            </svg>
-                            <p>No hay planes contratados aún</p>
-                        </div>
+                        <div class="empty-state"><i class="fas fa-users"></i><p>No hay Community Managers disponibles.</p></div>
                     @endif
                 </div>
-
-               
-
-
+                <div class="panel finance-dashboard-card">
+                    <div class="panel-head"><h3>Resumen financiero</h3><a class="section-link" href="{{ route('administrador.pagos.index') }}">Ver pagos</a></div>
+                    <div class="panel-body">
+                        <div class="finance-summary"><div class="finance-stat"><small>Ingreso mensual</small><strong>{{ number_format($currentMonthIncome,2,',','.') }} Bs</strong></div><div class="finance-stat"><small>Pagos completados</small><strong>{{ $completedPaymentsThisMonth }}</strong></div></div>
+                        <div class="chart-box"><canvas id="incomeChart"></canvas></div>
+                        <div id="incomePlanControls" class="income-plan-controls" aria-label="Mostrar u ocultar líneas de planes"></div>
+                        @if($incomeByPlan->isNotEmpty())
+                            @php $maxPlanIncome=max(1,(float)$incomeByPlan->max('total')); @endphp
+                            <div class="plan-income-list" aria-label="Ingresos del mes por plan">@foreach($incomeByPlan as $planIncome)<div class="plan-income-row"><span>{{ $planIncome['plan'] }}</span><span class="plan-income-track"><i style="width:{{ round(($planIncome['total']/$maxPlanIncome)*100) }}%"></i></span><b>{{ number_format($planIncome['total'],0,',','.') }} Bs</b></div>@endforeach</div>
+                        @endif
+                        @if($mostContractedPlan)<div class="plan-summary"><div><small>Plan más contratado</small><strong>{{ $mostContractedPlan->nombre }}</strong></div><b>{{ $mostContractedPlan->activas_count }} activas</b></div>@endif
+                    </div>
+                </div>
             </div>
-        </div>
+        </section>
+
+
+
+        <section class="dashboard-section campaign-insights-grid" aria-label="Flujo de campañas y mapa de calor de entregas">
+            <div class="campaign-flow-card">
+                <div class="campaign-insight-head"><div><h2>Flujo de campañas</h2></div><span>Estado general</span></div>
+                <div class="campaign-donut-layout">
+                    <div class="campaign-donut-box">
+                        <canvas id="campaignFlowChart" aria-label="Gráfica donut del estado de las campañas" role="img"></canvas>
+                        <div class="campaign-donut-center"><strong>{{ $pipelineTotal }}</strong><span>Campañas</span></div>
+                    </div>
+                    <div class="campaign-flow-legend" aria-label="Detalle del flujo de campañas">
+                        <div class="campaign-flow-legend-item" style="--flow-color:#3d174f"><i></i><span>Por iniciar</span><strong>{{ $pipeline['por_iniciar'] }}</strong></div>
+                        <div class="campaign-flow-legend-item" style="--flow-color:#117e8c"><i></i><span>En curso</span><strong>{{ $pipeline['en_curso'] }}</strong></div>
+                        <div class="campaign-flow-legend-item" style="--flow-color:#c64733"><i></i><span>En riesgo</span><strong>{{ $pipeline['en_riesgo'] }}</strong></div>
+                        <div class="campaign-flow-legend-item" style="--flow-color:#ef6c22"><i></i><span>Pausadas</span><strong>{{ $pipeline['pausadas'] }}</strong></div>
+                        <div class="campaign-flow-legend-item" style="--flow-color:#7da533"><i></i><span>Finalizadas</span><strong>{{ $pipeline['finalizadas'] }}</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <aside id="delivery-heatmap" class="delivery-heatmap" aria-labelledby="delivery-heatmap-title">
+                <div class="heatmap-head">
+                    <div><h3 id="delivery-heatmap-title">Planificación de entregas</h3></div>
+                    <div class="heatmap-month-nav" aria-label="Navegar por los meses del mapa de calor">
+                        <a class="heatmap-nav-button" href="{{ route('administrador.dashboard', ['heatmap_month' => $heatmapPreviousMonth]) }}#delivery-heatmap" aria-label="Ver mes anterior" title="Mes anterior"><i class="fas fa-chevron-left"></i></a>
+                        <span class="heatmap-month">{{ ucfirst($heatmapMonth->copy()->locale('es')->translatedFormat('F Y')) }}</span>
+                        @if($heatmapCanGoNext)
+                            <a class="heatmap-nav-button" href="{{ route('administrador.dashboard', ['heatmap_month' => $heatmapNextMonth]) }}#delivery-heatmap" aria-label="Ver mes siguiente" title="Mes siguiente"><i class="fas fa-chevron-right"></i></a>
+                        @else
+                            <span class="heatmap-nav-button is-disabled" aria-label="Ya estás en el mes actual"><i class="fas fa-chevron-right"></i></span>
+                        @endif
+                    </div>
+                </div>
+                <div class="heatmap-weekdays" aria-hidden="true">@foreach(['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'] as $weekday)<span>{{ $weekday }}</span>@endforeach</div>
+                <div class="heatmap-days">
+                    @foreach($deliveryHeatmap as $day)
+                        @php
+                            $dayDetails = collect([
+                                $day['events']['tasks'] ? $day['events']['tasks'].' '.($day['events']['tasks'] === 1 ? 'tarea' : 'tareas') : null,
+                                $day['events']['campaigns'] ? $day['events']['campaigns'].' '.($day['events']['campaigns'] === 1 ? 'campaña' : 'campañas') : null,
+                                $day['events']['publications'] ? $day['events']['publications'].' '.($day['events']['publications'] === 1 ? 'publicación' : 'publicaciones') : null,
+                            ])->filter()->implode(', ');
+                            $dayLabel = ucfirst($day['date']->copy()->locale('es')->translatedFormat('l d \d\e F')).': '.($dayDetails ?: 'sin entregas');
+                        @endphp
+                        <a href="#campaign-monitoring" class="heatmap-day level-{{ $day['level'] }} {{ $day['is_current_month'] ? '' : 'outside-month' }} {{ $day['is_today'] ? 'is-today' : '' }}" title="{{ $dayLabel }}" aria-label="{{ $dayLabel }}"><span>{{ $day['date']->day }}</span>@if($day['total'] > 0)<b>{{ $day['total'] }}</b>@endif</a>
+                    @endforeach
+                </div>
+                <div class="heatmap-legend" aria-label="Intensidad de entregas"><span>Menos</span><i></i><i></i><i></i><i></i><i></i><span>Más</span></div>
+            </aside>
+        </section>
+
+        <section class="dashboard-section" id="campaign-monitoring" aria-label="Campañas vigentes más recientes">
+            <div class="campaign-monitoring-card">
+            <div class="campaign-table-wrap">
+                @if($campaigns->isNotEmpty())
+                <table class="campaign-table">
+                    <thead><tr><th>Campaña / cliente</th><th>Responsable</th><th>Estado</th><th>Progreso</th><th>Finalización</th><th>Tiempo</th><th></th></tr></thead>
+                    <tbody>
+                    @foreach($campaigns as $campaign)
+                        @php
+                            $remainingDays = today()->diffInDays(\Carbon\Carbon::parse($campaign->fecha_fin)->startOfDay(), false);
+                            $progress = $campaign->tareas_count > 0 ? round(($campaign->tareas_completadas_count / $campaign->tareas_count) * 100) : 0;
+                            $isRisk = $campaign->estado === 'activa' && $remainingDays >= 0 && ($remainingDays <= 7 || $campaign->tareas_vencidas_count > 0);
+                            $statusClass = $isRisk ? 'risk' : ($campaign->estado === 'pausada' ? 'paused' : ($campaign->estado === 'finalizada' || $remainingDays < 0 ? 'done' : 'active'));
+                            $statusLabel = $isRisk ? 'En riesgo' : ucfirst($campaign->estado);
+                            $managerInitials = collect(explode(' ', $campaign->communityManager?->name ?? 'Sin asignar'))->filter()->take(2)->map(fn($part)=>mb_strtoupper(mb_substr($part,0,1)))->implode('');
+                        @endphp
+                        <tr>
+                            <td><span class="campaign-name">{{ $campaign->nombre }}</span><span class="campaign-client">{{ $campaign->suscripcion?->empresa?->nombre_empresa ?? $campaign->cliente?->name ?? 'Sin empresa' }}</span></td>
+                            <td><span class="manager-chip"><span class="manager-avatar">{{ $managerInitials }}</span>{{ $campaign->communityManager?->name ?? 'Sin asignar' }}</span></td>
+                            <td><span class="status-badge {{ $statusClass }}"><i class="fas fa-circle"></i>{{ $statusLabel }}</span>@if($campaign->tareas_vencidas_count > 0)<span class="campaign-client">{{ $campaign->tareas_vencidas_count }} tareas vencidas</span>@endif</td>
+                            <td><span class="progress-track"><i style="width:{{ $progress }}%"></i></span><span class="progress-label">{{ $campaign->tareas_completadas_count }}/{{ $campaign->tareas_count }} tareas · {{ $progress }}%</span></td>
+                            <td>{{ \Carbon\Carbon::parse($campaign->fecha_fin)->format('d/m/Y') }}</td>
+                            <td><span class="days-left {{ $remainingDays <= 7 ? 'risk' : '' }}">{{ $remainingDays < 0 ? 'Vencida' : $remainingDays.' días' }}</span></td>
+                            <td><a class="table-action" href="{{ route('administrador.campañas.show',$campaign) }}" aria-label="Ver campaña"><i class="fas fa-arrow-right"></i></a></td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+                @else<div class="empty-state"><i class="fas fa-bullhorn"></i><p>No hay campañas vigentes para mostrar.</p></div>@endif
+            </div>
+            </div>
+        </section>
+
+        <section class="dashboard-section split-grid updates-grid">
+            <div class="panel updates-card">
+                <div class="panel-head"><h3>Próximas fechas</h3><span>Campañas y entregas</span></div>
+                <div class="panel-body timeline-list">
+                    @forelse($calendarItems as $item)<a class="timeline-item {{ $item['type'] }}" href="{{ $item['url'] }}"><span class="timeline-date"><strong>{{ $item['date']->format('d') }}</strong><small>{{ $item['date']->copy()->locale('es')->translatedFormat('M') }}</small></span><i class="timeline-icon fas {{ match($item['type']){'task'=>'fa-list-check','deadline'=>'fa-flag-checkered','subscription'=>'fa-hourglass-half','publication'=>'fa-paper-plane',default=>'fa-bullhorn'} }}"></i><span class="timeline-copy"><strong>{{ $item['label'] }}</strong><small>{{ $item['title'] }}</small></span></a>@empty<div class="empty-state"><i class="fas fa-calendar-check"></i><p>No hay fechas próximas programadas.</p></div>@endforelse
+                </div>
+            </div>
+            <div class="panel updates-card">
+                <div class="panel-head"><h3>Actividad reciente</h3><span>Últimos 30 días</span></div>
+                <div class="panel-body activity-list">
+                    @forelse($recentActivity as $activity)<a class="activity-item {{ $activity['type'] }}" href="{{ $activity['url'] }}"><i class="activity-icon fas {{ $activity['icon'] }}"></i><span class="activity-copy"><strong>{{ $activity['title'] }}</strong><span>{{ $activity['message'] }}</span></span><time>{{ $activity['date']->diffForHumans(null,true) }}</time></a>@empty<div class="empty-state"><i class="fas fa-clock-rotate-left"></i><p>No hay actividad reciente en este periodo.</p></div>@endforelse
+                </div>
+            </div>
+        </section>
+
+        <section class="dashboard-section" aria-labelledby="ai-title">
+            <h2 id="ai-title" class="ai-section-title">Optimización inteligente</h2>
+            <div class="ai-grid">
+                <div class="panel ai-panel"><div class="panel-head"><div style="display:flex;align-items:center;gap:10px"><i class="fas fa-clock"></i><div><h3>Mejores horarios para publicar</h3><span>Rendimiento estimado para Facebook</span></div></div></div><div class="panel-body"><div class="chart-box"><canvas id="engagementChart"></canvas></div><div class="ai-note"><span>Compara el rendimiento real con el estimado.</span><b id="lstmPeakText" class="ai-peak">Cargando recomendación…</b></div></div></div>
+                <div class="panel ai-panel"><div class="panel-head"><div style="display:flex;align-items:center;gap:10px"><i class="fas fa-brain"></i><div><h3>Calidad del contenido</h3><span>Análisis de claridad y efectividad</span></div></div></div><div class="panel-body"><div class="chart-box"><canvas id="plnChart"></canvas></div><div class="ai-note"><span>Coherencia, relevancia, fluidez, diversidad y precisión.</span><b class="ai-peak">Evaluación actual</b></div></div></div>
+            </div>
+        </section>
     </div>
-
-    <script>
-        // =============================================
-        // Prediccion de Horarios Optimos (Engagement)
-        // =============================================
-        (async function() {
-            const engCtx = document.getElementById('engagementChart');
-
-            if (!engCtx) {
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/lstm/facebook/horarios');
-
-                if (!response.ok) {
-                    throw new Error('Error al obtener datos de la API LSTM');
-                }
-
-                const data = await response.json();
-
-                if (data.error) {
-                    throw new Error(data.message || 'Error desconocido en API LSTM');
-                }
-
-                const labels = data.labels || [];
-                const realData = data.realData || [];
-                const predData = data.predData || [];
-                const peakText = document.getElementById('lstmPeakText');
-
-                if (peakText && data.picos) {
-                    peakText.textContent = 'Picos: ' + data.picos;
-                }
-
-                new Chart(engCtx.getContext('2d'), {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            {
-                                label: 'Datos reales',
-                                data: realData,
-                                borderColor: 'rgba(59, 130, 246, 1)',
-                                backgroundColor: 'rgba(59, 130, 246, 0.08)',
-                                borderWidth: 3,
-                                tension: 0.4,
-                                fill: true,
-                                pointRadius: 3,
-                                pointHoverRadius: 6,
-                                pointBackgroundColor: 'rgba(59, 130, 246, 1)'
-                            },
-                            {
-                                label: 'Prediccion LSTM',
-                                data: predData,
-                                borderColor: 'rgba(16, 185, 129, 1)',
-                                backgroundColor: 'transparent',
-                                borderWidth: 3,
-                                borderDash: [8, 4],
-                                tension: 0.4,
-                                fill: false,
-                                pointRadius: 2,
-                                pointHoverRadius: 5,
-                                pointBackgroundColor: 'rgba(16, 185, 129, 1)'
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        animation: {
-                            duration: 1200,
-                            easing: 'easeInOutQuart'
-                        },
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                                titleColor: '#fff',
-                                bodyColor: '#e2e8f0',
-                                padding: 12,
-                                cornerRadius: 8,
-                                displayColors: true,
-                                callbacks: {
-                                    label: function(ctx) {
-                                        return ctx.dataset.label + ': ' + (ctx.parsed.y * 100).toFixed(1) + '% nivel relativo';
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 1.1,
-                                grid: {
-                                    color: 'rgba(0,0,0,0.04)'
-                                },
-                                ticks: {
-                                    callback: function(value) {
-                                        return (value * 100).toFixed(0) + '%';
-                                    },
-                                    font: {
-                                        size: 11
-                                    }
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Nivel relativo de Engagement',
-                                    font: {
-                                        size: 11,
-                                        weight: 'bold'
-                                    }
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                },
-                                ticks: {
-                                    font: {
-                                        size: 10
-                                    },
-                                    maxRotation: 45
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Hora del dia',
-                                    font: {
-                                        size: 11,
-                                        weight: 'bold'
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            } catch (error) {
-                console.error(error);
-            }
-        })();
-
-        // =============================================
-        // Evaluación de Rendimiento del Modelo PLN
-        // =============================================
-        (function() {
-            const radarCtx = document.getElementById('radarPlnChart');
-            if (radarCtx) {
-                new Chart(radarCtx.getContext('2d'), {  
-                    type: 'radar',
-                    data: {
-                        labels: ['Coherencia', 'Relevancia', 'Fluidez', 'Diversidad', 'Precisión Semántica'],
-                        datasets: [{
-                            label: 'Rendimiento PLN',
-                            data: [0.85, 0.88, 0.90, 0.80, 0.87],
-                            backgroundColor: 'rgba(139, 92, 246, 0.15)',
-                            borderColor: 'rgba(139, 92, 246, 0.9)',
-                            borderWidth: 2.5,
-                            pointBackgroundColor: 'rgba(139, 92, 246, 1)',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 5,
-                            pointHoverRadius: 7
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        animation: { duration: 1000, easing: 'easeInOutQuart' },
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                                titleColor: '#fff',
-                                bodyColor: '#e2e8f0',
-                                padding: 12,
-                                cornerRadius: 8,
-                                callbacks: {
-                                    label: function(ctx) {
-                                        return ctx.label + ': ' + (ctx.parsed.r * 100).toFixed(0) + '%';
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            r: {
-                                beginAtZero: true,
-                                max: 1,
-                                ticks: {
-                                    stepSize: 0.2,
-                                    callback: function(value) {
-                                        return (value * 100) + '%';
-                                    },
-                                    backdropColor: 'transparent',
-                                    font: { size: 10 },
-                                    color: 'rgba(100, 116, 139, 0.7)'
-                                },
-                                grid: {
-                                    color: 'rgba(0, 0, 0, 0.06)',
-                                    circular: true
-                                },
-                                angleLines: {
-                                    color: 'rgba(0, 0, 0, 0.06)'
-                                },
-                                pointLabels: {
-                                    font: { size: 11, weight: '600' },
-                                    color: '#374151'
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        })();
-
-
-        // Esperar a que el DOM esté completamente cargado
-        document.addEventListener('DOMContentLoaded', function () {
-            // Obtener los datos de los gráficos desde Laravel
-            const monthlyIncomeData = @json($monthlyIncome->toArray());
-            const yearlyIncomeData = @json($yearlyIncome->toArray());
-
-            // Datos para el gráfico de dona
-            const paymentStatusData = {
-                activos: {{ $countActivos }},
-                pendientes: {{ $countPendientes }},
-                finalizados: {{ $countFinalizados }}
-                };
-
-            // Configuración del gráfico mensual
-            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-
-            if (monthlyIncomeData.length > 0) {
-                const monthlyLabels = monthlyIncomeData.map(item => {
-                    const date = new Date(item.year, item.month - 1);
-                    return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short' });
-                });
-                const monthlyDataValues = monthlyIncomeData.map(item => item.total);
-
-                new Chart(monthlyCtx, {
-                    type: 'line',
-                    data: {
-                        labels: monthlyLabels,
-                        datasets: [{
-                            label: 'Ingresos Mensuales',
-                            data: monthlyDataValues,
-                            backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                            borderColor: 'rgba(99, 102, 241, 1)',
-                            borderWidth: 2,
-                            tension: 0.4,
-                            fill: true,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        animation: {
-                            duration: 1000,
-                            easing: 'easeInOutQuart'
-                        },
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                titleColor: '#fff',
-                                bodyColor: '#fff',
-                                padding: 12,
-                                displayColors: false,
-                                callbacks: {
-                                    label: function (context) {
-                                        return 'Ingresos: Bs' + context.parsed.y.toLocaleString('es-ES');
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(0, 0, 0, 0.05)'
-                                },
-                                ticks: {
-                                    callback: function (value) {
-                                        return 'Bs' + value.toLocaleString('es-ES');
-                                    }
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                }
-                            }
-                        }
-                    }
-                });
-            } else {
-                // Mostrar mensaje si no hay datos
-                document.querySelector('.chart-container').innerHTML = `
-                        <div class="flex items-center justify-center h-full">
-                            <p class="text-gray-500 text-center">No hay datos de ingresos mensuales para mostrar.<br>Asegúrate de tener pagos con estado "completado" y fecha de pago registrada.</p>
-                        </div>
-                    `;
-            }
-
-            // Configuración del gráfico de dona
-            const donutCtx = document.getElementById('donutChart').getContext('2d');
-
-            new Chart(donutCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Activos', 'Pendientes', 'Finalizados'],
-                    datasets: [{
-                        data: [paymentStatusData.activos, paymentStatusData.pendientes, paymentStatusData.finalizados],
-                        backgroundColor: [
-                            'rgba(34, 197, 94, 0.8)',
-                            'rgba(234, 179, 8, 0.8)',
-                            'rgba(107, 114, 128, 0.8)'
-                        ],
-                        borderColor: [
-                            'rgba(34, 197, 94, 1)',
-                            'rgba(234, 179, 8, 1)',
-                            'rgba(107, 114, 128, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: {
-                        animateRotate: true,
-                        animateScale: true,
-                        duration: 1000,
-                        easing: 'easeInOutQuart'
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            titleColor: '#fff',
-                            bodyColor: '#fff',
-                            padding: 12,
-                            displayColors: true,
-                            callbacks: {
-                                label: function (context) {
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((context.parsed / total) * 100);
-                                    return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
-                                }
-                            }
-                        }
-                    },
-                    cutout: '60%'
-                }
-            });
-
-            // Configuración del gráfico anual
-            const yearlyCtx = document.getElementById('yearlyChart').getContext('2d');
-
-            if (yearlyIncomeData.length > 0) {
-                const yearlyLabels = yearlyIncomeData.map(item => item.year);
-                const yearlyDataValues = yearlyIncomeData.map(item => item.total);
-
-                new Chart(yearlyCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: yearlyLabels,
-                        datasets: [{
-                            label: 'Ingresos Anuales',
-                            data: yearlyDataValues,
-                            backgroundColor: 'rgba(99, 102, 241, 0.7)',
-                            borderColor: 'rgba(99, 102, 241, 1)',
-                            borderWidth: 1,
-                            borderRadius: 5,
-                            barPercentage: 0.6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        animation: {
-                            duration: 1000,
-                            easing: 'easeInOutQuart'
-                        },
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                titleColor: '#fff',
-                                bodyColor: '#fff',
-                                padding: 12,
-                                displayColors: false,
-                                callbacks: {
-                                    label: function (context) {
-                                        return 'Ingresos: Bs' + context.parsed.y.toLocaleString('es-ES');
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(0, 0, 0, 0.05)'
-                                },
-                                ticks: {
-                                    callback: function (value) {
-                                        return 'Bs' + value.toLocaleString('es-ES');
-                                    }
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                }
-                            }
-                        }
-                    }
-                });
-            } else {
-                // Mostrar mensaje si no hay datos
-                document.querySelector('.chart-container-small').innerHTML = `
-                        <div class="flex items-center justify-center h-full">
-                            <p class="text-gray-500 text-center">No hay datos de ingresos anuales para mostrar.<br>Asegúrate de tener pagos con estado "completado" y fecha de pago registrada.</p>
-                        </div>
-                    `;
-            }
-        });
-    </script>
+</div>
 @endsection
 
-
-
-
-
-
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+    if(typeof Chart==='undefined') return;
+    Chart.defaults.font.family="Inter, 'Segoe UI', sans-serif";Chart.defaults.color='#746b78';
+    const campaignFlowCanvas=document.getElementById('campaignFlowChart');
+    if(campaignFlowCanvas)new Chart(campaignFlowCanvas,{type:'doughnut',data:{labels:['Por iniciar','En curso','En riesgo','Pausadas','Finalizadas'],datasets:[{data:[{{ $pipeline['por_iniciar'] }},{{ $pipeline['en_curso'] }},{{ $pipeline['en_riesgo'] }},{{ $pipeline['pausadas'] }},{{ $pipeline['finalizadas'] }}],backgroundColor:['#3d174f','#117e8c','#c64733','#ef6c22','#7da533'],borderColor:'#fff',borderWidth:4,hoverOffset:7}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',animation:{animateRotate:true,animateScale:true,duration:1200,easing:'easeOutQuart'},plugins:{legend:{display:false},tooltip:{backgroundColor:'#302832',padding:11,cornerRadius:8,callbacks:{label:context=>` ${context.label}: ${context.raw} campañas`}}}}});
+    const managerData=@json($managerWorkload->values());
+    const managerCanvas=document.getElementById('managerWorkloadChart');
+    const renderManagerWorkload=()=>{
+        if(!managerCanvas||managerCanvas.dataset.rendered==='true')return;
+        managerCanvas.dataset.rendered='true';
+        const campaignValueLabels={id:'campaignValueLabels',afterDatasetsDraw(chart){const{ctx}=chart;ctx.save();ctx.fillStyle='#5b2b76';ctx.font="700 11px Inter, 'Segoe UI', sans-serif";ctx.textBaseline='middle';chart.getDatasetMeta(0).data.forEach((bar,index)=>ctx.fillText(chart.data.datasets[0].data[index],bar.x+8,bar.y));ctx.restore()}};
+        new Chart(managerCanvas,{type:'bar',plugins:[campaignValueLabels],data:{labels:managerData.map(manager=>manager.name),datasets:[
+            {label:'Campañas asignadas',data:managerData.map(manager=>manager.campaigns),backgroundColor:'#5b2b76',hoverBackgroundColor:'#117e8c',borderRadius:8,borderSkipped:false,maxBarThickness:24}
+        ]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,interaction:{mode:'nearest',axis:'y',intersect:true},animation:{duration:1200,easing:'easeOutQuart',delay:context=>context.type==='data'?context.dataIndex*120:0},layout:{padding:{right:34}},plugins:{legend:{display:false},tooltip:{backgroundColor:'#302832',padding:11,cornerRadius:8,callbacks:{label:context=>` Campañas asignadas: ${context.raw}`}}},scales:{x:{beginAtZero:true,grid:{color:'rgba(91,43,118,.08)'},border:{display:false},ticks:{precision:0,stepSize:1,padding:7}},y:{offset:true,grid:{display:false},border:{display:false},ticks:{color:'#3d174f',font:{size:11,weight:'700'},padding:10}}}}});
+    };
+    if(managerCanvas){
+        if('IntersectionObserver' in window){const workloadObserver=new IntersectionObserver((entries,observer)=>{if(entries.some(entry=>entry.isIntersecting)){renderManagerWorkload();observer.disconnect()}},{threshold:.2});workloadObserver.observe(managerCanvas)}else renderManagerWorkload();
+    }
+    const incomeLabels=@json($incomeLabels);
+    const incomePlanSeries=@json($incomeSeriesByPlan);
+    const incomePalette=['#5b2b76','#117e8c','#ef6c22','#7da533','#3d174f','#c05a8f'];
+    const incomeCanvas=document.getElementById('incomeChart');
+    if(incomeCanvas){
+        const incomeChart=new Chart(incomeCanvas,{type:'line',data:{labels:incomeLabels,datasets:incomePlanSeries.map((series,index)=>{const color=incomePalette[index%incomePalette.length];return{label:series.plan,data:series.values,borderColor:color,backgroundColor:color,borderWidth:2.5,pointBackgroundColor:color,pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:3.5,pointHoverRadius:5,tension:.35,fill:false}})},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'#302832',callbacks:{label:ctx=>` ${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString('es-BO')} Bs`}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'rgba(17,126,140,.08)'},ticks:{callback:value=>`${Number(value).toLocaleString('es-BO')} Bs`}}}}});
+        const planControls=document.getElementById('incomePlanControls');
+        incomePlanSeries.forEach((series,index)=>{
+            const color=incomePalette[index%incomePalette.length],label=document.createElement('label'),checkbox=document.createElement('input'),dot=document.createElement('span'),name=document.createElement('span');
+            label.className='income-plan-control';checkbox.type='checkbox';checkbox.checked=true;checkbox.style.accentColor=color;checkbox.setAttribute('aria-label',`Mostrar línea del plan ${series.plan}`);dot.className='income-plan-dot';dot.style.backgroundColor=color;name.className='income-plan-name';name.textContent=series.plan;
+            checkbox.addEventListener('change',()=>{incomeChart.setDatasetVisibility(index,checkbox.checked);label.classList.toggle('is-hidden',!checkbox.checked);incomeChart.update()});
+            label.append(checkbox,dot,name);planControls?.append(label);
+        });
+    }
+    const plnCanvas=document.getElementById('plnChart');
+    if(plnCanvas)new Chart(plnCanvas,{type:'radar',data:{labels:['Coherencia','Relevancia','Fluidez','Diversidad','Precisión'],datasets:[{data:[85,88,90,80,87],backgroundColor:'rgba(91,43,118,.13)',borderColor:'#5b2b76',borderWidth:2,pointBackgroundColor:'#117e8c'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{beginAtZero:true,max:100,ticks:{stepSize:20,backdropColor:'transparent',callback:value=>value+'%'},grid:{color:'rgba(17,126,140,.1)'},angleLines:{color:'rgba(17,126,140,.1)'}}}}});
+    const engagementCanvas=document.getElementById('engagementChart'),peak=document.getElementById('lstmPeakText');
+    if(!engagementCanvas)return;
+    fetch(@json(url('/api/lstm/facebook/horarios')),{headers:{Accept:'application/json'}}).then(response=>{if(!response.ok)throw new Error('No se pudo consultar la recomendación');return response.json()}).then(data=>{const labels=data.labels||[],real=data.realData||[],prediction=data.predData||[];peak.textContent=data.picos?`Mejores horas: ${data.picos}`:'Sin horarios destacados';new Chart(engagementCanvas,{type:'line',data:{labels,datasets:[{label:'Rendimiento real',data:real,borderColor:'#5b2b76',backgroundColor:'rgba(91,43,118,.1)',borderWidth:2.5,tension:.35,fill:true},{label:'Rendimiento estimado',data:prediction,borderColor:'#117e8c',borderWidth:2.5,borderDash:[7,4],tension:.35}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:10,usePointStyle:true}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,max:1.1,ticks:{callback:value=>Math.round(value*100)+'%'},grid:{color:'rgba(17,126,140,.08)'}}}}})}).catch(()=>{peak.textContent='Recomendación no disponible';engagementCanvas.replaceWith(Object.assign(document.createElement('p'),{className:'empty-state',textContent:'No fue posible cargar la recomendación de horarios.'}))});
+});
+</script>
+@endpush

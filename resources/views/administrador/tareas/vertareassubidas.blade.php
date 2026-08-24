@@ -1,328 +1,173 @@
 @extends('layouts.app')
 
-@section('title', 'Tareas Subidas')
+@section('title', 'Revisión de entregables')
 
 @section('content')
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+@php
+    $archivos = $tarea->archivos->sortByDesc('created_at');
+    $totalArchivos = $archivos->count();
+    $archivosPendientes = $archivos->where('estado', 'pendiente')->count();
+    $archivosAprobados = $archivos->where('estado', 'aprobado')->count();
+    $archivosRechazados = $archivos->where('estado', 'rechazado')->count();
+    $estadoTareaClase = match($tarea->estado) {
+        'completada' => 'is-complete',
+        'en_progreso' => 'is-progress',
+        'rechazada' => 'is-rejected',
+        default => 'is-pending',
+    };
+    $prioridadClase = match($tarea->prioridad) {
+        'urgente' => 'is-urgent',
+        'alta' => 'is-high',
+        'baja' => 'is-low',
+        default => 'is-medium',
+    };
+@endphp
 
-<div class="min-h-screen" style="background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 50%, #F5F3FF 100%);">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Banner con fondo geométrico -->
-        <div class="mb-8 rounded-2xl overflow-hidden relative rp-banner">
-            <div class="rp-banner-overlay absolute inset-0"></div>
-            <div class="relative z-10 px-8 py-8">
-                <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                    <div class="flex h-14 w-14 items-center justify-center rounded-2xl flex-shrink-0" style="background: rgba(255,255,255,0.2);">
-                        <i class="fas fa-upload text-white text-2xl"></i>
-                    </div>
-                    <div class="flex-1 text-center sm:text-left">
-                        <h1 class="text-3xl font-bold text-white mb-1">Tareas Subidas</h1>
-                        <p style="color: #bfdbfe; font-size: 0.9rem;">Archivos subidos para: <strong style="color: white;">{{ $tarea->titulo }}</strong></p>
-                    </div>
-                    <a href="{{ route('administrador.campañas.show', $tarea->campania_id) }}" 
-                       class="inline-flex items-center px-4 py-2.5 rounded-xl font-semibold text-white transition-all hover:-translate-y-0.5 flex-shrink-0" 
-                       style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(4px);">
-                        <i class="fas fa-arrow-left mr-2 text-sm"></i>
-                        Volver
-                    </a>
+<div class="review-page">
+    <div class="review-shell">
+        <nav class="review-top-actions" aria-label="Navegación de tarea">
+            <a href="{{ route('administrador.campañas.show', $tarea->campania_id) }}"><i class="fas fa-arrow-left"></i> Campaña</a>
+            <a href="{{ route('administrador.campañas.calendario', $tarea->campania_id) }}"><i class="fas fa-calendar-days"></i> Planificación</a>
+            <a href="{{ route('administrador.tareas.edit', $tarea->id) }}"><i class="fas fa-pen"></i> Editar tarea</a>
+            <a href="{{ route('administrador.tareas.archivos.create', $tarea->id) }}" class="is-primary"><i class="fas fa-upload"></i> Subir archivo</a>
+        </nav>
+
+        <header class="review-hero">
+            <div class="review-hero-overlay"></div>
+            <div class="review-hero-content">
+                <div>
+                    <span>Control de calidad</span>
+                    <h1>Revisión de entregables</h1>
+                    <p>{{ $tarea->titulo }}</p>
                 </div>
+                <span class="review-task-status {{ $estadoTareaClase }}"><i></i>{{ ucfirst(str_replace('_', ' ', $tarea->estado)) }}</span>
             </div>
-        </div>
+        </header>
 
-        <!-- Contenido principal -->
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            <!-- Encabezado con estado -->
-            <div class="px-8 py-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-indigo-100">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <div class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold text-indigo-700 border border-indigo-200" style="background: rgba(255,255,255,0.8);">
-                            <i class="fas fa-tag text-indigo-500"></i>
-                            ID: #{{ $tarea->id }}
-                        </div>
-                        <h2 class="text-2xl font-bold text-gray-900 mt-2">{{ $tarea->titulo }}</h2>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        @php
-                            $estadoConfig = [
-                                'completada' => ['bg' => '#a7b838', 'icon' => 'fa-check-circle'],
-                                'en_progreso' => ['bg' => '#ea9f21', 'icon' => 'fa-spinner'],
-                                'rechazada' => ['bg' => '#ed0551', 'icon' => 'fa-times-circle'],
-                                'pendiente' => ['bg' => '#475569', 'icon' => 'fa-clock'],
-                            ];
-                            $estado = $tarea->estado ?? 'pendiente';
-                            $config = $estadoConfig[$estado] ?? $estadoConfig['pendiente'];
-                        @endphp
-                        <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white font-semibold shadow-sm" style="background: {{ $config['bg'] }};">
-                            <i class="fas {{ $config['icon'] }}"></i>
-                            {{ str_replace('_', ' ', ucfirst($tarea->estado)) }}
-                        </span>
-                    </div>
-                </div>
-            </div>
+        <main class="review-content">
+            @if(session('success'))
+                <div class="review-alert is-success"><i class="fas fa-circle-check"></i>{{ session('success') }}</div>
+            @endif
+            @if($errors->any())
+                <div class="review-alert is-error"><i class="fas fa-circle-exclamation"></i>{{ $errors->first() }}</div>
+            @endif
 
-            <!-- Contenido -->
-            <div class="p-8 space-y-8">
-                <!-- Información básica -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                        <div class="flex items-center gap-2 mb-3">
-                            <i class="fas fa-align-left text-indigo-500"></i>
-                            <h3 class="text-lg font-semibold text-gray-900">Descripción</h3>
-                        </div>
-                        <p class="text-gray-600 leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-100">{{ $tarea->descripcion }}</p>
-                    </div>
-                    <div class="space-y-4">
-                        <div>
-                            <div class="flex items-center gap-2 mb-3">
-                                <i class="fas fa-calendar-alt text-indigo-500"></i>
-                                <h3 class="text-lg font-semibold text-gray-900">Fechas</h3>
-                            </div>
-                            <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-2">
-                                <div class="flex justify-between">
-                                    <span class="text-sm text-gray-500">Inicio</span>
-                                    <span class="text-sm font-semibold text-gray-900">{{ $tarea->fecha_inicio->format('d/m/Y') }}</span>
-                                </div>
-                                <div class="flex justify-between border-t border-gray-200 pt-2">
-                                    <span class="text-sm text-gray-500">Límite</span>
-                                    <span class="text-sm font-semibold text-gray-900">{{ $tarea->fecha_limite->format('d/m/Y') }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2 mb-2">
-                                <i class="fas fa-flag text-indigo-500"></i>
-                                <h3 class="text-lg font-semibold text-gray-900">Prioridad</h3>
-                            </div>
-                            @php
-                                $prioridadConfig = [
-                                    'alta' => ['bg' => '#ed0551', 'icon' => 'fa-arrow-up'],
-                                    'urgente' => ['bg' => '#ea9f21', 'icon' => 'fa-exclamation'],
-                                    'media' => ['bg' => '#475569', 'icon' => 'fa-minus'],
-                                    'baja' => ['bg' => '#a7b838', 'icon' => 'fa-arrow-down'],
-                                ];
-                                $prioridad = $tarea->prioridad ?? 'media';
-                                $pConfig = $prioridadConfig[$prioridad] ?? $prioridadConfig['media'];
-                            @endphp
-                            <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white font-semibold shadow-sm" style="background: {{ $pConfig['bg'] }};">
-                                <i class="fas {{ $pConfig['icon'] }}"></i>
-                                {{ ucfirst($tarea->prioridad) }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
+            <section class="review-summary" aria-label="Resumen de archivos">
+                <div><span>Entregables</span><strong>{{ $totalArchivos }}</strong></div>
+                <div><span>Pendientes</span><strong>{{ $archivosPendientes }}</strong></div>
+                <div><span>Aprobados</span><strong>{{ $archivosAprobados }}</strong></div>
+                <div><span>Rechazados</span><strong>{{ $archivosRechazados }}</strong></div>
+            </section>
 
-                <!-- Responsables -->
-                <div class="border-t border-gray-200 pt-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <i class="fas fa-users text-indigo-500"></i>
-                        Responsables
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
-                                <i class="fas fa-user-plus mr-1"></i> Creada por
-                            </p>
-                            <div class="flex items-center gap-3">
-                                <div class="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);">
-                                    {{ strtoupper(substr($tarea->creador->name, 0, 1)) }}
-                                </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-900">{{ $tarea->creador->name }}</p>
-                                    <p class="text-xs text-gray-500">{{ $tarea->creador->email }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
-                                <i class="fas fa-user-check mr-1"></i> Asignado a
-                            </p>
-                            <div class="flex items-center gap-3">
-                                <div class="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm" style="background: linear-gradient(135deg, #ea9f21, #e37225);">
-                                    {{ strtoupper(substr($tarea->asignado->name, 0, 1)) }}
-                                </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-900">{{ $tarea->asignado->name }}</p>
-                                    <p class="text-xs text-gray-500">{{ $tarea->asignado->email }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Archivos -->
-                <div class="border-t border-gray-200 pt-6">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-paperclip text-indigo-500"></i>
-                            Archivos adjuntos
-                        </h3>
-                        @if($tarea->archivos->count() > 0 && $tarea->archivos->contains('estado', 'aprobado'))
-                            <a href="{{ route('administrador.publicaciones.publicar', ['tarea_id' => $tarea->id]) }}" 
-                               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white font-semibold text-sm shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5" style="background: #ed0551;">
-                                <i class="fas fa-rocket"></i>
-                                PUBLICAR
-                            </a>
+            <div class="review-grid">
+                <section class="review-card review-deliverables">
+                    <header class="review-card-header">
+                        <div><h2>Archivos adjuntos</h2><p>Descarga y define el resultado de cada entregable.</p></div>
+                        @if($archivosAprobados > 0)
+                            <a href="{{ route('administrador.publicaciones.publicar', ['tarea_id' => $tarea->id]) }}" class="review-publish"><i class="fas fa-rocket"></i> Publicar</a>
                         @endif
-                    </div>
+                    </header>
 
-                    @if($tarea->archivos->count() > 0)
-                    <div class="grid grid-cols-1 gap-3">
-                        @foreach($tarea->archivos as $archivo)
-                        <div class="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:bg-white hover:border-indigo-200 transition-all duration-200">
-                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex-shrink-0 h-10 w-10 rounded-lg flex items-center justify-center text-lg" style="background: #e0e7ff;">
-                                        @if(in_array($archivo->extension, ['jpg', 'jpeg', 'png', 'gif']))
-                                            <i class="fas fa-image text-indigo-500"></i>
-                                        @elseif(in_array($archivo->extension, ['pdf']))
-                                            <i class="fas fa-file-pdf text-red-500"></i>
-                                        @elseif(in_array($archivo->extension, ['doc', 'docx']))
-                                            <i class="fas fa-file-word text-blue-500"></i>
-                                        @elseif(in_array($archivo->extension, ['xls', 'xlsx']))
-                                            <i class="fas fa-file-excel text-green-500"></i>
-                                        @elseif(in_array($archivo->extension, ['mp4', 'mov', 'avi']))
-                                            <i class="fas fa-video text-purple-500"></i>
-                                        @elseif(in_array($archivo->extension, ['mp3', 'wav']))
-                                            <i class="fas fa-music text-pink-500"></i>
-                                        @elseif(in_array($archivo->extension, ['zip', 'rar']))
-                                            <i class="fas fa-file-archive text-amber-500"></i>
-                                        @else
-                                            <i class="fas fa-file text-gray-500"></i>
-                                        @endif
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">{{ $archivo->nombre_original }}</p>
-                                        <p class="text-xs text-gray-500">{{ number_format($archivo->tamanio / 1024, 2) }} KB · {{ strtoupper($archivo->extension) }}</p>
+                    <div class="review-files">
+                        @forelse($archivos as $archivo)
+                            @php
+                                $extension = strtolower($archivo->extension ?? '');
+                                $fileIcon = match(true) {
+                                    in_array($extension, ['jpg','jpeg','png','gif','webp']) => 'fa-file-image',
+                                    $extension === 'pdf' => 'fa-file-pdf',
+                                    in_array($extension, ['doc','docx']) => 'fa-file-word',
+                                    in_array($extension, ['xls','xlsx']) => 'fa-file-excel',
+                                    in_array($extension, ['mp4','mov','avi']) => 'fa-file-video',
+                                    in_array($extension, ['mp3','wav']) => 'fa-file-audio',
+                                    in_array($extension, ['zip','rar','7z']) => 'fa-file-zipper',
+                                    default => 'fa-file',
+                                };
+                                $fileStatusClass = match($archivo->estado) {
+                                    'aprobado' => 'is-approved',
+                                    'rechazado' => 'is-rejected',
+                                    default => 'is-pending',
+                                };
+                                $fileSize = $archivo->tamanio >= 1048576
+                                    ? number_format($archivo->tamanio / 1048576, 2).' MB'
+                                    : number_format($archivo->tamanio / 1024, 2).' KB';
+                            @endphp
+                            <article class="review-file">
+                                <div class="review-file-main">
+                                    <span class="review-file-icon"><i class="fas {{ $fileIcon }}"></i></span>
+                                    <div class="review-file-copy">
+                                        <div class="review-file-title">
+                                            <strong>{{ $archivo->nombre_original }}</strong>
+                                            <span class="review-file-status {{ $fileStatusClass }}">{{ ucfirst($archivo->estado) }}</span>
+                                        </div>
+                                        <small>{{ strtoupper($extension ?: 'Archivo') }} · {{ $fileSize }} · Subido por {{ $archivo->user?->name ?? 'Usuario eliminado' }}</small>
+                                        @if($archivo->descripcion)<p>{{ $archivo->descripcion }}</p>@endif
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <a href="{{ Storage::url($archivo->ruta_archivo) }}" download 
-                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors" style="color: #4f46e5; background: #eef2ff; hover:bg: #e0e7ff;">
-                                        <i class="fas fa-download"></i>
-                                        Descargar
-                                    </a>
+                                <div class="review-file-actions">
+                                    <a href="{{ Storage::url($archivo->ruta_archivo) }}" download><i class="fas fa-download"></i> Descargar</a>
+                                    <form action="{{ route('administrador.tareas.archivos.update-estado', $archivo->id) }}" method="POST">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit" name="estado" value="pendiente" class="is-neutral {{ $archivo->estado === 'pendiente' ? 'is-current' : '' }}">Pendiente</button>
+                                        <button type="submit" name="estado" value="aprobado" class="is-approve {{ $archivo->estado === 'aprobado' ? 'is-current' : '' }}"><i class="fas fa-check"></i> Aprobar</button>
+                                        <button type="submit" name="estado" value="rechazado" class="is-reject {{ $archivo->estado === 'rechazado' ? 'is-current' : '' }}"><i class="fas fa-xmark"></i> Rechazar</button>
+                                    </form>
                                 </div>
+                            </article>
+                        @empty
+                            <div class="review-empty">
+                                <h3>No hay archivos adjuntos</h3>
+                                <p>Sube el primer entregable para iniciar el proceso de revisión.</p>
+                                <a href="{{ route('administrador.tareas.archivos.create', $tarea->id) }}"><i class="fas fa-upload"></i> Subir archivo</a>
                             </div>
-                            
-                            <!-- Estado del archivo -->
-                            <div class="mt-3 flex flex-wrap items-center gap-3 pt-3 border-t border-gray-200">
-                                <span class="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                                    <i class="fas fa-circle-check text-gray-400"></i>
-                                    Estado:
-                                </span>
-                                <form action="{{ route('administrador.tareas.archivos.update-estado', $archivo->id) }}" method="POST" class="flex items-center gap-2">
-                                    @csrf
-                                    @method('PUT')
-                                    <select name="estado" class="rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm transition-all duration-200" onchange="this.form.submit()">
-                                        <option value="pendiente" {{ $archivo->estado == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                        <option value="aprobado" {{ $archivo->estado == 'aprobado' ? 'selected' : '' }}>Aprobado</option>
-                                        <option value="rechazado" {{ $archivo->estado == 'rechazado' ? 'selected' : '' }}>Rechazado</option>
-                                    </select>
-                                    
-                                    @php
-                                        $estadoArchivoConfig = [
-                                            'aprobado' => ['bg' => '#a7b838', 'icon' => 'fa-check-circle'],
-                                            'rechazado' => ['bg' => '#ed0551', 'icon' => 'fa-times-circle'],
-                                            'pendiente' => ['bg' => '#ea9f21', 'icon' => 'fa-clock'],
-                                        ];
-                                        $estadoArchivo = $archivo->estado ?? 'pendiente';
-                                        $archConfig = $estadoArchivoConfig[$estadoArchivo] ?? $estadoArchivoConfig['pendiente'];
-                                    @endphp
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-white shadow-sm" style="background: {{ $archConfig['bg'] }};">
-                                        <i class="fas {{ $archConfig['icon'] }}"></i>
-                                        {{ ucfirst($archivo->estado) }}
-                                    </span>
-                                </form>
-                            </div>
-                            
-                            @if($archivo->descripcion)
-                            <div class="mt-2 text-sm text-gray-600 bg-white p-2 rounded-lg border border-gray-100">
-                                <i class="fas fa-quote-left text-gray-300 mr-1"></i>
-                                {{ $archivo->descripcion }}
-                            </div>
-                            @endif
+                        @endforelse
+                    </div>
+                </section>
+
+                <aside class="review-sidebar">
+                    <section class="review-card">
+                        <header class="review-card-header compact"><div><span>Contexto</span><h2>Información de la tarea</h2></div></header>
+                        <div class="review-task-info">
+                            <div class="review-description"><small>Descripción</small><p>{{ $tarea->descripcion ?: 'Sin descripción registrada.' }}</p></div>
+                            <dl>
+                                <div><dt>Inicio</dt><dd>{{ $tarea->fecha_inicio->format('d/m/Y') }}</dd></div>
+                                <div><dt>Fecha límite</dt><dd>{{ $tarea->fecha_limite->format('d/m/Y') }}</dd></div>
+                                <div><dt>Prioridad</dt><dd><span class="review-priority {{ $prioridadClase }}">{{ ucfirst($tarea->prioridad) }}</span></dd></div>
+                            </dl>
                         </div>
-                        @endforeach
-                    </div>
-                    @else
-                    <div class="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                        <i class="fas fa-folder-open text-4xl text-gray-300 mb-3 block"></i>
-                        <p class="text-gray-500">No hay archivos adjuntos</p>
-                        <p class="text-xs text-gray-400 mt-1">Sube archivos para compartir información con tu equipo</p>
-                    </div>
-                    @endif
-                </div>
+                    </section>
+
+                    <section class="review-card">
+                        <header class="review-card-header compact"><div><span>Equipo</span><h2>Responsables</h2></div></header>
+                        <div class="review-people">
+                            <div><span>{{ strtoupper(mb_substr($tarea->creador?->name ?? 'SC', 0, 2)) }}</span><div><small>Creada por</small><strong>{{ $tarea->creador?->name ?? 'Sin información' }}</strong></div></div>
+                            <div><span>{{ strtoupper(mb_substr($tarea->asignado?->name ?? 'SA', 0, 2)) }}</span><div><small>Asignada a</small><strong>{{ $tarea->asignado?->name ?? 'Sin asignar' }}</strong></div></div>
+                        </div>
+                    </section>
+                </aside>
             </div>
 
-            <!-- Pie de página -->
-            <div class="bg-gray-50 px-8 py-4 border-t border-gray-200">
-                <a href="{{ route('administrador.campañas.show', $tarea->campania_id) }}" 
-                   class="inline-flex items-center gap-2 text-sm font-medium transition-colors" style="color: #4f46e5; hover:color: #4338ca;">
-                    <i class="fas fa-arrow-left"></i>
-                    Volver a la campaña
-                </a>
+            <div class="review-comments">
+                @include('administrador.tareas.comentarios', ['tarea' => $tarea])
             </div>
-        </div>
-
-        <!-- Comentarios -->
-        <div class="mt-8">
-            @include('administrador.tareas.comentarios', ['tarea' => $tarea])
-        </div>
+        </main>
     </div>
 </div>
 
 <style>
-    /* Banner geométrico */
-    .rp-banner {
-        background:
-            linear-gradient(135deg, #4f46e5 25%, transparent 25%) -50px 0,
-            linear-gradient(225deg, #4f46e5 25%, transparent 25%) -50px 0,
-            linear-gradient(315deg, #4f46e5 25%, transparent 25%),
-            linear-gradient(45deg,  #4f46e5 25%, transparent 25%),
-            linear-gradient(to bottom, #3b82f6 0%, #2563eb 100%);
-        background-size:
-            100px 100px,
-            100px 100px,
-            100px 100px,
-            100px 100px,
-            100% 100%;
-        background-color: #1d4ed8;
-        position: relative;
-    }
-
-    .rp-banner-overlay {
-        background:
-            radial-gradient(circle at 0%   0%,   rgba(255,255,255,0.2) 0%, transparent 50%),
-            radial-gradient(circle at 100% 0%,   rgba(255,255,255,0.2) 0%, transparent 50%),
-            radial-gradient(circle at 100% 100%, rgba(255,255,255,0.2) 0%, transparent 50%),
-            radial-gradient(circle at 0%   100%, rgba(255,255,255,0.2) 0%, transparent 50%);
-        background-size:     50% 50%;
-        background-position: 0 0, 100% 0, 100% 100%, 0 100%;
-        background-repeat:   no-repeat;
-    }
-
-    select:focus {
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-    }
-
-    @media (max-width: 640px) {
-        .rp-banner .px-8 { 
-            padding-left: 1.25rem; 
-            padding-right: 1.25rem; 
-        }
-        .rp-banner .flex.flex-col.sm\:flex-row {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-        .rp-banner a {
-            justify-content: center;
-            width: 100%;
-        }
-        .flex.flex-col.sm\:flex-row.justify-between.items-start.sm\:items-center {
-            align-items: flex-start;
-        }
-    }
+    .review-page{min-height:100vh;padding-bottom:48px;background:#fff;color:#302834}.review-shell{position:relative;width:100%}
+    .review-hero{position:relative;min-height:180px;overflow:hidden;background:linear-gradient(135deg,#4f46e5 25%,transparent 25%) -50px 0,linear-gradient(225deg,#4f46e5 25%,transparent 25%) -50px 0,linear-gradient(315deg,#4f46e5 25%,transparent 25%),linear-gradient(45deg,#4f46e5 25%,transparent 25%),linear-gradient(to bottom,#3b82f6 0%,#2563eb 100%);background-size:100px 100px,100px 100px,100px 100px,100px 100px,100% 100%;background-color:#1d4ed8}.review-hero-overlay{position:absolute;inset:0;background:linear-gradient(rgba(15,23,42,.28),rgba(15,23,42,.28)),radial-gradient(circle at 0 0,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 100% 100%,rgba(255,255,255,.2),transparent 50%)}
+    .review-hero-content{position:relative;z-index:2;min-height:180px;display:flex;align-items:center;justify-content:space-between;gap:22px;padding:30px 570px 30px max(48px,calc((100% - 1280px)/2))}.review-hero-content>div>span{display:block;margin-bottom:7px;color:#dbeafe;font-size:.68rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase}.review-hero h1{margin:0;color:#fff;font-size:clamp(1.55rem,3vw,2.25rem);font-weight:900;letter-spacing:-.04em}.review-hero p{margin:5px 0 0;color:#dbeafe;font-size:.74rem;font-weight:600}.review-task-status{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border:1px solid rgba(255,255,255,.42);border-radius:999px;background:rgba(255,255,255,.14);color:#fff;font-size:.61rem;font-weight:900;text-transform:uppercase}.review-task-status i{width:6px;height:6px;border-radius:50%;background:#cbd5e1}.review-task-status.is-complete i{background:#bef264}.review-task-status.is-progress i{background:#fde047}.review-task-status.is-rejected i{background:#fda4af}
+    .review-top-actions{position:absolute;z-index:20;top:67px;right:48px;display:flex;gap:8px}.review-top-actions a{min-height:42px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 12px;border:1px solid rgba(255,255,255,.24);border-radius:.65rem;background:rgba(255,255,255,.12);color:#fff;font-size:.66rem;font-weight:900;text-decoration:none;backdrop-filter:blur(4px);transition:.18s}.review-top-actions a.is-primary,.review-top-actions a:hover{transform:translateY(-2px);border-color:#fff;background:#fff;color:#4f46e5;box-shadow:0 8px 20px rgba(31,41,55,.16)}
+    .review-content{width:min(1280px,calc(100% - 48px));margin:24px auto 0}.review-alert{margin-bottom:14px;padding:12px 14px;display:flex;align-items:center;gap:9px;border:1px solid;border-radius:10px;font-size:.65rem;font-weight:800}.review-alert.is-success{border-color:#bfe3c5;background:#ecf8ee;color:#276738}.review-alert.is-error{border-color:#f3c4c4;background:#fff0f0;color:#a72d2d}
+    .review-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:hidden;margin-bottom:16px;border:1px solid #e2e5df;border-radius:12px;background:#fafbf9;box-shadow:0 5px 15px rgba(55,60,52,.04)}.review-summary>div{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-right:1px solid #e5e8e2}.review-summary>div:last-child{border-right:0}.review-summary span{color:#7c8479;font-size:.58rem;font-weight:800}.review-summary strong{color:#30362e;font-size:1rem;font-weight:900}
+    .review-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.75fr);gap:16px;align-items:start}.review-sidebar{display:grid;gap:16px}.review-card{overflow:hidden;border:1px solid #e1e3de;border-radius:13px;background:#fff;box-shadow:0 6px 18px rgba(55,60,52,.05)}.review-card-header{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 20px 15px;border-bottom:1px solid #e8ebe5}.review-card-header.compact{padding:16px 18px 14px}.review-card-header span{display:block;margin-bottom:3px;color:#117e8c;font-size:.56rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.review-card-header h2{margin:0;color:#302832;font-size:.98rem;font-weight:900}.review-card-header h2:after{content:'';display:block;width:44px;height:3px;margin-top:7px;border-radius:999px;background:#117e8c}.review-card-header p{margin:6px 0 0;color:#7e867b;font-size:.59rem}.review-publish{min-height:37px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 13px;border-radius:8px;background:#5b2b76;color:#fff;font-size:.62rem;font-weight:900;text-decoration:none}
+    .review-files{padding:6px 18px 18px}.review-file{padding:14px 2px;border-bottom:1px solid #e8ebe5}.review-file:last-child{border-bottom:0}.review-file-main{display:flex;align-items:flex-start;gap:11px}.review-file-icon{width:38px;height:38px;display:grid;place-items:center;flex:0 0 38px;border-radius:9px;background:#edf7f8;color:#117e8c}.review-file-copy{min-width:0;flex:1}.review-file-title{display:flex;align-items:center;justify-content:space-between;gap:12px}.review-file-title strong{overflow:hidden;color:#30362e;font-size:.69rem;font-weight:900;text-overflow:ellipsis;white-space:nowrap}.review-file-copy small{display:block;margin-top:4px;color:#8b9288;font-size:.54rem}.review-file-copy p{margin:9px 0 0;padding:8px 10px;border-left:3px solid #dfe7de;background:#fafbf9;color:#687066;font-size:.59rem;line-height:1.5}.review-file-status{padding:4px 7px;border-radius:999px;font-size:.52rem;font-weight:900}.review-file-status.is-approved{background:#edf7e5;color:#547a27}.review-file-status.is-rejected{background:#fff0f0;color:#a72d2d}.review-file-status.is-pending{background:#fff4da;color:#9a6512}
+    .review-file-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:11px;padding-left:49px}.review-file-actions>a{display:inline-flex;align-items:center;gap:6px;color:#4f46e5;font-size:.57rem;font-weight:900;text-decoration:none}.review-file-actions form{display:flex;gap:5px}.review-file-actions button{min-height:29px;padding:0 8px;border:1px solid #dce0d9;border-radius:7px;background:#fff;color:#687066;font-size:.53rem;font-weight:850;cursor:pointer}.review-file-actions button.is-approve{color:#547a27}.review-file-actions button.is-reject{color:#a72d2d}.review-file-actions button.is-current{border-color:currentColor;background:#f8faf7;box-shadow:0 0 0 2px rgba(80,90,78,.06)}.review-empty{padding:46px 20px;text-align:center}.review-empty h3{margin:0;color:#343a32;font-size:.86rem;font-weight:900}.review-empty p{margin:7px 0 17px;color:#838b80;font-size:.61rem}.review-empty a{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border-radius:8px;background:#4f46e5;color:#fff;font-size:.6rem;font-weight:900;text-decoration:none}
+    .review-task-info{padding:16px 18px}.review-description small{display:block;color:#858d82;font-size:.54rem;font-weight:900;text-transform:uppercase}.review-description p{margin:7px 0 0;color:#626a60;font-size:.63rem;line-height:1.55}.review-task-info dl{margin:15px 0 0;border-top:1px solid #e8ebe5}.review-task-info dl>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #eef0ec}.review-task-info dl>div:last-child{border-bottom:0}.review-task-info dt{color:#858d82;font-size:.57rem}.review-task-info dd{margin:0;color:#343a32;font-size:.62rem;font-weight:900}.review-priority{padding:4px 7px;border-radius:999px}.review-priority.is-urgent{background:#fff0f0;color:#a72d2d}.review-priority.is-high{background:#fff1e8;color:#b65c1c}.review-priority.is-medium{background:#eaf1ff;color:#355ca8}.review-priority.is-low{background:#edf7e5;color:#547a27}
+    .review-people{padding:5px 18px 16px}.review-people>div{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #e8ebe5}.review-people>div:last-child{border-bottom:0}.review-people>div>span{width:36px;height:36px;display:grid;place-items:center;flex:0 0 36px;border-radius:9px;background:#117e8c;color:#fff;font-size:.6rem;font-weight:900}.review-people>div:nth-child(2)>span{background:#5b2b76}.review-people small,.review-people strong{display:block}.review-people small{color:#899087;font-size:.52rem;font-weight:850;text-transform:uppercase}.review-people strong{margin-top:3px;color:#343a32;font-size:.64rem;font-weight:900}.review-comments{margin-top:16px}
+    @media(max-width:1080px){.review-hero-content{padding-right:520px}.review-grid{grid-template-columns:1fr}.review-sidebar{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:900px){.review-top-actions{position:static;justify-content:center;padding:14px 24px 0}.review-top-actions a{border-color:#dce4f3;background:#f4f7fd;color:#4f46e5}.review-top-actions a.is-primary{background:#4f46e5;color:#fff}.review-hero{margin-top:14px}.review-hero-content{padding:28px 24px}.review-summary{grid-template-columns:repeat(2,1fr)}.review-summary>div:nth-child(2){border-right:0}.review-summary>div:nth-child(-n+2){border-bottom:1px solid #e5e8e2}}
+    @media(max-width:640px){.review-page{padding-bottom:24px}.review-top-actions{display:grid;grid-template-columns:1fr;padding:12px}.review-top-actions a{width:100%}.review-hero{min-height:195px;margin-top:0}.review-hero-content{min-height:195px;align-items:flex-start;flex-direction:column;justify-content:center;padding:26px 20px}.review-content{width:calc(100% - 24px);margin-top:14px}.review-summary{grid-template-columns:1fr}.review-summary>div{border-right:0;border-bottom:1px solid #e5e8e2}.review-summary>div:last-child{border-bottom:0}.review-sidebar{grid-template-columns:1fr}.review-card-header{align-items:flex-start;flex-direction:column}.review-file-title{align-items:flex-start;flex-direction:column;gap:5px}.review-file-actions{align-items:flex-start;flex-direction:column;padding-left:0}.review-file-actions form{width:100%;display:grid;grid-template-columns:repeat(3,1fr)}.review-file-actions button{width:100%;padding:0 4px}}
 </style>
 @endsection

@@ -14,7 +14,7 @@ class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('backup:run')->dailyAt('01:00');
+        $schedule->command('database-backups:run-due')->everyMinute()->withoutOverlapping();
         $schedule->command('publicaciones:procesar-programadas')->everyMinute()->withoutOverlapping();
     }
 

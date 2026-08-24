@@ -1,9 +1,13 @@
-@extends('layouts.app2')
+@extends(($adminPreview ?? false) ? 'layouts.app' : 'layouts.app2')
 
 @section('title', 'Mi Cuenta')
 
 @section('content')
-<div id="mi-cuenta-page" class="min-h-screen">
+@php $accountUser = $accountUser ?? Auth::user(); @endphp
+<div id="mi-cuenta-page" class="min-h-screen{{ ($adminPreview ?? false) ? ' account-admin-mode' : '' }}">
+    @if($adminPreview ?? false)
+        <div class="account-admin-preview"><span><i class="fas fa-eye"></i>Vista de la cuenta de <strong>{{ $accountUser->name }}</strong></span><a href="{{ route('administrador.usuarios.index') }}"><i class="fas fa-arrow-left"></i>Volver a usuarios</a></div>
+    @endif
     <section class="cuenta-banner">
         <div class="cuenta-banner-content">
             <span class="cuenta-banner-kicker">Tu espacio personal</span>
@@ -43,10 +47,10 @@
                     <div class="p-8">
                         <div class="flex flex-col items-center mb-6">
                             <div class="w-24 h-24 cuenta-avatar rounded-full flex items-center justify-center text-white text-3xl font-bold mb-4">
-                                {{ substr(Auth::user()->name, 0, 1) }}
+                                {{ substr($accountUser->name, 0, 1) }}
                             </div>
-                            <h3 class="text-xl font-bold text-gray-900">{{ Auth::user()->name }}</h3>
-                            <p class="text-gray-600">{{ Auth::user()->email }}</p>
+                            <h3 class="text-xl font-bold text-gray-900">{{ $accountUser->name }}</h3>
+                            <p class="text-gray-600">{{ $accountUser->email }}</p>
                         </div>
                         
                         <div class="space-y-4">
@@ -58,7 +62,7 @@
                                 </div>
                                 <div class="ml-3">
                                     <p class="text-sm font-medium text-gray-500">Teléfono</p>
-                                    <p class="text-sm text-gray-900 font-medium">{{ Auth::user()->phone ?? 'No registrado' }}</p>
+                                    <p class="text-sm text-gray-900 font-medium">{{ $accountUser->phone ?? 'No registrado' }}</p>
                                 </div>
                             </div>
                             
@@ -70,18 +74,24 @@
                                 </div>
                                 <div class="ml-3">
                                     <p class="text-sm font-medium text-gray-500">Miembro desde</p>
-                                    <p class="text-sm text-gray-900 font-medium">{{ Auth::user()->created_at->format('d/m/Y') }}</p>
+                                    <p class="text-sm text-gray-900 font-medium">{{ $accountUser->created_at->format('d/m/Y') }}</p>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="mt-8 pt-6 border-t border-gray-100">
+                            @if($adminPreview ?? false)
+                            <a href="{{ route('administrador.usuarios.edit', ['user' => $accountUser->id, 'from' => 'view']) }}" class="cuenta-button w-full inline-flex items-center justify-center px-4 py-3 text-white font-medium rounded-xl transition-all duration-300">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>Editar desde administración
+                            </a>
+                            @else
                             <button type="button" id="open-account-edit" class="cuenta-button w-full inline-flex items-center justify-center px-4 py-3 text-white font-medium rounded-xl transition-all duration-300">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                                 Editar datos
                             </button>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -163,6 +173,7 @@
                                         : 'Perfil de Instagram';
                                 @endphp
                                 <div class="company-social-card bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                    @unless($adminPreview ?? false)
                                     <button type="button" class="open-company-social-modal"
                                         data-company-id="{{ $empresa->id }}"
                                         data-company-name="{{ $empresa->nombre_empresa }}"
@@ -176,6 +187,7 @@
                                         data-instagram-url="{{ route('clientes.social.redirect', ['provider' => 'instagram', 'empresa_id' => $empresa->id]) }}">
                                         <i class="fas fa-share-nodes"></i> Vincular redes
                                     </button>
+                                    @endunless
                                     <div class="p-6">
                                         <div class="flex items-center space-x-4 mb-4">
                                             @if($empresa->logo)
@@ -202,7 +214,7 @@
 
                                     </div>
                                     <div class="px-6 py-3 bg-gray-50 border-t border-gray-100">
-                                        <a href="{{ route('empresas.show', $empresa->id) }}" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm flex items-center">
+                                        <a href="{{ ($adminPreview ?? false) ? route('administrador.empresas.show', $empresa->id) : route('empresas.show', $empresa->id) }}" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm flex items-center">
                                             Ver detalles
                                             <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -213,6 +225,7 @@
                             @endforeach
                         </div>
                         
+                        @unless($adminPreview ?? false)
                         <div class="mt-8 flex justify-center">
                             <a href="{{ route('clientes.planes.comprar') }}" class="cuenta-button group relative overflow-hidden inline-flex items-center px-6 py-3 text-white font-medium rounded-xl transition-all duration-300">
                                 <div class="relative flex items-center">
@@ -223,6 +236,7 @@
                                 </div>
                             </a>
                         </div>
+                        @endunless
                     @else
                         <div class="text-center py-16">
                             <div class="relative inline-block">
@@ -235,6 +249,7 @@
                             </div>
                             <h3 class="text-xl font-semibold text-gray-900 mb-2">Aún no tienes empresas registradas</h3>
                             <p class="text-gray-600 mb-8 max-w-md mx-auto">Registra tu primera empresa para que podamos empezar a trabajar contigo.</p>
+                            @unless($adminPreview ?? false)
                             <a href="{{ route('clientes.planes.comprar') }}" class="cuenta-button group relative overflow-hidden inline-flex items-center px-8 py-3 text-white font-medium rounded-xl transition-all duration-300">
                                 <div class="relative flex items-center">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -243,6 +258,7 @@
                                     Crear mi primera empresa
                                 </div>
                             </a>
+                            @endunless
                         </div>
                     @endif
                 </div>
@@ -251,6 +267,7 @@
     </div>
 </div>
 
+@unless($adminPreview ?? false)
 <div id="account-edit-modal" class="account-edit-modal hidden" role="dialog" aria-modal="true" aria-labelledby="account-edit-title">
     <div class="account-edit-backdrop" data-close-account-modal></div>
     <div class="account-edit-dialog">
@@ -275,7 +292,7 @@
                 @method('PATCH')
                 <div class="account-edit-field">
                     <label for="account-name">Nombre completo</label>
-                    <div><input id="account-name" name="name" type="text" value="{{ old('name', Auth::user()->name) }}" required><i class="fas fa-pencil"></i></div>
+                    <div><input id="account-name" name="name" type="text" value="{{ old('name', $accountUser->name) }}" required><i class="fas fa-pencil"></i></div>
                 </div>
                 <div class="account-edit-field">
                     <label for="account-phone">Celular</label>
@@ -283,7 +300,7 @@
                 </div>
                 <div class="account-edit-field is-locked">
                     <label for="account-email">Correo electrónico</label>
-                    <div><input id="account-email" type="email" value="{{ Auth::user()->email }}" readonly><i class="fas fa-lock"></i></div>
+                    <div><input id="account-email" type="email" value="{{ $accountUser->email }}" readonly><i class="fas fa-lock"></i></div>
                     <small>El correo está protegido comunicate con un administrador para cambiarlo.</small>
                 </div>
                 <div class="account-edit-actions">
@@ -305,6 +322,8 @@
         </div>
     </div>
 </div>
+
+@endunless
 
 <div id="company-social-modal" class="company-social-modal hidden" role="dialog" aria-modal="true" aria-labelledby="company-social-title">
     <div class="company-social-backdrop" data-close-company-social></div>
@@ -346,6 +365,10 @@
         background: #ffffff;
         color: #302834;
     }
+    #mi-cuenta-page.account-admin-mode { display: flow-root; }
+    #mi-cuenta-page .account-admin-preview { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:20px; padding:11px 24px; border-bottom:1px solid #dce7cc; background:#f3f7eb; color:#526f25; font-size:.72rem; font-weight:800; }
+    #mi-cuenta-page .account-admin-preview span,#mi-cuenta-page .account-admin-preview a { display:flex; align-items:center; gap:8px; }
+    #mi-cuenta-page .account-admin-preview a { padding:7px 10px; border-radius:8px; background:#7da533; color:#fff; font-size:.65rem; font-weight:900; }
     #mi-cuenta-page .cuenta-banner {
         position: relative;
         min-height: 168px;
@@ -750,11 +773,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeAccountModalButtons = document.querySelectorAll('[data-close-account-modal]');
 
     function showAccountModal() {
+        if (!accountModal) return;
         accountModal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
 
     function hideAccountModal() {
+        if (!accountModal) return;
         accountModal.classList.add('hidden');
         document.body.style.overflow = '';
     }
@@ -811,7 +836,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }));
 
     document.addEventListener('keydown', event => {
-        if (event.key === 'Escape' && !accountModal.classList.contains('hidden')) {
+        if (event.key === 'Escape' && accountModal && !accountModal.classList.contains('hidden')) {
             hideAccountModal();
         }
         if (event.key === 'Escape' && !companySocialModal.classList.contains('hidden')) {
@@ -825,11 +850,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (requestedButton) showCompanySocialModal(requestedButton);
     }
 
-    @if($errors->any())
+    @if(!($adminPreview ?? false) && $errors->any())
         showAccountModal();
     @endif
 
-    fetchPlanContratado();
+    const accountPlanData = @json($accountPlans ?? null);
+    if (accountPlanData) {
+        const activePlans = Array.isArray(accountPlanData.plans) ? accountPlanData.plans : [accountPlanData.plan].filter(Boolean);
+        renderPlanesActivos(activePlans);
+        setupPlanModal(activePlans);
+    } else {
+        fetchPlanContratado();
+    }
     
     function fetchPlanContratado() {
         fetch('/cliente/plan-contratado')

@@ -60,8 +60,17 @@ class Pago extends Model
     {
         return $this->hasOne(CodigoPago::class);
     }
-      public function comprobantePago()
+    public function comprobantePago()
     {
         return $this->hasOne(ComprobantePago::class);
+    }
+
+    public function libelulaTransaction()
+    {
+        return $this->hasOne(
+            LibelulaTransaction::class,
+            'libelula_transaction_id',
+            'provider_transaction_id'
+        );
     }
 }

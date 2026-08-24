@@ -1,3 +1,11 @@
+@php
+    $transaccionLibelula = $pago->libelulaTransaction;
+    $idTransaccionSistema = $transaccionLibelula?->identifier
+        ?: ($pago->codigo_pago ?: 'PAGO-'.str_pad((string) $pago->id, 6, '0', STR_PAD_LEFT));
+    $idTransaccionLibelula = $transaccionLibelula?->libelula_transaction_id
+        ?: $pago->provider_transaction_id;
+@endphp
+
 <div class="bg-white rounded-lg shadow-xl overflow-hidden">
     <!-- Encabezado -->
     <header class="bg-gradient-to-r from-gray-700 to-gray-900 p-6 text-white text-center">
@@ -18,6 +26,16 @@
                         <dt class="font-medium text-gray-600">N° de Comprobante:</dt>
                         <dd class="font-semibold text-gray-900">{{ $pago->comprobantePago->numero_formateado ?? 'N/A' }}</dd>
                     </div>
+                    <div class="flex justify-between gap-4">
+                        <dt class="font-medium text-gray-600">ID transacción (sistema):</dt>
+                        <dd class="max-w-[55%] break-all text-right font-mono text-xs font-semibold text-gray-900">{{ $idTransaccionSistema }}</dd>
+                    </div>
+                    @if($idTransaccionLibelula)
+                    <div class="flex justify-between gap-4">
+                        <dt class="font-medium text-gray-600">ID transacción (Libélula):</dt>
+                        <dd class="max-w-[55%] break-all text-right font-mono text-xs font-semibold text-gray-900">{{ $idTransaccionLibelula }}</dd>
+                    </div>
+                    @endif
                     <div class="flex justify-between">
                         <dt class="font-medium text-gray-600">Fecha de Emisión:</dt>
                         <dd class="text-gray-900">{{ $pago->created_at->format('d/m/Y H:i') }}</dd>
@@ -57,11 +75,11 @@
                 <dl class="space-y-2">
                     <div class="flex justify-between">
                         <dt class="font-medium text-gray-600">Nombre:</dt>
-                        <dd class="text-gray-900">{{ $pago->usuario->name }}</dd>
+                        <dd class="text-gray-900">{{ optional($pago->usuario)->name ?? 'N/A' }}</dd>
                     </div>
                     <div class="flex justify-between">
                         <dt class="font-medium text-gray-600">Email:</dt>
-                        <dd class="text-gray-900">{{ $pago->usuario->email }}</dd>
+                        <dd class="text-gray-900">{{ optional($pago->usuario)->email ?? 'N/A' }}</dd>
                     </div>
                     @if($pago->fecha_aprobacion)
                     <div class="flex justify-between">
@@ -89,7 +107,7 @@
                     <tbody>
                         <tr>
                             <td class="py-4 text-gray-800">
-                                <p class="font-medium">{{ $pago->plan->nombre }}</p>
+                                <p class="font-medium">{{ optional($pago->plan)->nombre ?? 'N/A' }}</p>
                                 <p class="text-sm text-gray-500">Suscripción al plan</p>
                             </td>
                             <td class="py-4 text-right">

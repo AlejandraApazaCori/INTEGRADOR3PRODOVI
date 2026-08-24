@@ -6,10 +6,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
-    <div class="min-h-screen" style="background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 50%, #F5F3FF 100%);">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="payments-analytics-page">
+        <div class="payments-analytics-shell">
             <!-- Action buttons -->
-            <div class="flex flex-wrap gap-3 pb-6">
+            <div class="analytics-tabs flex flex-wrap gap-3">
                 <a href="{{ route('administrador.pagos.index') }}" class="btn-action btn-blue">
                     <i class="fas fa-table-columns"></i>
                     General
@@ -28,7 +28,7 @@
                         </svg>
                     </span>
                 </a>
-                <button type="button" id="abrirReporteMensual" class="btn-action btn-purple">
+                <a href="{{ route('administrador.pagos.mensual.pdf') }}" target="_blank" class="btn-action btn-purple">
                     <i class="fas fa-file-pdf"></i>
                     Reporte mensual
                     <span class="btn-action__mark" aria-hidden="true">
@@ -36,11 +36,14 @@
                             <path d="M243.7,418.13C198.37,312.3,118.14,268.5,0,294.73,135.19,238.54,203.38,148.99,149.24,0c49.45,103.91,130.68,145.05,243.7,123.4-127.69,63.18-168.91,165.26-149.24,294.73Z"></path>
                         </svg>
                     </span>
-                </button>
+                </a>
+                <a href="{{ route('administrador.pagos.manual.crear') }}" class="btn-action analytics-register-action">
+                    <i class="fas fa-plus-circle"></i>Registrar pago
+                </a>
             </div>
 
             <!-- Banner con fondo geométrico -->
-            <div class="mb-8 rounded-2xl overflow-hidden relative rp-banner">
+            <div class="analytics-hero overflow-hidden relative rp-banner">
                 <div class="rp-banner-overlay absolute inset-0"></div>
                 <div class="relative z-10 px-8 py-8">
                     <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
@@ -60,7 +63,7 @@
             </div>
 
             <!-- Filtros -->
-            <div class="bg-white rounded-2xl shadow-xl p-6 mb-8 border border-gray-100">
+            <div class="analytics-filters bg-white rounded-2xl p-6" style="display:none" aria-hidden="true">
                 <div class="flex items-center mb-6">
                     <div class="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg p-3 mr-4 shadow-lg">
                         <i class="fas fa-filter text-white text-xl"></i>
@@ -86,43 +89,90 @@
                             <label for="plan" class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-list mr-1"></i> Plan
                             </label>
-                            <select id="plan" name="plan"
-                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
+                            <select id="plan" name="plan" class="analytics-native-control" tabindex="-1" aria-hidden="true">
                                 <option value="">Todos los planes</option>
                                 @foreach($planes as $plan)
                                     <option value="{{ $plan->id }}">{{ $plan->nombre }}</option>
                                 @endforeach
                             </select>
+                            <div class="analytics-custom-dropdown" data-analytics-select="plan">
+                                <button type="button" class="analytics-custom-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                    <span class="analytics-control-icon"><i class="fas fa-layer-group"></i></span>
+                                    <span data-analytics-select-label>Todos los planes</span>
+                                    <i class="fas fa-chevron-down analytics-control-chevron"></i>
+                                </button>
+                                <div class="analytics-custom-menu is-hidden" role="listbox">
+                                    <button type="button" data-value="">Todos los planes</button>
+                                    @foreach($planes as $plan)
+                                        <button type="button" data-value="{{ $plan->id }}">{{ $plan->nombre }}</button>
+                                    @endforeach
+                                </div>
+                            </div>
                         </div>
 
                         <div>
                             <label for="subscriptionStatus" class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-toggle-on mr-1"></i> Estado de Suscripción
                             </label>
-                            <select id="subscriptionStatus" name="subscriptionStatus"
-                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
+                            <select id="subscriptionStatus" name="subscriptionStatus" class="analytics-native-control" tabindex="-1" aria-hidden="true">
                                 <option value="">Todos los estados</option>
                                 <option value="active">Solo activas</option>
                                 <option value="completed">Finalizadas</option>
                                 <option value="cancelled">Canceladas</option>
                                 <option value="all">Todas</option>
                             </select>
+                            <div class="analytics-custom-dropdown" data-analytics-select="subscriptionStatus">
+                                <button type="button" class="analytics-custom-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                    <span class="analytics-control-icon"><i class="fas fa-toggle-on"></i></span>
+                                    <span data-analytics-select-label>Todos los estados</span>
+                                    <i class="fas fa-chevron-down analytics-control-chevron"></i>
+                                </button>
+                                <div class="analytics-custom-menu is-hidden" role="listbox">
+                                    <button type="button" data-value="">Todos los estados</button>
+                                    <button type="button" data-value="active">Solo activas</button>
+                                    <button type="button" data-value="completed">Finalizadas</button>
+                                    <button type="button" data-value="cancelled">Canceladas</button>
+                                    <button type="button" data-value="all">Todas</button>
+                                </div>
+                            </div>
                         </div>
 
                         <div>
                             <label for="startDate" class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-calendar-alt mr-1"></i> Desde
                             </label>
-                            <input type="date" id="startDate" name="startDate" value="{{ $defaultStartDate }}"
-                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
+                            <input type="hidden" id="startDate" name="startDate" value="{{ $defaultStartDate }}">
+                            <div class="analytics-date-control" data-analytics-calendar="startDate">
+                                <button type="button" class="analytics-custom-trigger" aria-expanded="false">
+                                    <span class="analytics-control-icon"><i class="fas fa-calendar-days"></i></span>
+                                    <span data-calendar-label>Seleccionar fecha</span>
+                                    <i class="fas fa-chevron-down analytics-control-chevron"></i>
+                                </button>
+                                <div class="analytics-calendar is-hidden">
+                                    <div class="analytics-calendar-head"><button type="button" data-calendar-prev><i class="fas fa-chevron-left"></i></button><strong data-calendar-month></strong><button type="button" data-calendar-next><i class="fas fa-chevron-right"></i></button></div>
+                                    <div class="analytics-calendar-week"><span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sá</span><span>Do</span></div>
+                                    <div class="analytics-calendar-days" data-calendar-days></div>
+                                </div>
+                            </div>
                         </div>
 
                         <div>
                             <label for="endDate" class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-calendar-alt mr-1"></i> Hasta
                             </label>
-                            <input type="date" id="endDate" name="endDate" value="{{ $defaultEndDate }}"
-                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
+                            <input type="hidden" id="endDate" name="endDate" value="{{ $defaultEndDate }}">
+                            <div class="analytics-date-control" data-analytics-calendar="endDate">
+                                <button type="button" class="analytics-custom-trigger" aria-expanded="false">
+                                    <span class="analytics-control-icon"><i class="fas fa-calendar-check"></i></span>
+                                    <span data-calendar-label>Seleccionar fecha</span>
+                                    <i class="fas fa-chevron-down analytics-control-chevron"></i>
+                                </button>
+                                <div class="analytics-calendar is-hidden">
+                                    <div class="analytics-calendar-head"><button type="button" data-calendar-prev><i class="fas fa-chevron-left"></i></button><strong data-calendar-month></strong><button type="button" data-calendar-next><i class="fas fa-chevron-right"></i></button></div>
+                                    <div class="analytics-calendar-week"><span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sá</span><span>Do</span></div>
+                                    <div class="analytics-calendar-days" data-calendar-days></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -140,32 +190,12 @@
             </div>
 
             <!-- Resultados -->
-            <div id="resultsSection" class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
-                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between mb-6">
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800">Resumen del rango consultado</h2>
-                        <p class="text-gray-600 text-sm">Las métricas se actualizan según los filtros aplicados</p>
-                    </div>
-                    <div class="flex items-center gap-3 flex-wrap">
-                        <span id="resultCount" class="text-sm text-gray-600 font-medium"></span>
-                        <div id="downloadButtons" class="flex items-center gap-2">
-                            <button id="downloadPDF"
-                                class="px-4 py-2 bg-red-600 text-white text-sm rounded-xl hover:bg-red-700 transition-all duration-200 shadow-md hover:shadow-red-200/50">
-                                <i class="fas fa-file-pdf mr-1"></i> PDF
-                            </button>
-                            <button id="downloadExcel"
-                                class="px-4 py-2 bg-green-600 text-white text-sm rounded-xl hover:bg-green-700 transition-all duration-200 shadow-md hover:shadow-green-200/50">
-                                <i class="fas fa-file-excel mr-1"></i> Excel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="appliedFilters" class="mb-6 flex flex-wrap gap-2"></div>
+            <div id="resultsSection" class="analytics-results bg-white rounded-2xl p-6">
+                <div id="appliedFilters" class="mb-6 flex flex-wrap gap-2" style="display:none" aria-hidden="true"></div>
 
                 <!-- Tarjetas de resumen mejoradas -->
-                <div id="summaryCards" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-gradient-to-br from-green-500 to-green-700 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                <div id="summaryCards" class="analytics-summary-grid grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="analytics-summary-card analytics-summary-income rounded-2xl p-6 transition-all duration-300">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-green-100 text-sm font-medium">Total de Ingresos</p>
@@ -176,7 +206,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="analytics-summary-card analytics-summary-plan rounded-2xl p-6 transition-all duration-300">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-blue-100 text-sm font-medium">Plan Más Contratado</p>
@@ -187,7 +217,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="analytics-summary-card analytics-summary-records rounded-2xl p-6 transition-all duration-300">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-purple-100 text-sm font-medium">Total de Registros</p>
@@ -200,48 +230,28 @@
                     </div>
                 </div>
                 <!-- Gr?ficas -->
-                <div id="chartsSection" class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+                <div id="chartsSection" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div class="chart-card">
-                        <h3 class="chart-card__title">Distribución por plan</h3>
-                        <div class="chart-card__canvas"><canvas id="planChart"></canvas></div>
-                    </div>
-                    <div class="chart-card">
-                        <h3 class="chart-card__title">Pagos por estado</h3>
-                        <div class="chart-card__canvas"><canvas id="paymentStatusChart"></canvas></div>
-                    </div>
-                    <div class="chart-card xl:col-span-2">
                         <h3 class="chart-card__title">Ingresos por mes</h3>
-                        <div class="chart-card__canvas chart-card__canvas--wide"><canvas id="monthlyIncomeChart"></canvas></div>
+                        <div class="chart-card__canvas"><canvas id="monthlyIncomeChart"></canvas></div>
                     </div>
                     <div class="chart-card">
                         <h3 class="chart-card__title">Ingresos por plan</h3>
                         <div class="chart-card__canvas"><canvas id="incomeByPlanChart"></canvas></div>
                     </div>
                     <div class="chart-card">
-                        <h3 class="chart-card__title">Evolución de suscripciones activas</h3>
-                        <div class="chart-card__canvas"><canvas id="activeSubscriptionsChart"></canvas></div>
-                    </div>
-                    <div class="chart-card">
-                        <h3 class="chart-card__title">Top 5 clientes que más pagaron</h3>
-                        <div class="chart-card__canvas"><canvas id="topClientsChart"></canvas></div>
-                    </div>
-                    <div class="chart-card">
-                        <h3 class="chart-card__title">Comparación mensual de ingresos</h3>
-                        <div class="chart-card__canvas"><canvas id="incomeComparisonChart"></canvas></div>
+                        <h3 class="chart-card__title">Pagos por estado</h3>
+                        <div class="chart-card__canvas"><canvas id="paymentStatusChart"></canvas></div>
                     </div>
                     <div class="chart-card">
                         <h3 class="chart-card__title">Método de pago más usado</h3>
                         <div class="chart-card__canvas"><canvas id="paymentMethodChart"></canvas></div>
                     </div>
-                    <div class="chart-card xl:col-span-2">
-                        <h3 class="chart-card__title">Pagos por día del mes</h3>
-                        <div class="chart-card__canvas chart-card__canvas--wide"><canvas id="incomeByDayChart"></canvas></div>
-                    </div>
                 </div>
 
                 <!-- Tabla mejorada -->
-                <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-                    <table class="min-w-full divide-y divide-gray-200">
+                <div class="analytics-table-wrap overflow-x-auto rounded-xl" style="display:none" aria-hidden="true">
+                    <table class="analytics-table min-w-full">
                         <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
                             <tr>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">ID</th>
@@ -258,7 +268,7 @@
                     </table>
                 </div>
 
-                <div id="paginationContainer" class="mt-4 flex justify-center"></div>
+                <div id="paginationContainer" class="mt-4 flex justify-center" style="display:none" aria-hidden="true"></div>
             </div>
         </div>
     </div>
@@ -298,7 +308,6 @@
             const filterForm = document.getElementById('filterForm');
             const resetButton = document.getElementById('resetFilters');
             const resultsTableBody = document.getElementById('resultsTableBody');
-            const resultCount = document.getElementById('resultCount');
             const paginationContainer = document.getElementById('paginationContainer');
             const appliedFilters = document.getElementById('appliedFilters');
             const defaultStartDate = @json($defaultStartDate);
@@ -306,6 +315,145 @@
             let currentPage = 1;
             let totalPages = 1;
             let chartInstances = {};
+            const analyticsSelectControllers = [];
+            const analyticsCalendarControllers = [];
+
+            function closeAnalyticsControls(except = null) {
+                document.querySelectorAll('.analytics-custom-dropdown,.analytics-date-control').forEach(control => {
+                    if (control === except) return;
+                    control.classList.remove('is-open');
+                    control.querySelector('.analytics-custom-menu,.analytics-calendar')?.classList.add('is-hidden');
+                    control.querySelector('.analytics-custom-trigger')?.setAttribute('aria-expanded', 'false');
+                });
+            }
+
+            document.querySelectorAll('[data-analytics-select]').forEach(dropdown => {
+                const nativeSelect = document.getElementById(dropdown.dataset.analyticsSelect);
+                const trigger = dropdown.querySelector('.analytics-custom-trigger');
+                const menu = dropdown.querySelector('.analytics-custom-menu');
+                const label = dropdown.querySelector('[data-analytics-select-label]');
+                const options = [...menu.querySelectorAll('button[data-value]')];
+
+                function close() {
+                    dropdown.classList.remove('is-open');
+                    menu.classList.add('is-hidden');
+                    trigger.setAttribute('aria-expanded', 'false');
+                }
+
+                function sync() {
+                    const option = options.find(item => item.dataset.value === nativeSelect.value) || options[0];
+                    label.textContent = option.textContent.trim();
+                    options.forEach(item => {
+                        const selected = item === option;
+                        item.classList.toggle('is-selected', selected);
+                        item.setAttribute('aria-selected', selected ? 'true' : 'false');
+                    });
+                }
+
+                trigger.addEventListener('click', () => {
+                    const opening = menu.classList.contains('is-hidden');
+                    closeAnalyticsControls(dropdown);
+                    dropdown.classList.toggle('is-open', opening);
+                    menu.classList.toggle('is-hidden', !opening);
+                    trigger.setAttribute('aria-expanded', opening ? 'true' : 'false');
+                });
+
+                options.forEach(option => option.addEventListener('click', () => {
+                    nativeSelect.value = option.dataset.value;
+                    nativeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                    sync();
+                    close();
+                }));
+
+                sync();
+                analyticsSelectControllers.push({ sync });
+            });
+
+            function parseLocalDate(value) {
+                if (!value) return new Date();
+                const [year, month, day] = value.split('-').map(Number);
+                return new Date(year, month - 1, day);
+            }
+
+            function toDateValue(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            function calendarLabel(value) {
+                if (!value) return 'Seleccionar fecha';
+                return parseLocalDate(value).toLocaleDateString('es-BO', { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '');
+            }
+
+            document.querySelectorAll('[data-analytics-calendar]').forEach(control => {
+                const input = document.getElementById(control.dataset.analyticsCalendar);
+                const trigger = control.querySelector('.analytics-custom-trigger');
+                const calendar = control.querySelector('.analytics-calendar');
+                const label = control.querySelector('[data-calendar-label]');
+                const monthLabel = control.querySelector('[data-calendar-month]');
+                const daysContainer = control.querySelector('[data-calendar-days]');
+                let viewDate = parseLocalDate(input.value);
+
+                function close() {
+                    control.classList.remove('is-open');
+                    calendar.classList.add('is-hidden');
+                    trigger.setAttribute('aria-expanded', 'false');
+                }
+
+                function render() {
+                    label.textContent = calendarLabel(input.value);
+                    monthLabel.textContent = viewDate.toLocaleDateString('es-BO', { month: 'long', year: 'numeric' });
+                    daysContainer.innerHTML = '';
+                    const year = viewDate.getFullYear();
+                    const month = viewDate.getMonth();
+                    const firstDayOffset = (new Date(year, month, 1).getDay() + 6) % 7;
+                    const totalDays = new Date(year, month + 1, 0).getDate();
+                    const startValue = document.getElementById('startDate').value;
+                    const endValue = document.getElementById('endDate').value;
+
+                    for (let blank = 0; blank < firstDayOffset; blank++) daysContainer.append(document.createElement('span'));
+                    for (let day = 1; day <= totalDays; day++) {
+                        const date = new Date(year, month, day);
+                        const value = toDateValue(date);
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.textContent = day;
+                        const invalidStart = input.id === 'startDate' && endValue && value > endValue;
+                        const invalidEnd = input.id === 'endDate' && startValue && value < startValue;
+                        button.disabled = invalidStart || invalidEnd;
+                        button.classList.toggle('is-selected', input.value === value);
+                        button.classList.toggle('is-today', value === toDateValue(new Date()));
+                        button.addEventListener('click', () => {
+                            input.value = value;
+                            input.dispatchEvent(new Event('change', { bubbles: true }));
+                            analyticsCalendarControllers.forEach(controller => controller.render());
+                            close();
+                        });
+                        daysContainer.append(button);
+                    }
+                }
+
+                trigger.addEventListener('click', () => {
+                    const opening = calendar.classList.contains('is-hidden');
+                    closeAnalyticsControls(control);
+                    if (opening) viewDate = parseLocalDate(input.value);
+                    control.classList.toggle('is-open', opening);
+                    calendar.classList.toggle('is-hidden', !opening);
+                    trigger.setAttribute('aria-expanded', opening ? 'true' : 'false');
+                    render();
+                });
+                control.querySelector('[data-calendar-prev]').addEventListener('click', () => { viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1); render(); });
+                control.querySelector('[data-calendar-next]').addEventListener('click', () => { viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1); render(); });
+                const controller = { render, resetView: () => { viewDate = parseLocalDate(input.value); render(); } };
+                analyticsCalendarControllers.push(controller);
+                render();
+            });
+
+            document.addEventListener('click', event => {
+                if (!event.target.closest('.analytics-custom-dropdown,.analytics-date-control')) closeAnalyticsControls();
+            });
 
             filterForm.addEventListener('submit', function (e) {
                 e.preventDefault();
@@ -317,16 +465,10 @@
                 filterForm.reset();
                 document.getElementById('startDate').value = defaultStartDate;
                 document.getElementById('endDate').value = defaultEndDate;
+                analyticsSelectControllers.forEach(controller => controller.sync());
+                analyticsCalendarControllers.forEach(controller => controller.resetView());
                 currentPage = 1;
                 fetchFilteredResults();
-            });
-
-            document.getElementById('downloadPDF').addEventListener('click', function () {
-                downloadReport('pdf');
-            });
-
-            document.getElementById('downloadExcel').addEventListener('click', function () {
-                downloadReport('excel');
             });
 
             function fetchFilteredResults() {
@@ -358,11 +500,9 @@
                         renderSummary(data.summary);
                         renderCharts(data.charts);
                         renderAppliedFilters(data.filters);
-                        resultCount.textContent = `Mostrando ${data.data.length} de ${data.pagination.total} resultados`;
                     })
                     .catch(error => {
                         resultsTableBody.innerHTML = `<tr><td colspan="8" class="px-6 py-4 text-center text-red-500">${error.message}</td></tr>`;
-                        resultCount.textContent = '0 resultados';
                     });
             }
 
@@ -469,27 +609,13 @@
             function renderCharts(charts) {
                 destroyCharts();
 
-                renderChart('planChart', {
-                    type: 'doughnut',
-                    data: {
-                        labels: Object.keys(charts.plan_distribution || {}),
-                        datasets: [{
-                            data: Object.values(charts.plan_distribution || {}),
-                            backgroundColor: ['#4F46E5', '#22C55E', '#F59E0B', '#06B6D4', '#EC4899', '#8B5CF6', '#F97316'],
-                            borderWidth: 0,
-                            hoverOffset: 8
-                        }]
-                    },
-                    options: buildCircularOptions()
-                });
-
                 renderChart('paymentStatusChart', {
                     type: 'pie',
                     data: {
                         labels: Object.keys(charts.payment_status_distribution || {}).map(formatPaymentStatusLabel),
                         datasets: [{
                             data: Object.values(charts.payment_status_distribution || {}),
-                            backgroundColor: ['#F59E0B', '#10B981', '#EF4444', '#6B7280'],
+                            backgroundColor: ['#E3A122', '#15936F', '#D95D5D', '#78909F'],
                             borderWidth: 0,
                             hoverOffset: 8
                         }]
@@ -504,8 +630,8 @@
                         datasets: [{
                             label: 'Ingresos',
                             data: charts.monthly_income?.values || [],
-                            borderColor: '#2563EB',
-                            backgroundColor: 'rgba(37, 99, 235, 0.18)',
+                            borderColor: '#1593B5',
+                            backgroundColor: 'rgba(21, 147, 181, 0.16)',
                             fill: true,
                             tension: 0.35,
                             pointRadius: 4,
@@ -522,57 +648,9 @@
                         datasets: [{
                             label: 'Ingresos por plan',
                             data: Object.values(charts.income_by_plan || {}),
-                            backgroundColor: ['#4F46E5', '#7C3AED', '#2563EB', '#0891B2', '#0F766E', '#65A30D'],
+                            backgroundColor: ['#2563B9', '#1593B5', '#117E8C', '#7DA533', '#E3A122', '#6B5DB2'],
                             borderRadius: 12,
                             maxBarThickness: 46
-                        }]
-                    },
-                    options: buildCartesianOptions({ currency: true, legend: false })
-                });
-
-                renderChart('activeSubscriptionsChart', {
-                    type: 'line',
-                    data: {
-                        labels: charts.active_subscriptions_evolution?.labels || [],
-                        datasets: [{
-                            label: 'Suscripciones activas',
-                            data: charts.active_subscriptions_evolution?.values || [],
-                            borderColor: '#7C3AED',
-                            backgroundColor: 'rgba(124, 58, 237, 0.15)',
-                            fill: true,
-                            tension: 0.3,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
-                        }]
-                    },
-                    options: buildCartesianOptions({ integer: true })
-                });
-
-                renderChart('topClientsChart', {
-                    type: 'bar',
-                    data: {
-                        labels: Object.keys(charts.top_clients || {}),
-                        datasets: [{
-                            label: 'Total pagado',
-                            data: Object.values(charts.top_clients || {}),
-                            backgroundColor: ['#0EA5E9', '#22C55E', '#F59E0B', '#EC4899', '#8B5CF6'],
-                            borderRadius: 12,
-                            maxBarThickness: 34
-                        }]
-                    },
-                    options: buildCartesianOptions({ currency: true, indexAxis: 'y', legend: false })
-                });
-
-                renderChart('incomeComparisonChart', {
-                    type: 'bar',
-                    data: {
-                        labels: charts.income_comparison?.labels || [],
-                        datasets: [{
-                            label: 'Ingresos',
-                            data: charts.income_comparison?.values || [],
-                            backgroundColor: ['#CBD5F5', '#4F46E5'],
-                            borderRadius: 14,
-                            maxBarThickness: 56
                         }]
                     },
                     options: buildCartesianOptions({ currency: true, legend: false })
@@ -585,7 +663,7 @@
                         datasets: [{
                             label: 'Cantidad de pagos',
                             data: Object.values(charts.payment_method_distribution || {}),
-                            backgroundColor: ['#14B8A6', '#2563EB', '#F97316', '#A855F7', '#EAB308'],
+                            backgroundColor: ['#1593B5', '#2563B9', '#E37225', '#6B5DB2', '#E3A122'],
                             borderRadius: 12,
                             maxBarThickness: 48
                         }]
@@ -593,22 +671,6 @@
                     options: buildCartesianOptions({ integer: true, legend: false })
                 });
 
-                renderChart('incomeByDayChart', {
-                    type: 'bar',
-                    data: {
-                        labels: charts.income_by_day?.labels || [],
-                        datasets: [{
-                            label: 'Ingresos por d?a',
-                            data: charts.income_by_day?.values || [],
-                            backgroundColor: '#93C5FD',
-                            borderColor: '#2563EB',
-                            borderWidth: 1,
-                            borderRadius: 8,
-                            maxBarThickness: 22
-                        }]
-                    },
-                    options: buildCartesianOptions({ currency: true, legend: false })
-                });
             }
 
             function destroyCharts() {
@@ -800,11 +862,6 @@
                 paginationHTML += '</div>';
                 paginationContainer.innerHTML = paginationHTML;
                 totalPages = pagination.total_pages;
-            }
-
-            function downloadReport(type) {
-                const params = getFormParams();
-                window.open(`/administrador/pagos/descargar-${type}?${params.toString()}`, '_blank');
             }
 
             window.changePage = function(page) {
@@ -1079,5 +1136,19 @@
             border: 1px dashed #cbd5e1;
             border-radius: 0.9rem;
         }
+
+        /* Rediseño unificado del panel de analíticas */
+        .payments-analytics-page{min-height:100vh;padding:20px 0 48px;background:#fff;color:#302834}.payments-analytics-shell{position:relative;display:flex;flex-direction:column;width:100%}.analytics-hero{order:1;width:100%;min-height:180px;margin:0;border-radius:0;box-shadow:none}.analytics-hero .relative.z-10{display:flex;align-items:center;min-height:180px;padding:30px 48px}.analytics-hero .relative.z-10>div{width:100%;padding-right:570px}.analytics-hero .relative.z-10>div>a{display:none}.analytics-hero h1{margin:0 0 4px;color:#fff;font-size:clamp(1.55rem,3vw,2.25rem);font-weight:900;letter-spacing:-.04em}.analytics-hero h1::before{content:'Administración financiera';display:block;margin-bottom:7px;color:#dbeafe;font-size:.68rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase}.analytics-hero p{color:#dbeafe!important;font-size:.74rem!important;font-weight:600}.analytics-hero .h-14.w-14{width:52px;height:52px;border:1px solid rgba(255,255,255,.24);border-radius:14px;background:rgba(255,255,255,.14)!important;backdrop-filter:blur(5px)}.analytics-hero .rp-banner-overlay,.analytics-hero .absolute.inset-0{background:linear-gradient(rgba(15,23,42,.28),rgba(15,23,42,.28)),radial-gradient(circle at 0 0,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 100% 100%,rgba(255,255,255,.16),transparent 50%);background-size:100% 100%,50% 50%,50% 50%;background-position:0 0,0 0,100% 100%}
+        .analytics-tabs{position:absolute;z-index:20;top:67px;right:48px;justify-content:flex-end;padding:0}.analytics-tabs .btn-action{min-height:42px;gap:8px;padding:10px 13px;border:1px solid rgba(255,255,255,.24);border-radius:.65rem;background:rgba(255,255,255,.12);color:#fff;box-shadow:none;font-size:.69rem;font-weight:900;backdrop-filter:blur(4px)}.analytics-tabs .btn-action:nth-child(2){border-color:#fff;background:#fff;color:#4f46e5}.analytics-tabs .analytics-register-action{border-color:#ef6c22;background:#ef6c22;color:#fff}.analytics-tabs .btn-action:hover{transform:translateY(-2px);border-color:#fff;background:#fff;color:#4f46e5;box-shadow:0 8px 20px rgba(31,41,55,.16)}.analytics-tabs .btn-action__mark{display:none}
+        .analytics-filters{order:3;margin:24px 24px 0!important;padding:20px!important;border:1px solid #d9e7f0!important;border-radius:16px!important;background:linear-gradient(90deg,#f7faff,#eff9fa)!important;box-shadow:0 9px 22px rgba(30,72,110,.07)!important}.analytics-filters>.flex.items-center{margin-bottom:18px}.analytics-filters>.flex.items-center>div:first-child{width:42px;height:42px;display:grid;place-items:center;flex:0 0 auto;margin-right:12px!important;padding:0!important;border-radius:11px!important;background:linear-gradient(135deg,#2563b9,#1593b5)!important;box-shadow:0 7px 15px rgba(21,147,181,.2)!important}.analytics-filters>.flex.items-center i{font-size:.9rem!important}.analytics-filters h2{color:#263f52;font-size:.95rem;font-weight:900}.analytics-filters h2::after{content:'';display:block;width:44px;height:3px;margin-top:6px;border-radius:999px;background:#1593b5}.analytics-filters h2+p{margin-top:5px;color:#78909f;font-size:.64rem}.analytics-filters form>.grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}.analytics-filters label{margin-bottom:7px;color:#405568;font-size:.64rem;font-weight:900}.analytics-filters label i{color:#1593b5}.analytics-filters input,.analytics-filters select{width:100%;height:48px;padding:0 13px;border:1px solid #d8e4ec;border-radius:12px;background:#fff;color:#304657;font-size:.72rem;font-weight:600;outline:0;transition:.18s}.analytics-filters input:focus,.analytics-filters select:focus{border-color:#1593b5;box-shadow:0 0 0 3px rgba(21,147,181,.13)}.analytics-filters form>.flex button{min-height:41px;padding:9px 14px;border-radius:10px;font-size:.67rem;font-weight:900;box-shadow:none}.analytics-filters #resetFilters{border:1px solid #d4e2eb;background:#fff;color:#62798a}.analytics-filters button[type=submit]{border:0;background:linear-gradient(135deg,#2563b9,#1593b5);color:#fff}.analytics-filters button[type=submit]:hover{filter:brightness(.94)}
+        .analytics-native-control{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;padding:0!important;border:0!important;opacity:0!important;pointer-events:none!important}.analytics-custom-dropdown,.analytics-date-control{position:relative}.analytics-custom-trigger{width:100%;height:48px;display:flex;align-items:center;gap:9px;padding:0 11px;border:1px solid #d8e4ec;border-radius:12px;background:#fff;color:#304657;text-align:left;cursor:pointer;transition:.18s}.analytics-custom-trigger>span:nth-child(2){min-width:0;flex:1;overflow:hidden;font-size:.68rem;font-weight:800;text-overflow:ellipsis;white-space:nowrap}.analytics-custom-trigger:hover,.analytics-custom-dropdown.is-open .analytics-custom-trigger,.analytics-date-control.is-open .analytics-custom-trigger{border-color:#1593b5;box-shadow:0 0 0 3px rgba(21,147,181,.13)}.analytics-control-icon{width:30px;height:30px;display:grid;place-items:center;flex:0 0 auto;border-radius:8px;background:#e5f6f8;color:#1593b5}.analytics-control-icon i{font-size:.72rem!important}.analytics-control-chevron{color:#8ba0ad;font-size:.6rem!important;transition:transform .18s}.is-open .analytics-control-chevron{transform:rotate(180deg)}.analytics-custom-menu{position:absolute;z-index:100;top:calc(100% + 7px);right:0;left:0;max-height:245px;overflow-y:auto;padding:7px;border:1px solid #d5e4ed;border-radius:13px;background:#fff;box-shadow:0 16px 34px rgba(30,72,110,.17)}.analytics-custom-menu.is-hidden,.analytics-calendar.is-hidden{display:none}.analytics-custom-menu button{width:100%;min-height:39px;padding:8px 10px;border:0;border-radius:8px;background:transparent;color:#4c6271;text-align:left;font-size:.67rem;font-weight:700;cursor:pointer}.analytics-custom-menu button:hover,.analytics-custom-menu button.is-selected{background:#eaf7f9;color:#117e9b}.analytics-custom-menu button.is-selected::after{content:'✓';float:right;color:#1593b5;font-weight:900}
+        .analytics-calendar{position:absolute;z-index:110;top:calc(100% + 7px);left:0;width:290px;padding:13px;border:1px solid #d5e4ed;border-radius:14px;background:#fff;box-shadow:0 18px 38px rgba(30,72,110,.18)}[data-analytics-calendar="endDate"] .analytics-calendar{right:0;left:auto}.analytics-calendar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}.analytics-calendar-head strong{color:#30495b;font-size:.78rem;font-weight:900;text-transform:capitalize}.analytics-calendar-head button{width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:8px;background:#eaf7f9;color:#117e9b;cursor:pointer}.analytics-calendar-head button:hover{background:#1593b5;color:#fff}.analytics-calendar-week,.analytics-calendar-days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.analytics-calendar-week{margin-bottom:5px}.analytics-calendar-week span{color:#8ca0ad;text-align:center;font-size:.56rem;font-weight:900}.analytics-calendar-days button,.analytics-calendar-days>span{aspect-ratio:1;display:grid;place-items:center;border:0;border-radius:8px;background:transparent;color:#405568;font-size:.66rem;font-weight:800}.analytics-calendar-days button{cursor:pointer}.analytics-calendar-days button:hover{background:#eaf7f9;color:#117e9b}.analytics-calendar-days button.is-today{box-shadow:inset 0 0 0 1px #1593b5}.analytics-calendar-days button.is-selected{background:linear-gradient(135deg,#2563b9,#1593b5);color:#fff;box-shadow:0 5px 11px rgba(21,147,181,.23)}.analytics-calendar-days button:disabled{cursor:not-allowed;color:#d1dbe1;background:transparent;box-shadow:none}
+        .analytics-results{order:4;margin:24px 24px 0;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}.analytics-results #appliedFilters{margin-bottom:15px}.analytics-results #appliedFilters span{border-color:#b9dbe4!important;background:#eaf8fa!important;color:#117e9b!important;font-size:.61rem!important;font-weight:800}
+        .analytics-summary-grid{gap:16px;margin-bottom:18px}.analytics-summary-card{--sum-accent:#117e8c;--sum-soft:#e6f4f5;--sum-rgb:17,126,140;position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:132px;padding:21px!important;border:1px solid rgba(var(--sum-rgb),.22);border-radius:1rem!important;background:linear-gradient(135deg,#fff 35%,var(--sum-soft) 100%);color:#263024!important;box-shadow:inset 0 4px 0 var(--sum-accent),0 10px 24px rgba(45,66,34,.09);transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}.analytics-summary-card::before{content:'';position:absolute;z-index:-1;top:-42px;right:-34px;width:125px;height:125px;border:22px solid rgba(var(--sum-rgb),.09);border-radius:50%}.analytics-summary-card::after{content:'';position:absolute;z-index:-1;right:13px;bottom:8px;width:88px;height:45px;opacity:.22;background-image:radial-gradient(circle,var(--sum-accent) 1.4px,transparent 1.6px);background-size:9px 9px;transform:rotate(-5deg)}.analytics-summary-card:hover{transform:translateY(-5px);border-color:rgba(var(--sum-rgb),.38);box-shadow:inset 0 4px 0 var(--sum-accent),0 17px 32px rgba(var(--sum-rgb),.16)}.analytics-summary-card>div{position:relative;z-index:1;width:100%}.analytics-summary-income{--sum-accent:#117e8c;--sum-soft:#e6f4f5;--sum-rgb:17,126,140}.analytics-summary-plan{--sum-accent:#7da533;--sum-soft:#f0f6e7;--sum-rgb:125,165,51}.analytics-summary-records{--sum-accent:#e3a122;--sum-soft:#fff6df;--sum-rgb:227,161,34}.analytics-summary-card p:first-child{display:block;color:#596170!important;font-size:.7rem!important;font-weight:900!important;letter-spacing:.025em;text-transform:uppercase}.analytics-summary-card p[id]{display:block;margin-top:9px!important;color:#263024!important;font-size:1.85rem!important;font-weight:900!important;line-height:1}.analytics-summary-card>div>div:last-child{position:relative;z-index:1;width:52px;height:52px;display:grid;place-items:center;flex:0 0 auto;padding:0!important;border:1px solid rgba(255,255,255,.55);border-radius:14px!important;background:var(--sum-accent)!important;color:#fff;box-shadow:0 8px 17px rgba(var(--sum-rgb),.27),inset 0 1px 0 rgba(255,255,255,.28);transition:transform .22s ease}.analytics-summary-card:hover>div>div:last-child{transform:rotate(-6deg) scale(1.06)}.analytics-summary-card>div>div:last-child i{font-size:1.18rem!important}
+        #chartsSection{gap:16px;margin-bottom:18px}.chart-card{position:relative;overflow:hidden;padding:18px;border:1px solid #dce7ee;border-radius:15px;background:linear-gradient(135deg,#fff,#f7fbfd);box-shadow:0 9px 22px rgba(30,72,110,.07)}.chart-card::before{content:'';position:absolute;top:0;right:0;left:0;height:3px;background:linear-gradient(90deg,#2563b9,#1593b5)}.chart-card__title{display:flex;align-items:center;justify-content:center;min-height:34px;margin-bottom:10px;color:#30495b;font-size:.78rem;font-weight:900}.chart-card__title::after{content:'';width:7px;height:7px;margin-left:8px;border-radius:50%;background:#1593b5;box-shadow:0 0 0 4px rgba(21,147,181,.1)}.chart-card__canvas{height:285px}.chart-card__canvas--wide{height:325px}
+        .analytics-table-wrap{border:1px solid #fed7aa!important;border-radius:13px!important;background:#fff;box-shadow:0 9px 22px rgba(249,115,22,.09)!important}.analytics-table{border-collapse:separate;border-spacing:0}.analytics-table thead{background:#f97316!important}.analytics-table th{padding:12px 13px!important;border-right:1px solid rgba(255,255,255,.3)!important;background:#f97316!important;color:#fff!important;font-size:.57rem!important;font-weight:900!important;letter-spacing:.05em}.analytics-table th:last-child{border-right:0!important}.analytics-table td{padding:12px 13px!important;border-right:1px solid #fed7aa!important;border-bottom:1px solid #ffedd5!important;color:#57534e!important;font-size:.67rem!important}.analytics-table td:last-child{border-right:0!important}.analytics-table tbody tr:nth-child(odd) td{background:#fff!important}.analytics-table tbody tr:nth-child(even) td{background:#fff7ed!important}.analytics-table tbody tr:hover td{background:#ffedd5!important}.analytics-table tbody tr:last-child td{border-bottom:0!important}.analytics-table td:first-child{color:#c2410c!important;font-weight:900!important}.analytics-table td button{font-size:.57rem!important;font-weight:800!important}.analytics-results #paginationContainer{margin-top:16px;padding:12px;border:1px solid #fed7aa;border-radius:12px;background:#fffaf5}
+        #modalComprobante>div>div.inline-block{border:1px solid #d9e7f0;border-radius:18px!important}#modalComprobante header{background:linear-gradient(90deg,#f4f8fd,#edf9fa)!important}#modalComprobante header i{color:#1593b5!important}
+        @media(max-width:1150px){.analytics-filters form>.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.analytics-hero .relative.z-10>div{padding-right:0}.analytics-tabs{position:static;order:2;justify-content:center;margin:14px 24px 0}.analytics-tabs .btn-action{border-color:#dce4f3;background:#f4f7fd;color:#4f46e5}.analytics-tabs .btn-action:nth-child(2){background:#4f46e5;color:#fff}.analytics-filters{margin-top:18px!important}}
+        @media(max-width:700px){.payments-analytics-page{padding-top:20px}.analytics-hero{min-height:210px}.analytics-hero .relative.z-10{min-height:210px;padding:28px 20px}.analytics-hero .h-14.w-14{display:none}.analytics-tabs{display:grid;grid-template-columns:1fr;margin-right:12px;margin-left:12px}.analytics-filters,.analytics-results{margin-right:12px!important;margin-left:12px!important}.analytics-filters form>.grid{grid-template-columns:1fr}.analytics-filters form>.flex{flex-direction:column}.analytics-filters form>.flex button{width:100%}.analytics-calendar,[data-analytics-calendar="endDate"] .analytics-calendar{right:auto;left:0;width:min(290px,calc(100vw - 66px))}.chart-card__canvas,.chart-card__canvas--wide{height:260px}}
 </style>
 @endsection

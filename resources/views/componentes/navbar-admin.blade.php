@@ -54,6 +54,9 @@
                         <a href="{{ route('administrador.roles.index') }}" class="submenu-link {{ request()->routeIs('administrador.roles.*') || request()->routeIs('administrador.permisos.*') ? 'active' : '' }}">Roles y Permisos</a>
                     </div>
                     <div class="submenu-item">
+                        <a href="{{ route('administrador.usuarios.actividad') }}" class="submenu-link {{ request()->routeIs('administrador.usuarios.actividad') ? 'active' : '' }}">Actividad de usuarios</a>
+                    </div>
+                    <div class="submenu-item">
                         <a href="{{ route('administrador.usuarios.eliminados') }}" class="submenu-link {{ request()->routeIs('administrador.usuarios.eliminados') ? 'active' : '' }}">Usuarios Eliminados</a>
                     </div>
                 </div>
@@ -75,11 +78,15 @@
                     </svg>
                 </a>
                 <div class="submenu {{ $pagosMenuOpen ? 'open' : '' }}">
+                    
+                    <div class="submenu-item">
+                        <a href="{{ route('administrador.pagos.index') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.index') ? 'active' : '' }}">General</a>
+                    </div>
                     <div class="submenu-item">
                         <a href="{{ route('administrador.pagos.analiticas') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.analiticas') ? 'active' : '' }}">Analíticas</a>
                     </div>
                     <div class="submenu-item">
-                        <a href="{{ route('administrador.pagos.index') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.index') ? 'active' : '' }}">General</a>
+                        <a href="{{ route('administrador.pagos.pendientes-fisicos') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.pendientes-fisicos*') ? 'active' : '' }}">Pendientes físicos</a>
                     </div>
                     <div class="submenu-item">
                         <a href="{{ route('administrador.pagos.manual.crear') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.manual.*') ? 'active' : '' }}">Registrar pago</a>
@@ -156,7 +163,7 @@
 
             <!-- Logs -->
             <div class="menu-item">
-                <a href="{{ route('administrador.logs.index') }}" class="menu-link">
+                <a href="{{ route('administrador.logs.index') }}" class="menu-link {{ request()->routeIs('administrador.logs.*') ? 'active' : '' }}">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
                         <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
@@ -166,6 +173,20 @@
                         <path d="M8 16h.01"></path>
                     </svg>
                     <span class="menu-text">Logs</span>
+                </a>
+            </div>
+
+            <!-- Backups -->
+            <div class="menu-item">
+                <a href="{{ route('administrador.backups.index') }}" class="menu-link {{ request()->routeIs('administrador.backups.*') ? 'active' : '' }}">
+                    <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <ellipse cx="12" cy="5" rx="8" ry="3"></ellipse>
+                        <path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"></path>
+                        <path d="M4 11v6c0 1.66 3.58 3 8 3 1.1 0 2.15-.08 3.1-.24"></path>
+                        <path d="M18 16v5"></path>
+                        <path d="m15.5 18.5 2.5 2.5 2.5-2.5"></path>
+                    </svg>
+                    <span class="menu-text">Backups</span>
                 </a>
             </div>
         </div>

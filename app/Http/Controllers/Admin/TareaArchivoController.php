@@ -77,13 +77,19 @@ class TareaArchivoController extends Controller
     }
     public function verSubidas(Tarea $tarea)
 {
+    $tarea->archivos()
+        ->where('estado', 'pendiente')
+        ->where('user_id', '!=', Auth::id())
+        ->update(['visto' => true]);
+
     // Cargar relaciones necesarias
     $tarea->load([
         'creador',
         'asignado',
         'archivos.user', // Asegúrate de cargar el usuario que subió cada archivo
         'campania',
-        'comentarios.user'
+        'comentarios.user',
+        'comentarios.archivos',
     ]);
 
     return view('administrador.tareas.vertareassubidas', compact('tarea'));

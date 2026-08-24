@@ -242,11 +242,11 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
             return back()->with('error', 'Hubo un error al ejecutar storage:link. Revisa los logs del sistema.');
         }
     })->name('administrador.comandos.crear-storage-link');
-    Route::get('/analÃƒÆ’Ã‚Â­ticas', [AdminAnaliticasController::class, 'index'])
+    Route::get('/analiticas', [AdminAnaliticasController::class, 'index'])
         ->name('admin.analiticas.index');
-    Route::post('/analÃƒÆ’Ã‚Â­ticas/store-campania', [AdminAnaliticasController::class, 'storeCampania'])
+    Route::post('/analiticas/store-campania', [AdminAnaliticasController::class, 'storeCampania'])
         ->name('admin.analiticas.storeCampania');
-    Route::get('/analÃƒÆ’Ã‚Â­ticas/export-campanias', [AdminAnaliticasController::class, 'exportCampanias'])
+    Route::get('/analiticas/export-campanias', [AdminAnaliticasController::class, 'exportCampanias'])
         ->name('admin.analiticas.exportCampanias');
     Route::get('/admin/generar-reporte-campanas', [AdminAnaliticasController::class, 'generarReporteCampanas'])
         ->name('admin.generar.reporte.campanas');
@@ -271,26 +271,39 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
             ->name('administrador.pagos.cancelar');
         Route::put('/reactivar/{pago}', [PagoAdminController::class, 'reactivarSuscripcion'])
             ->name('administrador.pagos.reactivar');
-        Route::get('/analÃƒÆ’Ã‚Â­ticas', [PagoAdminController::class, 'analiticas'])->name('administrador.pagos.analiticas');
+        Route::get('/analiticas', [PagoAdminController::class, 'analiticas'])->name('administrador.pagos.analiticas');
         Route::get('/buscar', [PagoAdminController::class, 'buscarPagos'])->name('administrador.pagos.buscar');
         Route::post('/cancelar/{pagoId}', [PagoAdminController::class, 'cancelarSuscripcionApi'])->name('administrador.pagos.cancelar.api');
         Route::post('/reactivar/{pagoId}', [PagoAdminController::class, 'reactivarSuscripcionApi'])->name('administrador.pagos.reactivar.api');
         Route::get('/descargar-pdf', [PagoAdminController::class, 'descargarPDF'])->name('administrador.pagos.descargar.pdf');
         Route::get('/descargar-excel', [PagoAdminController::class, 'descargarExcel'])->name('administrador.pagos.descargar.excel');
+        Route::get('/reportes/{report}/excel', [PagoAdminController::class, 'exportReport'])->defaults('destination', 'excel')->name('administrador.pagos.reportes.excel');
+        Route::get('/reportes/{report}/pdf', [PagoAdminController::class, 'exportReport'])->defaults('destination', 'pdf')->name('administrador.pagos.reportes.pdf');
+        Route::post('/reportes/{report}/drive', [PagoAdminController::class, 'exportReport'])->defaults('destination', 'drive')->name('administrador.pagos.reportes.drive');
+        Route::get('/reportes-drive/carpetas', [PagoAdminController::class, 'driveReportFolders'])->name('administrador.pagos.reportes.drive-folders');
         Route::get('/reporte-mensual/pdf', [PagoAdminController::class, 'descargarPDFMensual'])->name('administrador.pagos.mensual.pdf');
         Route::get('/reporte-mensual/excel', [PagoAdminController::class, 'descargarExcelMensual'])->name('administrador.pagos.mensual.excel');
         Route::get('/manual/crear', [PagoAdminController::class, 'createManual'])->name('administrador.pagos.manual.crear');
+        Route::post('/manual/libelula', [PagoAdminController::class, 'crearPagoQrManual'])->name('administrador.pagos.manual.libelula.crear');
+        Route::get('/manual/libelula/estado/{transaction}', [PagoAdminController::class, 'estadoPagoQrManual'])->name('administrador.pagos.manual.libelula.estado');
         Route::post('/manual', [PagoAdminController::class, 'storeManual'])->name('administrador.pagos.manual.store');
         Route::get('/ver-recibo/{id}', [PagoAdminController::class, 'verComprobante'])->name('administrador.pagos.ver-recibo');
+        Route::get('/ver-recibo-pdf/{id}', [PagoAdminController::class, 'visualizarComprobantePdf'])->name('administrador.pagos.ver-recibo-pdf');
         Route::get('/descargar-recibo/{id}', [PagoAdminController::class, 'descargarComprobante'])->name('administrador.pagos.descargar-recibo');
     });
 
     // Gestión de planes
+    Route::get('/planes', \App\Http\Controllers\Admin\PlanIndexController::class)
+        ->name('administrador.planes.index');
+    Route::get('/planes/create', \App\Http\Controllers\Admin\PlanCreateController::class)
+        ->name('administrador.planes.create');
+    Route::get('/planes/vista-usuario', \App\Http\Controllers\Admin\PlanCustomerPreviewController::class)
+        ->name('administrador.planes.vista-usuario');
+    Route::patch('/planes/reordenar', \App\Http\Controllers\Admin\PlanOrderController::class)
+        ->name('administrador.planes.reordenar');
     Route::resource('planes', 'App\Http\Controllers\Admin\PlanController')
-        ->except(['show'])
+        ->except(['index', 'show', 'create'])
         ->names([
-            'index' => 'administrador.planes.index',
-            'create' => 'administrador.planes.create',
             'store' => 'administrador.planes.store',
             'edit' => 'administrador.planes.edit',
             'update' => 'administrador.planes.update',
@@ -353,6 +366,17 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
     Route::get('/logs', [\App\Http\Controllers\Admin\LogController::class, 'index'])->name('administrador.logs.index');
     Route::get('/logs/export/{type}', [\App\Http\Controllers\Admin\LogController::class, 'exportPdf'])->name('administrador.logs.export');
 
+    Route::get('/backups', [\App\Http\Controllers\Admin\DatabaseBackupController::class, 'index'])
+        ->name('administrador.backups.index');
+    Route::post('/backups', [\App\Http\Controllers\Admin\DatabaseBackupController::class, 'store'])
+        ->name('administrador.backups.store');
+    Route::put('/backups/programacion', [\App\Http\Controllers\Admin\DatabaseBackupController::class, 'updateSchedule'])
+        ->name('administrador.backups.schedule');
+    Route::get('/backups/ultimo/descargar', [\App\Http\Controllers\Admin\DatabaseBackupController::class, 'downloadLatest'])
+        ->name('administrador.backups.download-latest');
+    Route::get('/backups/{backup}/descargar', [\App\Http\Controllers\Admin\DatabaseBackupController::class, 'download'])
+        ->name('administrador.backups.download');
+
     // Gestión de campañas
     Route::prefix('campañas')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\CampañasController::class, 'index'])
@@ -361,6 +385,8 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
             ->name('administrador.campañas.analiticas');
         Route::post('/guardar', [\App\Http\Controllers\Admin\CampañasController::class, 'guardar'])
             ->name('administrador.campañas.guardar');
+        Route::get('/recomendar-community-manager', [\App\Http\Controllers\Admin\CampañasController::class, 'recomendarCommunityManager'])
+            ->name('administrador.campañas.recomendar-community-manager');
         Route::get('/{campania}', [\App\Http\Controllers\Admin\CampañasController::class, 'show'])
             ->name('administrador.campañas.show');
         Route::get('/{campania}/editar', [\App\Http\Controllers\Admin\CampañasController::class, 'edit'])
@@ -418,6 +444,19 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
     // GestiÃƒÆ’Ã‚Â³n de usuarios
     Route::get('/usuarios', [\App\Http\Controllers\Admin\UserController::class, 'index'])
         ->name('administrador.usuarios.index');
+    Route::get('/usuarios/actividad', [\App\Http\Controllers\Admin\UserController::class, 'activity'])
+        ->name('administrador.usuarios.actividad');
+    Route::get('/usuarios/reportes/{report}/excel', [\App\Http\Controllers\Admin\UserController::class, 'exportReport'])
+        ->defaults('destination', 'excel')
+        ->name('administrador.usuarios.reportes.excel');
+    Route::get('/usuarios/reportes/{report}/pdf', [\App\Http\Controllers\Admin\UserController::class, 'exportReport'])
+        ->defaults('destination', 'pdf')
+        ->name('administrador.usuarios.reportes.pdf');
+    Route::post('/usuarios/reportes/{report}/drive', [\App\Http\Controllers\Admin\UserController::class, 'exportReport'])
+        ->defaults('destination', 'drive')
+        ->name('administrador.usuarios.reportes.drive');
+    Route::get('/usuarios/reportes-drive/carpetas', [\App\Http\Controllers\Admin\UserController::class, 'driveFolders'])
+        ->name('administrador.usuarios.reportes.drive-folders');
     Route::get('/usuarios/create', [\App\Http\Controllers\Admin\UserController::class, 'create'])
         ->name('administrador.usuarios.create');
     Route::post('/usuarios', [\App\Http\Controllers\Admin\UserController::class, 'store'])
@@ -482,6 +521,9 @@ Route::delete('/{id}', [App\Http\Controllers\Admin\EmpresaAdminController::class
         // Rutas para el cuestionario
         Route::get('/{id}/cuestionario', [App\Http\Controllers\Admin\CuestionarioAdminController::class, 'show'])->name('cuestionario.show');
         Route::put('/{id}/cuestionario', [App\Http\Controllers\Admin\CuestionarioAdminController::class, 'update'])->name('cuestionario.update'); 
+        Route::get('/{id}/cuestionario/pdf', [App\Http\Controllers\Admin\CuestionarioAdminController::class, 'downloadPdf'])->name('cuestionario.pdf');
+        Route::post('/{id}/cuestionario/google-doc', [App\Http\Controllers\Admin\CuestionarioAdminController::class, 'googleDoc'])->name('cuestionario.google-doc');
+        Route::get('/{id}/cuestionario/drive-folders', [App\Http\Controllers\Admin\CuestionarioAdminController::class, 'driveFolders'])->name('cuestionario.drive-folders');
         
         // Rutas para el resumen ejecutivo
         Route::get('/{id}/editar-resumen', [App\Http\Controllers\Admin\ResumenAdminController::class, 'edit'])->name('editar-resumen');

@@ -3,271 +3,141 @@
 @section('title', 'Pagos Pendientes Físicos')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-red-50">
-    <div class="container mx-auto px-4 py-8">
-       <!-- Header con título y decoración -->
-<div class="relative mb-8">
-    <div class="absolute inset-0 bg-gradient-to-r from-orange-600 to-red-600 rounded-2xl opacity-5"></div>
-    <div class="relative bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-        <div class="flex items-center space-x-4">
-            <!-- Botón de Atrás -->
-            <a href="{{ route('administrador.pagos.index') }}" class="text-gray-500 hover:text-gray-700 transition duration-200">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                </svg>
-            </a>
-            
-            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-            </div>
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Pagos Pendientes Físicos</h1>
-                <p class="text-gray-600 mt-1">Gestiona y aprueba los pagos pendientes de verificación</p>
-            </div>
-        </div>
-    </div>
-</div>
-        
-        <!-- Mensaje de éxito -->
-        @if(session('success'))
-            <div class="mb-6">
-                <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-400 rounded-r-xl p-4 shadow-md">
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-green-400 rounded-full flex items-center justify-center mr-3">
-                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        </div>
-                        <p class="text-green-800 font-medium">{{ session('success') }}</p>
-                    </div>
-                </div>
-            </div>
-        @endif
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
-        <!-- Formulario de búsqueda mejorado -->
-        <div class="mb-8">
-            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                <div class="flex items-center mb-4">
-                    <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center mr-3">
-                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
-                    <h2 class="text-lg font-semibold text-gray-900">Búsqueda de Pagos</h2>
-                </div>
-                
-                <form action="{{ route('administrador.pagos.pendientes-fisicos') }}" method="GET" class="flex flex-col sm:flex-row items-center gap-4">
-                    <div class="flex-1 w-full">
-                        <div class="relative">
-                            <input 
-                                type="text" 
-                                name="search" 
-                                placeholder="Buscar por código de pago o nombre de usuario..." 
-                                value="{{ request('search') }}"
-                                class="w-full px-4 py-3 pl-10 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 bg-gray-50 hover:bg-white"
-                            >
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center space-x-3">
-                        <button 
-                            type="submit" 
-                            class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-2"
-                        >
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                            <span>Buscar</span>
-                        </button>
-                        
-                        @if(request('search'))
-                            <a 
-                                href="{{ route('administrador.pagos.pendientes-fisicos') }}" 
-                                class="px-4 py-3 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition duration-200 flex items-center space-x-2 border border-gray-200"
-                                title="Limpiar búsqueda"
-                            >
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                                <span class="hidden sm:inline">Limpiar</span>
-                            </a>
-                        @endif
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Tabla de resultados -->
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-            <div class="p-6 border-b border-gray-100">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center">
-                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-900">Pagos Pendientes</h3>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <div class="w-3 h-3 bg-orange-400 rounded-full animate-pulse"></div>
-                        <span class="text-sm text-gray-600">{{ $pagos->count() }} pendiente(s)</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">
-                                <div class="flex items-center space-x-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                    </svg>
-                                    <span>Usuario</span>
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">
-                                <div class="flex items-center space-x-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
-                                    </svg>
-                                    <span>Código</span>
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">
-                                <div class="flex items-center space-x-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                    </svg>
-                                    <span>Plan</span>
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">
-                                <div class="flex items-center space-x-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                                    </svg>
-                                    <span>Monto</span>
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">
-                                <div class="flex items-center space-x-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                    </svg>
-                                    <span>Fecha Generación</span>
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider">
-                                <div class="flex items-center space-x-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
-                                    </svg>
-                                    <span>Acciones</span>
-                                </div>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
-                        @forelse($pagos as $pago)
-                        <tr class="{{ $loop->odd ? 'bg-white' : 'bg-indigo-50/20' }} hover:bg-indigo-50/50 transition-colors duration-150">
-                            <td class="px-6 py-4 whitespace-nowrap border-r border-gray-100">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mr-3">
-                                        <span class="text-white text-sm font-bold">{{ substr($pago->usuario->name, 0, 1) }}</span>
-                                    </div>
-                                    <div class="text-sm font-medium text-gray-900">{{ $pago->usuario->name }}</div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap border-r border-gray-100">
-                                <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold border bg-gray-100 text-gray-800 border-gray-200 font-mono">{{ $pago->codigoPago->codigo }}</span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap border-r border-gray-100">
-                                <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold border bg-blue-100 text-blue-800 border-blue-200">{{ $pago->plan->nombre }}</span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-100">{{ $pago->monto }} <span class="font-medium text-gray-500">{{ $pago->moneda }}</span></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 border-r border-gray-100">{{ $pago->created_at->format('d/m/Y H:i') }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex items-center gap-2">
-                                <form action="{{ route('administrador.pagos.aprobar', $pago->id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-green-700 bg-green-50 hover:bg-green-100 transition-colors duration-200">
-                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        <span>Aprobar</span>
-                                    </button>
-                                </form>
-                                <form action="{{ route('administrador.pagos.pendientes-fisicos.eliminar', $pago->id) }}" method="POST" onsubmit="return confirm('¿Eliminar este pago pendiente y su codigo? La usuaria podra generar uno nuevo.');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-red-700 bg-red-50 hover:bg-red-100 transition-colors duration-200">
-                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 7h12m-10 0 1 12h6l1-12m-6 0V4h4v3"></path>
-                                        </svg>
-                                        <span>Eliminar</span>
-                                    </button>
-                                </form>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-sm text-gray-500">No se encontraron pagos físicos pendientes de aprobación.</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            <!-- Mostrar paginación si es necesario -->
-            @if($pagos instanceof \Illuminate\Pagination\LengthAwarePaginator)
-                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <div class="text-sm text-gray-700">
-                            Mostrando {{ $pagos->firstItem() ?? 0 }} a {{ $pagos->lastItem() ?? 0 }} de {{ $pagos->total() }} resultados
-                        </div>
-                        <div class="pagination-wrapper">
-                            {{ $pagos->links() }}
-                        </div>
-                    </div>
+    <div class="pending-payments-page">
+        <div class="pending-payments-shell">
+            @if(session('success'))
+                <div class="pending-alert pending-alert-success flex items-center justify-between rounded-xl p-4">
+                    <div class="flex items-center gap-3"><i class="fas fa-circle-check"></i><span>{{ session('success') }}</span></div>
+                    <button type="button" onclick="this.parentElement.style.display='none'" aria-label="Cerrar"><i class="fas fa-times"></i></button>
                 </div>
             @endif
+
+            @if(session('error'))
+                <div class="pending-alert pending-alert-error flex items-center justify-between rounded-xl p-4">
+                    <div class="flex items-center gap-3"><i class="fas fa-circle-exclamation"></i><span>{{ session('error') }}</span></div>
+                    <button type="button" onclick="this.parentElement.style.display='none'" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+                </div>
+            @endif
+
+            <nav class="pending-tabs" aria-label="Secciones de pagos">
+                <a href="{{ route('administrador.pagos.index') }}" class="btn-action"><i class="fas fa-table-columns"></i>General</a>
+                <a href="{{ route('administrador.pagos.analiticas') }}" class="btn-action"><i class="fas fa-chart-line"></i>Analíticas</a>
+                <a href="{{ route('administrador.pagos.pendientes-fisicos') }}" class="btn-action is-active" aria-current="page"><i class="fas fa-receipt"></i>Pendientes físicos</a>
+                <a href="{{ route('administrador.pagos.manual.crear') }}" class="btn-action pending-register-action"><i class="fas fa-plus-circle"></i>Registrar pago</a>
+            </nav>
+
+            <header class="pending-hero rp-banner">
+                <div class="rp-banner-overlay"></div>
+                <div class="pending-hero-content">
+                    <div class="pending-hero-layout">
+                        <div class="pending-hero-icon"><i class="fas fa-receipt"></i></div>
+                        <div>
+                            <h1>Pagos Pendientes Físicos</h1>
+                            <p>Gestiona y aprueba los pagos pendientes de verificación</p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <section class="pending-filter-panel" aria-labelledby="pending-filter-title">
+                <div class="pending-filter-heading">
+                    <div class="pending-filter-icon"><i class="fas fa-magnifying-glass"></i></div>
+                    <div>
+                        <h2 id="pending-filter-title">Buscar pagos pendientes</h2>
+                    </div>
+                </div>
+                <form action="{{ route('administrador.pagos.pendientes-fisicos') }}" method="GET" class="pending-filter-form">
+                    <div class="pending-filter-field">
+                        <label for="search"><i class="fas fa-magnifying-glass"></i> Cliente o código</label>
+                        <input type="search" name="search" id="search" value="{{ request('search') }}" placeholder="Buscar por código o nombre de usuario...">
+                    </div>
+                    <div class="pending-filter-actions">
+                        <a href="{{ route('administrador.pagos.pendientes-fisicos') }}"><i class="fas fa-rotate-left"></i>Limpiar</a>
+                        <button type="submit"><i class="fas fa-magnifying-glass"></i>Buscar</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="pending-table-panel" aria-labelledby="pending-table-title">
+                <div class="pending-table-heading">
+                    <div class="pending-table-heading-copy">
+                        <i class="fas fa-receipt"></i>
+                        <span>
+                            <h2 id="pending-table-title">Pagos pendientes</h2>
+                            <p>Solicitudes físicas que requieren validación manual.</p>
+                        </span>
+                    </div>
+                    <span>Mostrando {{ $pagos->firstItem() ?? 0 }} a {{ $pagos->lastItem() ?? 0 }} de {{ $pagos->total() }} registros</span>
+                </div>
+
+                <div class="pending-table-wrap">
+                    <table class="pending-table">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Código</th>
+                                <th>Plan</th>
+                                <th>Monto</th>
+                                <th>Fecha de generación</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($pagos as $pago)
+                                <tr>
+                                    <td>
+                                        <div class="pending-user">
+                                            <span>{{ mb_strtoupper(mb_substr(optional($pago->usuario)->name ?? 'N', 0, 1)) }}</span>
+                                            <strong>{{ optional($pago->usuario)->name ?? 'N/A' }}</strong>
+                                        </div>
+                                    </td>
+                                    <td><span class="pending-code">{{ optional($pago->codigoPago)->codigo ?? 'N/A' }}</span></td>
+                                    <td><span class="pending-plan">{{ optional($pago->plan)->nombre ?? 'N/A' }}</span></td>
+                                    <td><strong>{{ number_format((float) $pago->monto, 2, ',', '.') }} {{ $pago->moneda }}</strong></td>
+                                    <td>{{ optional($pago->created_at)->format('d/m/Y H:i') ?? 'N/A' }}</td>
+                                    <td>
+                                        <div class="pending-actions">
+                                            <form action="{{ route('administrador.pagos.aprobar', $pago->id) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="pending-approve"><i class="fas fa-circle-check"></i>Aprobar</button>
+                                            </form>
+                                            <form action="{{ route('administrador.pagos.pendientes-fisicos.eliminar', $pago->id) }}" method="POST" onsubmit="return confirm('¿Eliminar este pago pendiente y su código? La persona podrá generar uno nuevo.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="pending-delete"><i class="fas fa-trash"></i>Eliminar</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="6" class="pending-empty"><i class="fas fa-circle-check"></i>No se encontraron pagos físicos pendientes de aprobación.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                @if($pagos->hasPages())
+                    <div class="pending-pagination">
+                        <span>Mostrando {{ $pagos->firstItem() ?? 0 }} a {{ $pagos->lastItem() ?? 0 }} de {{ $pagos->total() }} resultados</span>
+                        <div>{{ $pagos->withQueryString()->onEachSide(1)->links() }}</div>
+                    </div>
+                @endif
+            </section>
         </div>
     </div>
-</div>
 
-<style>
-.pagination-wrapper .pagination {
-    display: flex;
-    list-style: none;
-    border-radius: 0.75rem;
-    overflow: hidden;
-}
-.pagination-wrapper .page-link {
-    padding: 0.5rem 0.75rem;
-    margin: 0 1px;
-    color: #4B5563;
-    background-color: white;
-    border: 1px solid #D1D5DB;
-    transition: all 0.2s;
-}
-.pagination-wrapper .page-link:hover {
-    background-color: #F3F4F6;
-    color: #1F2937;
-}
-.pagination-wrapper .page-item.active .page-link {
-    background: linear-gradient(to right, #3B82F6, #6366F1);
-    color: white;
-    border-color: #3B82F6;
-}
-</style>
+    <style>
+        .rp-banner{position:relative;background:linear-gradient(135deg,#4f46e5 25%,transparent 25%) -50px 0,linear-gradient(225deg,#4f46e5 25%,transparent 25%) -50px 0,linear-gradient(315deg,#4f46e5 25%,transparent 25%),linear-gradient(45deg,#4f46e5 25%,transparent 25%),linear-gradient(to bottom,#3b82f6 0%,#2563eb 100%);background-color:#1d4ed8;background-size:100px 100px,100px 100px,100px 100px,100px 100px,100% 100%}
+        .rp-banner-overlay{position:absolute;inset:0;background:linear-gradient(rgba(15,23,42,.28),rgba(15,23,42,.28)),radial-gradient(circle at 0 0,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 100% 0,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 100% 100%,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 0 100%,rgba(255,255,255,.2),transparent 50%);background-position:0 0,0 0,100% 0,100% 100%,0 100%;background-size:100% 100%,50% 50%,50% 50%,50% 50%,50% 50%;background-repeat:no-repeat}
+        .pending-payments-page{min-height:100vh;padding:20px 0 48px;background:#fff;color:#302834}.pending-payments-shell{position:relative;display:flex;flex-direction:column;width:100%}
+        .pending-hero{order:1;width:100%;min-height:180px;overflow:hidden}.pending-hero-content{position:relative;z-index:1;min-height:180px;display:flex;align-items:center;padding:30px 48px}.pending-hero-layout{display:flex;align-items:center;gap:16px}.pending-hero-icon{width:52px;height:52px;display:grid;place-items:center;flex:0 0 auto;border:1px solid rgba(255,255,255,.24);border-radius:14px;background:rgba(255,255,255,.14);color:#fff;font-size:1.25rem;backdrop-filter:blur(5px)}.pending-hero h1{margin:0 0 4px;color:#fff;font-size:clamp(1.55rem,3vw,2.25rem);font-weight:900;letter-spacing:-.04em}.pending-hero h1::before{content:'Administración financiera';display:block;margin-bottom:7px;color:#dbeafe;font-size:.68rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase}.pending-hero p{margin:0;color:#dbeafe;font-size:.74rem;font-weight:600}
+        .pending-tabs{position:absolute;z-index:20;top:67px;right:48px;display:flex;justify-content:flex-end;gap:12px}.btn-action{min-height:42px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 13px;border:1px solid rgba(255,255,255,.24);border-radius:.65rem;background:rgba(255,255,255,.12);color:#fff;font-size:.69rem;font-weight:900;text-decoration:none;white-space:nowrap;backdrop-filter:blur(4px);transition:.2s}.btn-action:hover,.btn-action.is-active{transform:translateY(-2px);border-color:#fff;background:#fff;color:#4f46e5;box-shadow:0 8px 20px rgba(31,41,55,.16)}.pending-register-action{border-color:#ef6c22;background:#ef6c22;color:#fff}.pending-register-action:hover{color:#4f46e5}
+        .pending-alert{order:3;width:calc(100% - 48px);margin:24px auto 0;border:1px solid;font-size:.76rem;font-weight:700}.pending-alert-success{border-color:#bfe3c5;background:#ecf8ee;color:#276738}.pending-alert-error{border-color:#f3c4c4;background:#fff0f0;color:#a72d2d}.pending-alert button{border:0;background:transparent;color:inherit;cursor:pointer;opacity:.65}
+        .pending-filter-panel{order:4;margin:24px 24px 0;padding:20px;border:1px solid #e1e3de;border-radius:16px;background:#f8f8f6;box-shadow:0 9px 22px rgba(55,60,52,.06)}.pending-filter-heading{display:flex;align-items:center;gap:12px;margin-bottom:18px}.pending-filter-icon{width:42px;height:42px;display:grid;place-items:center;flex:0 0 auto;border-radius:11px;background:#62685f;color:#fff;box-shadow:0 7px 15px rgba(55,60,52,.13)}.pending-filter-heading h2{margin:0;color:#343833;font-size:.95rem;font-weight:900}.pending-filter-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:13px}.pending-filter-field label{display:block;margin-bottom:7px;color:#565d53;font-size:.64rem;font-weight:900}.pending-filter-field label i{width:15px;color:#737a70}.pending-filter-field input{width:100%;height:46px;padding:0 12px;border:1px solid #d9dcd6;border-radius:11px;background:#fff;color:#3f443d;font-size:.69rem;font-weight:700;outline:0}.pending-filter-field input:focus{border-color:#8a9186;box-shadow:0 0 0 3px rgba(98,104,95,.12)}.pending-filter-actions{display:flex;gap:8px}.pending-filter-actions a,.pending-filter-actions button{min-height:42px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 14px;border-radius:10px;font-size:.67rem;font-weight:900;text-decoration:none;transition:.18s}.pending-filter-actions a{border:1px solid #d7dad4;background:#fff;color:#62685f}.pending-filter-actions button{border:0;background:#62685f;color:#fff;cursor:pointer}.pending-filter-actions a:hover,.pending-filter-actions button:hover{transform:translateY(-2px);box-shadow:0 7px 14px rgba(55,60,52,.12)}
+        .pending-table-panel{order:5;margin:24px 24px 0;border:0;background:transparent;box-shadow:none;overflow:visible}.pending-table-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:12px;padding:12px 15px;border:1px solid #e2ead5;border-radius:14px;background:#f9fbf5}.pending-table-heading-copy{display:flex;align-items:center;gap:11px}.pending-table-heading-copy>i{width:36px;height:36px;display:grid;place-items:center;flex:0 0 auto;border-radius:10px;background:#edf4e4;color:#7da533;font-size:.88rem}.pending-table-heading-copy>span{display:block}.pending-table-heading h2{margin:0;color:#31382b;font-size:.8rem;font-weight:900}.pending-table-heading p{margin:4px 0 0;color:#8a9380;font-size:.62rem}.pending-table-heading>span{color:#66705c;font-size:.72rem;font-weight:700}.pending-table-wrap{margin:0;border:1px solid #d8e3c7;border-radius:16px;background:#fff;box-shadow:0 9px 24px rgba(91,121,38,.12);overflow-x:auto}.pending-table{width:100%;min-width:900px;border-collapse:separate;border-spacing:0}.pending-table th{padding:16px 18px;border-right:1px solid rgba(255,255,255,.3);background:#7da533;color:#fff;text-align:left;font-size:.62rem;font-weight:900;letter-spacing:.05em;text-transform:uppercase}.pending-table th:last-child,.pending-table td:last-child{border-right:0}.pending-table td{padding:16px 18px;border-right:1px solid #d8e3c7;border-bottom:1px solid #dfe8d1;color:#50584a;font-size:.72rem;vertical-align:middle}.pending-table tbody tr:nth-child(odd) td{background:#fff}.pending-table tbody tr:nth-child(even) td{background:#f1f7e8}.pending-table tbody tr:hover td{background:#e6f0d8}.pending-table tbody tr:last-child td{border-bottom:0}.pending-user{display:flex;align-items:center;gap:11px}.pending-user>span{width:40px;height:40px;display:grid;place-items:center;flex:0 0 auto;border-radius:50%;background:linear-gradient(135deg,#7da533,#117e8c);color:#fff;font-size:.72rem;font-weight:900}.pending-user strong{color:#31382b}.pending-code,.pending-plan{display:inline-flex;padding:5px 9px;border:1px solid #cedfb4;border-radius:999px;background:#edf4e4;color:#638524;font-size:.6rem;font-weight:900}.pending-actions{display:flex;align-items:center;gap:6px}.pending-actions button{min-height:32px;display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid;border-radius:8px;font-size:.58rem;font-weight:900;cursor:pointer;transition:.18s}.pending-approve{border-color:#bbdfc2!important;background:#edf8ef;color:#26713a}.pending-delete{border-color:#f1c1c1!important;background:#fff1f1;color:#b43131}.pending-actions button:hover{transform:translateY(-1px);filter:brightness(.96)}.pending-empty{padding:42px!important;text-align:center;color:#66705c!important}.pending-empty i{margin-right:8px;color:#7da533}.pending-pagination{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:32px 0 0;padding:0;color:#66705c;font-size:.72rem}
+        @media(max-width:1100px){.pending-hero-content{padding-right:20px}.pending-tabs{position:static;order:2;justify-content:center;margin:14px 24px 0}.pending-tabs .btn-action{border-color:#dce4f3;background:#f4f7fd;color:#4f46e5}.pending-tabs .is-active{background:#4f46e5;color:#fff}}
+        @media(max-width:700px){.pending-payments-page{padding-top:20px}.pending-hero,.pending-hero-content{min-height:205px}.pending-hero-content{padding:28px 20px}.pending-hero-layout{width:100%;justify-content:center;text-align:center}.pending-hero-icon{display:none}.pending-tabs{display:grid;grid-template-columns:1fr;margin-right:12px;margin-left:12px}.pending-filter-panel,.pending-table-panel{margin-right:12px;margin-left:12px}.pending-filter-form{grid-template-columns:1fr}.pending-filter-actions{flex-direction:column}.pending-filter-actions>*{width:100%}.pending-table-heading,.pending-pagination{align-items:flex-start;flex-direction:column}}
+    </style>
 @endsection

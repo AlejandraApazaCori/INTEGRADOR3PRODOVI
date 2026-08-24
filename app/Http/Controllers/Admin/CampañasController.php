@@ -7,6 +7,8 @@ use App\Models\Campania;
 use App\Models\User;
 use App\Models\Pago;
 use App\Models\PlanMarketing;
+use App\Models\Suscripcion;
+use App\Services\CommunityManagerRecommender;
 use App\Services\SocialContentPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -350,6 +352,53 @@ class CampañasController extends Controller
         }
 
         return '';
+    }
+
+    public function recomendarCommunityManager(Request $request, CommunityManagerRecommender $recommender)
+    {
+        $validated = $request->validate([
+            'suscripcion_id' => ['required', 'integer', 'exists:suscripciones,id'],
+            'campania_id' => ['nullable', 'integer', 'exists:campanias,id'],
+        ]);
+
+        $suscripcion = Suscripcion::findOrFail($validated['suscripcion_id']);
+        $inicio = now()->startOfDay();
+        $fin = $suscripcion->vigencia_activada_at && $suscripcion->fecha_fin?->isFuture()
+            ? $suscripcion->fecha_fin->copy()->startOfDay()
+            : $inicio->copy()->addMonthNoOverflow();
+
+        $managers = User::whereHas('roles', fn ($query) => $query->where('nombre_rol', 'Community Manager'))
+            ->with(['campaniasComoCM' => fn ($query) => $query
+                ->whereIn('estado', ['activa', 'pausada'])
+                ->where('fecha_fin', '>=', $inicio)
+                ->when($validated['campania_id'] ?? null, fn ($campaignQuery, $campaignId) => $campaignQuery->where('id', '!=', $campaignId))
+                ->orderBy('fecha_fin')])
+            ->get();
+
+        $ranking = $recommender->rank($managers, $inicio, $fin);
+
+        if ($ranking->isEmpty()) {
+            return response()->json(['message' => 'No hay Community Managers disponibles para recomendar.'], 404);
+        }
+
+        $recommended = $ranking->first();
+        $recommended['reason'] = $recommended['active_campaigns'] === 0
+            ? 'No tiene campañas activas y dispone de la menor carga proyectada.'
+            : sprintf(
+                'Gestiona %d %s; su carga proyectada es %.2f, %d %s en los próximos 14 días y su siguiente liberación es el %s.',
+                $recommended['active_campaigns'],
+                $recommended['active_campaigns'] === 1 ? 'campaña activa' : 'campañas activas',
+                $recommended['average_load'],
+                $recommended['ending_soon'],
+                $recommended['ending_soon'] === 1 ? 'finaliza' : 'finalizan',
+                $recommended['next_release']
+            );
+
+        return response()->json([
+            'recommended' => $recommended,
+            'evaluated' => $ranking->count(),
+            'campaign_ends_at' => $fin->format('d/m/Y'),
+        ]);
     }
 
     private function limpiarMarkdownPlan(string $contenido): string

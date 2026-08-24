@@ -15,7 +15,7 @@
             <th style="width: 15%;">Fecha/Hora</th>
             <th style="width: 15%;">IP</th>
             <th style="width: 15%;">Usuario</th>
-            <th style="width: 10%;">Método/Status</th>
+            <th style="width: 10%;">Método/Estado</th>
             <th style="width: 25%;">URL</th>
             <th style="width: 20%;">User Agent</th>
         </tr>

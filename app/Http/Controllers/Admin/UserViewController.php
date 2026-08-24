@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Cliente\PlanController;
 use App\Models\User;
 use Carbon\Carbon;
 
@@ -34,14 +35,28 @@ class UserViewController extends Controller
         }
 
         $empresas = $user->empresas;
+        if ($user->socialAccountsTableExists()) {
+            $empresas->load('socialAccounts');
+        }
+        $globalSocialAccounts = $user->linkedSocialAccounts();
+        $planResponse = app(PlanController::class)->getPlanContratado((int) $user->id);
+        $accountPlans = $planResponse->getStatusCode() === 200
+            ? $planResponse->getData(true)
+            : ['plan' => null, 'plans' => []];
+        $accountUser = $user;
+        $adminPreview = true;
 
-        return view('administrador.usuarios.show', compact(
+        return view('clientes.micuenta', compact(
             'user',
+            'accountUser',
+            'adminPreview',
+            'accountPlans',
             'suscripcionActiva',
             'campaniaActual',
             'diasRestantes',
             'porcentajeRestante',
-            'empresas'
+            'empresas',
+            'globalSocialAccounts'
         ));
     }
 

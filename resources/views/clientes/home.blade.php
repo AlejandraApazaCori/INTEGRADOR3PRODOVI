@@ -2938,6 +2938,16 @@
     </style>
 </head>
 <body>
+    @if($isAdminPreview ?? false)
+        <style>
+            .admin-client-preview-bar{position:fixed;z-index:25000;right:20px;bottom:20px;display:flex;align-items:center;gap:13px;padding:11px 12px 11px 16px;border:1px solid rgba(255,255,255,.16);border-radius:14px;background:rgba(23,19,29,.94);color:#fff;box-shadow:0 18px 45px rgba(0,0,0,.38);backdrop-filter:blur(12px)}.admin-client-preview-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#19b9b2;color:#fff;font-size:1rem}.admin-client-preview-copy strong,.admin-client-preview-copy span{display:block}.admin-client-preview-copy strong{font-size:.74rem}.admin-client-preview-copy span{margin-top:2px;color:#bfb7c4;font-size:.61rem}.admin-client-preview-back{display:inline-flex;align-items:center;gap:6px;padding:9px 11px;border-radius:9px;background:#f47b20;color:#fff;font-size:.67rem;font-weight:800;text-decoration:none}.admin-preview-disabled{cursor:not-allowed!important;opacity:.82}@media(max-width:640px){.admin-client-preview-bar{right:10px;bottom:10px;left:10px}.admin-client-preview-copy{flex:1}.admin-client-preview-copy span{display:none}}
+        </style>
+        <aside class="admin-client-preview-bar" aria-label="Modo de previsualización">
+            <span class="admin-client-preview-icon" aria-hidden="true">◉</span>
+            <div class="admin-client-preview-copy"><strong>Vista de usuario</strong><span>Previsualización: las acciones de compra están desactivadas</span></div>
+            <a href="{{ route('administrador.planes.index') }}" class="admin-client-preview-back">← Volver</a>
+        </aside>
+    @endif
     @include('componentes.navbar2')
     <main class="client-home">
         <div class="home-shell">
@@ -3896,5 +3906,24 @@
 
         });
     </script>
+    @if($isAdminPreview ?? false)
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('a').forEach(function (link) {
+                    if (link.closest('.admin-client-preview-bar')) return;
+                    link.classList.add('admin-preview-disabled');
+                    link.setAttribute('title', 'Acción desactivada en la vista previa');
+                    link.addEventListener('click', function (event) {
+                        event.preventDefault();
+                    });
+                });
+                document.querySelectorAll('form').forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        event.preventDefault();
+                    });
+                });
+            });
+        </script>
+    @endif
 </body>
 </html>

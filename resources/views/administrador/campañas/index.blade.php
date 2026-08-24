@@ -3,13 +3,19 @@
 @section('title', 'Gestión de Campañas')
 
 @section('content') 
-<div class="min-h-screen" style="background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 50%, #F5F3FF 100%);">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="campaigns-page">
+    <div class="campaigns-shell">
+        <nav class="campaigns-top-actions" aria-label="Acciones de campañas">
+            <a href="{{ route('administrador.campañas.index') }}" class="campaign-top-action is-active"><i class="fas fa-table-columns"></i>General</a>
+            <a href="{{ route('administrador.campañas.analiticas') }}" class="campaign-top-action"><i class="fas fa-chart-line"></i>Analíticas</a>
+            <a href="{{ route('administrador.dashboard') }}" class="campaign-top-action"><i class="fas fa-arrow-left"></i>Volver al panel</a>
+        </nav>
+
         <!-- Banner -->
-        <div class="mb-8 rounded-2xl overflow-hidden relative rp-banner">
+        <header class="campaigns-hero overflow-hidden relative rp-banner">
             <div class="rp-banner-overlay absolute inset-0"></div>
-            <div class="relative z-10 px-8 py-8">
-                <div class="flex flex-col lg:flex-row justify-between items-center gap-4 sm:gap-6 mb-6">
+            <div class="campaigns-hero-content relative z-10">
+                <div class="flex flex-col lg:flex-row justify-between items-center gap-4 sm:gap-6">
                     <div class="flex items-center gap-4">
                         <div class="flex h-14 w-14 items-center justify-center rounded-2xl flex-shrink-0" style="background: rgba(255,255,255,0.2);">
                             <i class="fas fa-bullhorn text-white text-2xl"></i>
@@ -19,56 +25,46 @@
                             <p style="color: #bfdbfe; font-size: 0.9rem;">Administra y supervisa todas las campañas de marketing</p>
                         </div>
                     </div>
-                    <a href="{{ route('administrador.dashboard') }}"
-                       class="inline-flex items-center px-4 py-2.5 rounded-xl font-semibold text-white transition-all hover:-translate-y-0.5 flex-shrink-0"
-                       style="background: linear-gradient(to right, #3b82f6, #2563eb); box-shadow: 0 4px 14px rgba(59,130,246,0.35);">
-                        <i class="fas fa-arrow-left mr-2 text-sm"></i>
-                        Volver al Panel
-                    </a>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="rounded-2xl p-5 hover:scale-[1.02] transition-all duration-300" style="background: #ea9f21; border: 1px solid rgba(255,255,255,0.2);">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-wide" style="color: rgba(255,255,255,0.8);">Sin Campaña</p>
-                                <p class="text-3xl font-bold text-white mt-1">{{ $clientesSinCampania->count() }}</p>
-                            </div>
-                            <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background: rgba(255,255,255,0.2);">
-                                <i class="fas fa-user-clock text-white text-base"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="rounded-2xl p-5 hover:scale-[1.02] transition-all duration-300" style="background: #a7b838; border: 1px solid rgba(255,255,255,0.2);">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-wide" style="color: rgba(255,255,255,0.8);">Campañas Activas</p>
-                                <p class="text-3xl font-bold text-white mt-1">{{ $campaniasActivas->count() }}</p>
-                            </div>
-                            <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background: rgba(255,255,255,0.2);">
-                                <i class="fas fa-bolt text-white text-base"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="rounded-2xl p-5 hover:scale-[1.02] transition-all duration-300" style="background: #475569; border: 1px solid rgba(255,255,255,0.2);">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-wide" style="color: rgba(255,255,255,0.8);">Finalizadas</p>
-                                <p class="text-3xl font-bold text-white mt-1">{{ $campaniasFinalizadas->count() }}</p>
-                            </div>
-                            <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background: rgba(255,255,255,0.2);">
-                                <i class="fas fa-check-circle text-white text-base"></i>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
-        </div>
+        </header>
+
+        @if(session('success'))
+            <div class="campaign-alert campaign-alert-success"><i class="fas fa-circle-check"></i><span>{{ session('success') }}</span></div>
+        @endif
+        @if(session('error'))
+            <div class="campaign-alert campaign-alert-error"><i class="fas fa-circle-exclamation"></i><span>{{ session('error') }}</span></div>
+        @endif
+
+        <section class="campaign-kpis" aria-label="Resumen de campañas">
+            <article class="campaign-kpi campaign-kpi-pending">
+                <div>
+                    <span>Sin campaña</span>
+                    <strong>{{ $clientesSinCampania->count() }}</strong>
+                    <small>Clientes pendientes de configuración</small>
+                </div>
+                <i class="fas fa-user-clock"></i>
+            </article>
+            <article class="campaign-kpi campaign-kpi-active">
+                <div>
+                    <span>Campañas activas</span>
+                    <strong>{{ $campaniasActivas->count() }}</strong>
+                    <small>En ejecución o temporalmente pausadas</small>
+                </div>
+                <i class="fas fa-bolt"></i>
+            </article>
+            <article class="campaign-kpi campaign-kpi-finished">
+                <div>
+                    <span>Finalizadas</span>
+                    <strong>{{ $campaniasFinalizadas->count() }}</strong>
+                    <small>Registros del historial de campañas</small>
+                </div>
+                <i class="fas fa-check-circle"></i>
+            </article>
+        </section>
 
         <!-- Sección de clientes sin campaña -->
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
+        <section class="campaign-section campaign-section-pending bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
             <div class="flex items-center mb-6">
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center mr-4" style="background: #ea9f21;">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,13 +87,13 @@
                     <p class="text-gray-500 text-lg">¡Excelente! Todos los clientes tienen campañas activas</p>
                 </div>
             @else
-                <div class="mb-4">
+                <div class="campaign-filter-bar mb-4">
                     <input type="text" id="filtro-clientes-sin-campania"
                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                            placeholder="Buscar por cliente, email o plan">
                 </div>
-                <div class="overflow-x-auto rounded-xl border border-gray-200 custom-scrollbar">
-                    <table class="min-w-full divide-y divide-gray-200">
+                <div class="campaign-table-wrap overflow-x-auto rounded-xl border border-gray-200 custom-scrollbar">
+                    <table class="campaign-table min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Cliente</th>
@@ -209,90 +205,131 @@
                                 </tr>
                                 
                                 <!-- Formulario mejorado -->
-                                <tr id="form-{{ $cliente['suscripcion_id'] }}" class="hidden bg-gradient-to-r from-blue-50 to-indigo-50">
+                                <tr id="form-{{ $cliente['suscripcion_id'] }}" data-form-for="{{ $cliente['suscripcion_id'] }}" class="hidden bg-gradient-to-r from-blue-50 to-indigo-50">
                                     <td colspan="5" class="px-6 py-8">
-                                        <div class="bg-white rounded-xl p-6 shadow-sm border border-blue-100">
-                                            <div class="flex items-center mb-6">
-                                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                    </svg>
+                                        <div class="campaign-create-card bg-white">
+                                            <header class="campaign-create-header">
+                                                <div class="campaign-create-heading">
+                                                    <span class="campaign-create-icon"><i class="fas fa-bullhorn"></i></span>
+                                                    <div>
+                                                        <span class="campaign-create-eyebrow">Configuración de campaña</span>
+                                                        <h3>Nueva campaña para {{ $cliente['nombre'] }}</h3>
+                                                        <p>Define al responsable y la información principal antes de crearla.</p>
+                                                    </div>
                                                 </div>
-                                                <h3 class="text-lg font-semibold text-gray-900">Nueva Campaña para {{ $cliente['nombre'] }}</h3>
-                                            </div>
-                                            
+                                                <button type="button" class="campaign-create-close" onclick="ocultarFormulario('{{ $cliente['suscripcion_id'] }}')" aria-label="Cerrar formulario">
+                                                    <i class="fas fa-xmark"></i>
+                                                </button>
+                                            </header>
+
                                             <form id="crear-campania-form-{{ $cliente['suscripcion_id'] }}" 
                                                   action="{{ route('administrador.campañas.guardar') }}" 
                                                   method="POST" 
-                                                  class="space-y-6"
+                                                  class="campaign-create-form"
                                                   onsubmit="return validarFormulario({{ $cliente['suscripcion_id'] }})">
                                                 @csrf
                                                 <input type="hidden" name="usuario_cliente_id" value="{{ $cliente['id'] }}">
                                                 <input type="hidden" name="suscripcion_id" value="{{ $cliente['suscripcion_id'] }}">
-                                                
-                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                    <!-- Admin -->
-                                                    <div class="space-y-2">
-                                                        <label class="block text-sm font-semibold text-gray-700">Administrador</label>
-                                                        <div class="relative">
-                                                            <input type="text" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-600" 
-                                                                   value="{{ $adminActual->name }}" readonly>
-                                                            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                                                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                                                </svg>
-                                                            </div>
+
+                                                <div class="campaign-create-context">
+                                                    <div class="campaign-context-item">
+                                                        <span class="campaign-context-avatar">{{ mb_strtoupper(mb_substr($cliente['nombre'], 0, 1)) }}</span>
+                                                        <div>
+                                                            <small>Cliente</small>
+                                                            <strong>{{ $cliente['nombre'] }}</strong>
+                                                            <span>{{ $cliente['plan'] }}</span>
                                                         </div>
                                                     </div>
-                                                    
-                                                    <!-- Community Manager -->
-                                                    <div class="space-y-2">
-                                                        <label for="cm-{{ $cliente['suscripcion_id'] }}" class="block text-sm font-semibold text-gray-700">
-                                                            Community Manager <span class="text-red-500">*</span>
-                                                        </label>
-                                                        <select name="community_manager_id" id="cm-{{ $cliente['suscripcion_id'] }}" 
-                                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
-                                                            <option value="">Seleccione un Community Manager</option>
-                                                            @foreach($communityManagers as $cm)
-                                                                <option value="{{ $cm->id }}">{{ $cm->name }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-                                                    
-                                                    <!-- Nombre -->
-                                                    <div class="space-y-2">
-                                                        <label for="nombre-{{ $cliente['suscripcion_id'] }}" class="block text-sm font-semibold text-gray-700">
-                                                            Nombre de la Campaña <span class="text-red-500">*</span>
-                                                        </label>
-                                                        <input type="text" name="nombre" id="nombre-{{ $cliente['suscripcion_id'] }}" 
-                                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                                                               required placeholder="Ej: Campaña Q2 2025">
-                                                    </div>
-                                                    
-                                                    <!-- Descripción -->
-                                                    <div class="md:col-span-2 space-y-2">
-                                                        <label for="descripcion-{{ $cliente['suscripcion_id'] }}" class="block text-sm font-semibold text-gray-700">
-                                                            Descripción y Objetivos <span class="text-red-500">*</span>
-                                                        </label>
-                                                        <textarea name="descripcion" id="descripcion-{{ $cliente['suscripcion_id'] }}" rows="4"
-                                                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none" 
-                                                                  required placeholder="Describe los objetivos principales, público objetivo y estrategias clave de la campaña..."></textarea>
+                                                    <div class="campaign-context-item">
+                                                        <span class="campaign-context-avatar is-admin"><i class="fas fa-user-shield"></i></span>
+                                                        <div>
+                                                            <small>Creada por</small>
+                                                            <strong>{{ $adminActual->name }}</strong>
+                                                            <span>Administrador del sistema</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                
-                                                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                                                    <button type="button" onclick="ocultarFormulario('{{ $cliente['suscripcion_id'] }}')" 
-                                                            class="px-6 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors">
-                                                        Cancelar
-                                                    </button>
-                                                    <button type="submit" 
-                                                            class="inline-flex items-center px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-sm hover:shadow-md">
-                                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                                        </svg>
-                                                        Crear Campaña
-                                                    </button>
+
+                                                <div class="campaign-create-fields">
+                                                    <div class="campaign-create-field">
+                                                        <label for="cm-{{ $cliente['suscripcion_id'] }}">
+                                                            <span>Community Manager <b>*</b></span>
+                                                            <small>Responsable de ejecutar la campaña</small>
+                                                        </label>
+                                                        <div class="campaign-assignee-picker">
+                                                        <div class="campaign-custom-select" data-campaign-cm-select>
+                                                            <select name="community_manager_id" id="cm-{{ $cliente['suscripcion_id'] }}" class="campaign-native-select" required tabindex="-1" aria-hidden="true">
+                                                                <option value="">Selecciona un responsable</option>
+                                                                @foreach($communityManagers as $cm)
+                                                                    <option value="{{ $cm->id }}">{{ $cm->name }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                            <button type="button" class="campaign-custom-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                                                <i class="fas fa-user-tie"></i>
+                                                                <span data-campaign-selected>Selecciona un responsable</span>
+                                                                <i class="fas fa-chevron-down"></i>
+                                                            </button>
+                                                            <div class="campaign-custom-menu" role="listbox">
+                                                                <button type="button" data-value="" class="is-selected" role="option" aria-selected="true">
+                                                                    <span class="campaign-option-icon"><i class="fas fa-user-plus"></i></span>
+                                                                    <span><strong>Selecciona un responsable</strong><small>Community Manager asignado</small></span>
+                                                                    <i class="fas fa-check campaign-option-check"></i>
+                                                                </button>
+                                                                @foreach($communityManagers as $cm)
+                                                                    <button type="button" data-value="{{ $cm->id }}" role="option" aria-selected="false">
+                                                                        <span class="campaign-option-avatar">{{ mb_strtoupper(mb_substr($cm->name, 0, 1)) }}</span>
+                                                                        <span><strong>{{ $cm->name }}</strong><small>Community Manager</small></span>
+                                                                        <i class="fas fa-check campaign-option-check"></i>
+                                                                    </button>
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
+                                                        <button type="button"
+                                                                class="campaign-recommend-button"
+                                                                data-recommend-url="{{ route('administrador.campañas.recomendar-community-manager', ['suscripcion_id' => $cliente['suscripcion_id']]) }}"
+                                                                onclick="recomendarCommunityManager('{{ $cliente['suscripcion_id'] }}', this)">
+                                                            <i class="fas fa-wand-magic-sparkles"></i>
+                                                            Recomendar
+                                                        </button>
+                                                        </div>
+                                                        <div class="campaign-recommendation hidden" data-campaign-recommendation role="status" aria-live="polite"></div>
+                                                    </div>
+
+                                                    <div class="campaign-create-field">
+                                                        <label for="nombre-{{ $cliente['suscripcion_id'] }}">
+                                                            <span>Nombre de la campaña <b>*</b></span>
+                                                            <small>Usa un nombre corto y fácil de identificar</small>
+                                                        </label>
+                                                        <div class="campaign-input-wrap">
+                                                            <i class="fas fa-signature"></i>
+                                                            <input type="text" name="nombre" id="nombre-{{ $cliente['suscripcion_id'] }}" required placeholder="Ej.: Lanzamiento de invierno 2026">
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="campaign-create-field campaign-create-field-full">
+                                                        <label for="descripcion-{{ $cliente['suscripcion_id'] }}">
+                                                            <span>Descripción y objetivos <b>*</b></span>
+                                                            <small>Resume el público, el objetivo y la estrategia principal</small>
+                                                        </label>
+                                                        <div class="campaign-input-wrap campaign-textarea-wrap">
+                                                            <i class="fas fa-align-left"></i>
+                                                            <textarea name="descripcion" id="descripcion-{{ $cliente['suscripcion_id'] }}" rows="5" required placeholder="Describe qué se quiere conseguir, a quién se dirigirá la campaña y cuál será el enfoque..."></textarea>
+                                                        </div>
+                                                    </div>
                                                 </div>
+
+                                                <footer class="campaign-create-footer">
+                                                    <p><i class="fas fa-circle-info"></i> Los campos marcados con * son obligatorios.</p>
+                                                    <div>
+                                                        <button type="button" onclick="ocultarFormulario('{{ $cliente['suscripcion_id'] }}')" class="campaign-create-cancel">
+                                                            Cancelar
+                                                        </button>
+                                                        <button type="submit" class="campaign-create-submit">
+                                                            <i class="fas fa-check"></i>
+                                                            Crear campaña
+                                                        </button>
+                                                    </div>
+                                                </footer>
                                             </form>
                                         </div>
                                     </td>
@@ -303,10 +340,10 @@
                 </div>
                 <div id="paginacion-clientes-sin-campania" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"></div>
             @endif
-        </div>
+        </section>
         
         <!-- Sección de campañas activas -->
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
+        <section class="campaign-section campaign-section-active bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
             <div class="flex items-center mb-6">
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center mr-4" style="background: #a7b838;">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -329,13 +366,13 @@
                     <p class="text-gray-500 text-lg">No hay campañas activas en este momento</p>
                 </div>
             @else
-                <div class="mb-4">
+                <div class="campaign-filter-bar mb-4">
                     <input type="text" id="filtro-campanias-activas"
                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                            placeholder="Buscar por cliente, campaña o community manager">
                 </div>
-                <div class="overflow-x-auto rounded-xl border border-gray-200">
-                    <table class="min-w-full divide-y divide-gray-200">
+                <div class="campaign-table-wrap overflow-x-auto rounded-xl border border-gray-200">
+                    <table class="campaign-table min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Campaña</th>
@@ -417,10 +454,10 @@
                 </div>
                 <div id="paginacion-campanias-activas" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"></div>
             @endif
-        </div>
+        </section>
         
         <!-- Sección de campañas finalizadas -->
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+        <section class="campaign-section campaign-section-finished bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
             <div class="flex items-center mb-6">
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center mr-4" style="background: #475569;">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -443,27 +480,27 @@
                     <p class="text-gray-500 text-lg">No hay campañas finalizadas</p>
                 </div>
             @else
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="campaign-filter-bar campaign-filter-grid grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <input type="text" id="filtro-campanias-finalizadas"
                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                            placeholder="Buscar por cliente, campaña o community manager">
                     <select id="filtro-mes-campanias-finalizadas"
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                        <option value=">Todos los meses</option>
+                        <option value="">Todos los meses</option>
                         @foreach($mesesFinalizadasDisponibles as $mes)
                             <option value="{{ str_pad($mes['numero'], 2, '0', STR_PAD_LEFT) }}">{{ $mes['nombre'] }}</option>
                         @endforeach
                     </select>
                     <select id="filtro-anio-campanias-finalizadas"
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                        <option value=">Todos los años</option>
+                        <option value="">Todos los años</option>
                         @foreach($aniosFinalizadasDisponibles as $anio)
                             <option value="{{ $anio }}">{{ $anio }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="overflow-x-auto rounded-xl border border-gray-200 custom-scrollbar">
-                    <table class="min-w-full divide-y divide-gray-200">
+                <div class="campaign-table-wrap overflow-x-auto rounded-xl border border-gray-200 custom-scrollbar">
+                    <table class="campaign-table min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Campaña</th>
@@ -568,7 +605,7 @@
                     Entendido
                 </button>
             </div>
-        </div>
+        </section>
     </div>
 </div>
 <!-- Scripts mejorados -->
@@ -650,9 +687,11 @@
                         
                         // Resaltar el campo de CM
                         const cmSelect = formElement.querySelector('select[name="community_manager_id"]');
-                        cmSelect.focus();
-                        cmSelect.classList.add('ring-4', 'ring-purple-200');
-                        setTimeout(() => cmSelect.classList.remove('ring-4', 'ring-purple-200'), 3000);
+                        const cmDropdown = cmSelect?.closest('[data-campaign-cm-select]');
+                        const cmTrigger = cmDropdown?.querySelector('.campaign-custom-trigger');
+                        cmTrigger?.focus();
+                        cmDropdown?.classList.add('is-highlighted');
+                        setTimeout(() => cmDropdown?.classList.remove('is-highlighted'), 3000);
                     }, 400);
                 }
             })
@@ -696,6 +735,108 @@
             .normalize('NFD')
             .replace(/[̀-ͯ]/g, '')
             .trim();
+    }
+
+    async function recomendarCommunityManager(formKey, button) {
+        const form = document.getElementById('crear-campania-form-' + formKey);
+        const dropdown = form?.querySelector('[data-campaign-cm-select]');
+        const result = form?.querySelector('[data-campaign-recommendation]');
+        if (!form || !dropdown || !result || !button?.dataset.recommendUrl) return;
+
+        const originalContent = button.innerHTML;
+        button.disabled = true;
+        button.classList.add('is-loading');
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analizando';
+        result.classList.add('hidden');
+        result.classList.remove('is-error');
+
+        try {
+            const response = await fetch(button.dataset.recommendUrl, {
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            const data = await response.json();
+
+            if (!response.ok) throw new Error(data.message || 'No fue posible calcular una recomendación.');
+
+            const recommendation = data.recommended;
+            const option = dropdown.querySelector(`.campaign-custom-menu [data-value="${recommendation.id}"]`);
+            if (!option) throw new Error('El responsable recomendado ya no está disponible en la lista.');
+
+            option.click();
+            dropdown.classList.add('is-recommended');
+            setTimeout(() => dropdown.classList.remove('is-recommended'), 2400);
+
+            const heading = document.createElement('strong');
+            heading.textContent = `Recomendado: ${recommendation.name}`;
+            const explanation = document.createElement('span');
+            explanation.textContent = `${recommendation.reason} Se evaluaron ${data.evaluated} responsables para una campaña hasta el ${data.campaign_ends_at}.`;
+            result.replaceChildren(heading, explanation);
+            result.classList.remove('hidden');
+        } catch (error) {
+            const message = document.createElement('span');
+            message.textContent = error.message || 'No fue posible calcular una recomendación.';
+            result.replaceChildren(message);
+            result.classList.remove('hidden');
+            result.classList.add('is-error');
+        } finally {
+            button.disabled = false;
+            button.classList.remove('is-loading');
+            button.innerHTML = originalContent;
+        }
+    }
+
+    function inicializarDropdownsResponsables() {
+        const dropdowns = Array.from(document.querySelectorAll('[data-campaign-cm-select]'));
+
+        const cerrarDropdowns = (excepto = null) => {
+            dropdowns.forEach((dropdown) => {
+                if (dropdown === excepto) return;
+                dropdown.classList.remove('is-open');
+                dropdown.querySelector('.campaign-custom-trigger')?.setAttribute('aria-expanded', 'false');
+            });
+        };
+
+        dropdowns.forEach((dropdown) => {
+            const select = dropdown.querySelector('select[name="community_manager_id"]');
+            const trigger = dropdown.querySelector('.campaign-custom-trigger');
+            const label = dropdown.querySelector('[data-campaign-selected]');
+            const options = Array.from(dropdown.querySelectorAll('.campaign-custom-menu [data-value]'));
+
+            const seleccionar = (option, emitirCambio = true) => {
+                const value = option.dataset.value || '';
+                select.value = value;
+                label.textContent = option.querySelector('strong')?.textContent.trim() || 'Selecciona un responsable';
+                trigger.classList.toggle('has-value', value !== '');
+                dropdown.classList.remove('is-invalid', 'is-open');
+                trigger.setAttribute('aria-expanded', 'false');
+
+                options.forEach((item) => {
+                    const selected = item === option;
+                    item.classList.toggle('is-selected', selected);
+                    item.setAttribute('aria-selected', selected ? 'true' : 'false');
+                });
+
+                if (emitirCambio) select.dispatchEvent(new Event('change', { bubbles: true }));
+            };
+
+            trigger.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const abrir = !dropdown.classList.contains('is-open');
+                cerrarDropdowns(dropdown);
+                dropdown.classList.toggle('is-open', abrir);
+                trigger.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+            });
+
+            options.forEach((option) => option.addEventListener('click', () => seleccionar(option)));
+
+            const initialOption = options.find((option) => option.dataset.value === select.value) || options[0];
+            seleccionar(initialOption, false);
+        });
+
+        document.addEventListener('click', () => cerrarDropdowns());
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') cerrarDropdowns();
+        });
     }
 
     function inicializarTablaFiltrable(config) {
@@ -813,19 +954,6 @@
 
     // Mejorar experiencia de usuario con efectos hover
     document.addEventListener('DOMContentLoaded', function() {
-        // Añadir efecto de hover a las tarjetas principales
-        const cards = document.querySelectorAll('.bg-white.rounded-2xl');
-        cards.forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-2px)';
-                this.style.transition = 'transform 0.2s ease-in-out';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-            });
-        });
-        
         // Validación en tiempo real para formularios
         const forms = document.querySelectorAll('form');
         forms.forEach(form => {
@@ -867,7 +995,9 @@
         
         if (!cmSelect || !cmSelect.value) {
             alert('Por favor, seleccione un Community Manager');
-            if (cmSelect) cmSelect.focus();
+            const dropdown = cmSelect?.closest('[data-campaign-cm-select]');
+            dropdown?.classList.add('is-invalid');
+            dropdown?.querySelector('.campaign-custom-trigger')?.focus();
             return false;
         }
         
@@ -889,6 +1019,8 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        inicializarDropdownsResponsables();
+
         inicializarTablaFiltrable({
             tableBodyId: 'tabla-clientes-sin-campania',
             rowSelector: '.fila-cliente-sin-campania',
@@ -1054,6 +1186,156 @@
             font-size: 1.875rem;
         }
     }
+
+    /* Rediseño alineado con Pagos, Empresas, Logs y Backups */
+    .campaigns-page { min-height:100vh; padding:0 0 48px; background:#fff; color:#302834; }
+    .campaigns-shell { position:relative; display:flex; flex-direction:column; width:100%; }
+    .campaigns-hero { order:1; width:100%; min-height:180px; margin:0; border-radius:0; box-shadow:none; }
+    .campaigns-hero .rp-banner-overlay { background:linear-gradient(rgba(15,23,42,.28),rgba(15,23,42,.28)),radial-gradient(circle at 0 0,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 100% 0,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 100% 100%,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 0 100%,rgba(255,255,255,.2),transparent 50%); background-size:100% 100%,50% 50%,50% 50%,50% 50%,50% 50%; background-position:0 0,0 0,100% 0,100% 100%,0 100%; background-repeat:no-repeat; }
+    .campaigns-hero-content { display:flex; align-items:center; min-height:180px; padding:30px 48px; }
+    .campaigns-hero-content>div { width:100%; padding-right:440px; }
+    .campaigns-hero h1 { margin:0 0 4px; color:#fff; font-size:clamp(1.55rem,3vw,2.25rem); font-weight:900; letter-spacing:-.04em; }
+    .campaigns-hero h1::before { content:'Operación de marketing'; display:block; margin-bottom:7px; color:#dbeafe; font-size:.68rem; font-weight:900; letter-spacing:.15em; text-transform:uppercase; }
+    .campaigns-hero p { color:#dbeafe!important; font-size:.74rem!important; font-weight:600; }
+    .campaigns-hero .h-14.w-14 { width:52px; height:52px; border:1px solid rgba(255,255,255,.24); border-radius:14px; background:rgba(255,255,255,.14)!important; backdrop-filter:blur(5px); }
+    .campaigns-top-actions { position:absolute; z-index:20; top:67px; right:48px; display:flex; justify-content:flex-end; gap:9px; padding:0; }
+    .campaign-top-action { min-height:42px; display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 13px; border:1px solid rgba(255,255,255,.24); border-radius:.65rem; background:rgba(255,255,255,.12); color:#fff; font-size:.69rem; font-weight:900; text-decoration:none; backdrop-filter:blur(4px); transition:.18s; }
+    .campaign-top-action.is-active { border-color:#fff; background:#fff; color:#4f46e5; }
+    .campaign-top-action:hover { transform:translateY(-2px); border-color:#fff; background:#fff; color:#4f46e5; box-shadow:0 8px 20px rgba(31,41,55,.16); }
+    .campaign-alert { order:2; width:calc(100% - 48px); margin:24px auto 0; padding:13px 16px; display:flex; align-items:center; gap:10px; border:1px solid; border-radius:12px; font-size:.76rem; font-weight:800; }
+    .campaign-alert-success { border-color:#bfe3c5; background:#ecf8ee; color:#276738; }
+    .campaign-alert-error { border-color:#f3c4c4; background:#fff0f0; color:#a72d2d; }
+    .campaign-kpis { order:3; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin:24px 24px; }
+    .campaign-kpi { --kpi-accent:#117e8c; --kpi-soft:#e6f4f5; --kpi-rgb:17,126,140; position:relative; isolation:isolate; overflow:hidden; min-height:132px; padding:21px; display:flex; align-items:center; justify-content:space-between; gap:18px; border:1px solid rgba(var(--kpi-rgb),.22); border-radius:1rem; background:linear-gradient(135deg,#fff 35%,var(--kpi-soft)); box-shadow:inset 0 4px 0 var(--kpi-accent),0 10px 24px rgba(45,66,34,.09); transition:.22s; }
+    .campaign-kpi::before { content:''; position:absolute; z-index:-1; top:-42px; right:-34px; width:125px; height:125px; border:22px solid rgba(var(--kpi-rgb),.09); border-radius:50%; }
+    .campaign-kpi::after { content:''; position:absolute; z-index:-1; right:13px; bottom:8px; width:88px; height:45px; opacity:.22; background-image:radial-gradient(circle,var(--kpi-accent) 1.4px,transparent 1.6px); background-size:9px 9px; }
+    .campaign-kpi:hover { transform:translateY(-5px); border-color:rgba(var(--kpi-rgb),.38); box-shadow:inset 0 4px 0 var(--kpi-accent),0 17px 32px rgba(var(--kpi-rgb),.16); }
+    .campaign-kpi span,.campaign-kpi small { display:block; }
+    .campaign-kpi span { color:#596170; font-size:.7rem; font-weight:900; letter-spacing:.025em; text-transform:uppercase; }
+    .campaign-kpi strong { display:block; margin-top:9px; color:#263024; font-size:1.85rem; font-weight:900; line-height:1.1; }
+    .campaign-kpi small { margin-top:8px; color:#7f8878; font-size:.62rem; font-weight:600; }
+    .campaign-kpi>i { width:52px; height:52px; display:grid; place-items:center; flex:0 0 auto; border:1px solid rgba(255,255,255,.55); border-radius:14px; background:var(--kpi-accent); color:#fff; font-size:1.18rem; box-shadow:0 8px 17px rgba(var(--kpi-rgb),.27),inset 0 1px 0 rgba(255,255,255,.28); }
+    .campaign-kpi-pending { --kpi-accent:#e3a122; --kpi-soft:#fff6df; --kpi-rgb:227,161,34; }
+    .campaign-kpi-active { --kpi-accent:#7da533; --kpi-soft:#f0f6e7; --kpi-rgb:125,165,51; }
+    .campaign-kpi-finished { --kpi-accent:#5b2b76; --kpi-soft:#f3edf6; --kpi-rgb:91,43,118; }
+    .campaign-section { --section-accent:#117e8c; order:4; overflow:visible; margin:0 24px 22px!important; padding:0!important; border:1px solid #e1e3de!important; border-radius:16px!important; background:#fff!important; box-shadow:0 9px 22px rgba(55,60,52,.06)!important; }
+    .campaign-section-active { --section-accent:#7da533; }
+    .campaign-section-pending { --section-accent:#e3a122; }
+    .campaign-section-finished { --section-accent:#5b2b76; }
+    .campaign-section>.flex.items-center.mb-6 { margin:0!important; padding:20px 22px 16px; border-bottom:1px solid #eceeea; }
+    .campaign-section>.flex.items-center.mb-6>div:first-child { width:42px; height:42px; margin-right:13px!important; border-radius:12px!important; background:var(--section-accent)!important; box-shadow:0 7px 15px rgba(55,60,52,.14); }
+    .campaign-section>.flex.items-center.mb-6 h2 { color:#25272b; font-size:.96rem; font-weight:900; letter-spacing:-.015em; }
+    .campaign-section>.flex.items-center.mb-6 p { margin-top:3px; color:#737a70; font-size:.7rem; font-weight:600; }
+    .campaign-filter-bar { position:relative; margin:18px 20px 14px!important; padding:14px; border:1px solid #e1e3de; border-radius:14px; background:#f8f8f6; box-shadow:0 5px 14px rgba(55,60,52,.04); }
+    .campaign-filter-bar:not(.campaign-filter-grid)::before { content:'\f002'; position:absolute; z-index:1; top:30px; left:31px; color:#737a70; font-family:'Font Awesome 6 Free'; font-size:.85rem; font-weight:900; transform:translateY(-50%); }
+    .campaign-filter-bar:not(.campaign-filter-grid) input { padding-left:43px!important; }
+    .campaign-filter-bar input,.campaign-filter-bar select { width:100%; height:48px; padding:0 14px; border:1px solid #d9dcd6!important; border-radius:12px!important; background:#fff!important; color:#3f443d; box-shadow:0 2px 5px rgba(55,60,52,.07); font-size:.78rem; font-weight:650; outline:0; }
+    .campaign-filter-bar input:focus,.campaign-filter-bar select:focus { border-color:#8a9186!important; box-shadow:0 0 0 3px rgba(98,104,95,.12)!important; }
+    .campaign-table-wrap { margin:0 20px 18px; border:1px solid color-mix(in srgb,var(--section-accent) 28%,#e5e7eb)!important; border-radius:14px!important; background:#fff; box-shadow:0 7px 18px rgba(55,60,52,.06); }
+    .campaign-table { width:100%!important; min-width:980px!important; border-collapse:collapse; table-layout:auto; }
+    .campaign-table thead,.campaign-table thead tr,.campaign-table th { background:var(--section-accent)!important; }
+    .campaign-table th { padding:14px 16px!important; border-right:1px solid rgba(255,255,255,.25); color:#fff!important; font-size:.61rem!important; font-weight:900!important; letter-spacing:.055em!important; }
+    .campaign-table th:last-child,.campaign-table td:last-child { border-right:0; }
+    .campaign-table td { padding:14px 16px!important; border-right:1px solid #e4e8e1; border-bottom:1px solid #e4e8e1; color:#4b5563; font-size:.72rem!important; }
+    .campaign-table tbody tr:nth-child(odd)>td { background:#fff; }
+    .campaign-table tbody tr:nth-child(even)>td { background:#f7f8f6; }
+    .campaign-table tbody tr:hover>td { background:#f0f4ec!important; }
+    .campaign-table tbody tr:last-child>td { border-bottom:0; }
+    .campaign-table td .text-sm { font-size:.72rem!important; }
+    .campaign-table td .w-10.h-10 { width:38px; height:38px; border-radius:11px; background:var(--section-accent)!important; box-shadow:0 5px 12px rgba(55,60,52,.15); }
+    .campaign-table td .inline-flex.rounded-full { padding:5px 9px; font-size:.61rem!important; font-weight:800; }
+    .campaign-table td .flex.space-x-2 { gap:6px; }
+    .campaign-table td .flex.space-x-2>* { margin-left:0!important; }
+    .campaign-table td a[class*='bg-'],.campaign-table td button[class*='bg-'] { min-height:32px; padding:0 10px!important; border-radius:9px!important; font-size:.62rem!important; font-weight:850!important; box-shadow:none!important; }
+    .campaign-table tr[data-form-for]>td { padding:18px!important; background:#f4f7fd!important; }
+    .campaign-table tr[data-form-for]>td>.bg-white { margin:0; padding:20px!important; border:1px solid #dce4ef; border-radius:13px!important; box-shadow:none!important; }
+    .campaign-table tr[data-form-for]>td>.campaign-create-card { overflow:hidden; padding:0!important; border:1px solid #d9e2ef; border-radius:17px!important; background:#fff; box-shadow:0 12px 30px rgba(30,64,175,.08)!important; }
+    .campaign-create-header { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; padding:20px 22px; border-bottom:1px solid #e4eaf2; background:linear-gradient(135deg,#f8fbff 0%,#f3f6ff 100%); }
+    .campaign-create-heading { min-width:0; display:flex; align-items:center; gap:14px; }
+    .campaign-create-icon { width:45px; height:45px; display:grid; place-items:center; flex:0 0 45px; border-radius:13px; background:#4f46e5; color:#fff; font-size:1rem; box-shadow:0 7px 16px rgba(79,70,229,.22); }
+    .campaign-create-eyebrow { display:block; margin-bottom:3px; color:#4f46e5; font-size:.59rem; font-weight:900; letter-spacing:.1em; text-transform:uppercase; }
+    .campaign-create-heading h3 { margin:0; color:#20242b; font-size:.96rem; font-weight:900; letter-spacing:-.015em; }
+    .campaign-create-heading p { margin:4px 0 0; color:#747d8a; font-size:.67rem; line-height:1.45; }
+    .campaign-create-close { width:34px; height:34px; display:grid; place-items:center; flex:0 0 34px; border:1px solid #dce2eb; border-radius:10px; background:#fff; color:#7b8491; cursor:pointer; transition:.18s; }
+    .campaign-create-close:hover { border-color:#fecaca; background:#fff1f2; color:#dc2626; }
+    .campaign-create-form { padding:20px 22px 22px; }
+    .campaign-create-context { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-bottom:20px; }
+    .campaign-context-item { min-width:0; display:flex; align-items:center; gap:11px; padding:12px 14px; border:1px solid #e2e7ee; border-radius:12px; background:#fafbfc; }
+    .campaign-context-avatar { width:38px; height:38px; display:grid; place-items:center; flex:0 0 38px; border-radius:11px; background:#e3a122; color:#fff; font-size:.82rem; font-weight:900; }
+    .campaign-context-avatar.is-admin { background:#117e8c; }
+    .campaign-context-item div { min-width:0; }
+    .campaign-context-item small,.campaign-context-item strong,.campaign-context-item div>span { display:block; }
+    .campaign-context-item small { color:#8a93a0; font-size:.56rem; font-weight:900; letter-spacing:.07em; text-transform:uppercase; }
+    .campaign-context-item strong { margin-top:2px; overflow:hidden; color:#2f3540; font-size:.72rem; font-weight:850; text-overflow:ellipsis; white-space:nowrap; }
+    .campaign-context-item div>span { margin-top:2px; color:#8a93a0; font-size:.59rem; }
+    .campaign-create-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:17px; }
+    .campaign-create-field { min-width:0; }
+    .campaign-create-field-full { grid-column:1/-1; }
+    .campaign-create-field>label { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin:0 2px 7px; }
+    .campaign-create-field>label span { color:#3d4652; font-size:.69rem; font-weight:900; }
+    .campaign-create-field>label b { color:#dc2626; }
+    .campaign-create-field>label small { color:#929aa6; font-size:.57rem; font-weight:600; text-align:right; }
+    .campaign-input-wrap { position:relative; min-height:48px; display:flex; align-items:center; border:1px solid #d7dde6; border-radius:12px; background:#fff; box-shadow:0 2px 5px rgba(15,23,42,.04); transition:.18s; }
+    .campaign-input-wrap:focus-within { border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,.11),0 3px 8px rgba(15,23,42,.05); }
+    .campaign-input-wrap>i:first-child { width:44px; flex:0 0 44px; color:#7d8795; text-align:center; font-size:.83rem; }
+    .campaign-input-wrap input,.campaign-input-wrap select,.campaign-input-wrap textarea { width:100%; min-width:0; border:0!important; background:transparent!important; color:#303846; font-size:.72rem; font-weight:650; outline:0; box-shadow:none!important; }
+    .campaign-input-wrap input,.campaign-input-wrap select { height:46px; padding:0 40px 0 0; }
+    .campaign-input-wrap select { appearance:none; cursor:pointer; }
+    .campaign-select-arrow { position:absolute; right:14px; color:#929aa6!important; font-size:.62rem!important; pointer-events:none; }
+    .campaign-textarea-wrap { align-items:flex-start; min-height:125px; }
+    .campaign-textarea-wrap>i:first-child { padding-top:16px; }
+    .campaign-input-wrap textarea { min-height:123px; padding:14px 14px 14px 0; resize:vertical; line-height:1.55; }
+    .campaign-input-wrap input::placeholder,.campaign-input-wrap textarea::placeholder { color:#a4abb5; font-weight:500; }
+    .campaign-custom-select { position:relative; z-index:20; }
+    .campaign-assignee-picker { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:9px; }
+    .campaign-recommend-button { min-height:48px; display:inline-flex; align-items:center; justify-content:center; gap:7px; padding:0 14px; border:1px solid #0f7480; border-radius:12px; background:#117e8c; color:#fff; font-size:.66rem; font-weight:900; cursor:pointer; box-shadow:0 5px 12px rgba(17,126,140,.18); transition:.18s; }
+    .campaign-recommend-button:hover { transform:translateY(-1px); background:#0d6973; box-shadow:0 8px 16px rgba(17,126,140,.23); }
+    .campaign-recommend-button:disabled { opacity:.72; cursor:wait; transform:none; }
+    .campaign-custom-select.is-recommended .campaign-custom-trigger { border-color:#117e8c; box-shadow:0 0 0 4px rgba(17,126,140,.14); }
+    .campaign-recommendation { margin-top:9px; padding:10px 12px; border:1px solid #b9dfe2; border-radius:10px; background:#f0fafb; color:#315e63; }
+    .campaign-recommendation strong,.campaign-recommendation span { display:block; }
+    .campaign-recommendation strong { color:#0f6872; font-size:.65rem; font-weight:900; }
+    .campaign-recommendation span { margin-top:3px; font-size:.58rem; font-weight:650; line-height:1.45; }
+    .campaign-recommendation.is-error { border-color:#f3c4c4; background:#fff0f0; color:#a72d2d; }
+    .campaign-custom-select.is-open { z-index:80; }
+    .campaign-native-select { position:absolute!important; width:1px!important; height:1px!important; overflow:hidden!important; opacity:0!important; pointer-events:none!important; }
+    .campaign-custom-trigger { position:relative; width:100%; min-height:48px; display:flex; align-items:center; gap:11px; padding:0 42px 0 14px; border:1px solid #d7dde6; border-radius:12px; background:#fff; color:#89929f; text-align:left; box-shadow:0 2px 5px rgba(15,23,42,.04); cursor:pointer; transition:.18s; }
+    .campaign-custom-trigger>i:first-child { width:18px; color:#7d8795; text-align:center; font-size:.83rem; }
+    .campaign-custom-trigger>span { min-width:0; overflow:hidden; flex:1; font-size:.72rem; font-weight:650; text-overflow:ellipsis; white-space:nowrap; }
+    .campaign-custom-trigger>i:last-child { position:absolute; right:15px; color:#929aa6; font-size:.62rem; transition:transform .18s; }
+    .campaign-custom-trigger.has-value { color:#303846; }
+    .campaign-custom-select.is-open .campaign-custom-trigger,.campaign-custom-trigger:focus { border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,.11),0 3px 8px rgba(15,23,42,.05); outline:0; }
+    .campaign-custom-select.is-open .campaign-custom-trigger>i:last-child { transform:rotate(180deg); }
+    .campaign-custom-select.is-highlighted .campaign-custom-trigger { border-color:#8b5cf6; box-shadow:0 0 0 4px rgba(139,92,246,.15); }
+    .campaign-custom-select.is-invalid .campaign-custom-trigger { border-color:#ef4444; box-shadow:0 0 0 3px rgba(239,68,68,.11); }
+    .campaign-custom-menu { position:absolute; top:calc(100% + 8px); right:0; left:0; display:none; max-height:245px; overflow-y:auto; padding:7px; border:1px solid #d8dee8; border-radius:13px; background:#fff; box-shadow:0 18px 42px rgba(15,23,42,.18); }
+    .campaign-custom-select.is-open .campaign-custom-menu { display:grid; gap:3px; animation:campaignDropdownIn .16s ease both; }
+    .campaign-custom-menu>button { width:100%; min-height:50px; display:grid; grid-template-columns:34px minmax(0,1fr) 20px; align-items:center; gap:10px; padding:7px 9px; border:0; border-radius:9px; background:transparent; color:#46505d; text-align:left; cursor:pointer; transition:.15s; }
+    .campaign-custom-menu>button:hover,.campaign-custom-menu>button.is-selected { background:#f0f2ff; color:#3730a3; }
+    .campaign-option-avatar,.campaign-option-icon { width:34px; height:34px; display:grid; place-items:center; border-radius:9px; background:#eef2ff; color:#4f46e5; font-size:.68rem; font-weight:900; }
+    .campaign-custom-menu>button.is-selected .campaign-option-avatar,.campaign-custom-menu>button.is-selected .campaign-option-icon { background:#4f46e5; color:#fff; }
+    .campaign-custom-menu>button>span:nth-child(2) { min-width:0; }
+    .campaign-custom-menu strong,.campaign-custom-menu small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .campaign-custom-menu strong { font-size:.69rem; font-weight:850; }
+    .campaign-custom-menu small { margin-top:2px; color:#929aa6; font-size:.56rem; font-weight:600; }
+    .campaign-option-check { visibility:hidden; color:#4f46e5; font-size:.68rem; }
+    .campaign-custom-menu>button.is-selected .campaign-option-check { visibility:visible; }
+    @keyframes campaignDropdownIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:none; } }
+    .campaign-create-footer { margin-top:20px; padding-top:17px; display:flex; align-items:center; justify-content:space-between; gap:18px; border-top:1px solid #e6e9ee; }
+    .campaign-create-footer p { margin:0; display:flex; align-items:center; gap:7px; color:#8a93a0; font-size:.6rem; font-weight:650; }
+    .campaign-create-footer p i { color:#6366f1; }
+    .campaign-create-footer>div { display:flex; align-items:center; gap:9px; }
+    .campaign-create-cancel,.campaign-create-submit { min-height:40px; display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:0 16px; border-radius:10px; font-size:.68rem; font-weight:900; cursor:pointer; transition:.18s; }
+    .campaign-create-cancel { border:1px solid #d7dde6; background:#fff; color:#66707e; }
+    .campaign-create-cancel:hover { background:#f3f4f6; color:#374151; }
+    .campaign-create-submit { border:1px solid #4f46e5; background:#4f46e5; color:#fff; box-shadow:0 7px 15px rgba(79,70,229,.2); }
+    .campaign-create-submit:hover { transform:translateY(-1px); background:#4338ca; box-shadow:0 10px 20px rgba(79,70,229,.25); }
+    .campaign-section>[id^='paginacion-'] { margin:0 20px 20px!important; padding:13px 14px; border:1px solid #e5e7eb; border-radius:12px; background:#f8fafc; }
+    .campaign-section>[id^='paginacion-'] button { min-height:34px; border-radius:8px; font-size:.7rem; font-weight:800; }
+    .campaign-section>.text-center { margin:0 20px 20px; border:1px dashed #d8ddd4; border-radius:14px; background:#fafbf9; }
+    #mensaje-modal>div:last-child>div { border:1px solid #dde3ea; border-radius:18px; box-shadow:0 28px 75px rgba(15,23,42,.28); }
+    @media(max-width:980px) { .campaigns-hero-content>div { padding-right:0; } .campaigns-top-actions { position:static; order:2; justify-content:center; margin:14px 24px 0; } .campaign-top-action { border-color:#dce4f3; background:#f4f7fd; color:#4f46e5; } .campaign-top-action.is-active { background:#4f46e5; color:#fff; } .campaign-alert{order:3}.campaign-kpis{order:4;grid-template-columns:repeat(2,minmax(0,1fr))}.campaign-section{order:5} }
+    @media(max-width:640px) { .campaigns-hero{min-height:205px}.campaigns-hero-content{min-height:205px;padding:28px 20px}.campaigns-hero-content .flex.items-center.gap-4{align-items:center}.campaigns-top-actions{display:grid;grid-template-columns:1fr;margin-right:12px;margin-left:12px}.campaign-top-action{border-color:#dce4f3;background:#f4f7fd;color:#4f46e5}.campaign-top-action.is-active{background:#4f46e5;color:#fff}.campaign-alert{width:calc(100% - 24px)}.campaign-kpis{grid-template-columns:1fr;margin-right:12px;margin-left:12px}.campaign-section{margin-right:12px!important;margin-left:12px!important}.campaign-section>.flex.items-center.mb-6{padding:18px 16px}.campaign-filter-bar{margin-right:12px!important;margin-left:12px!important;padding:10px}.campaign-filter-grid{grid-template-columns:1fr!important}.campaign-filter-bar:not(.campaign-filter-grid)::before{top:26px;left:27px}.campaign-table-wrap{margin-right:12px;margin-left:12px}.campaign-section>[id^='paginacion-']{margin-right:12px!important;margin-left:12px!important}.campaign-table tr[data-form-for]>td{padding:10px!important}.campaign-create-header{padding:16px}.campaign-create-heading{align-items:flex-start}.campaign-create-heading p{display:none}.campaign-create-form{padding:16px}.campaign-create-context,.campaign-create-fields{grid-template-columns:1fr}.campaign-create-field-full{grid-column:1}.campaign-create-field>label{align-items:flex-start;flex-direction:column;gap:2px}.campaign-create-field>label small{text-align:left}.campaign-assignee-picker{grid-template-columns:1fr}.campaign-recommend-button{width:100%}.campaign-create-footer{align-items:stretch;flex-direction:column}.campaign-create-footer>div{display:grid;grid-template-columns:1fr 1fr}.campaign-create-cancel,.campaign-create-submit{width:100%} }
 </style>
 @endsection
 

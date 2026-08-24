@@ -13,8 +13,10 @@ class PlanController extends Controller
      * Obtiene los planes activos del usuario y conserva el plan principal
      * para los consumidores antiguos del endpoint.
      */
-    public function getPlanContratado()
+    public function getPlanContratado(?int $userId = null)
     {
+        $userId ??= (int) Auth::id();
+
         $relations = [
             'plan.planCaracteristicas' => function ($query) {
                 $query->orderBy('orden');
@@ -24,7 +26,7 @@ class PlanController extends Controller
         ];
 
         $suscripcionesActivas = Suscripcion::with($relations)
-            ->where('usuario_id', Auth::id())
+            ->where('usuario_id', $userId)
             ->where('estado', 'activa')
             ->where(function ($query) {
                 $query->whereNull('vigencia_activada_at')
@@ -37,7 +39,7 @@ class PlanController extends Controller
 
         if (! $suscripcionPrincipal) {
             $suscripcionPrincipal = Suscripcion::with($relations)
-                ->where('usuario_id', Auth::id())
+                ->where('usuario_id', $userId)
                 ->latest('fecha_inicio')
                 ->first();
         }

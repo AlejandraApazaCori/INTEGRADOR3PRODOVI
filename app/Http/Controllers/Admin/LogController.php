@@ -9,9 +9,7 @@ use App\Models\SecurityLog;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Schema;
 
 class LogController extends Controller
 {
@@ -20,7 +18,9 @@ class LogController extends Controller
         $fechaInicio = $request->input('fecha_inicio');
         $fechaFin = $request->input('fecha_fin');
 
-        $queryAccess = AccessLog::with('user')->orderBy('created_at', 'desc');
+        $queryAccess = AccessLog::with('user')
+            ->where('url', 'not like', '%/administrador/notificaciones/conteo%')
+            ->orderBy('created_at', 'desc');
         if ($fechaInicio) {
             $queryAccess->whereDate('created_at', '>=', $fechaInicio);
         }
@@ -58,24 +58,39 @@ class LogController extends Controller
         }
         $auditLogs = $queryAudit->paginate(15, ['*'], 'audit_page');
 
-        $showScheduledPublicationsSetupButton = ! Schema::hasColumn('tareas', 'publication_message')
-            || ! Cache::has('administrador.publicaciones_programadas_setup.ejecutado');
-
         return view('administrador.logs.index', compact(
             'accessLogs',
             'errorLogs',
             'securityLogs',
             'auditLogs',
             'fechaInicio',
-            'fechaFin',
-            'showScheduledPublicationsSetupButton'
+            'fechaFin'
         ));
     }
 
     public function exportPdf($type, Request $request)
     {
+        abort_unless(in_array($type, ['access', 'security', 'audit', 'error'], true), 404);
+        $request->validate([
+            'fecha_inicio' => ['nullable', 'date'],
+            'fecha_fin' => ['nullable', 'date', 'after_or_equal:fecha_inicio'],
+            'page_from' => ['nullable', 'integer', 'min:1'],
+            'page_to' => ['nullable', 'integer', 'min:1'],
+        ]);
         $fechaInicio = $request->input('fecha_inicio');
         $fechaFin = $request->input('fecha_fin');
+        $rangeRequested = $request->filled('page_from') || $request->filled('page_to');
+        $pageFrom = max(1, (int) $request->input('page_from', 1));
+        $pageTo = $request->filled('page_to') ? max($pageFrom, (int) $request->input('page_to')) : null;
+        $offset = ($pageFrom - 1) * 15;
+        $limit = $pageTo ? ($pageTo - $pageFrom + 1) * 15 : null;
+        $applyQueryRange = function ($query) use ($rangeRequested, $offset, $limit) {
+            if ($rangeRequested) {
+                $query->skip($offset);
+                if ($limit !== null) $query->take($limit);
+            }
+            return $query;
+        };
         $data = [];
         $view = '';
         $title = '';
@@ -83,14 +98,14 @@ class LogController extends Controller
 
         switch ($type) {
             case 'access':
-                $query = AccessLog::with('user')->orderBy('created_at', 'desc');
+                $query = AccessLog::with('user')->where('url', 'not like', '%/administrador/notificaciones/conteo%')->orderBy('created_at', 'desc');
                 if ($fechaInicio) {
                     $query->whereDate('created_at', '>=', $fechaInicio);
                 }
                 if ($fechaFin) {
                     $query->whereDate('created_at', '<=', $fechaFin);
                 }
-                $data = $query->get();
+                $data = $applyQueryRange($query)->get();
                 $view = 'administrador.logs.access_pdf';
                 $title = 'Reporte de Logs de Acceso';
 
@@ -112,7 +127,7 @@ class LogController extends Controller
                 if ($fechaFin) {
                     $query->whereDate('created_at', '<=', $fechaFin);
                 }
-                $data = $query->get();
+                $data = $applyQueryRange($query)->get();
                 $view = 'administrador.logs.security_pdf';
                 $title = 'Reporte de Logs de Seguridad';
 
@@ -138,7 +153,7 @@ class LogController extends Controller
                 if ($fechaFin) {
                     $query->whereDate('created_at', '<=', $fechaFin);
                 }
-                $data = $query->get();
+                $data = $applyQueryRange($query)->get();
                 $view = 'administrador.logs.audit_pdf';
                 $title = 'Reporte de Logs de Actividad';
 
@@ -154,6 +169,7 @@ class LogController extends Controller
 
             case 'error':
                 $data = collect($this->getErrorLogs($fechaInicio, $fechaFin));
+                if ($rangeRequested) $data = $data->slice($offset, $limit)->values();
                 $view = 'administrador.logs.error_pdf';
                 $title = 'Reporte de Logs de Errores';
 
@@ -174,6 +190,8 @@ class LogController extends Controller
             'fecha_fin' => $fechaFin,
             'title' => $title,
             'chartBase64' => $chartBase64,
+            'page_from' => $rangeRequested ? $pageFrom : null,
+            'page_to' => $rangeRequested ? $pageTo : null,
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download('logs_' . $type . '_' . now()->format('Ymd_His') . '.pdf');

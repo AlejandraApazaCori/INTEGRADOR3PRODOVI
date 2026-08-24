@@ -99,7 +99,7 @@ class ClienteController extends Controller
                 ->first()
             : null;
 
-        $suscripcionesDisponibles = Suscripcion::with(['plan', 'empresa'])
+        $suscripcionesDisponibles = Suscripcion::with(['plan', 'empresa', 'campanias'])
             ->where('usuario_id', $user->id)
             ->whereHas('empresa')
             ->latest('id')
@@ -109,6 +109,10 @@ class ClienteController extends Controller
         $suscripcionActiva = $empresaSolicitadaId
             ? $suscripcionesDisponibles->first(fn ($suscripcion) => (int) $suscripcion->empresa?->id === $empresaSolicitadaId)
             : null;
+        $suscripcionActiva ??= $suscripcionesDisponibles->first(fn ($suscripcion) => $suscripcion->campanias->contains(
+            fn ($campania) => in_array($campania->estado, ['activa', 'pausada'], true)
+                && Carbon::parse($campania->fecha_fin)->gte(now()->startOfDay())
+        ));
         $suscripcionActiva ??= $suscripcionesDisponibles->first(fn ($suscripcion) => $suscripcion->esta_activa);
         $suscripcionActiva ??= $suscripcionesDisponibles->firstOrFail();
         $dashboardCompanies = $suscripcionesDisponibles
@@ -119,12 +123,17 @@ class ClienteController extends Controller
 
         $diasRestantes = null;
         $porcentajeRestante = null;
+        $campaniaDashboard = $suscripcionActiva->campanias()
+            ->latest('id')
+            ->first();
 
-        if ($suscripcionActiva->vigencia_activada_at) {
-            $fechaFin = Carbon::parse($suscripcionActiva->fecha_fin);
-            $diasRestantes = now()->diffInDays($fechaFin, false);
-            $diasTotales = max(1, $suscripcionActiva->fecha_inicio->diffInDays($fechaFin));
-            $porcentajeRestante = $diasRestantes > 0 ? round(($diasRestantes / $diasTotales) * 100) : 0;
+        if ($campaniaDashboard?->fecha_fin) {
+            $hoy = now()->startOfDay();
+            $fechaInicio = Carbon::parse($campaniaDashboard->fecha_inicio)->startOfDay();
+            $fechaFin = Carbon::parse($campaniaDashboard->fecha_fin)->startOfDay();
+            $diasRestantes = max(0, (int) $hoy->diffInDays($fechaFin, false));
+            $diasTotales = max(1, (int) $fechaInicio->diffInDays($fechaFin));
+            $porcentajeRestante = min(100, round(($diasRestantes / $diasTotales) * 100));
         }
 
         $empresas = $user->empresas;

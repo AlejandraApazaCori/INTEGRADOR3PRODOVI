@@ -1,180 +1,70 @@
 @extends('layouts.app')
 
-@section('title', 'Usuarios Eliminados')
+@section('title', 'Usuarios eliminados')
 
 @section('content')
-<div class="min-h-screen" style="background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 50%, #F5F3FF 100%);">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Banner con fondo geométrico -->
-        <div class="mb-8 rounded-2xl overflow-hidden relative rp-banner">
-            <div class="rp-banner-overlay absolute inset-0"></div>
-            <div class="relative z-10 px-8 py-8">
-                <div class="flex items-center gap-4">
-                    <div class="flex h-14 w-14 items-center justify-center rounded-2xl flex-shrink-0" style="background: rgba(255,255,255,0.2);">
-                        <i class="fas fa-trash-alt text-white text-2xl"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h1 class="text-3xl font-bold text-white mb-1">Usuarios Eliminados</h1>
-                        <p style="color: #bfdbfe; font-size: 0.9rem;">Usuarios que han sido eliminados del sistema</p>
-                    </div>
-                    <a href="{{ route('administrador.usuarios.index') }}" 
-                       class="inline-flex items-center px-4 py-2.5 rounded-xl font-semibold text-white transition-all hover:-translate-y-0.5" 
-                       style="background: linear-gradient(to right, #3b82f6, #2563eb); box-shadow: 0 4px 14px rgba(59,130,246,0.35);">
-                        <i class="fas fa-users mr-2 text-sm"></i>
-                        Ver usuarios activos
-                    </a>
-                </div>
-            </div>
+<div class="deleted-users-page">
+    <header class="deleted-users-hero">
+        <div>
+            <span>Administración de clientes</span>
+            <h1>Usuarios eliminados</h1>
+            <p>Usuarios que han sido eliminados del sistema</p>
+        </div>
+        <a href="{{ route('administrador.usuarios.index') }}"><i class="fas fa-arrow-left"></i>Volver a usuarios</a>
+    </header>
+
+    <main class="deleted-users-content">
+        @if(session('success'))<div class="deleted-alert success"><i class="fas fa-circle-check"></i>{{ session('success') }}</div>@endif
+        @if(session('error'))<div class="deleted-alert error"><i class="fas fa-circle-exclamation"></i>{{ session('error') }}</div>@endif
+
+        <div class="deleted-table-heading">
+            <div><i class="fas fa-user-clock"></i><span><strong>Usuarios en la papelera</strong><small>{{ $users->total() }} usuario(s) eliminado(s)</small></span></div>
+            <span class="deleted-order"><i class="fas fa-arrow-down"></i>Eliminados recientemente</span>
         </div>
 
-        @if(session('success'))
-            <div class="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700 flex items-center">
-                <i class="fas fa-check-circle mr-3 text-green-500"></i>
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-center">
-                <i class="fas fa-exclamation-circle mr-3 text-red-500"></i>
-                {{ session('error') }}
-            </div>
-        @endif
-
-        <!-- Tabla mejorada -->
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Nombre</th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Email</th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Rol</th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Eliminado el</th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
-                        @forelse($users as $index => $user)
+        <section class="deleted-table-wrap">
+            <div class="deleted-table-scroll">
+                <table class="deleted-table">
+                    <thead><tr><th>Usuario</th><th>Correo electrónico</th><th>Rol</th><th>Fecha de eliminación</th><th>Acciones</th></tr></thead>
+                    <tbody>
+                        @forelse($users as $user)
                             @php
-                                $rowClass = $index % 2 === 0 ? 'bg-white' : 'bg-indigo-50/20';
+                                $initials = collect(preg_split('/\s+/u', trim($user->name)))->filter()->take(2)->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))->implode('');
+                                $roles = $user->roles->pluck('nombre_rol')->implode(', ') ?: 'Sin rol asignado';
                             @endphp
-                            <tr class="{{ $rowClass }} hover:bg-indigo-50/50 transition-colors duration-150">
-                                <td class="px-6 py-4 whitespace-nowrap border-r border-gray-100">
-                                    <div class="flex items-center">
-                                        
-                                        <div>
-                                            <div class="text-sm font-semibold text-gray-900">{{ $user->name }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap border-r border-gray-100">
-                                    <span class="text-sm text-gray-600">{{ $user->email }}</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap border-r border-gray-100">
-                                    @if($user->roles->isNotEmpty())
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-200">
-                                            {{ $user->roles->first()->nombre_rol }}
-                                        </span>
-                                    @else
-                                        <span class="text-sm text-gray-500">Usuario</span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap border-r border-gray-100">
-                                    <span class="text-sm text-gray-600">{{ $user->deleted_at->format('d/m/Y H:i') }}</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    <div class="flex items-center gap-2">
-                                    <form action="{{ route('administrador.usuarios.restore', $user->id) }}" method="POST" class="inline">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="submit" class="inline-flex items-center px-4 py-2 text-xs font-medium rounded-lg text-white transition-all duration-200 hover:-translate-y-0.5" style="background: linear-gradient(to right, #10b981, #059669); box-shadow: 0 4px 14px rgba(16,185,129,0.35);">
-                                            <i class="fas fa-undo-alt mr-1.5"></i>
-                                            Restaurar
-                                        </button>
-                                    </form>
-                                    <form
-                                        action="{{ route('administrador.usuarios.force-destroy', $user->id) }}"
-                                        method="POST"
-                                        class="inline"
-                                        onsubmit="return confirm('¿Eliminar permanentemente a {{ addslashes($user->name) }}? Esta acción no se puede deshacer.');"
-                                    >
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="inline-flex items-center px-4 py-2 text-xs font-medium rounded-lg text-white transition-all duration-200 hover:-translate-y-0.5" style="background: linear-gradient(to right, #dc2626, #991b1b); box-shadow: 0 4px 14px rgba(220,38,38,0.3);">
-                                            <i class="fas fa-trash mr-1.5"></i>
-                                            Eliminar permanentemente
-                                        </button>
-                                    </form>
+                            <tr>
+                                <td><div class="deleted-user"><span>{{ $initials ?: 'U' }}</span><strong>{{ $user->name }}</strong></div></td>
+                                <td><a href="mailto:{{ $user->email }}">{{ $user->email }}</a></td>
+                                <td><span class="deleted-role">{{ $roles }}</span></td>
+                                <td><span class="deleted-date"><strong>{{ $user->deleted_at->format('d/m/Y') }}</strong><small>{{ $user->deleted_at->format('H:i') }} · {{ $user->deleted_at->diffForHumans() }}</small></span></td>
+                                <td>
+                                    <div class="deleted-actions">
+                                        <form action="{{ route('administrador.usuarios.restore', $user->id) }}" method="POST">
+                                            @csrf @method('PATCH')
+                                            <button type="submit" class="restore-user"><i class="fas fa-rotate-left"></i>Restaurar</button>
+                                        </form>
+                                        <form action="{{ route('administrador.usuarios.force-destroy', $user->id) }}" method="POST" onsubmit="return confirm('¿Eliminar permanentemente a {{ addslashes($user->name) }}? Esta acción no se puede deshacer.');">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="destroy-user"><i class="fas fa-trash-can"></i>Eliminar definitivamente</button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="5" class="px-6 py-12 text-center text-sm text-gray-500">
-                                    <i class="fas fa-inbox text-3xl text-gray-300 block mb-3"></i>
-                                    No hay usuarios eliminados
-                                </td>
-                            </tr>
+                            <tr><td colspan="5"><div class="deleted-empty"><i class="fas fa-trash-arrow-up"></i><strong>La papelera está vacía</strong><span>No hay usuarios eliminados actualmente.</span></div></td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-            
-            @if($users->hasPages())
-                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                    {{ $users->links() }}
-                </div>
-            @endif
-        </div>
-    </div>
+            @if($users->hasPages())<div class="deleted-pagination">{{ $users->links('componentes.paginacion-es') }}</div>@endif
+        </section>
+    </main>
 </div>
 
 <style>
-    /* Banner geométrico - Mismo estilo que las otras vistas */
-    .rp-banner {
-        background:
-            linear-gradient(135deg, #4f46e5 25%, transparent 25%) -50px 0,
-            linear-gradient(225deg, #4f46e5 25%, transparent 25%) -50px 0,
-            linear-gradient(315deg, #4f46e5 25%, transparent 25%),
-            linear-gradient(45deg,  #4f46e5 25%, transparent 25%),
-            linear-gradient(to bottom, #3b82f6 0%, #2563eb 100%);
-        background-size:
-            100px 100px,
-            100px 100px,
-            100px 100px,
-            100px 100px,
-            100% 100%;
-        background-color: #1d4ed8;
-        position: relative;
-    }
-
-    .rp-banner-overlay {
-        background:
-            radial-gradient(circle at 0%   0%,   rgba(255,255,255,0.2) 0%, transparent 50%),
-            radial-gradient(circle at 100% 0%,   rgba(255,255,255,0.2) 0%, transparent 50%),
-            radial-gradient(circle at 100% 100%, rgba(255,255,255,0.2) 0%, transparent 50%),
-            radial-gradient(circle at 0%   100%, rgba(255,255,255,0.2) 0%, transparent 50%);
-        background-size:     50% 50%;
-        background-position: 0 0, 100% 0, 100% 100%, 0 100%;
-        background-repeat:   no-repeat;
-    }
-
-    @media (max-width: 640px) {
-        .rp-banner .px-8 { 
-            padding-left: 1.25rem; 
-            padding-right: 1.25rem; 
-        }
-        .rp-banner .flex.items-center.gap-4 {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        .rp-banner .flex-1 {
-            text-align: center;
-        }
-        .rp-banner a {
-            justify-content: center;
-        }
-    }
+    .deleted-users-page{min-height:100vh;background:#fff}.deleted-users-hero{position:relative;isolation:isolate;overflow:hidden;min-height:168px;display:flex;align-items:center;justify-content:space-between;gap:30px;padding:28px 48px;color:#fff;background:linear-gradient(135deg,#4f46e5 25%,transparent 25%) -50px 0,linear-gradient(225deg,#4f46e5 25%,transparent 25%) -50px 0,linear-gradient(315deg,#4f46e5 25%,transparent 25%),linear-gradient(45deg,#4f46e5 25%,transparent 25%),linear-gradient(to bottom,#3b82f6,#2563eb);background-color:#1d4ed8;background-size:100px 100px,100px 100px,100px 100px,100px 100px,100% 100%}.deleted-users-hero:after{content:'';position:absolute;z-index:-1;inset:0;background:linear-gradient(rgba(15,23,42,.22),rgba(15,23,42,.22)),radial-gradient(circle at 0 0,rgba(255,255,255,.2),transparent 50%)}.deleted-users-hero>div>span{display:block;margin-bottom:7px;color:#dbeafe;font-size:.68rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase}.deleted-users-hero h1{margin:0;color:#fff;font-size:clamp(1.55rem,3vw,2.25rem);font-weight:900;letter-spacing:-.04em}.deleted-users-hero p{margin:7px 0 0;color:#dbeafe;font-size:.8rem}.deleted-users-hero>a{display:flex;align-items:center;gap:9px;padding:11px 15px;border:1px solid rgba(255,255,255,.3);border-radius:11px;background:rgba(255,255,255,.14);color:#fff;font-size:.72rem;font-weight:900;transition:.18s}.deleted-users-hero>a:hover{transform:translateY(-2px);background:#fff;color:#4f46e5}
+    .deleted-users-content{margin:24px}.deleted-alert{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:13px 16px;border-radius:12px;font-size:.78rem;font-weight:700}.deleted-alert.success{border:1px solid #bfe3c5;background:#ecf8ee;color:#276738}.deleted-alert.error{border:1px solid #f3c4c4;background:#fff0f0;color:#a72d2d}.deleted-table-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:12px;padding:12px 15px;border:1px solid #e2ead5;border-radius:14px;background:#f9fbf5}.deleted-table-heading>div{display:flex;align-items:center;gap:11px}.deleted-table-heading>div>i{width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:#ffedd5;color:#e37225}.deleted-table-heading strong,.deleted-table-heading small{display:block}.deleted-table-heading strong{color:#31382b;font-size:.8rem}.deleted-table-heading small{margin-top:2px;color:#8a9380;font-size:.62rem}.deleted-order{display:flex;align-items:center;gap:7px;color:#638524;font-size:.69rem;font-weight:800}
+    .deleted-table-wrap{overflow:hidden;border:1px solid #d8e3c7;border-radius:16px;background:#fff;box-shadow:0 9px 24px rgba(91,121,38,.12)}.deleted-table-scroll{overflow-x:auto}.deleted-table{width:100%;min-width:950px;border-collapse:collapse}.deleted-table th{padding:15px 18px;border-right:1px solid rgba(255,255,255,.3);background:#7da533;color:#fff;text-align:left;font-size:.67rem;font-weight:900;letter-spacing:.04em;text-transform:uppercase}.deleted-table th:last-child{border-right:0}.deleted-table td{padding:15px 18px;border-right:1px solid #d8e3c7;border-bottom:1px solid #dfe8d1;color:#4b5563;font-size:.76rem;vertical-align:middle}.deleted-table td:last-child{border-right:0}.deleted-table tbody tr:nth-child(odd){background:#fff}.deleted-table tbody tr:nth-child(even){background:#f1f7e8}.deleted-table tbody tr:hover{background:#e9f2dc}.deleted-user{display:flex;align-items:center;gap:10px}.deleted-user>span{width:39px;height:39px;display:grid;place-items:center;flex:0 0 auto;border-radius:50%;background:linear-gradient(135deg,#7da533,#117e8c);color:#fff;font-size:.67rem;font-weight:900}.deleted-user strong{color:#30372b;font-size:.78rem}.deleted-table td>a{color:#0d6975;font-weight:650}.deleted-table td>a:hover{text-decoration:underline}.deleted-role{display:inline-flex;padding:6px 9px;border-radius:8px;background:#edf4e4;color:#587923;font-size:.65rem;font-weight:800}.deleted-date strong,.deleted-date small{display:block}.deleted-date strong{color:#39432f;font-size:.74rem}.deleted-date small{margin-top:3px;color:#89917f;font-size:.61rem}.deleted-actions{display:flex;align-items:center;gap:7px}.deleted-actions button{display:flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:0 11px;border:0;border-radius:9px;font-size:.64rem;font-weight:900;transition:.18s}.deleted-actions button:hover{transform:translateY(-2px)}.restore-user{background:#edf4e4;color:#587923}.restore-user:hover{background:#7da533;color:#fff}.destroy-user{background:#fff0ed;color:#b23e2c}.destroy-user:hover{background:#c94b37;color:#fff}.deleted-empty{padding:48px 20px;text-align:center}.deleted-empty i,.deleted-empty strong,.deleted-empty span{display:block}.deleted-empty i{margin-bottom:10px;color:#aabd8b;font-size:2rem}.deleted-empty strong{color:#48513e}.deleted-empty span{margin-top:5px;color:#92998a}.deleted-pagination{padding:15px 18px;border-top:1px solid #dfe8d1;background:#fbfcf9}
+    @media(max-width:700px){.deleted-users-hero{min-height:195px;align-items:flex-start;flex-direction:column;padding:24px 20px}.deleted-users-hero>a{width:100%;justify-content:center}.deleted-users-content{margin:14px 12px}.deleted-table-heading{align-items:flex-start;flex-direction:column}.deleted-order{padding-left:47px}}
 </style>
 @endsection

@@ -6,12 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\RoleUser;
+use App\Models\Plan;
+use App\Models\GoogleDriveReport;
+use App\Exports\UsuariosChartReportExport;
+use App\Exports\UsuariosReportExport;
+use App\Services\GoogleDriveReportService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Excel as ExcelFormat;
 
 class UserController extends Controller
 {
@@ -19,13 +28,17 @@ class UserController extends Controller
     {
         // Obtener todos los roles para el select
         $roles = Role::all();
+        $planes = Plan::where('activo', true)->orderBy('orden')->get();
         
         // Consulta base con relaciones
-        $query = User::with(['roles', 'suscripciones']);
+        $query = $this->usersWithRegistrationNumber(['roles', 'suscripciones']);
         
         // Filtrar por nombre si se proporciona
         if ($request->has('search') && !empty($request->search)) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('email', 'like', '%' . $request->search . '%');
+            });
         }
         
         // Filtrar por rol si se selecciona
@@ -33,6 +46,24 @@ class UserController extends Controller
             $query->whereHas('roles', function($q) use ($request) {
                 $q->where('roles.id', $request->role);
             });
+        }
+
+        if ($request->filled('plan')) {
+            $query->whereHas('suscripciones', function ($q) use ($request) {
+                $q->where('plan_id', $request->plan);
+            });
+        }
+
+        if ($request->boolean('without_any_plan')) {
+            $query->doesntHave('suscripciones');
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('users.created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('users.created_at', '<=', $request->date_to);
         }
         
         // Filtrar por estado
@@ -71,10 +102,371 @@ class UserController extends Controller
             }
         }
         
-        // Ordenar y paginar
-        $users = $query->orderBy('created_at', 'desc')->paginate(10);
+        // Por defecto se muestran primero los usuarios registrados recientemente.
+        $direction = $request->input('order') === 'oldest' ? 'asc' : 'desc';
+        $perPage = max(5, min((int) $request->input('per_page', 10), 200));
+        $users = $query
+            ->orderBy('users.created_at', $direction)
+            ->orderBy('users.id', $direction)
+            ->paginate($perPage)
+            ->withQueryString();
         
-        return view('administrador.usuarios.index', compact('users', 'roles'));
+        return view('administrador.usuarios.index', compact('users', 'roles', 'planes'));
+    }
+
+    public function activity(Request $request)
+    {
+        $loginStats = DB::table('security_logs')
+            ->select('user_id')
+            ->selectRaw('COUNT(*) as login_count')
+            ->selectRaw('MAX(created_at) as last_login_at')
+            ->where('event_type', 'login_success')
+            ->whereNotNull('user_id');
+
+        if ($request->filled('date_from')) {
+            $loginStats->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $loginStats->whereDate('created_at', '<=', $request->date_to);
+        }
+        $loginStats->groupBy('user_id');
+
+        $usersQuery = User::with(['roles', 'socialAccounts'])
+            ->joinSub($loginStats, 'login_stats', function ($join) {
+                $join->on('users.id', '=', 'login_stats.user_id');
+            })
+            ->select('users.*', 'login_stats.login_count', 'login_stats.last_login_at');
+
+        if ($request->filled('search')) {
+            $usersQuery->where(function ($query) use ($request) {
+                $query->where('users.name', 'like', '%' . $request->search . '%')
+                    ->orWhere('users.email', 'like', '%' . $request->search . '%');
+            });
+        }
+        if ($request->filled('role')) {
+            $usersQuery->whereHas('roles', fn ($query) => $query->where('roles.id', $request->role));
+        }
+
+        $users = $usersQuery
+            ->orderByDesc('login_stats.last_login_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        $roles = Role::withCount('users')->orderByDesc('users_count')->get();
+        $allLoginStats = DB::table('security_logs')
+            ->select('user_id')
+            ->selectRaw('COUNT(*) as login_count')
+            ->selectRaw('MAX(created_at) as last_login_at')
+            ->where('event_type', 'login_success')
+            ->whereNotNull('user_id')
+            ->groupBy('user_id');
+
+        $recentUsers = User::with(['roles', 'socialAccounts'])
+            ->joinSub(clone $allLoginStats, 'login_stats', fn ($join) => $join->on('users.id', '=', 'login_stats.user_id'))
+            ->select('users.*', 'login_stats.login_count', 'login_stats.last_login_at')
+            ->orderByDesc('login_stats.last_login_at')
+            ->limit(5)
+            ->get();
+        $topUsers = User::with('roles')
+            ->joinSub(clone $allLoginStats, 'login_stats', fn ($join) => $join->on('users.id', '=', 'login_stats.user_id'))
+            ->select('users.*', 'login_stats.login_count', 'login_stats.last_login_at')
+            ->orderByDesc('login_stats.login_count')
+            ->orderByDesc('login_stats.last_login_at')
+            ->limit(5)
+            ->get();
+
+        $loginDates = DB::table('security_logs')
+            ->where('event_type', 'login_success')
+            ->where('created_at', '>=', now()->copy()->subMonths(6)->startOfMonth())
+            ->pluck('created_at')
+            ->map(fn ($date) => Carbon::parse($date));
+        $dailyLogins = collect(range(6, 0))->map(function ($offset) use ($loginDates) {
+            $date = today()->subDays($offset);
+            return ['label' => $date->format('d/m'), 'value' => $loginDates->filter(fn ($login) => $login->isSameDay($date))->count()];
+        });
+        $weeklyLogins = collect(range(7, 0))->map(function ($offset) use ($loginDates) {
+            $start = now()->startOfWeek()->subWeeks($offset);
+            $end = $start->copy()->endOfWeek();
+            return ['label' => 'Sem ' . $start->weekOfYear, 'value' => $loginDates->filter(fn ($login) => $login->betweenIncluded($start, $end))->count()];
+        });
+        $monthlyLogins = collect(range(5, 0))->map(function ($offset) use ($loginDates) {
+            $month = now()->startOfMonth()->subMonths($offset);
+            return ['label' => $month->copy()->locale('es')->translatedFormat('M Y'), 'value' => $loginDates->filter(fn ($login) => $login->isSameMonth($month))->count()];
+        });
+
+        $totalUsers = User::count();
+        $usersWithLogin = DB::table('security_logs')
+            ->join('users', 'users.id', '=', 'security_logs.user_id')
+            ->whereNull('users.deleted_at')
+            ->where('security_logs.event_type', 'login_success')
+            ->distinct()
+            ->count('security_logs.user_id');
+        $recentActiveUsers = DB::table('security_logs')
+            ->join('users', 'users.id', '=', 'security_logs.user_id')
+            ->whereNull('users.deleted_at')
+            ->where('security_logs.event_type', 'login_success')
+            ->where('security_logs.created_at', '>=', now()->subDays(15))
+            ->distinct()
+            ->count('security_logs.user_id');
+        $inactiveUsers = max(0, $usersWithLogin - $recentActiveUsers);
+        $neverLoggedIn = max(0, $totalUsers - $usersWithLogin);
+        $verifiedUsers = User::whereNotNull('email_verified_at')->count();
+        $unverifiedUsers = max(0, $totalUsers - $verifiedUsers);
+        $recentlyDeletedUsers = User::onlyTrashed()->where('deleted_at', '>=', now()->subDays(30))->count();
+
+        return view('administrador.usuarios.actividad', compact(
+            'users', 'roles', 'recentUsers', 'topUsers', 'dailyLogins', 'weeklyLogins', 'monthlyLogins',
+            'totalUsers', 'recentActiveUsers', 'inactiveUsers', 'neverLoggedIn', 'verifiedUsers',
+            'unverifiedUsers', 'recentlyDeletedUsers'
+        ));
+    }
+
+    public function exportReport(Request $request, string $report, string $destination)
+    {
+        abort_unless(in_array($report, ['filtered', 'general', 'without_plan', 'without_any_plan'], true), 404);
+        abort_unless(in_array($destination, ['excel', 'drive', 'pdf'], true), 404);
+
+        $query = $this->usersWithRegistrationNumber(['roles', 'suscripciones.plan']);
+        $plan = null;
+
+        if ($report === 'filtered') {
+            $this->applyReportFilters($query, $request);
+        } elseif ($report === 'without_plan') {
+            $request->validate(['plan' => ['required', 'exists:plan,id']]);
+            $plan = Plan::findOrFail($request->integer('plan'));
+            if ($request->filled('role')) {
+                $query->whereHas('roles', fn ($q) => $q->where('roles.id', $request->role));
+            }
+            $query->whereDoesntHave('suscripciones', fn ($q) => $q->where('plan_id', $plan->id));
+        } elseif ($report === 'without_any_plan') {
+            $query->doesntHave('suscripciones');
+        }
+
+        $direction = $request->input('order') === 'oldest' ? 'asc' : 'desc';
+        $users = $query->orderBy('users.created_at', $direction)->orderBy('users.id', $direction)->get();
+        $view = match ($report) {
+            'filtered' => 'excel.usuarios-filtrados',
+            'general' => 'excel.usuarios-generales',
+            'without_plan' => 'excel.usuarios-sin-plan-especifico',
+            default => 'excel.usuarios-sin-plan',
+        };
+        $label = match ($report) {
+            'filtered' => 'usuarios_filtrados',
+            'general' => 'usuarios_generales',
+            'without_plan' => 'usuarios_sin_' . str($plan->nombre)->slug('_'),
+            default => 'usuarios_sin_plan',
+        };
+        $filters = $request->only(['search', 'role', 'status', 'plan', 'without_any_plan', 'date_from', 'date_to', 'order']);
+
+        if ($destination === 'pdf') {
+            $reportTitle = match ($report) {
+                'filtered' => 'Reporte de usuarios filtrados',
+                'general' => 'Listado general de usuarios',
+                'without_plan' => 'Usuarios no inscritos al plan: ' . $plan->nombre,
+                default => 'Usuarios sin ningún plan',
+            };
+            $roleChart = null;
+            $statusChart = null;
+
+            if (in_array($report, ['filtered', 'general'], true)) {
+                $chartExport = new UsuariosChartReportExport($view, $users, $plan, $filters);
+                $roleChart = $this->donutChartDataUri('Distribución por tipo de rol', $chartExport->roleStats());
+                $statusChart = $this->donutChartDataUri('Distribución por estado', $chartExport->statusStats());
+            }
+
+            return Pdf::loadView('pdf.usuarios-reporte', compact(
+                'users', 'plan', 'report', 'reportTitle', 'roleChart', 'statusChart'
+            ))
+                ->setOption('isPhpEnabled', true)
+                ->setPaper('a4', 'landscape')
+                ->download($label . '_' . now()->format('Y_m_d_His') . '.pdf');
+        }
+
+        $fileName = $label . '_' . now()->format('Y_m_d_His') . '.xlsx';
+        $export = in_array($report, ['filtered', 'general'], true)
+            ? new UsuariosChartReportExport($view, $users, $plan, $filters)
+            : new UsuariosReportExport($view, $users, $plan, $filters);
+
+        if ($destination === 'excel') {
+            return Excel::download($export, $fileName);
+        }
+
+        try {
+            $contents = Excel::raw($export, ExcelFormat::XLSX);
+            $drive = app(GoogleDriveReportService::class);
+            $request->validate([
+                'folder_id' => ['nullable', 'string', 'max:255'],
+                'new_folder' => ['nullable', 'string', 'max:80', 'regex:~^[\p{L}\p{N} _().-]+$~u'],
+            ]);
+            $folderId = $drive->resolveTargetFolder($request->input('folder_id'), $request->input('new_folder'));
+            $storedReport = GoogleDriveReport::where('report_key', $report)->first();
+            $uploaded = $drive->saveGoogleSheet($fileName, $contents, $folderId, $storedReport?->file_id);
+            if (in_array($report, ['filtered', 'general'], true)) {
+                $drive->positionUserReportCharts($uploaded['id']);
+            }
+
+            GoogleDriveReport::updateOrCreate(
+                ['report_key' => $report],
+                [
+                    'file_id' => $uploaded['id'],
+                    'folder_id' => $folderId,
+                    'file_name' => $uploaded['name'],
+                    'web_view_link' => $uploaded['url'],
+                ]
+            );
+
+            return back()->with('drive_success', [
+                'message' => $storedReport
+                    ? 'El reporte se actualizó y conservó el mismo enlace en Google Sheets.'
+                    : 'El reporte se creó correctamente en Google Sheets.',
+                'url' => $uploaded['url'],
+            ]);
+        } catch (\Throwable $exception) {
+            Log::error('No se pudo crear el reporte de usuarios en Google Drive.', [
+                'report' => $report,
+                'error' => $exception->getMessage(),
+            ]);
+
+            $message = str_contains($exception->getMessage(), 'preg_match')
+                ? 'El nombre de la carpeta contiene caracteres no permitidos.'
+                : 'No se pudo guardar el reporte en Google Drive. Inténtalo nuevamente o revisa el registro del sistema.';
+
+            return back()->with('drive_error', $message);
+        }
+    }
+
+    public function driveFolders(Request $request)
+    {
+        try {
+            $request->validate([
+                'report' => ['nullable', 'in:filtered,general,without_plan,without_any_plan'],
+            ]);
+
+            $data = app(GoogleDriveReportService::class)->listTargetFolders();
+            $storedReport = $request->filled('report')
+                ? GoogleDriveReport::where('report_key', $request->report)->first()
+                : null;
+
+            $currentFolder = null;
+            if ($storedReport) {
+                $availableFolders = collect([$data['root'], ...$data['folders']]);
+                $folder = $availableFolders->firstWhere('id', $storedReport->folder_id);
+                $currentFolder = [
+                    'id' => $storedReport->folder_id,
+                    'name' => $folder['name'] ?? 'Carpeta no disponible',
+                    'file_url' => $storedReport->web_view_link,
+                ];
+            }
+
+            return response()->json([...$data, 'current_folder' => $currentFolder]);
+        } catch (\Throwable $exception) {
+            Log::error('No se pudieron consultar las carpetas de Google Drive.', ['error' => $exception->getMessage()]);
+
+            return response()->json(['message' => 'No se pudieron consultar las carpetas de Google Drive.'], 500);
+        }
+    }
+
+    private function applyReportFilters($query, Request $request): void
+    {
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                    ->orWhere('email', 'like', '%' . $request->search . '%');
+            });
+        }
+        if ($request->filled('role')) {
+            $query->whereHas('roles', fn ($q) => $q->where('roles.id', $request->role));
+        }
+        if ($request->filled('plan')) {
+            $query->whereHas('suscripciones', fn ($q) => $q->where('plan_id', $request->plan));
+        }
+        if ($request->boolean('without_any_plan')) {
+            $query->doesntHave('suscripciones');
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('users.created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('users.created_at', '<=', $request->date_to);
+        }
+        if ($request->filled('status')) {
+            match ($request->status) {
+                'admin' => $query->whereHas('roles', fn ($q) => $q->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])),
+                'active' => $query->whereHas('suscripciones', fn ($q) => $q->where('estado', 'activa')->where('fecha_fin', '>', now())),
+                'inactive' => $query->whereHas('suscripciones', fn ($q) => $q->where('estado', '!=', 'activa')->orWhere('fecha_fin', '<', now())),
+                'no_plan' => $query->doesntHave('suscripciones'),
+                default => null,
+            };
+        }
+    }
+
+    private function donutChartDataUri(string $title, array $stats): ?string
+    {
+        $total = array_sum(array_column($stats, 'count'));
+        if ($total === 0) {
+            return null;
+        }
+
+        $colors = ['#4f86c6', '#c5534f', '#9abb59', '#8064a2', '#4bacc6', '#f79646', '#7da533', '#117e8c'];
+        $height = max(300, 75 + count($stats) * 29);
+        $centerY = (int) round($height / 2);
+        $radius = 76;
+        $circumference = 2 * M_PI * $radius;
+        $offset = 0.0;
+        $escape = fn (string $value) => htmlspecialchars($value, ENT_QUOTES | ENT_XML1, 'UTF-8');
+        $segments = '';
+        $legend = '';
+
+        foreach ($stats as $index => $stat) {
+            $fraction = $stat['count'] / $total;
+            $length = $fraction * $circumference;
+            $color = $colors[$index % count($colors)];
+            $segments .= sprintf(
+                '<circle cx="125" cy="%d" r="%d" fill="none" stroke="%s" stroke-width="38" stroke-dasharray="%.3f %.3f" stroke-dashoffset="-%.3f" transform="rotate(-90 125 %d)"/>',
+                $centerY,
+                $radius,
+                $color,
+                $length,
+                $circumference - $length,
+                $offset,
+                $centerY,
+            );
+            $legendY = 54 + $index * 29;
+            $legendText = sprintf('%s — %d (%.1f%%)', $stat['label'], $stat['count'], $fraction * 100);
+            $legend .= '<rect x="245" y="' . ($legendY - 11) . '" width="13" height="13" rx="3" fill="' . $color . '"/>';
+            $legend .= '<text x="267" y="' . $legendY . '" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#374151">' . $escape($legendText) . '</text>';
+            $offset += $length;
+        }
+
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="' . $height . '" viewBox="0 0 640 ' . $height . '">'
+            . '<rect width="640" height="' . $height . '" rx="14" fill="#ffffff"/>'
+            . '<text x="20" y="25" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="700" fill="#374151">' . $escape($title) . '</text>'
+            . '<circle cx="125" cy="' . $centerY . '" r="' . $radius . '" fill="none" stroke="#edf0ea" stroke-width="38"/>'
+            . $segments
+            . '<text x="125" y="' . ($centerY - 3) . '" text-anchor="middle" font-family="DejaVu Sans, sans-serif" font-size="25" font-weight="700" fill="#31382b">' . $total . '</text>'
+            . '<text x="125" y="' . ($centerY + 19) . '" text-anchor="middle" font-family="DejaVu Sans, sans-serif" font-size="11" fill="#737a70">registros</text>'
+            . $legend
+            . '</svg>';
+
+        return 'data:image/svg+xml;base64,' . base64_encode($svg);
+    }
+
+    private function usersWithRegistrationNumber(array $relations)
+    {
+        return User::with($relations)
+            ->select('users.*')
+            ->selectSub(function ($query) {
+                $query->from('users as registered_users')
+                    ->selectRaw('COUNT(*)')
+                    ->whereNull('registered_users.deleted_at')
+                    ->where(function ($query) {
+                        $query->whereColumn('registered_users.created_at', '<', 'users.created_at')
+                            ->orWhere(function ($query) {
+                                $query->whereColumn('registered_users.created_at', '=', 'users.created_at')
+                                    ->whereColumn('registered_users.id', '<=', 'users.id');
+                            });
+                    });
+            }, 'registration_number');
     }
 
     public function create()

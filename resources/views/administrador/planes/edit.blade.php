@@ -1,9 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Editar Plan')
+@section('title', ($isCreating ?? false) ? 'Crear Plan' : 'Editar Plan')
 
 @section('content')
 @php
+    $isCreating = $isCreating ?? false;
     $oldFeatures = old('caracteristicas', []);
     $planFeatures = $plan->planCaracteristicas->isEmpty() ? [] : $plan->planCaracteristicas->map(function ($item) {
         return [
@@ -22,39 +23,47 @@
     })->count();
 @endphp
 
-<div class="min-h-screen" style="background-color: #f3e8ff;">
-    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <div class="overflow-hidden rounded-3xl text-white shadow-2xl" style="background: linear-gradient(90deg, #581c87 0%, #6d28d9 50%, #c026d3 100%);">
-            <div class="grid gap-8 px-6 py-8 lg:grid-cols-2 lg:px-10">
+<style>
+    .plan-editor{--pe-blue:#2563eb;--pe-blue-dark:#1d4ed8;--pe-orange:#ef6c22;--pe-turquoise:#117e8c;--pe-green:#7da533;--pe-ink:#302834;--pe-muted:#756a7a;background:#f7f8fa;color:var(--pe-ink);padding-bottom:48px}.plan-editor-shell{max-width:none!important;padding:0!important}.plan-editor-hero{position:relative;isolation:isolate;min-height:210px;border-radius:0!important;background:linear-gradient(135deg,#4f46e5 25%,transparent 25%) -50px 0,linear-gradient(225deg,#4f46e5 25%,transparent 25%) -50px 0,linear-gradient(315deg,#4f46e5 25%,transparent 25%),linear-gradient(45deg,#4f46e5 25%,transparent 25%),linear-gradient(to bottom,#3b82f6,#2563eb);background-color:#1d4ed8;background-size:100px 100px,100px 100px,100px 100px,100px 100px,100% 100%;box-shadow:none!important}.plan-editor-hero:after{content:'';position:absolute;z-index:-1;inset:0;background:linear-gradient(rgba(15,23,42,.2),rgba(15,23,42,.2)),radial-gradient(circle at 0 0,rgba(255,255,255,.2),transparent 48%),radial-gradient(circle at 100% 100%,rgba(255,255,255,.16),transparent 45%)}.plan-editor-hero-grid{align-items:center;max-width:1536px;margin:auto;padding:32px 48px!important}.plan-editor-kicker{gap:8px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#dbeafe}.plan-editor-intro{max-width:590px;margin-top:10px;color:#dbeafe;font-size:.85rem;line-height:1.65}.plan-editor-back{gap:8px;color:#2563eb}.plan-editor-back:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(15,23,42,.18)}.plan-editor-context{gap:8px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.11);color:#eff6ff}.plan-editor-stats{gap:12px!important}.plan-editor-stat{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.24);border-radius:14px!important;background:rgba(255,255,255,.12)!important;backdrop-filter:blur(8px)}.plan-editor-stat:after{content:'';position:absolute;right:-18px;bottom:-22px;width:65px;height:65px;border:12px solid rgba(255,255,255,.08);border-radius:50%}.plan-editor-form{max-width:1536px;margin:24px auto 0!important;padding:0 24px}.plan-editor-panel,.plan-editor-preview{border:1px solid #e3e0e5;border-radius:16px!important;box-shadow:0 10px 28px rgba(48,40,52,.07)!important}.plan-editor-panel{border-top:4px solid var(--pe-orange)}.plan-editor-features{border-top-color:var(--pe-turquoise)}.plan-editor-preview{border-top:4px solid var(--pe-green)}.plan-editor-panel-head{position:relative;background:linear-gradient(135deg,#fff,#faf9fb);border-color:#ebe8ed!important}.plan-editor-panel-head>p:first-child{display:flex;align-items:center;gap:7px;color:var(--pe-turquoise)!important}.plan-editor-panel-head h2{color:var(--pe-ink)!important;font-weight:900!important;letter-spacing:-.025em}.plan-editor-fields label,.plan-editor-features label{color:#514957}.plan-editor-fields input[type=text],.plan-editor-fields input[type=number],.plan-editor-fields select,.plan-editor-fields textarea,.plan-editor-features input[type=text],.plan-editor-features input[type=number],.plan-editor-features select{min-height:48px;border:1px solid #ded9e1!important;border-radius:10px!important;background:#fbfafc!important;box-shadow:none!important;transition:.18s}.plan-editor-fields textarea{min-height:118px}.plan-editor-fields input:focus,.plan-editor-fields select:focus,.plan-editor-fields textarea:focus,.plan-editor-features input:focus,.plan-editor-features select:focus{border-color:var(--pe-turquoise)!important;background:#fff!important;box-shadow:0 0 0 3px rgba(17,126,140,.12)!important}.plan-editor-fields select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#7a717d 50%),linear-gradient(135deg,#7a717d 50%,transparent 50%)!important;background-position:calc(100% - 18px) 21px,calc(100% - 13px) 21px!important;background-repeat:no-repeat!important;background-size:5px 5px!important;padding-right:40px!important}.plan-editor-fields label[for=activo]{min-height:73px;border:1px solid #ded9e1!important;border-radius:12px!important;background:#f8faf7!important;box-shadow:none!important}.plan-editor-fields #activo{width:42px!important;height:23px!important;appearance:none;border:0!important;border-radius:999px!important;background:#c9cbd0!important;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)!important;cursor:pointer;transition:.2s}.plan-editor-fields #activo:before{content:'';display:block;width:17px;height:17px;margin:3px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.2);transition:.2s}.plan-editor-fields #activo:checked{background:var(--pe-green)!important}.plan-editor-fields #activo:checked:before{transform:translateX(19px)}.plan-editor-add-feature,.plan-editor .add-feature-trigger{border-radius:9px!important;background:var(--pe-turquoise)!important;box-shadow:0 7px 16px rgba(17,126,140,.18)}.plan-editor-add-feature:hover,.plan-editor .add-feature-trigger:hover{filter:brightness(.93);transform:translateY(-1px)}.plan-editor #features-container>p{border-color:#cce2e5!important;border-radius:10px!important;background:#edf7f8!important;color:#0d6975!important}.plan-editor .feature-card{position:relative;border:1px solid #dfdbe2!important;border-left:4px solid var(--pe-orange)!important;border-radius:12px!important;background:#fff!important;box-shadow:0 6px 18px rgba(48,40,52,.06)!important}.plan-editor .feature-card:hover{border-color:#cec8d1!important;transform:translateY(-2px)}.plan-editor .feature-card>div:first-child>div:first-child{border-radius:7px!important;background:#f1f3f5!important;color:#6d6570!important;box-shadow:inset 0 0 0 1px #ddd9df!important}.plan-editor .feature-card .feature-number{color:var(--pe-orange)!important}.plan-editor .feature-card .remove-feature{border-radius:8px!important}.plan-editor .feature-card .open-feature-modal{border-radius:9px!important;background:var(--pe-turquoise)!important}.plan-editor .feature-card>label:last-child{border-color:#f0dfbd!important;border-radius:10px!important;background:#fff9eb!important}.plan-editor-preview .rounded-2xl{border:1px solid #ebe8ed;border-radius:10px!important;background:#faf9fb!important}.plan-editor-preview .open-feature-edit-modal{background:#fff!important}.plan-editor-save{border-radius:16px!important;background:linear-gradient(145deg,#302834,#43394a)!important;box-shadow:0 12px 26px rgba(48,40,52,.18)!important}.plan-editor-submit{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--pe-orange)!important;color:#fff!important}.plan-editor-submit:hover{filter:brightness(.93);transform:translateY(-1px)}
+    .plan-editor-errors{max-width:calc(1536px - 48px);margin-right:auto!important;margin-left:auto!important}.plan-editor-errors{margin-top:24px!important}
+    .plan-custom-select{position:relative}.plan-custom-select-native{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important}.plan-custom-select-trigger{width:100%;height:48px;display:flex;align-items:center;gap:11px;padding:0 42px 0 14px;border:1px solid #ded9e1;border-radius:10px;background:#fbfafc;color:#514957;text-align:left;transition:.18s}.plan-custom-select-trigger:hover,.plan-custom-select.is-open .plan-custom-select-trigger{border-color:#117e8c;background:#fff;box-shadow:0 0 0 3px rgba(17,126,140,.12)}.plan-custom-select-trigger>i:first-child{width:21px;color:#117e8c;text-align:center}.plan-custom-select-trigger span{min-width:0;overflow:hidden;flex:1;font-size:.82rem;font-weight:700;text-overflow:ellipsis;white-space:nowrap}.plan-custom-select-trigger .fa-chevron-down{position:absolute;right:15px;color:#817983;font-size:.68rem;transition:.18s}.plan-custom-select.is-open .fa-chevron-down{transform:rotate(180deg)}.plan-custom-select-menu{position:absolute;z-index:100;top:calc(100% + 7px);right:0;left:0;display:none;padding:7px;border:1px solid #ded9e1;border-radius:11px;background:#fff;box-shadow:0 18px 38px rgba(48,40,52,.18)}.plan-custom-select.is-open .plan-custom-select-menu{display:grid;gap:3px}.plan-custom-select-option{min-height:40px;display:flex;align-items:center;justify-content:space-between;padding:8px 11px;border-radius:7px;color:#605763;text-align:left;font-size:.78rem;font-weight:700}.plan-custom-select-option:hover,.plan-custom-select-option.is-selected{background:#edf7f8;color:#0d6975}.plan-custom-select-option.is-selected:after{content:'✓';width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:#117e8c;color:#fff;font-size:.6rem}.plan-editor .feature-card input[type=checkbox]{position:relative;width:24px!important;height:24px!important;flex:none;appearance:none;border:1px solid #cfc4ab!important;border-radius:7px!important;background:#fff!important;box-shadow:0 2px 5px rgba(80,64,35,.08)!important;cursor:pointer;transition:.18s}.plan-editor .feature-card input[type=checkbox]:hover{border-color:#ef6c22!important}.plan-editor .feature-card input[type=checkbox]:checked{border-color:#ef6c22!important;background:#ef6c22!important}.plan-editor .feature-card input[type=checkbox]:checked:after{content:'✓';position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:.78rem;font-weight:900}.plan-editor .feature-card input[type=checkbox]:focus{box-shadow:0 0 0 3px rgba(239,108,34,.15)!important}.plan-editor .feature-card>label:last-child:has(input:checked){border-color:#efc69e!important;background:#fff5eb!important}
+    #feature-modal{z-index:12000!important;background:rgba(15,23,42,.66)!important;backdrop-filter:blur(5px)}#feature-modal>div{overflow:hidden;border:1px solid #e0dce3;border-top:5px solid #117e8c;border-radius:16px!important;box-shadow:0 28px 70px rgba(15,23,42,.32)!important}#feature-modal-kicker{color:#117e8c!important}#feature-modal-name{border-radius:10px!important}#close-feature-modal{font-size:0!important}#close-feature-modal:after{content:'×';font-size:25px;line-height:1}#save-feature-modal{border-radius:9px!important;background:#117e8c!important}#cancel-feature-modal{border-radius:9px!important}
+    @media(max-width:1279px){.plan-editor-form{grid-template-columns:1fr!important}.plan-editor-sidebar{display:grid;grid-template-columns:1fr 1fr;position:static!important}.plan-editor-hero-grid{grid-template-columns:1fr!important}.plan-editor-stats{grid-template-columns:repeat(3,1fr)!important}}@media(max-width:767px){.plan-editor-hero-grid{padding:26px 18px!important}.plan-editor-stats{grid-template-columns:1fr!important}.plan-editor-stat{grid-column:auto!important;padding:18px!important}.plan-editor-form{padding:0 12px}.plan-editor-sidebar{grid-template-columns:1fr}.plan-editor-panel-head,.plan-editor-fields,.plan-editor-features>div:last-child{padding-right:18px!important;padding-left:18px!important}.plan-editor .feature-card>div:first-child{align-items:flex-start;flex-wrap:wrap}.plan-editor .feature-card>div:first-child>div:nth-child(2){order:-1;width:100%}}
+</style>
+
+<div class="plan-editor min-h-screen">
+    <div class="plan-editor-shell mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <div class="plan-editor-hero overflow-hidden text-white">
+            <div class="plan-editor-hero-grid grid gap-8 px-6 py-8 lg:grid-cols-2 lg:px-10">
                 <div>
-                    <div class="inline-flex items-center rounded-full border border-white border-opacity-20 bg-white bg-opacity-10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-blue-100">
-                        Administrador de planes
+                    <div class="plan-editor-kicker inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em]">
+                        <i class="fas fa-layer-group"></i> Administrador de planes
                     </div>
-                    <h1 class="mt-4 text-3xl font-black tracking-tight sm:text-4xl">Editar {{ $plan->nombre }}</h1>
-                    
+                    <h1 class="mt-4 text-3xl font-black tracking-tight sm:text-4xl">{{ $isCreating ? 'Crear nuevo plan' : 'Editar ' . $plan->nombre }}</h1>
+                    <p class="plan-editor-intro">{{ $isCreating ? 'Diseña la presentación, el precio y los beneficios del nuevo plan.' : 'Actualiza la presentación, el precio y los beneficios que verán tus clientes.' }}</p>
 
                     <div class="mt-6 flex flex-wrap gap-3">
-                        <a href="{{ route('administrador.planes.index') }}" class="inline-flex items-center rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 transition hover:bg-blue-50">
-                            Volver a planes
+                        <a href="{{ route('administrador.planes.index') }}" class="plan-editor-back inline-flex items-center rounded-full bg-white px-5 py-2.5 text-sm font-semibold transition">
+                            <i class="fas fa-arrow-left"></i> Volver a planes
                         </a>
-                        <span class="inline-flex items-center rounded-full border border-white border-opacity-20 bg-white bg-opacity-10 px-4 py-2 text-sm text-blue-50">
-                            Ultima edicion del plan activo en esta vista
+                        <span class="plan-editor-context inline-flex items-center rounded-full px-4 py-2 text-sm">
+                            <i class="fas {{ $isCreating ? 'fa-wand-magic-sparkles' : 'fa-pen-to-square' }}"></i> {{ $isCreating ? 'Creación con vista previa en vivo' : 'Edición del plan seleccionado' }}
                         </span>
                     </div>
                 </div>
 
-                <div class="grid gap-5 md:grid-cols-2 lg:col-span-1 xl:grid-cols-3">
-                    <div class="rounded-3xl border border-white border-opacity-20 bg-white bg-opacity-10 p-6 backdrop-blur">
-                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-blue-100">Precio actual</p>
+                <div class="plan-editor-stats grid gap-5 md:grid-cols-2 lg:col-span-1 xl:grid-cols-3">
+                    <div class="plan-editor-stat p-6">
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-blue-100">{{ $isCreating ? 'Precio inicial' : 'Precio actual' }}</p>
                         <p class="mt-3 text-3xl font-black leading-none">{{ number_format((float) $plan->precio, 2, '.', ',') }}</p>
                         <p class="mt-2 text-sm text-gray-200">{{ $plan->moneda }} por {{ $plan->periodo_facturacion }}</p>
                     </div>
-                    <div class="rounded-3xl border border-white border-opacity-20 bg-white bg-opacity-10 p-6 backdrop-blur">
+                    <div class="plan-editor-stat p-6">
                         <p class="text-xs font-semibold uppercase tracking-[0.2em] text-blue-100">Caracteristicas</p>
                         <p class="mt-3 text-3xl font-black leading-none">{{ count($featuresToShow) }}</p>
                         <p class="mt-2 text-sm text-gray-200">{{ $featuredCount }} destacadas</p>
                     </div>
-                    <div class="rounded-3xl border border-white border-opacity-20 bg-white bg-opacity-10 p-6 backdrop-blur md:col-span-2 xl:col-span-1">
+                    <div class="plan-editor-stat p-6 md:col-span-2 xl:col-span-1">
                         <p class="text-xs font-semibold uppercase tracking-[0.2em] text-blue-100">Estado del plan</p>
                         <p class="mt-3 text-xl font-bold leading-tight">{{ old('activo', $plan->activo) ? 'Activo' : 'Inactivo' }}</p>
                         <p class="mt-2 text-sm text-gray-200">Orden de visualizacion: {{ old('orden', $plan->orden ?? 0) }}</p>
@@ -64,7 +73,7 @@
         </div>
 
         @if ($errors->any())
-            <div class="mt-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-700 shadow-sm">
+            <div class="plan-editor-errors mt-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-700 shadow-sm">
                 <div class="flex items-start gap-3">
                     <div class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-red-100 font-bold text-red-600">!</div>
                     <div>
@@ -79,19 +88,25 @@
             </div>
         @endif
 
-        <form action="{{ route('administrador.planes.update', $plan->id) }}" method="POST" class="mt-6 grid gap-6 xl:grid-cols-3">
-            @csrf
-            @method('PUT')
+        @if($isCreating)
+            @include('administrador.planes.partials.create-wizard')
+        @endif
 
-            <div class="space-y-6 xl:col-span-2">
-                <section class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-200">
-                    <div class="border-b border-gray-200 px-6 py-5 sm:px-8">
-                        <p class="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">Bloque 1</p>
+        <form action="{{ $isCreating ? route('administrador.planes.store') : route('administrador.planes.update', $plan->id) }}" method="POST" class="plan-editor-form {{ $isCreating ? 'is-wizard-pending' : '' }} mt-6 grid gap-6 xl:grid-cols-3">
+            @csrf
+            @unless($isCreating)
+                @method('PUT')
+            @endunless
+
+            <div class="plan-editor-main space-y-6 xl:col-span-2">
+                <section class="plan-editor-panel overflow-hidden bg-white">
+                    <div class="plan-editor-panel-head border-b border-gray-200 px-6 py-5 sm:px-8">
+                        <p class="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700"><i class="fas fa-sliders"></i> Información comercial</p>
                         <h2 class="mt-2 text-2xl font-bold text-gray-900">Informacion principal</h2>
                         <p class="mt-2 text-sm text-gray-500">Define como se presenta el plan y cuanto se cobra.</p>
                     </div>
 
-                    <div class="grid gap-6 px-6 py-6 sm:px-8 lg:grid-cols-2">
+                    <div class="plan-editor-fields grid gap-6 px-6 py-6 sm:px-8 lg:grid-cols-2">
                         <div class="lg:col-span-2">
                             <label for="nombre" class="mb-2 block text-sm font-semibold text-gray-700">Nombre del plan *</label>
                             <input type="text" id="nombre" name="nombre" required value="{{ old('nombre', $plan->nombre) }}"
@@ -122,7 +137,7 @@
 
                         <div>
                             <label for="moneda" class="mb-2 block text-sm font-semibold text-gray-700">Moneda *</label>
-                            <select id="moneda" name="moneda" required
+                            <select id="moneda" name="moneda" required data-plan-custom-select data-custom-icon="fa-coins"
                                 class="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 shadow-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
                                 <option value="BS" {{ old('moneda', $plan->moneda) == 'BS' ? 'selected' : '' }}>Bolivianos (Bs)</option>
                                 <option value="USD" {{ old('moneda', $plan->moneda) == 'USD' ? 'selected' : '' }}>Dolares (USD)</option>
@@ -131,12 +146,12 @@
 
                         <div>
                             <label for="periodo_facturacion" class="mb-2 block text-sm font-semibold text-gray-700">Periodo de facturacion *</label>
-                            <select id="periodo_facturacion" name="periodo_facturacion" required
+                            <select id="periodo_facturacion" name="periodo_facturacion" required data-plan-custom-select data-custom-icon="fa-calendar-days"
                                 class="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 shadow-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
                                 <option value="mes" {{ old('periodo_facturacion', $plan->periodo_facturacion) == 'mes' ? 'selected' : '' }}>Mes</option>
                                 <option value="trimestre" {{ old('periodo_facturacion', $plan->periodo_facturacion) == 'trimestre' ? 'selected' : '' }}>Trimestre</option>
                                 <option value="semestre" {{ old('periodo_facturacion', $plan->periodo_facturacion) == 'semestre' ? 'selected' : '' }}>Semestre</option>
-                                <option value="a�o" {{ old('periodo_facturacion', $plan->periodo_facturacion) == 'a�o' ? 'selected' : '' }}>Anual</option>
+                                <option value="año" {{ old('periodo_facturacion', $plan->periodo_facturacion) == 'año' ? 'selected' : '' }}>Anual</option>
                             </select>
                             @error('periodo_facturacion')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -172,15 +187,15 @@
                     </div>
                 </section>
 
-                <section class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-200">
-                    <div class="flex flex-col gap-4 border-b border-gray-200 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+                <section class="plan-editor-panel plan-editor-features overflow-hidden bg-white">
+                    <div class="plan-editor-panel-head flex flex-col gap-4 border-b border-gray-200 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">Bloque 2</p>
+                            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700"><i class="fas fa-list-check"></i> Beneficios incluidos</p>
                             <h2 class="mt-2 text-2xl font-bold text-gray-900">Caracteristicas del plan</h2>
                             <p class="mt-2 text-sm text-gray-500">Ordena beneficios y marca como destacados los mas importantes.</p>
                         </div>
-                        <button type="button" id="add-feature" class="inline-flex items-center justify-center rounded-full bg-purple-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100">
-                            <span class="mr-2 text-base">+</span>
+                        <button type="button" id="add-feature" class="plan-editor-add-feature inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold text-white transition">
+                            <i class="fas fa-plus mr-2"></i>
                             Agregar caracteristica
                         </button>
                     </div>
@@ -259,54 +274,23 @@
                 </section>
             </div>
 
-            <aside class="space-y-6 xl:sticky xl:top-6 xl:self-start">
-                <section class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-200">
-                    <div class="border-b border-gray-200 px-6 py-5">
-                        <p class="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">Vista rapida</p>
-                        <h2 class="mt-2 text-xl font-bold text-gray-900">Resumen del plan</h2>
-                    </div>
-                    <div class="space-y-4 px-6 py-6">
-                        <div class="rounded-2xl bg-gray-50 p-4">
-                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Nombre</p>
-                            <p class="mt-2 text-base font-semibold text-gray-900">{{ old('nombre', $plan->nombre) ?: 'Sin nombre' }}</p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="rounded-2xl bg-gray-50 p-4">
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Moneda</p>
-                                <p class="mt-2 text-base font-semibold text-gray-900">{{ old('moneda', $plan->moneda) }}</p>
-                            </div>
-                            <div class="rounded-2xl bg-gray-50 p-4">
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Periodo</p>
-                                <p class="mt-2 text-base font-semibold text-gray-900">{{ old('periodo_facturacion', $plan->periodo_facturacion) }}</p>
-                            </div>
-                        </div>
-                        <div class="rounded-2xl bg-gray-50 p-4">
-    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Caracteristicas en uso</p>
-    <div id="feature-summary-list" class="mt-3 flex flex-wrap gap-2">
-        @forelse($caracteristicas->whereIn('id', $selectedFeatureIds) as $feature)
-            <button type="button"
-                class="open-feature-edit-modal inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-gray-700 ring-1 ring-gray-200 transition hover:bg-gray-100"
-                data-feature-id="{{ $feature->id }}"
-                data-feature-name="{{ $feature->nombre }}"
-                title="Editar caracteristica {{ $feature->nombre }}">
-                <span>{{ $feature->nombre }}</span>
-                <span class="text-sm text-purple-700">&#9998;</span>
-            </button>
-        @empty
-            <span class="text-sm text-gray-500">Agrega al menos una caracteristica.</span>
-        @endforelse
-    </div>
-</div>
-                    </div>
-                </section>
+            <aside class="plan-editor-sidebar space-y-6 xl:sticky xl:top-6 xl:self-start">
+                @include('administrador.planes.partials.live-preview-card', [
+                    'previewName' => old('nombre', $plan->nombre),
+                    'previewSubtitle' => old('subtitulo', $plan->subtitulo ?: $plan->descripcion),
+                    'previewPrice' => number_format((float) old('precio', $plan->precio), 0, ',', '.') . ' ' . (old('moneda', $plan->moneda) === 'BS' ? 'Bs.' : old('moneda', $plan->moneda)),
+                    'previewPeriod' => old('periodo_facturacion', $plan->periodo_facturacion),
+                    'previewActive' => (bool) old('activo', $plan->activo),
+                    'previewFeatures' => $caracteristicas->whereIn('id', $selectedFeatureIds),
+                ])
 
-                <section class="overflow-hidden rounded-3xl bg-gray-900 text-white shadow-sm">
+                <section class="plan-editor-save overflow-hidden text-white">
                     <div class="px-6 py-6">
                         <h2 class="text-xl font-bold">Listo para guardar</h2>
-                        <p class="mt-2 text-sm leading-6 text-gray-300">Cuando termines, guarda los cambios para actualizar el plan y sus caracteristicas asociadas.</p>
+                        <p class="mt-2 text-sm leading-6 text-gray-300">{{ $isCreating ? 'Cuando termines, guarda el nuevo plan y sus características asociadas.' : 'Cuando termines, guarda los cambios para actualizar el plan y sus características asociadas.' }}</p>
                         <div class="mt-6 space-y-3">
-                            <button type="submit" class="w-full rounded-2xl bg-purple-400 px-5 py-3 text-sm font-semibold text-gray-900 transition hover:bg-blue-300">
-                                Actualizar plan
+                            <button type="submit" class="plan-editor-submit w-full rounded-2xl px-5 py-3 text-sm font-semibold transition">
+                                <i class="fas fa-floppy-disk"></i> {{ $isCreating ? 'Crear plan' : 'Actualizar plan' }}
                             </button>
                             <a href="{{ route('administrador.planes.index') }}" class="block w-full rounded-2xl border border-white border-opacity-20 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-white hover:bg-opacity-10">
                                 Cancelar
@@ -384,7 +368,7 @@
             <div>
                 <p id="feature-modal-kicker" class="text-xs font-semibold uppercase tracking-[0.24em] text-purple-700">Nueva caracteristica</p>
                 <h3 id="feature-modal-title" class="mt-2 text-2xl font-bold text-gray-900">Crear caracteristica</h3>
-                <p id="feature-modal-description-text" class="mt-2 text-sm text-gray-500">Agrega una nueva opcion sin salir de la edicion del plan.</p>
+                <p id="feature-modal-description-text" class="mt-2 text-sm text-gray-500">Agrega una nueva opción sin salir de {{ $isCreating ? 'la creación' : 'la edición' }} del plan.</p>
             </div>
             <button type="button" id="close-feature-modal" class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-xl text-gray-500 transition hover:bg-gray-200 hover:text-gray-700" aria-label="Cerrar modal">
                 �
@@ -430,6 +414,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const closeModalButton = document.getElementById('close-feature-modal');
     const cancelModalButton = document.getElementById('cancel-feature-modal');
     const saveModalButton = document.getElementById('save-feature-modal');
+    const nameInput = document.getElementById('nombre');
+    const subtitleInput = document.getElementById('subtitulo');
+    const priceInput = document.getElementById('precio');
+    const currencyInput = document.getElementById('moneda');
+    const billingInput = document.getElementById('periodo_facturacion');
+    const activeInput = document.getElementById('activo');
+    const descriptionInput = document.getElementById('descripcion');
+    const summaryName = document.getElementById('plan-summary-name');
+    const summarySubtitle = document.getElementById('plan-summary-subtitle');
+    const summaryPrice = document.getElementById('plan-summary-price');
+    const summaryPeriod = document.getElementById('plan-summary-period');
+    const summaryStatus = document.getElementById('plan-summary-status');
     const storeFeatureUrl = @json(route('administrador.planes.caracteristicas.store'));
     const updateFeatureUrlTemplate = @json(route('administrador.planes.caracteristicas.update', ['caracteristica' => '__ID__']));
     const csrfToken = @json(csrf_token());
@@ -437,6 +433,96 @@ document.addEventListener('DOMContentLoaded', function () {
     let activeSelect = null;
     let activeFeature = null;
     let draggedCard = null;
+
+    function renderPlanPreview() {
+        const price = Number.parseFloat(priceInput?.value || 0);
+        const currency = currencyInput?.value || 'BS';
+        summaryName.textContent = nameInput?.value.trim() || 'Sin nombre';
+        summarySubtitle.textContent = subtitleInput?.value.trim() || descriptionInput?.value.trim() || 'Agrega un subtítulo corto para este plan.';
+        summaryPrice.textContent = (Number.isNaN(price) ? 0 : price).toLocaleString('es-BO', { maximumFractionDigits: 2 }) + ' ' + (currency === 'BS' ? 'Bs.' : currency);
+        summaryPeriod.textContent = '/ ' + (billingInput?.value || 'mes');
+        const isActive = Boolean(activeInput?.checked);
+        summaryStatus.classList.toggle('is-active', isActive);
+        summaryStatus.classList.toggle('is-inactive', !isActive);
+        summaryStatus.innerHTML = '<i class="fas ' + (isActive ? 'fa-circle-check' : 'fa-circle-pause') + '"></i>' + (isActive ? 'Activo' : 'Inactivo');
+    }
+
+    const customSelectWrappers = [];
+    function closePlanCustomSelects(exceptWrapper) {
+        customSelectWrappers.forEach(function (wrapper) {
+            if (wrapper === exceptWrapper) {
+                return;
+            }
+            wrapper.classList.remove('is-open');
+            wrapper.querySelector('.plan-custom-select-trigger')?.setAttribute('aria-expanded', 'false');
+        });
+    }
+    document.querySelectorAll('[data-plan-custom-select]').forEach(function (select) {
+        const wrapper = document.createElement('div');
+        const trigger = document.createElement('button');
+        const leadingIcon = document.createElement('i');
+        const selectedLabel = document.createElement('span');
+        const chevron = document.createElement('i');
+        const menu = document.createElement('div');
+
+        wrapper.className = 'plan-custom-select';
+        trigger.type = 'button';
+        trigger.className = 'plan-custom-select-trigger';
+        trigger.setAttribute('aria-haspopup', 'listbox');
+        trigger.setAttribute('aria-expanded', 'false');
+        leadingIcon.className = 'fas ' + (select.dataset.customIcon || 'fa-list');
+        chevron.className = 'fas fa-chevron-down';
+        menu.className = 'plan-custom-select-menu';
+        menu.setAttribute('role', 'listbox');
+        select.classList.add('plan-custom-select-native');
+
+        trigger.appendChild(leadingIcon);
+        trigger.appendChild(selectedLabel);
+        trigger.appendChild(chevron);
+        wrapper.appendChild(trigger);
+        wrapper.appendChild(menu);
+        select.insertAdjacentElement('afterend', wrapper);
+        customSelectWrappers.push(wrapper);
+
+        function synchronizeCustomSelect() {
+            const selectedOption = select.options[select.selectedIndex];
+            selectedLabel.textContent = selectedOption ? selectedOption.textContent : 'Seleccionar';
+            menu.querySelectorAll('.plan-custom-select-option').forEach(function (optionButton) {
+                optionButton.classList.toggle('is-selected', optionButton.dataset.value === select.value);
+            });
+        }
+
+        Array.from(select.options).forEach(function (option) {
+            const optionButton = document.createElement('button');
+            optionButton.type = 'button';
+            optionButton.className = 'plan-custom-select-option';
+            optionButton.dataset.value = option.value;
+            optionButton.textContent = option.textContent;
+            optionButton.setAttribute('role', 'option');
+            optionButton.addEventListener('click', function (event) {
+                event.stopPropagation();
+                select.value = option.value;
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+                synchronizeCustomSelect();
+                closePlanCustomSelects();
+            });
+            menu.appendChild(optionButton);
+        });
+
+        trigger.addEventListener('click', function (event) {
+            event.stopPropagation();
+            const shouldOpen = !wrapper.classList.contains('is-open');
+            closePlanCustomSelects(wrapper);
+            wrapper.classList.toggle('is-open', shouldOpen);
+            trigger.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+        });
+        select.addEventListener('change', synchronizeCustomSelect);
+        synchronizeCustomSelect();
+    });
+    document.addEventListener('click', function () {
+        closePlanCustomSelects();
+    });
+
     function closeAllSearchableSelects(exceptWrapper) {
         document.querySelectorAll('[data-searchable-select]').forEach(function (wrapper) {
             if (exceptWrapper && wrapper === exceptWrapper) {
@@ -636,7 +722,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         if (!orderedFeatureIds.length) {
-            summaryList.innerHTML = '<span class="text-sm text-gray-500">Agrega al menos una caracteristica.</span>';
+            summaryList.innerHTML = '<span class="plan-live-empty">Agrega al menos una característica.</span>';
             return;
         }
 
@@ -651,12 +737,31 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const button = document.createElement('button');
+            const checkIcon = document.createElement('i');
+            const label = document.createElement('span');
+            const editIcon = document.createElement('i');
+            const featureSelect = Array.from(container.querySelectorAll('.feature-select')).find(function (select) {
+                return select.value === featureId;
+            });
+            const featureCard = featureSelect?.closest('[data-feature-card]');
+            const amount = featureCard?.querySelector('input[name$="[cantidad]"]')?.value;
+            const frequency = featureCard?.querySelector('input[name$="[frecuencia]"]')?.value.trim();
             button.type = 'button';
-            button.className = 'open-feature-edit-modal inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-gray-700 ring-1 ring-gray-200 transition hover:bg-gray-100';
+            button.className = 'open-feature-edit-modal plan-live-feature';
             button.dataset.featureId = featureId;
             button.dataset.featureName = option.textContent;
-            button.title = 'Editar caracteristica ' + option.textContent;
-            button.innerHTML = '<span>' + option.textContent + '</span><span class="text-sm text-purple-700">&#9998;</span>';
+            button.title = 'Editar característica ' + option.textContent;
+            checkIcon.className = 'fas fa-check';
+            label.textContent = option.textContent;
+            editIcon.className = 'fas fa-pen';
+            if (amount || frequency) {
+                const detail = document.createElement('small');
+                detail.textContent = [amount, frequency].filter(Boolean).join(' · ');
+                label.appendChild(detail);
+            }
+            button.appendChild(checkIcon);
+            button.appendChild(label);
+            button.appendChild(editIcon);
             summaryList.appendChild(button);
         });
     }
@@ -819,8 +924,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && modal.classList.contains('flex')) {
-            closeFeatureModal();
+        if (event.key === 'Escape') {
+            closePlanCustomSelects();
+            if (modal.classList.contains('flex')) {
+                closeFeatureModal();
+            }
         }
     });
     document.addEventListener('click', function (event) {
@@ -953,12 +1061,24 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    [nameInput, subtitleInput, priceInput, currencyInput, billingInput, activeInput, descriptionInput].forEach(function (field) {
+        field?.addEventListener('input', renderPlanPreview);
+        field?.addEventListener('change', renderPlanPreview);
+    });
+    container.addEventListener('input', function (event) {
+        if (event.target.matches('input[name$="[cantidad]"], input[name$="[frecuencia]"]')) {
+            renderFeatureSummary();
+        }
+    });
+
     if (featureCount === 0) {
         addFeature();
     } else {
         initializeAllSearchableSelects(container);
         syncFeatureIndexes();
     }
+    renderPlanPreview();
+    renderFeatureSummary();
 });
 </script>
 @endpush

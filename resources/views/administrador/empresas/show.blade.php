@@ -3,68 +3,61 @@
 @section('title', 'Detalles de la Empresa')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 py-8">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+<div class="company-detail-page min-h-screen">
+    <div class="company-detail-shell">
+
+        <header class="company-detail-hero rp-banner">
+            <div class="rp-banner-overlay"></div>
+            <div class="company-detail-hero-content">
+                <div class="company-detail-identity">
+                    @if($empresa->logo)
+                        <div class="company-detail-logo company-detail-logo-image">
+                            <img src="{{ Storage::url($empresa->logo) }}" alt="Logo de {{ $empresa->nombre_empresa }}">
+                        </div>
+                    @else
+                        <div class="company-detail-logo" aria-hidden="true">
+                            <i class="fas fa-building"></i>
+                        </div>
+                    @endif
+                    <div>
+                        <span class="company-detail-eyebrow">Administración empresarial</span>
+                        <h1>{{ $empresa->nombre_empresa }}</h1>
+                        <p>{{ $empresa->tipo_empresa }} <span aria-hidden="true">•</span> {{ $empresa->usuario->name }} ({{ $empresa->usuario->email }})</p>
+                    </div>
+                </div>
+                <a href="{{ route('administrador.empresas.index') }}" class="company-detail-back">
+                    <i class="fas fa-arrow-left"></i>
+                    Volver a empresas
+                </a>
+            </div>
+        </header>
+
         <!-- Mensaje de éxito -->
         @if(session('success'))
-            <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative" role="alert">
+            <div class="company-detail-alert mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative" role="alert">
                 <strong class="font-bold">¡Éxito!</strong>
                 <span class="block sm:inline">{{ session('success') }}</span>
             </div>
         @endif
 
-        <!-- Header de navegación -->
-        <div class="mb-6 flex items-center justify-between">
-            <h1 class="text-2xl font-bold text-gray-800">Detalles de la Empresa</h1>
-            <button onclick="goBack()" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                </svg>
-                Atrás
-            </button>
-        </div>
-
-        <!-- Tarjeta principal de la empresa -->
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-            <!-- Header -->
-            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-8">
-                <div class="flex items-center space-x-6">
-                    @if($empresa->logo)
-                        <div class="w-24 h-24 bg-white rounded-xl p-2 shadow-lg">
-                            <img src="{{ Storage::url($empresa->logo) }}" alt="Logo de {{ $empresa->nombre_empresa }}" class="w-full h-full object-contain">
-                        </div>
-                    @else
-                        <div class="w-24 h-24 bg-white/20 rounded-xl flex items-center justify-center">
-                            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                        </div>
-                    @endif
-                    <div>
-                        <h1 class="text-3xl font-bold text-white">{{ $empresa->nombre_empresa }}</h1>
-                        <p class="text-indigo-100 text-lg mt-1">{{ $empresa->tipo_empresa }}</p>
-                        <p class="text-indigo-200 text-sm mt-1">Propietario: {{ $empresa->usuario->name }} ({{ $empresa->usuario->email }})</p>
-                    </div>
-                </div>
-            </div>
-            
+        <!-- Contenido principal -->
+        <div class="company-detail-content bg-white">
             <!-- Contenido -->
-            <div class="p-8">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="company-detail-content-inner p-8">
+                <div class="company-detail-layout grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- Información Principal -->
-                    <div class="lg:col-span-2 space-y-6">
-                        <div>
+                    <main class="company-detail-main lg:col-span-2 space-y-6">
+                        <section class="detail-section detail-about">
                             <h2 class="text-2xl font-bold text-gray-900 mb-4">Información de la Empresa</h2>
                             @if($empresa->descripcion)
                                 <p class="text-gray-600 leading-relaxed">{{ $empresa->descripcion }}</p>
                             @else
                                 <p class="text-gray-400 italic">No se ha proporcionado una descripción.</p>
                             @endif
-                        </div>
+                        </section>
 
                         <!-- Estado del Cuestionario -->
-                        <div>
+                        <section class="detail-section detail-questionnaire">
                             <h2 class="text-2xl font-bold text-gray-900 mb-4">Estado del Cuestionario</h2>
                             @if($empresa->cuestionario_completado)
                                 <div class="flex items-center p-4 bg-green-50 border border-green-200 rounded-xl">
@@ -74,6 +67,14 @@
                                     <div>
                                         <p class="font-semibold text-green-800">Cuestionario Completado</p>
                                         <p class="text-sm text-green-600">Gracias por proporcionar toda la información necesaria.</p>
+                                    </div>
+                                    <div class="questionnaire-status-actions">
+                                        <a href="{{ route('administrador.empresas.cuestionario.pdf', $empresa->id) }}" title="Descargar cuestionario en PDF">
+                                            <i class="fas fa-file-pdf"></i><span>PDF</span>
+                                        </a>
+                                        <button type="button" id="company-detail-drive-open" title="Guardar y abrir en Google Docs">
+                                            <i class="fab fa-google-drive"></i><span>Docs</span>
+                                        </button>
                                     </div>
                                 </div>
                             @else
@@ -87,11 +88,11 @@
                                     </div>
                                 </div>
                             @endif
-                        </div>
+                        </section>
 
                         {{-- Sección para mostrar el resumen ejecutivo --}}
                         @if($empresa->resumen_ejecutivo)
-                            <div class="mt-6 p-6 bg-blue-50 border border-blue-200 rounded-xl">
+                            <section class="detail-section detail-summary mt-6 p-6 bg-blue-50 border border-blue-200 rounded-xl">
                                 <div class="flex justify-between items-center mb-4">
                                     <h2 class="text-2xl font-bold text-blue-900">Resumen Ejecutivo Generado</h2>
                                     <div class="flex space-x-2">
@@ -128,16 +129,16 @@
                                 <div class="prose prose-sm max-w-none text-gray-700">
                                     <p>{!! nl2br(e($empresa->resumen_ejecutivo)) !!}</p>
                                 </div>
-                            </div>
+                            </section>
                         @endif
 
                         {{-- NUEVA SECCIÓN: Mostrar Planes de Marketing Existentes --}}
                         @if($empresa->planesMarketing->isNotEmpty())
-                            <div class="mt-6 p-6 bg-purple-50 border border-purple-200 rounded-xl">
+                            <section class="detail-section detail-marketing mt-6 p-6 bg-purple-50 border border-purple-200 rounded-xl">
                                 <h2 class="text-2xl font-bold text-purple-900 mb-4">Planes de Marketing Generados</h2>
                                 <div class="space-y-3">
                                     @foreach($empresa->planesMarketing as $plan)
-                                        <div class="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-purple-100">
+                                        <div class="marketing-plan-row flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-purple-100">
                                             <div>
                                                 <p class="font-semibold text-gray-900">Plan</p>
                                                 <p class="text-sm text-gray-600">Creado el: {{ $plan->created_at->format('d/m/Y H:i') }}</p>
@@ -166,14 +167,14 @@
                                         </div>
                                     @endforeach
                                 </div>
-                            </div>
+                            </section>
                         @endif
 
-                    </div>
+                    </main>
 
                     <!-- Acciones -->
-                    <div class="lg:col-span-1">
-                        <div class="bg-gray-50 rounded-xl p-6 sticky top-6">
+                    <aside class="company-detail-aside lg:col-span-1">
+                        <div class="company-actions bg-gray-50 rounded-xl p-6 sticky top-6">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Acciones</h3>
                             <div class="space-y-3">
                                 <a href="{{ route('administrador.usuarios.edit', $empresa->usuario_id) }}" class="w-full flex items-center justify-center px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200">
@@ -265,12 +266,505 @@
                                 </form>
                             </div>
                         </div>
-                    </div>
+                    </aside>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<div id="company-detail-drive-modal" class="company-detail-drive-modal hidden" role="dialog" aria-modal="true" aria-labelledby="company-detail-drive-title">
+    <div class="company-detail-drive-dialog">
+        <div class="company-detail-drive-head">
+            <div><h3 id="company-detail-drive-title">Guardar cuestionario en Drive</h3><p>Consulta la ubicación actual o cambia dónde se guardará el documento.</p></div>
+            <button type="button" id="company-detail-drive-close" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+        </div>
+        <form action="{{ route('administrador.empresas.cuestionario.google-doc', $empresa->id) }}" method="POST">
+            @csrf
+            <label class="company-drive-label">Ubicación actual</label>
+            <div class="company-detail-drive-current-box">
+                <span><i class="fas fa-folder-open"></i></span>
+                <div><strong id="company-detail-drive-current">Consultando...</strong><small id="company-detail-drive-detail">Buscando el documento en Drive</small></div>
+                <button type="button" id="company-detail-drive-change" class="hidden"><i class="fas fa-location-dot"></i>Cambiar ubicación</button>
+            </div>
+            <div id="company-detail-drive-editor" class="company-detail-drive-editor hidden">
+                <p><i class="fas fa-folder-tree"></i> PRODOVI / Empresas / {{ $empresa->nombre_empresa }}</p>
+                <label for="company-detail-drive-folder">Carpeta de destino</label>
+                <select id="company-detail-drive-folder" name="folder_id" disabled><option value="">Consultando carpetas...</option></select>
+                <div class="company-drive-divider"><span></span><b>o crea una</b><span></span></div>
+                <label for="company-detail-drive-new-folder">Nueva subcarpeta</label>
+                <div class="company-drive-new"><i class="fas fa-folder-plus"></i><input id="company-detail-drive-new-folder" name="new_folder" type="text" maxlength="80" placeholder="Ej.: Cuestionarios 2026"></div>
+            </div>
+            <p id="company-detail-drive-status" class="company-detail-drive-status">Consultando las carpetas de la empresa...</p>
+            <div class="company-detail-drive-buttons"><button type="button" id="company-detail-drive-cancel">Cancelar</button><button type="submit" id="company-detail-drive-save" disabled><i class="fab fa-google-drive"></i>Guardar y abrir</button></div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .company-detail-page {
+        min-height: 100vh;
+        padding: 20px 0 48px;
+        background: #fff;
+        color: #302834;
+    }
+
+    .company-detail-shell {
+        width: 100%;
+    }
+
+    .rp-banner {
+        position: relative;
+        background:
+            linear-gradient(135deg, #4f46e5 25%, transparent 25%) -50px 0,
+            linear-gradient(225deg, #4f46e5 25%, transparent 25%) -50px 0,
+            linear-gradient(315deg, #4f46e5 25%, transparent 25%),
+            linear-gradient(45deg, #4f46e5 25%, transparent 25%),
+            linear-gradient(to bottom, #3b82f6 0%, #2563eb 100%);
+        background-color: #1d4ed8;
+        background-size: 100px 100px, 100px 100px, 100px 100px, 100px 100px, 100% 100%;
+    }
+
+    .company-detail-hero {
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        min-height: 180px;
+    }
+
+    .company-detail-hero .rp-banner-overlay {
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(rgba(15,23,42,.28), rgba(15,23,42,.28)),
+            radial-gradient(circle at 0 0, rgba(255,255,255,.2), transparent 50%),
+            radial-gradient(circle at 100% 0, rgba(255,255,255,.2), transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(255,255,255,.2), transparent 50%),
+            radial-gradient(circle at 0 100%, rgba(255,255,255,.2), transparent 50%);
+        background-position: 0 0, 0 0, 100% 0, 100% 100%, 0 100%;
+        background-size: 100% 100%, 50% 50%, 50% 50%, 50% 50%, 50% 50%;
+        background-repeat: no-repeat;
+    }
+
+    .company-detail-hero-content {
+        position: relative;
+        z-index: 1;
+        min-height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 28px;
+        padding: 30px 48px;
+    }
+
+    .company-detail-identity {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .company-detail-logo {
+        width: 58px;
+        height: 58px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,.24);
+        border-radius: 14px;
+        background: rgba(255,255,255,.14);
+        color: #fff;
+        font-size: 1.45rem;
+        backdrop-filter: blur(5px);
+    }
+
+    .company-detail-logo-image {
+        padding: 7px;
+        background: #fff;
+    }
+
+    .company-detail-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .company-detail-eyebrow {
+        display: block;
+        margin-bottom: 7px;
+        color: #dbeafe;
+        font-size: .68rem;
+        font-weight: 900;
+        letter-spacing: .15em;
+        text-transform: uppercase;
+    }
+
+    .company-detail-hero h1 {
+        margin: 0 0 5px;
+        color: #fff;
+        font-size: clamp(1.55rem, 3vw, 2.25rem);
+        font-weight: 900;
+        line-height: 1.1;
+        letter-spacing: -.04em;
+    }
+
+    .company-detail-hero p {
+        margin: 0;
+        color: #dbeafe;
+        font-size: .74rem;
+        font-weight: 600;
+    }
+
+    .company-detail-back {
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        flex: 0 0 auto;
+        padding: 10px 13px;
+        border: 1px solid #fff;
+        border-radius: .65rem;
+        background: #fff;
+        color: #4f46e5;
+        font-size: .69rem;
+        font-weight: 900;
+        transition: transform .18s, box-shadow .18s;
+    }
+
+    .company-detail-back:hover {
+        color: #4338ca;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(15,23,42,.18);
+    }
+
+    .company-detail-alert {
+        width: calc(100% - 48px);
+        margin: 24px auto 0 !important;
+        border-color: #bfe3c5 !important;
+        background: #ecf8ee !important;
+        color: #276738 !important;
+        box-shadow: none;
+    }
+
+    .company-detail-content {
+        overflow: visible !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        box-shadow: none !important;
+    }
+
+    .company-detail-content-inner {
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 34px 48px 0 !important;
+    }
+
+    .company-detail-layout {
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 340px) !important;
+        gap: 48px !important;
+    }
+
+    .company-detail-main {
+        min-width: 0;
+        grid-column: 1;
+    }
+
+    .company-detail-aside {
+        min-width: 0;
+        grid-column: 2;
+        align-self: start;
+    }
+
+    .detail-section {
+        margin: 0 !important;
+        padding: 0 0 30px !important;
+        border: 0 !important;
+        border-bottom: 1px solid #e5e7eb !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        box-shadow: none !important;
+    }
+
+    .detail-section + .detail-section {
+        padding-top: 30px !important;
+    }
+
+    .detail-section:last-child {
+        border-bottom: 0 !important;
+    }
+
+    .detail-section > h2,
+    .detail-section > div:first-child h2 {
+        margin: 0 0 16px !important;
+        color: #302834 !important;
+        font-size: 1.15rem !important;
+        font-weight: 900 !important;
+    }
+
+    .detail-section > h2::after,
+    .detail-section > div:first-child h2::after {
+        content: '';
+        display: block;
+        width: 44px;
+        height: 3px;
+        margin-top: 8px;
+        border-radius: 999px;
+        background: #117e8c;
+    }
+
+    .detail-about > p {
+        max-width: 850px;
+        color: #62685f !important;
+        font-size: .82rem;
+        line-height: 1.75;
+    }
+
+    .detail-questionnaire > div {
+        border-radius: 12px !important;
+        box-shadow: none !important;
+    }
+
+    .questionnaire-status-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
+        padding-left: 18px;
+    }
+
+    .questionnaire-status-actions a,
+    .questionnaire-status-actions button {
+        min-height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 7px 11px;
+        border: 1px solid;
+        border-radius: 9px;
+        background: #fff;
+        font-size: .66rem;
+        font-weight: 900;
+        transition: transform .18s, background .18s;
+    }
+
+    .questionnaire-status-actions a {
+        border-color: #f3c4c4;
+        color: #b42323;
+    }
+
+    .questionnaire-status-actions button {
+        border-color: #cfd8f6;
+        color: #4f46e5;
+    }
+
+    .questionnaire-status-actions a:hover,
+    .questionnaire-status-actions button:hover {
+        background: #fff;
+        transform: translateY(-1px);
+    }
+
+    .company-detail-drive-modal{position:fixed;z-index:12000;inset:0;align-items:center;justify-content:center;padding:16px;background:rgba(17,24,39,.58)}.company-detail-drive-modal.flex{display:flex}.company-detail-drive-dialog{width:100%;max-width:520px;padding:24px;border-radius:18px;background:#fff;box-shadow:0 24px 60px rgba(0,0,0,.25)}.company-detail-drive-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px}.company-detail-drive-head h3{margin:0;color:#1f2937;font-size:1.18rem;font-weight:900}.company-detail-drive-head p{margin:5px 0 0;color:#6b7280;font-size:.74rem}.company-detail-drive-head>button{width:36px;height:36px;display:grid;place-items:center;flex:none;border-radius:50%;color:#6b7280}.company-detail-drive-head>button:hover{background:#f3f4f6}.company-drive-label{display:block;margin-bottom:7px;color:#374151;font-size:.7rem;font-weight:900}.company-detail-drive-current-box{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid #dce7cc;border-radius:13px;background:#f7faf2}.company-detail-drive-current-box>span{width:42px;height:42px;display:grid;place-items:center;flex:none;border-radius:11px;background:#e4efd4;color:#638524}.company-detail-drive-current-box>div{min-width:0;flex:1}.company-detail-drive-current-box strong,.company-detail-drive-current-box small{display:block}.company-detail-drive-current-box strong{overflow:hidden;color:#30382b;font-size:.73rem;text-overflow:ellipsis;white-space:nowrap}.company-detail-drive-current-box small{margin-top:3px;color:#7a8275;font-size:.63rem}.company-detail-drive-current-box>button{display:flex;align-items:center;gap:5px;flex:none;padding:7px 9px;border-radius:8px;background:#e6f4f5;color:#0d6975;font-size:.62rem;font-weight:900}.company-detail-drive-editor{margin-top:15px;padding:15px;border:1px solid #dce7cc;border-radius:13px;background:#fbfcf9}.company-detail-drive-editor>p{margin:0 0 13px;color:#638524;font-size:.67rem;font-weight:800}.company-detail-drive-editor label{display:block;margin-bottom:7px;color:#374151;font-size:.7rem;font-weight:900}.company-detail-drive-editor select,.company-detail-drive-editor input{width:100%;height:46px;border:1px solid #d7dce2;border-radius:11px;background:#fff;color:#374151;font-size:.75rem;outline:0}.company-detail-drive-editor select{padding:0 12px}.company-detail-drive-editor select:focus,.company-detail-drive-editor input:focus{border-color:#7da533;box-shadow:0 0 0 3px rgba(125,165,51,.13)}.company-drive-divider{display:flex;align-items:center;gap:10px;margin:14px 0}.company-drive-divider span{height:1px;flex:1;background:#e5e7eb}.company-drive-divider b{color:#9ca3af;font-size:.58rem;text-transform:uppercase}.company-drive-new{position:relative}.company-drive-new i{position:absolute;top:15px;left:14px;color:#7da533}.company-drive-new input{padding:0 12px 0 40px}.company-detail-drive-status{margin:12px 0 0;color:#6b7280;font-size:.7rem}.company-detail-drive-buttons{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:20px}.company-detail-drive-buttons button{min-height:44px;border-radius:11px;font-size:.72rem;font-weight:900}.company-detail-drive-buttons button:first-child{background:#f3f4f6;color:#5f6670}.company-detail-drive-buttons button:last-child{display:flex;align-items:center;justify-content:center;gap:7px;background:#7da533;color:#fff}.company-detail-drive-buttons button:disabled{cursor:not-allowed;opacity:.55}
+
+    .detail-summary > div:first-child,
+    .detail-marketing > h2 {
+        margin-bottom: 18px !important;
+    }
+
+    .detail-summary .prose {
+        max-width: 920px;
+        color: #565d53 !important;
+        line-height: 1.75;
+    }
+
+    .detail-summary a,
+    .detail-summary button,
+    .marketing-plan-row a,
+    .marketing-plan-row button {
+        min-height: 36px;
+        border-radius: 9px !important;
+        box-shadow: none !important;
+        font-size: .68rem !important;
+        font-weight: 800;
+    }
+
+    .marketing-plan-row {
+        gap: 18px;
+        padding: 17px 0 !important;
+        border: 0 !important;
+        border-bottom: 1px solid #e5e7eb !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        box-shadow: none !important;
+    }
+
+    .marketing-plan-row:last-child {
+        border-bottom: 0 !important;
+    }
+
+    .company-actions {
+        top: 24px;
+        padding: 2px 0 2px 28px !important;
+        border-left: 1px solid #e1e3de;
+        border-radius: 0 !important;
+        background: #fff !important;
+        box-shadow: none !important;
+    }
+
+    .company-actions h3 {
+        margin-bottom: 16px !important;
+        color: #302834 !important;
+        font-size: .9rem !important;
+        font-weight: 900 !important;
+    }
+
+    .company-actions h3::after {
+        content: '';
+        display: block;
+        width: 38px;
+        height: 3px;
+        margin-top: 7px;
+        border-radius: 999px;
+        background: #7da533;
+    }
+
+    .company-actions a,
+    .company-actions button {
+        min-height: 46px;
+        border: 1px solid #d9dcd6 !important;
+        border-radius: 12px !important;
+        background: #fff !important;
+        color: #4b5148 !important;
+        box-shadow: none !important;
+        font-size: .72rem;
+        font-weight: 800;
+    }
+
+    .company-actions a:hover,
+    .company-actions button:not(:disabled):hover {
+        border-color: #bfc5bc !important;
+        background: #f4f5f2 !important;
+        color: #302834 !important;
+        transform: translateY(-1px);
+    }
+
+    .company-actions #generate-summary-btn {
+        border-color: #117e8c !important;
+        background: #117e8c !important;
+        color: #fff !important;
+    }
+
+    .company-actions a[href*="crear-plan"] {
+        border-color: #7da533 !important;
+        background: #7da533 !important;
+        color: #fff !important;
+    }
+
+    .company-actions button:disabled {
+        border-color: #e1e3de !important;
+        background: #f1f2ef !important;
+        color: #9a9f97 !important;
+    }
+
+    .company-actions form:last-child button {
+        border-color: #f3c4c4 !important;
+        color: #b42323 !important;
+    }
+
+    @media (max-width: 760px) {
+        .company-detail-layout {
+            grid-template-columns: 1fr !important;
+            gap: 30px !important;
+        }
+
+        .company-detail-main,
+        .company-detail-aside {
+            grid-column: 1;
+        }
+
+        .company-actions {
+            position: static !important;
+            padding: 28px 0 0 !important;
+            border-top: 1px solid #e1e3de;
+            border-left: 0;
+        }
+
+        .company-actions > div {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 700px) {
+        .company-detail-page {
+            padding-top: 20px;
+        }
+
+        .company-detail-hero,
+        .company-detail-hero-content {
+            min-height: 225px;
+        }
+
+        .company-detail-hero-content {
+            align-items: stretch;
+            flex-direction: column;
+            justify-content: center;
+            padding: 28px 20px;
+        }
+
+        .company-detail-identity {
+            align-items: flex-start;
+        }
+
+        .company-detail-back {
+            width: 100%;
+        }
+
+        .company-detail-alert {
+            width: calc(100% - 24px);
+        }
+
+        .company-detail-content-inner {
+            padding: 28px 20px 0 !important;
+        }
+
+        .detail-summary > div:first-child,
+        .marketing-plan-row {
+            align-items: stretch !important;
+            flex-direction: column;
+        }
+
+        .detail-summary > div:first-child > div,
+        .marketing-plan-row > div:last-child {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .detail-summary form,
+        .detail-summary form button {
+            width: 100%;
+        }
+
+        .company-actions > div {
+            grid-template-columns: 1fr;
+        }
+
+        .detail-questionnaire > div {
+            align-items: flex-start !important;
+            flex-wrap: wrap;
+        }
+
+        .questionnaire-status-actions {
+            width: 100%;
+            margin-left: 0;
+            padding: 12px 0 0 44px;
+        }
+    }
+</style>
 
 {{-- Script para manejar la llamada a la API --}}
 @if($empresa->cuestionario_completado && !$empresa->resumen_ejecutivo)
@@ -331,8 +825,22 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endif
 <script>
-function goBack() {
-    window.history.back();
-}
+document.addEventListener('DOMContentLoaded', function () {
+    const modal=document.getElementById('company-detail-drive-modal'),open=document.getElementById('company-detail-drive-open'),folder=document.getElementById('company-detail-drive-folder'),newFolder=document.getElementById('company-detail-drive-new-folder'),current=document.getElementById('company-detail-drive-current'),detail=document.getElementById('company-detail-drive-detail'),change=document.getElementById('company-detail-drive-change'),editor=document.getElementById('company-detail-drive-editor'),status=document.getElementById('company-detail-drive-status'),save=document.getElementById('company-detail-drive-save');
+    const foldersUrl=@json(route('administrador.empresas.cuestionario.drive-folders',$empresa->id));
+    const closeModal=()=>{modal.classList.add('hidden');modal.classList.remove('flex');document.body.classList.remove('overflow-hidden')};
+    open?.addEventListener('click',async()=>{
+        modal.classList.remove('hidden');modal.classList.add('flex');document.body.classList.add('overflow-hidden');folder.innerHTML='<option value="">Consultando carpetas...</option>';folder.disabled=true;newFolder.value='';save.disabled=true;editor.classList.add('hidden');change.classList.add('hidden');current.textContent='Consultando...';detail.textContent='Buscando el documento en Drive';status.textContent='Consultando PRODOVI / Empresas / {{ $empresa->nombre_empresa }}...';status.style.color='';
+        try{
+            const response=await fetch(foldersUrl,{headers:{Accept:'application/json'}}),data=await response.json();if(!response.ok)throw new Error(data.message||'No se pudieron consultar las carpetas.');
+            folder.innerHTML='';const locations=[{id:data.root.id,name:`${data.root.name} (carpeta principal)`},...data.folders];locations.forEach(item=>{const option=document.createElement('option');option.value=item.id;option.textContent=item.name;folder.appendChild(option)});
+            if(data.current_folder){if(!locations.some(item=>item.id===data.current_folder.id)){const option=document.createElement('option');option.value=data.current_folder.id;option.textContent=data.current_folder.name;folder.appendChild(option)}folder.value=data.current_folder.id;current.textContent=data.current_folder.name;detail.textContent='El cuestionario ya está guardado en esta carpeta';change.classList.remove('hidden');status.textContent='Al guardar se actualizará el documento registrado y conservará su ubicación.'}
+            else{folder.value=data.root.id;current.textContent='Documento aún no creado';detail.textContent='Elige dónde guardarlo por primera vez';editor.classList.remove('hidden');status.textContent='Puedes guardarlo en la carpeta principal de la empresa o crear una subcarpeta.'}
+            folder.disabled=false;save.disabled=false;
+        }catch(error){current.textContent='No se pudo consultar Drive';detail.textContent='Inténtalo nuevamente';status.textContent=error.message;status.style.color='#b91c1c'}
+    });
+    change?.addEventListener('click',()=>{editor.classList.remove('hidden');change.classList.add('hidden');status.textContent='Selecciona otra carpeta o crea una subcarpeta dentro de la empresa.'});
+    document.getElementById('company-detail-drive-close')?.addEventListener('click',closeModal);document.getElementById('company-detail-drive-cancel')?.addEventListener('click',closeModal);modal?.addEventListener('click',event=>{if(event.target===modal)closeModal()});document.addEventListener('keydown',event=>{if(event.key==='Escape'&&modal?.classList.contains('flex'))closeModal()});
+});
 </script>
 @endsection

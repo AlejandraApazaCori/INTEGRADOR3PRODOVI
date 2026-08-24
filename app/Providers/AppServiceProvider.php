@@ -83,7 +83,7 @@ class AppServiceProvider extends ServiceProvider
                         'date' => $pago->created_at,
                         'url' => $isPhysicalCode
                             ? route('administrador.pagos.pendientes-fisicos')
-                            : route('administrador.pagos.realizados'),
+                            : route('administrador.pagos.index', ['payment_status' => 'completado']),
                     ]);
                 }
 

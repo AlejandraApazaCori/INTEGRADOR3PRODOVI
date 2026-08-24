@@ -9,59 +9,36 @@ use App\Models\ComprobantePago;
 use App\Models\Plan;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\LibelulaTransaction;
+use App\Models\GoogleDriveReport;
 use App\Exports\PagosExport;
+use App\Exports\PagosChartReportExport;
+use App\Services\GoogleDriveReportService;
 use App\Services\PaymentConfirmationNotifier;
+use App\Services\Libelula\LibelulaClient;
+use App\Services\Libelula\LibelulaPaymentReconciler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Excel as ExcelFormat;
 use Barryvdh\DomPDF\Facade\PDF;
+use RuntimeException;
+use Throwable;
 
 class PagoAdminController extends Controller
 {
     public function pagosRealizados(Request $request)
     {
-        $search = $request->input('search');
-        $planId = $request->input('plan');
-        $planes = Plan::all();
-
-        $query = Pago::has('usuario')
-            ->has('plan')
-            ->has('suscripcion')
-            ->with(['usuario', 'plan', 'suscripcion'])
-            ->where('estado', 'completado')
-            ->orderBy('fecha_pago', 'desc');
-
-        if ($search) {
-            $query->whereHas('usuario', function ($userQuery) use ($search) {
-                $userQuery->where('name', 'like', "%{$search}%");
-            });
-        }
-
-        if ($planId) {
-            $query->whereHas('plan', function ($planQuery) use ($planId) {
-                $planQuery->where('id', $planId);
-            });
-        }
-        $pagos = $query->paginate(10)->through(function ($pago) {
-            return [
-                'id' => $pago->id,
-                'usuario' => optional($pago->usuario)->name ?? 'N/A',
-                'tipo_pago' => $pago->metodo,
-                'plan' => optional($pago->plan)->nombre ?? 'N/A',
-                'monto' => $pago->monto . ' ' . $pago->moneda,
-                'fecha_inicio' => optional($pago->suscripcion)->fecha_inicio ? $pago->suscripcion->fecha_inicio->format('d/m/Y') : 'N/A',
-                'fecha_fin' => optional($pago->suscripcion)->fecha_fin ? $pago->suscripcion->fecha_fin->format('d/m/Y') : 'N/A',
-                'estado' => optional($pago->suscripcion)->estado ?? 'N/A',
-            ];
-        });
-
-        if ($request->ajax()) {
-            return view('administrador.pagos._results', compact('pagos'))->render();
-        }
-
-        return view('administrador.pagos.realizados', compact('pagos', 'planes'));
+        return redirect()->route('administrador.pagos.index', array_filter([
+            'search' => $request->input('search'),
+            'plan' => $request->input('plan'),
+            'payment_status' => 'completado',
+        ], static fn ($value) => $value !== null && $value !== ''));
     }
 
     public function pagosPendientesFisicos(Request $request)
@@ -236,33 +213,73 @@ class PagoAdminController extends Controller
 
     public function index(Request $request)
     {
-        $countActivos = Suscripcion::where('estado', 'activa')
-            ->where('fecha_fin', '>', now())
-            ->count();
-
-        $countPendientes = Pago::where('estado', 'pendiente')
-            ->where('metodo', 'fisico')
-            ->count();
-
-        $countFinalizados = Suscripcion::whereIn('estado', ['finalizada', 'cancelada'])
-            ->count();
-
-        $planes = Plan::where('activo', true)->get();
+        $planes = Plan::orderBy('nombre')->get();
         $perPage = (int) $request->input('per_page', 10);
         $perPage = $perPage > 0 ? min($perPage, 100) : 10;
 
-        $pagos = Pago::with(['usuario', 'plan', 'suscripcion', 'comprobantePago'])
-            ->orderByDesc('id')
+        $search = trim((string) $request->input('search', ''));
+        $planId = $request->input('plan');
+        $paymentStatus = $request->input('payment_status');
+        $subscriptionStatus = $request->input('subscription_status');
+        $method = $request->input('method');
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
+        $order = $request->input('order') === 'oldest' ? 'oldest' : 'newest';
+
+        $paymentStatuses = ['pendiente', 'completado', 'rechazado', 'cancelado'];
+        $subscriptionStatuses = ['activa', 'pendiente', 'finalizada', 'cancelada'];
+        $methods = ['qr', 'fisico'];
+
+        $summaryPayments = $this->buildAnalyticsQuery([
+            'startDate' => Carbon::now()->startOfMonth()->toDateString(),
+            'endDate' => Carbon::now()->endOfMonth()->toDateString(),
+        ])->get();
+        $summaryPlanCounts = $summaryPayments
+            ->map(fn ($payment) => optional($payment->plan)->nombre ?? 'N/A')
+            ->countBy()
+            ->sortDesc();
+        $paymentSummary = [
+            'total_income' => number_format((float) $summaryPayments->where('estado', 'completado')->sum('monto'), 2, ',', '.').' '.(optional($summaryPayments->first())->moneda ?? 'BS'),
+            'most_hired_plan' => $summaryPlanCounts->keys()->first() ?? 'N/A',
+            'total_records' => $summaryPayments->count(),
+        ];
+
+        $pagosQuery = Pago::with(['usuario', 'plan', 'suscripcion', 'comprobantePago', 'libelulaTransaction'])
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($searchQuery) use ($search) {
+                    $searchQuery->where('codigo_pago', 'like', "%{$search}%")
+                        ->orWhere('provider_transaction_id', 'like', "%{$search}%")
+                        ->orWhereHas('libelulaTransaction', fn ($transactionQuery) => $transactionQuery
+                            ->where('identifier', 'like', "%{$search}%"))
+                        ->orWhereHas('usuario', function ($userQuery) use ($search) {
+                            $userQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%");
+                        });
+
+                    if (ctype_digit($search)) {
+                        $searchQuery->orWhere('id', (int) $search);
+                    }
+                });
+            })
+            ->when($planId, fn ($query) => $query->where('plan_id', $planId))
+            ->when(in_array($paymentStatus, $paymentStatuses, true), fn ($query) => $query->where('estado', $paymentStatus))
+            ->when(in_array($subscriptionStatus, $subscriptionStatuses, true), function ($query) use ($subscriptionStatus) {
+                $query->whereHas('suscripcion', fn ($subscriptionQuery) => $subscriptionQuery->where('estado', $subscriptionStatus));
+            })
+            ->when(in_array($method, $methods, true), fn ($query) => $query->where('metodo', $method))
+            ->when($dateFrom, fn ($query) => $query->whereDate('fecha_pago', '>=', $dateFrom))
+            ->when($dateTo, fn ($query) => $query->whereDate('fecha_pago', '<=', $dateTo))
+            ->orderBy('id', $order === 'oldest' ? 'asc' : 'desc');
+
+        $pagos = $pagosQuery
             ->paginate($perPage)
             ->appends($request->query());
 
         return view('administrador.pagos.index', compact(
-            'countActivos',
-            'countPendientes',
-            'countFinalizados',
             'planes',
             'pagos',
-            'perPage'
+            'perPage',
+            'paymentSummary'
         ));
     }
 
@@ -285,7 +302,173 @@ class PagoAdminController extends Controller
         return view('administrador.pagos.create_manual', compact('planes', 'usuarios'));
     }
 
-    public function storeManual(Request $request)
+    public function crearPagoQrManual(Request $request, LibelulaClient $client)
+    {
+        $validated = $request->validate([
+            'usuario_id' => ['required', 'exists:users,id'],
+            'plan_id' => ['required', 'exists:plan,id'],
+            'document_type_code' => ['required', 'string', Rule::in(['1', '2', '3', '4', '5'])],
+            'document_number' => ['required', 'string', 'max:50', 'regex:/^[0-9]+$/'],
+            'document_complement' => ['nullable', 'string', 'max:20'],
+            'document_extension' => ['nullable', 'string', 'max:20'],
+            'business_name' => ['required', 'string', 'max:255'],
+        ], [
+            'document_number.regex' => 'El número de documento solo puede contener números.',
+        ]);
+
+        $user = User::findOrFail($validated['usuario_id']);
+        $plan = Plan::where('activo', true)->findOrFail($validated['plan_id']);
+
+        if (Str::upper((string) $plan->moneda) !== 'BS') {
+            return response()->json(['message' => 'El pago QR está disponible únicamente para planes en bolivianos.'], 422);
+        }
+
+        LibelulaTransaction::query()
+            ->where('usuario_id', $user->id)
+            ->where('plan_id', $plan->id)
+            ->where('status', 'pending')
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '<=', now())
+            ->update(['status' => 'expired', 'expired_at' => now()]);
+
+        $pending = LibelulaTransaction::query()
+            ->where('usuario_id', $user->id)
+            ->where('plan_id', $plan->id)
+            ->where('status', 'pending')
+            ->where('expires_at', '>', now())
+            ->latest('id')
+            ->first();
+
+        if ($pending) {
+            return response()->json($this->manualQrTransactionData($pending));
+        }
+
+        $expiresAt = now()->addDay()->endOfMinute();
+        $identifier = sprintf('PRODOVI-ADMIN-PLAN-%d-%d-%s', $user->id, $plan->id, Str::uuid());
+        $transaction = LibelulaTransaction::create([
+            'usuario_id' => $user->id,
+            'plan_id' => $plan->id,
+            'identifier' => $identifier,
+            'customer_email' => $user->email,
+            'customer_name' => $user->name,
+            'document_type_code' => trim($validated['document_type_code']),
+            'document_number' => trim($validated['document_number']),
+            'document_complement' => $this->manualQrOptionalUppercase($validated['document_complement'] ?? null),
+            'document_extension' => $this->manualQrOptionalUppercase($validated['document_extension'] ?? null),
+            'business_name' => Str::upper(trim($validated['business_name'])),
+            'description' => 'Suscripción al plan '.$plan->nombre,
+            'currency' => 'BOB',
+            'expected_amount' => $plan->precio,
+            'status' => 'creating',
+            'expires_at' => $expiresAt,
+        ]);
+
+        $callbackUrl = (string) config('services.libelula.callback_url');
+        $callbackUrl = $callbackUrl !== '' ? $callbackUrl : route('pago.libelula.callback');
+        $payload = [
+            'email_cliente' => $user->email,
+            'identificador' => $identifier,
+            'fecha_vencimiento' => $expiresAt->format('Y-m-d H:i'),
+            'descripcion' => $transaction->description,
+            'callback_url' => $callbackUrl,
+            'url_retorno' => route('administrador.pagos.index'),
+            'numero_documento' => $transaction->document_number,
+            'codigo_tipo_documento' => $transaction->document_type_code,
+            'nombre_cliente' => trim((string) $user->name),
+            'apellido_cliente' => '',
+            'codigo_cliente' => (string) $user->id,
+            'razon_social' => $transaction->business_name,
+            'emite_factura' => true,
+            'tipo_factura' => 'Servicios',
+            'moneda' => 'BOB',
+            'lineas_detalle_deuda' => [[
+                'cantidad' => 1,
+                'concepto' => $transaction->description,
+                'costo_unitario' => (float) $plan->precio,
+                'descuento_unitario' => 0,
+                'codigo_producto' => (string) config('services.libelula.product_code', '1'),
+            ]],
+        ];
+
+        $complement = collect([$transaction->document_complement, $transaction->document_extension])->filter()->implode(' ');
+        if ($complement !== '') {
+            $payload['complemento_documento'] = $complement;
+        }
+
+        $transaction->update(['request_payload' => $payload]);
+
+        try {
+            $response = $client->registerDebt($payload);
+            $providerId = trim((string) ($response['id_transaccion'] ?? ''));
+            $paymentUrl = trim((string) ($response['url_pasarela_pagos'] ?? ''));
+            $qrUrl = trim((string) ($response['qr_simple_url'] ?? ''));
+
+            if ($providerId === '' || ($paymentUrl === '' && $qrUrl === '')) {
+                throw new RuntimeException('Libélula no devolvió los datos necesarios para pagar.');
+            }
+
+            $transaction->update([
+                'libelula_transaction_id' => $providerId,
+                'collection_code' => $response['codigo_recaudacion'] ?? null,
+                'payment_url' => $paymentUrl ?: null,
+                'qr_url' => $qrUrl ?: null,
+                'response_payload' => $response,
+                'status' => 'pending',
+                'generated_at' => now(),
+                'last_error' => null,
+            ]);
+        } catch (Throwable $exception) {
+            $transaction->update(['status' => 'failed', 'last_error' => Str::limit($exception->getMessage(), 2000)]);
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json($this->manualQrTransactionData($transaction->fresh()));
+    }
+
+    public function estadoPagoQrManual(LibelulaTransaction $transaction, LibelulaPaymentReconciler $reconciler)
+    {
+        if (in_array($transaction->status, ['pending', 'expired'], true)) {
+            try {
+                $reconciler->reconcile($transaction);
+            } catch (Throwable $exception) {
+                Log::warning('No se pudo conciliar el pago administrativo de Libélula.', [
+                    'transaction_id' => $transaction->id,
+                    'error' => $exception->getMessage(),
+                ]);
+                $transaction->update(['last_error' => Str::limit($exception->getMessage(), 2000)]);
+            }
+        }
+
+        $transaction->refresh();
+        if ($transaction->status === 'pending' && $transaction->expires_at?->isPast()) {
+            $transaction->update(['status' => 'expired', 'expired_at' => now()]);
+        }
+
+        return response()->json($this->manualQrTransactionData($transaction->fresh()));
+    }
+
+    private function manualQrTransactionData(LibelulaTransaction $transaction): array
+    {
+        return [
+            'id' => $transaction->id,
+            'status' => $transaction->status,
+            'identifier' => $transaction->identifier,
+            'payment_url' => $transaction->payment_url,
+            'qr_url' => $transaction->qr_url,
+            'amount' => $transaction->expected_amount,
+            'currency' => $transaction->currency,
+            'expires_at' => $transaction->expires_at?->toIso8601String(),
+            'status_url' => route('administrador.pagos.manual.libelula.estado', $transaction, false),
+        ];
+    }
+
+    private function manualQrOptionalUppercase(mixed $value): ?string
+    {
+        $value = Str::upper(trim((string) $value));
+        return $value !== '' ? $value : null;
+    }
+
+    public function storeManual(Request $request, PaymentConfirmationNotifier $paymentNotifier)
     {
         $rules = [
             'create_new_user' => 'required|in:0,1',
@@ -305,6 +488,10 @@ class PagoAdminController extends Controller
         }
 
         $request->validate($rules);
+
+        if ($request->metodo === 'qr') {
+            return back()->with('error', 'Los pagos QR deben confirmarse mediante Libélula antes de activar la suscripción.')->withInput();
+        }
 
         DB::beginTransaction();
         try {
@@ -366,7 +553,17 @@ class PagoAdminController extends Controller
 
             DB::commit();
 
-            return redirect()->route('administrador.pagos.index')->with('success', 'Pago manual registrado correctamente.');
+            $emailSent = $paymentNotifier->send($pago->fresh());
+            $redirect = redirect()->route('administrador.pagos.index')
+                ->with('success', $emailSent
+                    ? 'Pago manual registrado y correo de confirmación enviado correctamente.'
+                    : 'Pago manual registrado correctamente.');
+
+            if (! $emailSent) {
+                $redirect->with('error', 'El pago fue registrado, pero no se pudo enviar el correo de confirmación. Revisa la configuración de correo.');
+            }
+
+            return $redirect;
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Error al registrar pago manual: ' . $e->getMessage());
@@ -891,43 +1088,269 @@ class PagoAdminController extends Controller
 
     public function verComprobante($id)
     {
-        $pago = Pago::with(['plan', 'suscripcion', 'usuario', 'comprobantePago'])
+        $pago = Pago::with(['plan', 'suscripcion', 'usuario', 'comprobantePago', 'libelulaTransaction'])
             ->where('id', $id)
             ->firstOrFail();
 
+        if (! $pago->comprobantePago) {
+            $pago->setRelation('comprobantePago', ComprobantePago::firstOrCreate([
+                'pago_id' => $pago->id,
+            ]));
+        }
+
         $html = view('clientes.comprobante-pago', compact('pago'))->render();
 
-        return response()->json(['html' => $html]);
+        return response()->json([
+            'html' => $html,
+            'view_url' => route('administrador.pagos.ver-recibo-pdf', $pago),
+            'download_url' => route('administrador.pagos.descargar-recibo', $pago),
+        ]);
+    }
+
+    public function exportReport(Request $request, string $report, string $destination)
+    {
+        abort_unless(in_array($report, ['filtered', 'general'], true), 404);
+        abort_unless(in_array($destination, ['excel', 'pdf', 'drive'], true), 404);
+
+        $pagos = $this->paymentReportQuery($request, $report === 'filtered')->get();
+        $filters = $report === 'filtered'
+            ? $request->only(['search', 'plan', 'payment_status', 'subscription_status', 'method', 'date_from', 'date_to', 'order'])
+            : [];
+        $summary = $this->paymentReportSummary($pagos);
+        $reportTitle = $report === 'filtered' ? 'Reporte de pagos filtrados' : 'Listado general de pagos';
+        $label = $report === 'filtered' ? 'pagos_filtrados' : 'pagos_generales';
+        $fileName = $label.'_'.now()->format('Y_m_d_His').'.xlsx';
+        $export = new PagosChartReportExport($pagos, $filters, $summary, $reportTitle);
+
+        if ($destination === 'pdf') {
+            $statusChart = $this->paymentDonutChartDataUri('Distribución por estado del pago', $export->statusStats());
+            $methodChart = $this->paymentDonutChartDataUri('Distribución por método de pago', $export->methodStats());
+
+            return PDF::loadView('pdf.pagos-reporte', compact(
+                'pagos', 'filters', 'summary', 'reportTitle', 'statusChart', 'methodChart'
+            ))
+                ->setOption('isPhpEnabled', true)
+                ->setPaper('a4', 'landscape')
+                ->download($label.'_'.now()->format('Y_m_d_His').'.pdf');
+        }
+
+        if ($destination === 'excel') {
+            return Excel::download($export, $fileName);
+        }
+
+        try {
+            $request->validate([
+                'folder_id' => ['nullable', 'string', 'max:255'],
+                'new_folder' => ['nullable', 'string', 'max:80', 'regex:~^[\p{L}\p{N} _().-]+$~u'],
+            ]);
+
+            $drive = app(GoogleDriveReportService::class);
+            $folderId = $drive->resolveTargetFolder($request->input('folder_id'), $request->input('new_folder'));
+            $reportKey = 'payments_'.$report;
+            $storedReport = GoogleDriveReport::where('report_key', $reportKey)->first();
+            $contents = Excel::raw($export, ExcelFormat::XLSX);
+            $uploaded = $drive->saveGoogleSheet($fileName, $contents, $folderId, $storedReport?->file_id);
+            $drive->positionPaymentReportCharts($uploaded['id']);
+
+            GoogleDriveReport::updateOrCreate(
+                ['report_key' => $reportKey],
+                [
+                    'file_id' => $uploaded['id'],
+                    'folder_id' => $folderId,
+                    'file_name' => $uploaded['name'],
+                    'web_view_link' => $uploaded['url'],
+                ]
+            );
+
+            return back()->with('drive_success', [
+                'message' => $storedReport
+                    ? 'El reporte de pagos se actualizó y conservó el mismo enlace en Google Sheets.'
+                    : 'El reporte de pagos se creó correctamente en Google Sheets.',
+                'url' => $uploaded['url'],
+            ]);
+        } catch (Throwable $exception) {
+            Log::error('No se pudo crear el reporte de pagos en Google Drive.', [
+                'report' => $report,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return back()->with('drive_error', 'No se pudo guardar el reporte de pagos en Google Drive. Inténtalo nuevamente.');
+        }
+    }
+
+    public function driveReportFolders(Request $request)
+    {
+        try {
+            $request->validate(['report' => ['nullable', 'in:filtered,general']]);
+            $data = app(GoogleDriveReportService::class)->listTargetFolders();
+            $storedReport = $request->filled('report')
+                ? GoogleDriveReport::where('report_key', 'payments_'.$request->report)->first()
+                : null;
+            $currentFolder = null;
+
+            if ($storedReport) {
+                $folder = collect([$data['root'], ...$data['folders']])->firstWhere('id', $storedReport->folder_id);
+                $currentFolder = [
+                    'id' => $storedReport->folder_id,
+                    'name' => $folder['name'] ?? 'Carpeta no disponible',
+                    'file_url' => $storedReport->web_view_link,
+                ];
+            }
+
+            return response()->json([...$data, 'current_folder' => $currentFolder]);
+        } catch (Throwable $exception) {
+            Log::error('No se pudieron consultar las carpetas de reportes de pagos.', [
+                'error' => $exception->getMessage(),
+            ]);
+
+            return response()->json(['message' => 'No se pudieron consultar las carpetas de Google Drive.'], 500);
+        }
+    }
+
+    private function paymentReportQuery(Request $request, bool $applyFilters)
+    {
+        $query = Pago::with(['usuario', 'plan', 'suscripcion', 'comprobantePago', 'libelulaTransaction']);
+
+        if ($applyFilters) {
+            $search = trim((string) $request->input('search', ''));
+            $paymentStatuses = ['pendiente', 'completado', 'rechazado', 'cancelado'];
+            $subscriptionStatuses = ['activa', 'pendiente', 'finalizada', 'cancelada'];
+            $methods = ['qr', 'fisico'];
+            $query
+                ->when($search !== '', function ($paymentQuery) use ($search) {
+                    $paymentQuery->where(function ($searchQuery) use ($search) {
+                        $searchQuery->where('codigo_pago', 'like', "%{$search}%")
+                            ->orWhere('provider_transaction_id', 'like', "%{$search}%")
+                            ->orWhereHas('libelulaTransaction', fn ($transactionQuery) => $transactionQuery
+                                ->where('identifier', 'like', "%{$search}%"))
+                            ->orWhereHas('usuario', fn ($userQuery) => $userQuery
+                                ->where('name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%"));
+
+                        if (ctype_digit($search)) {
+                            $searchQuery->orWhere('id', (int) $search);
+                        }
+                    });
+                })
+                ->when($request->filled('plan'), fn ($paymentQuery) => $paymentQuery->where('plan_id', $request->plan))
+                ->when(in_array($request->payment_status, $paymentStatuses, true), fn ($paymentQuery) => $paymentQuery->where('estado', $request->payment_status))
+                ->when(in_array($request->subscription_status, $subscriptionStatuses, true), fn ($paymentQuery) => $paymentQuery
+                    ->whereHas('suscripcion', fn ($subscriptionQuery) => $subscriptionQuery->where('estado', $request->subscription_status)))
+                ->when(in_array($request->method, $methods, true), fn ($paymentQuery) => $paymentQuery->where('metodo', $request->method))
+                ->when($request->filled('date_from'), fn ($paymentQuery) => $paymentQuery->whereDate('fecha_pago', '>=', $request->date_from))
+                ->when($request->filled('date_to'), fn ($paymentQuery) => $paymentQuery->whereDate('fecha_pago', '<=', $request->date_to));
+        }
+
+        $direction = $applyFilters && $request->input('order') === 'oldest' ? 'asc' : 'desc';
+
+        return $query->orderBy('id', $direction);
+    }
+
+    private function paymentReportSummary($pagos): array
+    {
+        $planCounts = $pagos->map(fn ($pago) => optional($pago->plan)->nombre ?? 'N/A')->countBy()->sortDesc();
+
+        return [
+            'total_income' => number_format((float) $pagos->where('estado', 'completado')->sum('monto'), 2, ',', '.').' '.(optional($pagos->first())->moneda ?? 'BS'),
+            'most_hired_plan' => $planCounts->keys()->first() ?? 'N/A',
+            'most_hired_plan_count' => $planCounts->first() ?? 0,
+            'total_records' => $pagos->count(),
+        ];
+    }
+
+    private function paymentDonutChartDataUri(string $title, array $stats): ?string
+    {
+        $total = array_sum(array_column($stats, 'count'));
+        if ($total === 0) {
+            return null;
+        }
+
+        $colors = ['#4f86c6', '#c5534f', '#9abb59', '#8064a2', '#4bacc6', '#f79646', '#7da533', '#117e8c'];
+        $height = max(300, 75 + count($stats) * 29);
+        $centerY = (int) round($height / 2);
+        $radius = 76;
+        $circumference = 2 * M_PI * $radius;
+        $offset = 0.0;
+        $escape = fn (string $value) => htmlspecialchars($value, ENT_QUOTES | ENT_XML1, 'UTF-8');
+        $segments = '';
+        $legend = '';
+
+        foreach ($stats as $index => $stat) {
+            $fraction = $stat['count'] / $total;
+            $length = $fraction * $circumference;
+            $color = $colors[$index % count($colors)];
+            $segments .= sprintf(
+                '<circle cx="125" cy="%d" r="%d" fill="none" stroke="%s" stroke-width="38" stroke-dasharray="%.3f %.3f" stroke-dashoffset="-%.3f" transform="rotate(-90 125 %d)"/>',
+                $centerY,
+                $radius,
+                $color,
+                $length,
+                $circumference - $length,
+                $offset,
+                $centerY,
+            );
+            $legendY = 54 + $index * 29;
+            $legendText = sprintf('%s — %d (%.1f%%)', $stat['label'], $stat['count'], $fraction * 100);
+            $legend .= '<rect x="245" y="'.($legendY - 11).'" width="13" height="13" rx="3" fill="'.$color.'"/>';
+            $legend .= '<text x="267" y="'.$legendY.'" font-family="DejaVu Sans, sans-serif" font-size="13" fill="#374151">'.$escape($legendText).'</text>';
+            $offset += $length;
+        }
+
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="'.$height.'" viewBox="0 0 640 '.$height.'">'
+            .'<rect width="640" height="'.$height.'" rx="14" fill="#ffffff"/>'
+            .'<text x="20" y="25" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="700" fill="#374151">'.$escape($title).'</text>'
+            .'<circle cx="125" cy="'.$centerY.'" r="'.$radius.'" fill="none" stroke="#edf0ea" stroke-width="38"/>'
+            .$segments
+            .'<text x="125" y="'.($centerY - 3).'" text-anchor="middle" font-family="DejaVu Sans, sans-serif" font-size="25" font-weight="700" fill="#31382b">'.$total.'</text>'
+            .'<text x="125" y="'.($centerY + 19).'" text-anchor="middle" font-family="DejaVu Sans, sans-serif" font-size="11" fill="#737a70">registros</text>'
+            .$legend
+            .'</svg>';
+
+        return 'data:image/svg+xml;base64,'.base64_encode($svg);
     }
 
     public function descargarComprobante($id)
+    {
+        [$rutaCompletaParaDescarga, $nombreDescarga] = $this->obtenerArchivoComprobante($id);
+
+        return response()->download($rutaCompletaParaDescarga, $nombreDescarga);
+    }
+
+    public function visualizarComprobantePdf($id)
+    {
+        [$rutaCompleta, $nombreArchivo] = $this->obtenerArchivoComprobante($id);
+
+        return response()->file($rutaCompleta, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.$nombreArchivo.'"',
+        ]);
+    }
+
+    private function obtenerArchivoComprobante($id): array
     {
         $pago = Pago::with(['plan', 'suscripcion', 'usuario', 'comprobantePago'])
             ->where('id', $id)
             ->firstOrFail();
 
-        $comprobante = $pago->comprobantePago;
-        if (!$comprobante) {
-            $comprobante = ComprobantePago::create([
-                'pago_id' => $pago->id,
-            ]);
-        }
-
-        $rutaRelativa = 'comprobantes_pago/comprobante-' . $comprobante->numero_formateado . '.pdf';
-
+        $comprobante = $pago->comprobantePago ?: ComprobantePago::firstOrCreate([
+            'pago_id' => $pago->id,
+        ]);
+        $rutaRelativa = 'comprobantes_pago/comprobante-'.$comprobante->numero_formateado.'.pdf';
         $templateUpdatedAt = filemtime(resource_path('views/clientes/comprobante-pago-pdf.blade.php'));
         $storedPdfIsOutdated = \Storage::disk('public')->exists($rutaRelativa)
             && \Storage::disk('public')->lastModified($rutaRelativa) < $templateUpdatedAt;
 
-        if (!\Storage::disk('public')->exists($rutaRelativa) || $storedPdfIsOutdated) {
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('clientes.comprobante-pago-pdf', compact('pago', 'comprobante'))
-                ->setPaper('letter', 'portrait');
+        if (! \Storage::disk('public')->exists($rutaRelativa) || $storedPdfIsOutdated) {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView(
+                'clientes.comprobante-pago-pdf',
+                compact('pago', 'comprobante')
+            )->setPaper('letter', 'portrait');
             \Storage::disk('public')->put($rutaRelativa, $pdf->output());
         }
 
-        $rutaCompletaParaDescarga = \Storage::disk('public')->path($rutaRelativa);
-        $nombreDescarga = 'comprobante-' . $comprobante->numero_formateado . '.pdf';
-
-        return response()->download($rutaCompletaParaDescarga, $nombreDescarga);
+        return [
+            \Storage::disk('public')->path($rutaRelativa),
+            'comprobante-'.$comprobante->numero_formateado.'.pdf',
+        ];
     }
 }

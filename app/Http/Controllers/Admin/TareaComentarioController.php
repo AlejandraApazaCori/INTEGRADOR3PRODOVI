@@ -41,8 +41,7 @@ class TareaComentarioController extends Controller
             }
         }
 
-        return redirect()->route('administrador.tareas.show', $tarea->id)
-            ->with('success', 'Comentario agregado correctamente');
+        return back()->with('success', 'Comentario agregado correctamente');
     }
 
     public function destroy(TareaComentario $comentario)
@@ -54,10 +53,8 @@ class TareaComentarioController extends Controller
             $archivo->delete();
         }
 
-        $tarea_id = $comentario->comentable_id;
         $comentario->delete();
 
-        return redirect()->route('administrador.tareas.show', $tarea_id)
-            ->with('success', 'Comentario eliminado correctamente');
+        return back()->with('success', 'Comentario eliminado correctamente');
     }
 }

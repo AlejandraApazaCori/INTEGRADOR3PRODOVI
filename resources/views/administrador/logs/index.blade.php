@@ -12,10 +12,10 @@
 @endsection
 
 @section('content')
-<div class="min-h-screen" style="background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 50%, #F5F3FF 100%);">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="logs-page min-h-screen">
+    <div class="logs-shell max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Banner con fondo geomÃ©trico -->
-        <div class="mb-8 rounded-2xl overflow-hidden relative rp-banner">
+        <div class="logs-hero mb-8 rounded-2xl overflow-hidden relative rp-banner">
             <div class="rp-banner-overlay absolute inset-0"></div>
             <div class="relative z-10 px-8 py-8">
                 <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
@@ -30,26 +30,8 @@
             </div>
         </div>
 
-        @if($showScheduledPublicationsSetupButton)
-        <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-6 py-5 shadow-lg">
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                    <h2 class="text-lg font-bold text-red-700">Carga provisional de publicaciones programadas</h2>
-                    <p class="mt-1 text-sm text-red-600">Ejecuta la migracion de publication_message y procesa el comando manual una vez. Cuando salga bien, este boton desaparece.</p>
-                </div>
-                <form action="{{ route('administrador.logs.setup-publicaciones-programadas') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-red-700">
-                        <i class="fas fa-bolt"></i>
-                        Ejecutar carga provisional
-                    </button>
-                </form>
-            </div>
-        </div>
-        @endif
-
         <!-- Filtros Globales -->
-        <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 mb-8">
+        <div class="logs-filters bg-white p-6 rounded-2xl shadow-lg border border-gray-100 mb-8">
             <form action="{{ route('administrador.logs.index') }}" method="GET" id="filterForm" class="flex flex-wrap items-end gap-4">
                 <input type="hidden" name="tab" id="activeTabInput" value="{{ request('tab', 'access') }}">
                 
@@ -79,7 +61,7 @@
         </div>
 
         <!-- Tabs -->
-        <div class="mb-6 overflow-x-auto">
+        <div class="logs-tabs mb-6 overflow-x-auto">
             <div class="border-b border-gray-200 min-w-max">
                 <nav class="-mb-px flex space-x-8" aria-label="Tabs">
                     <button onclick="switchTab('access')" id="tab-access" class="border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
@@ -99,8 +81,8 @@
         </div>
 
         <!-- Tab Content: Access Logs -->
-        <div id="content-access" class="bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100 mb-8">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100">
+        <div id="content-access" class="logs-panel bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100 mb-8">
+            <div class="logs-panel-head px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
                         <i class="fas fa-sign-in-alt text-indigo-600 text-sm"></i>
@@ -112,12 +94,12 @@
                 </button>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="logs-table min-w-full divide-y divide-gray-200">
                     <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
                         <tr>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fecha y Hora</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">IP / Usuario</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">MÃ©todo / URL</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Método / URL</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Estado / Tiempo</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider">User-Agent</th>
                         </tr>
@@ -164,8 +146,8 @@
         </div>
 
         <!-- Tab Content: Security Logs -->
-        <div id="content-security" class="hidden bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100 mb-8">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100">
+        <div id="content-security" class="logs-panel hidden bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100 mb-8">
+            <div class="logs-panel-head px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
                         <i class="fas fa-shield-alt text-red-600 text-sm"></i>
@@ -177,7 +159,7 @@
                 </button>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="logs-table min-w-full divide-y divide-gray-200">
                     <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
                         <tr>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fecha / Hora</th>
@@ -239,25 +221,25 @@
         </div>
 
         <!-- Tab Content: Audit Logs -->
-        <div id="content-audit" class="hidden bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100 mb-8">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100">
+        <div id="content-audit" class="logs-panel hidden bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100 mb-8">
+            <div class="logs-panel-head px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
                         <i class="fas fa-history text-amber-600 text-sm"></i>
                     </div>
-                    <h2 class="text-lg font-bold text-gray-800">Registros de Actividad (AuditorÃ­a)</h2>
+                    <h2 class="text-lg font-bold text-gray-800">Registros de Actividad (Auditoría)</h2>
                 </div>
                 <button onclick="exportToPdf('audit')" class="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-colors border border-indigo-100">
                     <i class="fas fa-file-pdf mr-2"></i>Exportar PDF
                 </button>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="logs-table min-w-full divide-y divide-gray-200">
                     <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
                         <tr>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fecha / Hora</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Usuario</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">AcciÃ³n / Recurso</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Acción / Recurso</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider">Cambios</th>
                         </tr>
                     </thead>
@@ -329,8 +311,8 @@
         </div>
 
         <!-- Tab Content: Error Logs -->
-        <div id="content-error" class="hidden bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100 mb-8">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100">
+        <div id="content-error" class="logs-panel hidden bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100 mb-8">
+            <div class="logs-panel-head px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
                         <i class="fas fa-exclamation-triangle text-red-600 text-sm"></i>
@@ -342,7 +324,7 @@
                 </button>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="logs-table min-w-full divide-y divide-gray-200">
                     <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
                         <tr>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-indigo-700 uppercase tracking-wider border-r border-indigo-100">Fecha y Hora</th>
@@ -388,6 +370,28 @@
     </div>
 </div>
 
+<div id="logs-export-modal" class="logs-export-modal hidden" role="dialog" aria-modal="true" aria-labelledby="logs-export-title">
+    <div class="logs-export-dialog">
+        <div class="logs-export-head">
+            <div><h3 id="logs-export-title">Exportar logs en PDF</h3><p>Combina un rango de fechas con las páginas de registros que necesitas.</p></div>
+            <button type="button" id="logs-export-close" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="logs-export-form" method="GET">
+            <div class="logs-export-section">
+                <span><i class="fas fa-calendar-days"></i>Rango de fechas</span>
+                <div class="logs-export-grid"><label>Desde<input type="date" name="fecha_inicio" value="{{ $fechaInicio ?? '' }}"></label><label>Hasta<input type="date" name="fecha_fin" value="{{ $fechaFin ?? '' }}"></label></div>
+            </div>
+            <div class="logs-export-section">
+                <span><i class="fas fa-file-lines"></i>Rango de páginas</span>
+                <p>Cada página equivale a 15 registros ordenados desde el más reciente.</p>
+                <div class="logs-export-grid"><label>Página desde<input type="number" name="page_from" min="1" placeholder="1"></label><label>Página hasta<input type="number" name="page_to" min="1" placeholder="Todas"></label></div>
+            </div>
+            <p id="logs-export-error" class="logs-export-error"></p>
+            <div class="logs-export-buttons"><button type="button" id="logs-export-cancel">Cancelar</button><button type="submit"><i class="fas fa-file-pdf"></i>Generar PDF</button></div>
+        </form>
+    </div>
+</div>
+
 <style>
     /* Banner geomÃ©trico - Mismo estilo que las otras vistas */
     .rp-banner {
@@ -429,6 +433,15 @@
             text-align: center;
         }
     }
+
+    /* Vista de logs alineada con el panel administrativo actual */
+    .logs-page{min-height:100vh;padding:20px 0 48px;background:#fff;color:#302834}.logs-shell{max-width:none!important;padding:0!important}.logs-hero{width:100%;min-height:180px;margin:0 0 24px!important;border-radius:0!important;box-shadow:none}.logs-hero>.relative{min-height:180px;display:flex;align-items:center;padding:30px 48px!important}.logs-hero h1{margin:0 0 4px;color:#fff;font-size:clamp(1.55rem,3vw,2.25rem);font-weight:900;letter-spacing:-.04em}.logs-hero h1:before{content:'Auditoría del sistema';display:block;margin-bottom:7px;color:#dbeafe;font-size:.68rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase}.logs-hero p{color:#dbeafe!important;font-size:.74rem!important;font-weight:600}.logs-hero .h-14.w-14{width:52px;height:52px;border:1px solid rgba(255,255,255,.24);border-radius:14px;background:rgba(255,255,255,.14)!important;backdrop-filter:blur(5px)}.logs-hero .rp-banner-overlay{background:linear-gradient(rgba(15,23,42,.28),rgba(15,23,42,.28)),radial-gradient(circle at 0 0,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 100% 0,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 100% 100%,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 0 100%,rgba(255,255,255,.2),transparent 50%);background-size:100% 100%,50% 50%,50% 50%,50% 50%,50% 50%;background-position:0 0,0 0,100% 0,100% 100%,0 100%;background-repeat:no-repeat}
+    .logs-filters{margin:24px 24px 0!important;padding:20px!important;border:1px solid #e1e3de!important;border-radius:16px!important;background:#f8f8f6!important;box-shadow:0 9px 22px rgba(55,60,52,.06)!important}.logs-filters form{display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px!important}.logs-filters form>div{grid-column:span 4;min-width:0!important}.logs-filters form>div:last-child{display:grid;grid-template-columns:1fr 1fr;gap:8px}.logs-filters label{margin:0 0 6px 2px!important;color:#565d53!important;font-size:.66rem!important}.logs-filters input{height:50px;border:1px solid #d9dcd6!important;border-radius:14px!important;background:#fff!important;color:#3f443d;box-shadow:0 2px 5px rgba(55,60,52,.08)}.logs-filters input:focus{border-color:#8a9186!important;box-shadow:0 0 0 3px rgba(98,104,95,.12)!important}.logs-filters button,.logs-filters a{min-height:50px;display:flex;align-items:center;justify-content:center;border-radius:14px!important;box-shadow:none!important;font-size:.72rem!important;font-weight:900!important}.logs-filters button{background:#117e8c!important;color:#fff!important}.logs-filters a{border:1px solid #d7dad4;background:#fff!important;color:#62685f!important}.logs-filters a:hover{background:#eff0ed!important;color:#3f443d!important}
+    .logs-tabs{margin:20px 24px 14px!important;overflow:visible!important}.logs-tabs>div{border:0!important}.logs-tabs nav{display:flex;gap:7px;margin:0!important;padding:6px;border:1px solid #e1e3de;border-radius:14px;background:#f8f8f6}.logs-tabs button{min-height:40px;padding:9px 13px!important;border:0!important;border-radius:9px;color:#737a70!important;font-size:.68rem!important;font-weight:900!important}.logs-tabs button:hover{background:#eff0ed;color:#3f443d!important}.logs-tabs button.text-indigo-600{background:#fff!important;color:#117e8c!important;box-shadow:0 3px 9px rgba(55,60,52,.1)}
+    .logs-panel{margin:0 24px 28px!important;border:1px solid #d8e3c7!important;border-radius:16px!important;background:#fff!important;box-shadow:0 9px 24px rgba(91,121,38,.1)!important}.logs-panel-head{padding:14px 16px!important;border-bottom:1px solid #e2ead5!important;background:#fff!important}.logs-panel-head>div>div{background:#edf4e4!important;color:#7da533!important}.logs-panel-head>div>div i{color:#7da533!important}.logs-panel-head h2{color:#31382b!important;font-size:.9rem!important}.logs-panel-head>button{min-height:38px;border:1px solid #f3c4c4!important;border-radius:10px!important;background:#fff!important;color:#b42323!important;font-size:.66rem!important;font-weight:900!important}.logs-panel-head>button:hover{background:#fff0f0!important}.logs-table{width:100%;border-collapse:collapse}.logs-table thead,.logs-table thead tr,.logs-table th{background:#7da533!important}.logs-table th{padding:13px 14px!important;border-right:1px solid rgba(255,255,255,.28)!important;border-bottom:0!important;color:#fff!important;font-size:.61rem!important;font-weight:900!important;letter-spacing:.045em}.logs-table td{padding:13px 14px!important;border-right:1px solid #d8e3c7!important;border-bottom:1px solid #dfe8d1!important;color:#4b5563;font-size:.7rem!important;vertical-align:middle}.logs-table th:last-child,.logs-table td:last-child{border-right:0!important}.logs-table tbody tr:nth-child(odd){background:#fff!important}.logs-table tbody tr:nth-child(even){background:#f1f7e8!important}.logs-table tbody tr:hover{background:#e6f0d8!important}.logs-panel>div:last-child{border-color:#e2ead5!important;background:#f9fbf5!important}
+    .logs-export-modal{position:fixed;z-index:12000;inset:0;align-items:center;justify-content:center;padding:16px;background:rgba(17,24,39,.58)}.logs-export-modal.flex{display:flex}.logs-export-dialog{width:100%;max-width:520px;padding:24px;border-radius:18px;background:#fff;box-shadow:0 24px 60px rgba(0,0,0,.25)}.logs-export-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:19px}.logs-export-head h3{margin:0;color:#1f2937;font-size:1.18rem;font-weight:900}.logs-export-head p{margin:5px 0 0;color:#6b7280;font-size:.74rem}.logs-export-head>button{width:36px;height:36px;display:grid;place-items:center;flex:none;border-radius:50%;color:#6b7280}.logs-export-head>button:hover{background:#f3f4f6}.logs-export-section{padding:15px;border:1px solid #e1e3de;border-radius:13px;background:#fbfcf9}.logs-export-section+.logs-export-section{margin-top:12px}.logs-export-section>span{display:block;margin-bottom:10px;color:#3f443d;font-size:.71rem;font-weight:900}.logs-export-section>span i{width:18px;color:#7da533}.logs-export-section>p{margin:-4px 0 10px;color:#7b8376;font-size:.64rem}.logs-export-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.logs-export-grid label{color:#565d53;font-size:.64rem;font-weight:800}.logs-export-grid input{width:100%;height:44px;margin-top:6px;padding:0 11px;border:1px solid #d7dce2;border-radius:10px;background:#fff;color:#374151;font-size:.73rem;outline:0}.logs-export-grid input:focus{border-color:#7da533;box-shadow:0 0 0 3px rgba(125,165,51,.13)}.logs-export-error{min-height:17px;margin:8px 0 0;color:#b91c1c;font-size:.67rem}.logs-export-buttons{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:10px}.logs-export-buttons button{min-height:44px;border-radius:11px;font-size:.72rem;font-weight:900}.logs-export-buttons button:first-child{background:#f3f4f6;color:#5f6670}.logs-export-buttons button:last-child{display:flex;align-items:center;justify-content:center;gap:7px;background:#b42323;color:#fff}
+    @media(max-width:900px){.logs-filters form{grid-template-columns:repeat(2,minmax(0,1fr))!important}.logs-filters form>div{grid-column:span 1!important}.logs-tabs{overflow-x:auto!important}.logs-tabs nav{min-width:max-content}}
+    @media(max-width:640px){.logs-hero,.logs-hero>.relative{min-height:205px}.logs-hero>.relative{padding:28px 20px!important}.logs-filters,.logs-tabs,.logs-panel{margin-right:12px!important;margin-left:12px!important}.logs-filters form{grid-template-columns:1fr!important}.logs-filters form>div{grid-column:1!important}.logs-filters form>div:last-child{grid-template-columns:1fr}.logs-panel-head{align-items:flex-start!important;flex-direction:column;gap:12px}.logs-panel-head>button{width:100%}.logs-export-grid,.logs-export-buttons{grid-template-columns:1fr}.logs-export-dialog{max-height:calc(100vh - 24px);overflow-y:auto;padding:20px}}
 </style>
 
 <script>
@@ -483,20 +496,29 @@
     }
 
     function exportToPdf(type) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const fechaInicio = document.querySelector('input[name="fecha_inicio"]').value;
-        const fechaFin = document.querySelector('input[name="fecha_fin"]').value;
-        
-        let exportUrl = `{{ url('/administrador/logs/export') }}/${type}`;
-        const params = new URLSearchParams();
-        if (fechaInicio) params.append('fecha_inicio', fechaInicio);
-        if (fechaFin) params.append('fecha_fin', fechaFin);
-        
-        if (params.toString()) {
-            exportUrl += `?${params.toString()}`;
-        }
-        
-        window.location.href = exportUrl;
+        const modal = document.getElementById('logs-export-modal');
+        const form = document.getElementById('logs-export-form');
+        form.action = `{{ url('/administrador/logs/export') }}/${type}`;
+        form.querySelector('[name="fecha_inicio"]').value = document.querySelector('.logs-filters [name="fecha_inicio"]').value;
+        form.querySelector('[name="fecha_fin"]').value = document.querySelector('.logs-filters [name="fecha_fin"]').value;
+        document.getElementById('logs-export-error').textContent = '';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal=document.getElementById('logs-export-modal'),form=document.getElementById('logs-export-form'),error=document.getElementById('logs-export-error');
+        const closeModal=()=>{modal.classList.add('hidden');modal.classList.remove('flex');document.body.classList.remove('overflow-hidden')};
+        document.getElementById('logs-export-close')?.addEventListener('click',closeModal);
+        document.getElementById('logs-export-cancel')?.addEventListener('click',closeModal);
+        modal?.addEventListener('click',event=>{if(event.target===modal)closeModal()});
+        document.addEventListener('keydown',event=>{if(event.key==='Escape'&&modal?.classList.contains('flex'))closeModal()});
+        form?.addEventListener('submit',event=>{
+            const from=parseInt(form.querySelector('[name="page_from"]').value||'1',10),toValue=form.querySelector('[name="page_to"]').value,to=toValue?parseInt(toValue,10):null;
+            if(to!==null&&to<from){event.preventDefault();error.textContent='La página final debe ser igual o mayor que la página inicial.';return}
+            error.textContent='';
+        });
+    });
 </script>
 @endsection

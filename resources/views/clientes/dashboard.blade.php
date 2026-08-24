@@ -86,7 +86,7 @@
                     @endif
                 </div>
             </article>
-            <article><i class="fas fa-calendar-check"></i><span><small>Tiempo disponible</small>@if($suscripcionActiva->vigencia_activada_at)<strong>{{ max(0, intval($diasRestantes)) }} días</strong>@else<strong class="time-pending-label">No definido hasta que comience la campaña</strong>@endif</span></article>
+            <article><i class="fas fa-calendar-check"></i><span><small>Tiempo disponible</small>@if($diasRestantes !== null)<strong>{{ $diasRestantes }} días</strong>@else<strong class="time-pending-label">No definido hasta que comience la campaña</strong>@endif</span></article>
             <article><i class="fas fa-signal"></i><span><small>Estado del servicio</small><strong class="capitalize">{{ $suscripcionActiva->estado }}</strong></span></article>
         </section>
 
@@ -291,7 +291,7 @@
     #client-dashboard .hero-kicker { display: inline-flex; align-items: center; gap: 9px; margin-bottom: 13px; color: rgba(255,255,255,.76); font-size: .68rem; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
     #client-dashboard .hero-kicker::before { content: ''; width: 24px; height: 3px; background: #64d3d5; }
     #client-dashboard .client-hero h1 { margin: 0; color: #fff; font-size: clamp(1.75rem,3.4vw,2.65rem); font-weight: 900; line-height: 1.05; letter-spacing: -.04em; }
-    #client-dashboard .client-hero h1 span { color: #ffc14c; }
+    #client-dashboard .client-hero h1 span { color: var(--prodovi-gold); background: linear-gradient(90deg,var(--prodovi-gold),var(--prodovi-green)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     #client-dashboard .client-hero p { max-width: 650px; margin-top: 12px; color: rgba(255,255,255,.72); font-size: .9rem; line-height: 1.6; }
     #client-dashboard .login-mosaic { position: relative; z-index: 2; width: 156px; height: 104px; flex: 0 0 auto; display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(2,1fr); }
     #client-dashboard .login-mosaic span:nth-child(1) { background: var(--prodovi-orange); border-radius: 100% 0 0 0; }
@@ -309,11 +309,11 @@
     }
     #client-dashboard .dashboard-metrics article { min-width: 0; display: flex; align-items: center; gap: 13px; padding: 20px 22px; border-right: 1px solid #e7e1e9; }
     #client-dashboard .dashboard-metrics article:last-child { border-right: 0; }
-    #client-dashboard .dashboard-metrics article > i { width: 39px; height: 39px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 3px; background: rgba(91,43,118,.1); color: var(--prodovi-purple); }
-    #client-dashboard .dashboard-metrics article:nth-child(2) > i { background: rgba(239,108,34,.11); color: var(--prodovi-orange); }
-    #client-dashboard .dashboard-metrics article:nth-child(3) > i { background: rgba(17,126,140,.11); color: var(--prodovi-turquoise); }
-    #client-dashboard .dashboard-metrics article:nth-child(4) > i { background: rgba(125,165,51,.13); color: var(--prodovi-green); }
-    #client-dashboard .dashboard-metrics article:nth-child(5) > i { background: rgba(17,126,140,.11); color: var(--prodovi-turquoise); }
+    #client-dashboard .dashboard-metrics article > i { width: 39px; height: 39px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 3px; background: var(--prodovi-purple); color: #fff; }
+    #client-dashboard .dashboard-metrics article:nth-child(2) > i { background: var(--prodovi-orange); }
+    #client-dashboard .dashboard-metrics article:nth-child(3) > i { background: var(--prodovi-turquoise); }
+    #client-dashboard .dashboard-metrics article:nth-child(4) > i { background: var(--prodovi-green); }
+    #client-dashboard .dashboard-metrics article:nth-child(5) > i { background: var(--prodovi-turquoise); }
     #client-dashboard .dashboard-metrics span { min-width: 0; }
     #client-dashboard .dashboard-metrics small { display: block; color: #8a7f8e; font-size: .68rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
     #client-dashboard .dashboard-metrics strong { display: block; overflow: hidden; margin-top: 3px; color: #302834; font-size: .92rem; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
@@ -427,6 +427,11 @@
     html[data-client-theme="dark"] #client-dashboard .social-pill { background:#173136; color:#78c3cb; }
     html[data-client-theme="dark"] #client-dashboard .social-pill:hover { background:#21444a; }
     html[data-client-theme="dark"] #client-dashboard .edit-social-links { color:#b4abb8; }
+    html[data-client-theme="dark"] #client-dashboard .dashboard-metrics article > i { background:rgba(91,43,118,.1); color:var(--prodovi-purple); }
+    html[data-client-theme="dark"] #client-dashboard .dashboard-metrics article:nth-child(2) > i { background:rgba(239,108,34,.11); color:var(--prodovi-orange); }
+    html[data-client-theme="dark"] #client-dashboard .dashboard-metrics article:nth-child(3) > i { background:rgba(17,126,140,.11); color:var(--prodovi-turquoise); }
+    html[data-client-theme="dark"] #client-dashboard .dashboard-metrics article:nth-child(4) > i { background:rgba(125,165,51,.13); color:var(--prodovi-green); }
+    html[data-client-theme="dark"] #client-dashboard .dashboard-metrics article:nth-child(5) > i { background:rgba(17,126,140,.11); color:var(--prodovi-turquoise); }
     html[data-client-theme="dark"] .dashboard-social-dialog { background:#1e1b21; color:#f1edf3; } html[data-client-theme="dark"] .dashboard-social-company { background:#3a3020; color:#efcf9e; } html[data-client-theme="dark"] .dashboard-social-body > p { color:#b4abb8; } html[data-client-theme="dark"] .dashboard-social-option { border-color:#403943; background:#29252c; color:#f1edf3; } html[data-client-theme="dark"] .dashboard-social-option > p { color:#b4abb8; } html[data-client-theme="dark"] .dashboard-social-option.is-linked { border-color:#627f2f; } html[data-client-theme="dark"] .dashboard-social-option aside { border-color:#526b2b; background:#20291a; } html[data-client-theme="dark"] .dashboard-social-dialog > footer { border-color:#403943; background:#29252c; }
 
     @media (max-width: 1100px) and (min-width: 641px) {

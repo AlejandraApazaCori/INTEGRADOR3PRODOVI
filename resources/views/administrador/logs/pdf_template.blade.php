@@ -30,6 +30,9 @@
                 {{ $fecha_fin ? \Carbon\Carbon::parse($fecha_fin)->format('d/m/Y') : 'Hoy' }}
             </p>
         @endif
+        @if($page_from)
+            <p><strong>Rango de páginas:</strong> {{ $page_from }} - {{ $page_to ?: 'última disponible' }} <span style="color:#6b7280;">(15 registros por página)</span></p>
+        @endif
         <p><strong>Total de Registros:</strong> {{ count($logs) }}</p>
     </div>
 

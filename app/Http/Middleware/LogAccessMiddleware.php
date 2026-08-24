@@ -23,6 +23,11 @@ class LogAccessMiddleware
         $endTime = microtime(true);
         $durationMs = round(($endTime - $startTime) * 1000);
 
+        // El sondeo automático del navbar no representa una navegación del usuario.
+        if ($request->routeIs('administrador.notificaciones.conteo')) {
+            return $response;
+        }
+
         try {
             AccessLog::create([
                 'ip_address' => $request->ip(),

@@ -4,10 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Empresa;
+use App\Models\GoogleDriveReport;
 use App\Models\RespuestaCuestionario;
 use App\Models\TemaCuestionario;
+use App\Services\GoogleDriveReportService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpWord\IOFactory;
+use PhpOffice\PhpWord\PhpWord;
+use PhpOffice\PhpWord\Style\ListItem;
 
 class CuestionarioAdminController extends Controller
 {
@@ -51,7 +57,8 @@ class CuestionarioAdminController extends Controller
 
         foreach ($preguntas as $pregunta) {
             if ($pregunta->tipo_respuesta === 'checkbox') {
-                $rules["respuesta_{$pregunta->id}"] = $pregunta->requerido ? 'required' : 'nullable';
+                $rules["respuesta_{$pregunta->id}"] = $pregunta->requerido ? 'required|array|min:1' : 'nullable|array';
+                $rules["respuesta_{$pregunta->id}.*"] = 'string|max:255';
             } else {
                 $rules["respuesta_{$pregunta->id}"] = ($pregunta->requerido ? 'required' : 'nullable').'|string';
             }
@@ -105,5 +112,133 @@ class CuestionarioAdminController extends Controller
         }
 
         return $values->implode(' | ');
+    }
+
+    public function downloadPdf($id)
+    {
+        $this->authorizeAdmin();
+        $data = $this->documentData($id);
+        $pdf = Pdf::loadView('pdf.cuestionario-empresa', $data)->setPaper('letter');
+
+        return $pdf->download('cuestionario-'.str($data['empresa']->nombre_empresa)->slug().'.pdf');
+    }
+
+    public function googleDoc(Request $request, $id)
+    {
+        $this->authorizeAdmin();
+        try {
+            $drive = app(GoogleDriveReportService::class);
+            $data = $this->documentData($id);
+            $empresa = $data['empresa'];
+            $request->validate([
+                'folder_id' => ['nullable', 'string', 'max:255'],
+                'new_folder' => ['nullable', 'string', 'max:80', 'regex:~^[\p{L}\p{N} _().-]+$~u'],
+            ]);
+            $reportKey = 'questionnaire_company_'.$empresa->id;
+            $stored = GoogleDriveReport::where('report_key', $reportKey)->first();
+            $folderId = $drive->resolveCompanyDocumentFolder($empresa->nombre_empresa, $request->input('folder_id'), $request->input('new_folder'));
+            $fileName = 'Cuestionario - '.$empresa->nombre_empresa;
+            $uploaded = $drive->saveDocxAsGoogleDoc($fileName, $this->questionnaireDocx($data), $folderId, $stored?->file_id);
+
+            GoogleDriveReport::updateOrCreate(['report_key' => $reportKey], [
+                'file_id' => $uploaded['id'], 'folder_id' => $folderId,
+                'file_name' => $uploaded['name'], 'web_view_link' => $uploaded['url'],
+            ]);
+
+            return redirect()->away($uploaded['url']);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return back()->with('drive_error', 'No se pudo crear el documento en Google Drive. Inténtalo nuevamente.');
+        }
+    }
+
+    public function driveFolders($id)
+    {
+        $this->authorizeAdmin();
+        try {
+            $empresa = Empresa::findOrFail($id);
+            $drive = app(GoogleDriveReportService::class);
+            $locations = $drive->companyDocumentFolders($empresa->nombre_empresa);
+            $stored = GoogleDriveReport::where('report_key', 'questionnaire_company_'.$empresa->id)->first();
+            $currentChild = $stored ? collect($locations['folders'])->firstWhere('id', $stored->folder_id) : null;
+            $locations['current_folder'] = $stored ? [
+                'id' => $stored->folder_id === $locations['root']['id'] || $currentChild ? $stored->folder_id : $locations['root']['id'],
+                'name' => $stored->folder_id === $locations['root']['id'] || !$currentChild ? $locations['root']['name'] : $currentChild['name'],
+            ] : null;
+            $locations['current_document'] = $stored ? ['name' => $stored->file_name, 'url' => $stored->web_view_link] : null;
+            return response()->json($locations);
+        } catch (\Throwable $exception) {
+            report($exception);
+            return response()->json(['message' => 'No se pudieron consultar las carpetas de la empresa.'], 500);
+        }
+    }
+
+    private function questionnaireDocx(array $data): string
+    {
+        $phpWord = new PhpWord();
+        $phpWord->setDefaultFontName('Arial');
+        $phpWord->setDefaultFontSize(10);
+        $section = $phpWord->addSection(['marginTop' => 900, 'marginRight' => 900, 'marginBottom' => 900, 'marginLeft' => 900]);
+        $header = $section->addHeader();
+        $table = $header->addTable(['cellMarginTop' => 90, 'cellMarginBottom' => 90, 'cellMarginLeft' => 120, 'cellMarginRight' => 120]);
+        $table->addRow(620);
+        $left = $table->addCell(3600, ['bgColor' => '343A40', 'valign' => 'center']);
+        $logoPath = public_path('imagenes/logoblanco.png');
+        if (is_file($logoPath)) $left->addImage($logoPath, ['width' => 92, 'alignment' => 'left']);
+        else $left->addText('PRODOVI', ['bold' => true, 'size' => 16, 'color' => 'FFFFFF']);
+        $right = $table->addCell(5800, ['bgColor' => '343A40', 'valign' => 'center']);
+        $right->addText('Cuestionario empresarial', ['bold' => true, 'size' => 12, 'color' => 'FFFFFF'], ['alignment' => 'right', 'spaceAfter' => 40]);
+        $right->addText('Documento generado el '.now()->format('d/m/Y H:i'), ['size' => 8, 'color' => 'D9DED6'], ['alignment' => 'right']);
+
+        $empresa = $data['empresa'];
+        $section->addTitle($empresa->nombre_empresa, 1);
+        $section->addText($empresa->tipo_empresa.' · '.$empresa->usuario->name.' · '.$empresa->usuario->email, ['color' => '687064']);
+        $section->addTextBreak();
+        foreach ($data['temas'] as $index => $tema) {
+            $section->addTitle(($index + 1).'. '.$tema->nombre_tema, 2);
+            if ($tema->descripcion_tema) $section->addText($tema->descripcion_tema, ['italic' => true, 'color' => '7D847A']);
+            foreach ($tema->preguntas as $pregunta) {
+                $section->addText($pregunta->pregunta, ['bold' => true, 'color' => '3E463B'], ['spaceBefore' => 160, 'spaceAfter' => 60]);
+                $answer = trim((string) ($data['respuestas'][$pregunta->id] ?? ''));
+                if ($answer === '') {
+                    $section->addText('Sin respuesta', ['italic' => true, 'color' => '92988F']);
+                } elseif ($pregunta->tipo_respuesta === 'checkbox') {
+                    foreach (preg_split('/\s*\|\s*/', $answer, -1, PREG_SPLIT_NO_EMPTY) as $value) {
+                        $section->addListItem($value, 0, ['color' => '596156'], ListItem::TYPE_BULLET_FILLED);
+                    }
+                } else {
+                    $section->addText($answer, ['color' => '596156']);
+                }
+            }
+            $section->addTextBreak();
+        }
+
+        $temporary = tempnam(sys_get_temp_dir(), 'prodovi-questionnaire-');
+        try {
+            IOFactory::createWriter($phpWord, 'Word2007')->save($temporary);
+            return (string) file_get_contents($temporary);
+        } finally {
+            if (is_file($temporary)) unlink($temporary);
+        }
+    }
+
+    private function documentData($id): array
+    {
+        $empresa = Empresa::with('usuario')->findOrFail($id);
+        $temas = TemaCuestionario::with('preguntas')->orderBy('orden')->get();
+        $respuestas = RespuestaCuestionario::where('empresa_id', $empresa->id)
+            ->pluck('respuesta', 'pregunta_id');
+
+        return compact('empresa', 'temas', 'respuestas');
+    }
+
+    private function authorizeAdmin(): void
+    {
+        abort_unless(
+            auth()->check() && auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists(),
+            403,
+            'No tienes permisos para realizar esta acción.'
+        );
     }
 }

@@ -233,7 +233,8 @@ EOT;
             $color = $this->getColorForPriority($tarea->prioridad);
 
             $eventos[] = [
-                'title' => $tarea->titulo . ' - ' . $tarea->asignado->name,
+                'id' => $tarea->id,
+                'title' => $tarea->titulo,
                 'start' => $this->formatearFecha($tarea->fecha_inicio),
                 'end' => $this->formatearFecha($tarea->fecha_limite),
                 'color' => $color,
@@ -241,7 +242,7 @@ EOT;
                 'extendedProps' => [
                     'prioridad' => $tarea->prioridad,
                     'estado' => $tarea->estado,
-                    'asignado' => $tarea->asignado->name,
+                    'asignado' => $tarea->asignado?->name ?? 'Sin asignar',
                 ],
             ];
         }

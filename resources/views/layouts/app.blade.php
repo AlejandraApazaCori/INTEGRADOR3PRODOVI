@@ -126,7 +126,7 @@
                                     @php
                                         $esCodigoFisico = $pago->metodo === 'fisico' && $pago->estado === 'pendiente';
                                     @endphp
-                                    <a href="{{ $esCodigoFisico ? route('administrador.pagos.pendientes-fisicos') : route('administrador.pagos.realizados') }}" class="notification-item font-semibold">
+                                    <a href="{{ $esCodigoFisico ? route('administrador.pagos.pendientes-fisicos') : route('administrador.pagos.index', ['payment_status' => 'completado']) }}" class="notification-item font-semibold">
                                         <div class="notification-item-icon {{ $esCodigoFisico ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600' }}">
                                             <i class="fas {{ $esCodigoFisico ? 'fa-receipt' : 'fa-circle-check' }}"></i>
                                         </div>
@@ -196,7 +196,7 @@
                                     @php
                                         $esCodigoFisico = $pago->metodo === 'fisico' && $pago->estado === 'pendiente';
                                     @endphp
-                                    <a href="{{ $esCodigoFisico ? route('administrador.pagos.pendientes-fisicos') : route('administrador.pagos.realizados') }}" class="notification-item opacity-60">
+                                    <a href="{{ $esCodigoFisico ? route('administrador.pagos.pendientes-fisicos') : route('administrador.pagos.index', ['payment_status' => 'completado']) }}" class="notification-item opacity-60">
                                         <div class="notification-item-icon bg-gray-100 text-gray-400"><i class="fas {{ $esCodigoFisico ? 'fa-receipt' : 'fa-circle-check' }}"></i></div>
                                         <div class="notification-item-content">
                                             <p class="text-xs">{{ $pago->usuario->name }}</p>

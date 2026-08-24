@@ -1,268 +1,208 @@
 @extends('layouts.app')
 
-@section('title', 'Detalles de Campaña')
+@section('title', 'Detalle de campaña')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-8">
-    <div class="container mx-auto px-4">
-        <!-- Header con navegación -->
-        <div class="mb-8">
-            <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-4">
-                <a href="{{ route('administrador.campañas.index') }}" class="hover:text-blue-600 transition-colors">Campañas</a>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-                <span class="text-gray-900 font-medium">{{ $campania->nombre }}</span>
-            </nav>
-            
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                        </svg>
-                    </div>
+@php
+    $fechaInicio = \Carbon\Carbon::parse($campania->fecha_inicio);
+    $fechaFin = \Carbon\Carbon::parse($campania->fecha_fin);
+    $duracion = (int) $fechaInicio->diffInDays($fechaFin);
+    $diasRestantes = (int) now()->startOfDay()->diffInDays($fechaFin->copy()->startOfDay(), false);
+    $avance = $duracion > 0
+        ? max(0, min(100, (int) round($fechaInicio->diffInDays(now(), false) / $duracion * 100)))
+        : 100;
+    $cliente = $campania->cliente;
+    $empresa = $cliente?->empresas?->first();
+    $creador = $campania->creador;
+    $communityManager = $campania->communityManager;
+    $estadoClase = match($campania->estado) {
+        'activa' => 'is-active',
+        'pausada' => 'is-paused',
+        default => 'is-finished',
+    };
+@endphp
+
+<div class="campaign-detail-page">
+    <div class="campaign-detail-shell">
+        <nav class="campaign-detail-actions" aria-label="Acciones de campaña">
+            <a href="{{ route('administrador.campañas.index') }}" class="campaign-detail-action"><i class="fas fa-table-columns"></i> General</a>
+            <a href="{{ route('administrador.campañas.calendario', $campania->id) }}" class="campaign-detail-action"><i class="fas fa-calendar-days"></i> Calendario</a>
+            <a href="{{ route('administrador.campañas.edit', $campania->id) }}" class="campaign-detail-action is-primary"><i class="fas fa-pen"></i> Editar campaña</a>
+        </nav>
+
+        <header class="campaign-detail-hero rp-banner">
+            <div class="campaign-detail-overlay"></div>
+            <div class="campaign-detail-hero-content">
+                <div class="campaign-detail-heading">
                     <div>
-                        <h1 class="text-3xl font-bold text-gray-900">{{ $campania->nombre }}</h1>
-                        <p class="text-gray-600 mt-1">Gestión de campaña publicitaria</p>
+                        <span class="campaign-detail-eyebrow">Operación de marketing</span>
+                        <h1>{{ $campania->nombre }}</h1>
+                        <p>Información, equipo, cronograma y tareas de la campaña</p>
                     </div>
                 </div>
-                
-                <div class="flex items-center space-x-3">
-                    <span class="px-4 py-2 rounded-full text-sm font-semibold border-2
-                        @if($campania->estado == 'activa') 
-                            bg-emerald-50 text-emerald-700 border-emerald-200
-                        @elseif($campania->estado == 'pausada') 
-                            bg-amber-50 text-amber-700 border-amber-200
-                        @else 
-                            bg-gray-50 text-gray-700 border-gray-200 
-                        @endif">
-                        <div class="flex items-center space-x-2">
-                            <div class="w-2 h-2 rounded-full 
-                                @if($campania->estado == 'activa') bg-emerald-400
-                                @elseif($campania->estado == 'pausada') bg-amber-400
-                                @else bg-gray-400 @endif">
-                            </div>
-                            <span>{{ ucfirst($campania->estado) }}</span>
-                        </div>
-                    </span>
-                </div>
+                <span class="campaign-status {{ $estadoClase }}"><span></span>{{ ucfirst($campania->estado) }}</span>
             </div>
-        </div>
+        </header>
 
-        <!-- Cards principales -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <!-- Información básica -->
-            <div class="lg:col-span-2 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                <div class="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4">
-                    <h2 class="text-xl font-semibold text-white flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        Información General
-                    </h2>
-                </div>
-                <div class="p-6 space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-4">
-                            <div class="group">
-                                <label class="text-sm font-medium text-gray-500 uppercase tracking-wide">Nombre de la Campaña</label>
-                                <p class="text-lg font-semibold text-gray-900 mt-1 group-hover:text-blue-600 transition-colors">{{ $campania->nombre }}</p>
+        @if(session('success'))
+            <div class="campaign-detail-alert is-success"><i class="fas fa-circle-check"></i>{{ session('success') }}</div>
+        @endif
+        @if(session('error'))
+            <div class="campaign-detail-alert is-error"><i class="fas fa-circle-exclamation"></i>{{ session('error') }}</div>
+        @endif
+
+        <main class="campaign-detail-content">
+            <section class="campaign-detail-kpis" aria-label="Resumen de la campaña">
+                <article class="campaign-detail-kpi kpi-calendar">
+                    <div><span>Duración</span><strong>{{ $duracion }}</strong><small>días planificados</small></div>
+                </article>
+                <article class="campaign-detail-kpi kpi-progress">
+                    <div><span>Progreso temporal</span><strong>{{ $avance }}%</strong><small>del periodo transcurrido</small></div>
+                </article>
+                <article class="campaign-detail-kpi kpi-deadline">
+                    <div>
+                        <span>Fecha de cierre</span>
+                        <strong>{{ $fechaFin->format('d/m/Y') }}</strong>
+                        <small>{{ $diasRestantes >= 0 ? ($diasRestantes === 0 ? 'Finaliza hoy' : $diasRestantes.' días restantes') : 'Campaña finalizada' }}</small>
+                    </div>
+                </article>
+            </section>
+
+            <div class="campaign-detail-grid">
+                <section class="campaign-detail-card campaign-overview-card">
+                    <div class="campaign-card-body">
+                        <div class="campaign-description-block">
+                            <h2 class="campaign-underlined-title">Descripción</h2>
+                            <p>{{ $campania->descripcion ?: 'Sin descripción registrada para esta campaña.' }}</p>
+                        </div>
+                        <div class="campaign-schedule">
+                            <div class="campaign-date">
+                                <div><small>Fecha de inicio</small><strong>{{ $fechaInicio->format('d/m/Y') }}</strong></div>
                             </div>
-                            <div class="group">
-                                <label class="text-sm font-medium text-gray-500 uppercase tracking-wide">Descripción</label>
-                                <p class="text-gray-700 mt-1 leading-relaxed">{{ $campania->descripcion ?? 'Sin descripción disponible' }}</p>
+                            <div class="campaign-date is-end">
+                                <div><small>Fecha de finalización</small><strong>{{ $fechaFin->format('d/m/Y') }}</strong></div>
                             </div>
                         </div>
-                        
-                        <div class="bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-4 border border-gray-100">
-                            <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
-                                <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                                Cronograma
-                            </h3>
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-sm text-gray-600">Inicio</span>
-                                    <span class="font-semibold text-green-600">{{ \Carbon\Carbon::parse($campania->fecha_inicio)->format('d M Y') }}</span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="text-sm text-gray-600">Finalización</span>
-                                    <span class="font-semibold text-red-600">{{ \Carbon\Carbon::parse($campania->fecha_fin)->format('d M Y') }}</span>
-                                </div>
-                                <div class="mt-2 pt-2 border-t border-gray-200">
-                                    <div class="flex items-center justify-between text-sm">
-                                        <span class="text-gray-600">Duración</span>
-                                        <span class="font-medium text-blue-600">
-                                            {{ \Carbon\Carbon::parse($campania->fecha_inicio)->diffInDays(\Carbon\Carbon::parse($campania->fecha_fin)) }} días
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="campaign-progress">
+                            <div><span>Avance del periodo</span><strong>{{ $avance }}%</strong></div>
+                            <div class="campaign-progress-track"><span style="width: {{ $avance }}%"></span></div>
+                            <small>{{ $duracion }} días entre el inicio y la finalización</small>
                         </div>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <!-- Panel lateral -->
-            <div class="space-y-6">
-                <!-- Cliente -->
-                <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                    <div class="bg-gradient-to-r from-green-500 to-teal-600 px-4 py-3">
-                        <h3 class="font-semibold text-white flex items-center">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                            Cliente
-                        </h3>
-                    </div>
-                    <div class="p-4">
-                        <div class="flex items-center space-x-3 mb-4">
-                            <div class="w-10 h-10 bg-gradient-to-r from-green-400 to-teal-500 rounded-full flex items-center justify-center">
-                                <span class="text-white font-semibold text-sm">{{ substr($campania->cliente->name, 0, 2) }}</span>
-                            </div>
-                            <div>
-                                <p class="font-semibold text-gray-900">{{ $campania->cliente->name }}</p>
-                                <p class="text-sm text-gray-600">{{ $campania->cliente->email }}</p>
-                            </div>
+                <aside class="campaign-detail-sidebar">
+                    <section class="campaign-detail-card">
+                        <div class="campaign-card-header compact">
+                            <div><span>Cuenta vinculada</span><h2>Cliente</h2></div>
                         </div>
-
-                        <!-- Lógica de Empresa -->
-                        <div class="mt-4 pt-4 border-t border-gray-100">
-                            @php
-                                $empresa = $campania->cliente->empresas->first();
-                            @endphp
-                            
+                        <div class="campaign-card-body compact">
+                            <div class="campaign-person">
+                                <span class="campaign-avatar is-teal">{{ strtoupper(substr($cliente?->name ?? 'SC', 0, 2)) }}</span>
+                                <div><strong>{{ $cliente?->name ?? 'Sin cliente asignado' }}</strong><small>{{ $cliente?->email ?? 'Sin correo registrado' }}</small></div>
+                            </div>
                             @if($empresa)
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center text-sm">
-                                        <svg class="w-4 h-4 text-emerald-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                        </svg>
-                                        <span class="text-gray-700 font-medium">Empresa Registrada</span>
-                                    </div>
-                                    <a href="{{ route('administrador.empresas.show', $empresa->id) }}" 
-                                       class="inline-flex items-center px-3 py-1.5 bg-emerald-50 text-emerald-600 text-xs font-semibold rounded-lg hover:bg-emerald-100 transition-colors">
-                                        Ver Empresa
-                                        <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                        </svg>
-                                    </a>
+                                <div class="campaign-company-row">
+                                    <div><span>Empresa registrada</span></div>
+                                    <a href="{{ route('administrador.empresas.show', $empresa->id) }}">Ver empresa <i class="fas fa-arrow-right"></i></a>
                                 </div>
                             @else
-                                <div class="flex items-center text-sm text-amber-600 bg-amber-50 p-2.5 rounded-lg border border-amber-100">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                                    </svg>
-                                    <span>Cliente sin empresa registrada</span>
-                                </div>
+                                <div class="campaign-empty-note">Cliente sin empresa registrada</div>
                             @endif
                         </div>
-                    </div>
-                </div>
+                    </section>
 
-                <!-- Equipo -->
-                <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                    <div class="bg-gradient-to-r from-purple-500 to-pink-600 px-4 py-3">
-                        <h3 class="font-semibold text-white flex items-center">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                            </svg>
-                            Equipo de Trabajo
-                        </h3>
-                    </div>
-                    <div class="p-4 space-y-4">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full flex items-center justify-center">
-                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                </svg>
+                    <section class="campaign-detail-card">
+                        <div class="campaign-card-header compact">
+                            <div><span>Responsables</span><h2>Equipo de trabajo</h2></div>
+                        </div>
+                        <div class="campaign-card-body compact campaign-team">
+                            <div class="campaign-person">
+                                <span class="campaign-avatar is-indigo">{{ strtoupper(substr($creador?->name ?? 'SA', 0, 2)) }}</span>
+                                <div><small>Creador</small><strong>{{ $creador?->name ?? 'Sin asignar' }}</strong></div>
                             </div>
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase tracking-wide">Creador</p>
-                                <p class="font-medium text-gray-900">{{ $campania->creador->name }}</p>
+                            <div class="campaign-person">
+                                <span class="campaign-avatar is-purple">{{ strtoupper(substr($communityManager?->name ?? 'SA', 0, 2)) }}</span>
+                                <div><small>Community Manager</small><strong>{{ $communityManager?->name ?? 'Sin asignar' }}</strong></div>
                             </div>
                         </div>
-                        
-                        <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 bg-gradient-to-r from-purple-400 to-purple-500 rounded-full flex items-center justify-center">
-                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase tracking-wide">Community Manager</p>
-                                <p class="font-medium text-gray-900">{{ $campania->communityManager->name }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                    </section>
 
-        
-        <div class=" mb-8 mt-8 ml-auto w-full lg:w-[calc(33.333333%-0.5rem)] bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-white/30 overflow-hidden hover:shadow-3xl transition-all duration-300">
-            <div class="px-8 py-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-                <h2 class="text-2xl font-bold">Campaña Activa</h2>
-                <p class="text-indigo-100 mt-1">Resumen rápido de la campaña del usuario</p>
+                    <section class="campaign-analytics-card">
+                        <div><span>Rendimiento</span><strong>Analíticas de campaña</strong><small>Consulta los resultados y métricas del cliente.</small></div>
+                        @if($cliente)
+                            <a href="{{ route('administrador.usuarios.analiticas-campania', $cliente->id) }}">Ver analíticas <i class="fas fa-arrow-right"></i></a>
+                        @endif
+                    </section>
+                </aside>
             </div>
+        </main>
 
-            <div class="p-8">
-                <div class="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-5">
-                    <p class="text-sm font-medium text-gray-500">Campaña actual</p>
-                    <div class="mt-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <h3 class="text-xl font-bold text-gray-900">{{ $campania->nombre }}</h3>
-                            <p class="mt-1 text-sm text-gray-600">Estado: {{ ucfirst($campania->estado) }}</p>
-                        </div>
-                        <a href="{{ route('administrador.usuarios.analiticas-campania', $campania->cliente->id) }}" class="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-3 text-sm font-medium text-white shadow-lg transition-all duration-300 hover:from-indigo-700 hover:to-purple-700 hover:shadow-xl">
-                            Ver analíticas de campaña
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-<!-- Botones de acción -->
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
-            <div class="flex flex-col sm:flex-row gap-4 justify-between items-center">
-                <div class="flex items-center text-gray-600">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
-                    <span class="font-medium">Acciones disponibles</span>
-                </div>
-                
-                <div class="flex flex-wrap gap-3">
-                    <a href="{{ route('administrador.campañas.index') }}" 
-                       class="group flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium">
-                        <svg class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                        </svg>
-                        Volver
-                    </a>
-                    
-                    <a href="{{ route('administrador.campañas.calendario', $campania->id) }}" 
-                       class="group flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl font-medium">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                        Ver Calendario
-                    </a>
-                    
-                    <a href="{{ route('administrador.campañas.edit', $campania->id) }}" 
-                       class="group flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl font-medium">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                        </svg>
-                        Editar Campaña
-                    </a>
-                </div>
-            </div>
+        <div class="campaign-tasks">
+            @include('administrador.tareas.index')
         </div>
     </div>
 </div>
 
-@include('administrador.tareas.index')
+<style>
+    .rp-banner{background:linear-gradient(135deg,#4f46e5 25%,transparent 25%) -50px 0,linear-gradient(225deg,#4f46e5 25%,transparent 25%) -50px 0,linear-gradient(315deg,#4f46e5 25%,transparent 25%),linear-gradient(45deg,#4f46e5 25%,transparent 25%),linear-gradient(to bottom,#3b82f6 0%,#2563eb 100%);background-size:100px 100px,100px 100px,100px 100px,100px 100px,100% 100%;background-color:#1d4ed8}
+    .campaign-detail-page{min-height:100vh;padding-bottom:48px;background:#fff;color:#302834}
+    .campaign-detail-shell{position:relative;width:100%}
+    .campaign-detail-hero{position:relative;min-height:180px;overflow:hidden}
+    .campaign-detail-overlay{position:absolute;inset:0;background:linear-gradient(rgba(15,23,42,.28),rgba(15,23,42,.28)),radial-gradient(circle at 0 0,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 100% 100%,rgba(255,255,255,.2),transparent 50%)}
+    .campaign-detail-hero-content{position:relative;z-index:2;min-height:180px;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:30px 490px 30px 48px}
+    .campaign-detail-heading{min-width:0;display:flex;align-items:center;gap:16px}
+    .campaign-detail-icon{width:52px;height:52px;display:grid;place-items:center;flex:0 0 52px;border:1px solid rgba(255,255,255,.24);border-radius:14px;background:rgba(255,255,255,.14);color:#fff;font-size:1.25rem;backdrop-filter:blur(5px)}
+    .campaign-detail-eyebrow{display:block;margin-bottom:7px;color:#dbeafe;font-size:.68rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase}
+    .campaign-detail-heading h1{max-width:700px;margin:0 0 4px;overflow:hidden;color:#fff;font-size:clamp(1.55rem,3vw,2.25rem);font-weight:900;letter-spacing:-.04em;line-height:1.1;text-overflow:ellipsis;white-space:nowrap}
+    .campaign-detail-heading p{margin:0;color:#dbeafe;font-size:.74rem;font-weight:600}
+    .campaign-status{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid rgba(255,255,255,.45);border-radius:999px;background:rgba(255,255,255,.16);color:#fff;font-size:.66rem;font-weight:900;text-transform:uppercase;backdrop-filter:blur(5px)}
+    .campaign-status i{font-size:.44rem}.campaign-status.is-active i{color:#bef264}.campaign-status.is-paused i{color:#fde047}.campaign-status.is-finished i{color:#cbd5e1}
+    .campaign-detail-actions{position:absolute;z-index:20;top:67px;right:48px;display:flex;gap:9px}
+    .campaign-detail-action{min-height:42px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 13px;border:1px solid rgba(255,255,255,.24);border-radius:.65rem;background:rgba(255,255,255,.12);color:#fff;font-size:.69rem;font-weight:900;text-decoration:none;backdrop-filter:blur(4px);transition:.18s}
+    .campaign-detail-action.is-primary,.campaign-detail-action:hover{transform:translateY(-2px);border-color:#fff;background:#fff;color:#4f46e5;box-shadow:0 8px 20px rgba(31,41,55,.16)}
+    .campaign-detail-alert{width:calc(100% - 48px);margin:24px auto 0;padding:13px 16px;display:flex;align-items:center;gap:10px;border:1px solid;border-radius:12px;font-size:.76rem;font-weight:800}.campaign-detail-alert.is-success{border-color:#bfe3c5;background:#ecf8ee;color:#276738}.campaign-detail-alert.is-error{border-color:#f3c4c4;background:#fff0f0;color:#a72d2d}
+    .campaign-detail-content{padding:24px 24px 0}
+    .campaign-detail-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:22px}
+    .campaign-detail-kpi{--accent:#117e8c;--soft:#e6f4f5;--rgb:17,126,140;position:relative;isolation:isolate;overflow:hidden;min-height:126px;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid rgba(var(--rgb),.22);border-radius:1rem;background:linear-gradient(135deg,#fff 35%,var(--soft));box-shadow:inset 0 4px 0 var(--accent),0 10px 24px rgba(45,66,34,.09)}
+    .campaign-detail-kpi:after{content:'';position:absolute;z-index:-1;right:12px;bottom:7px;width:84px;height:43px;opacity:.2;background-image:radial-gradient(circle,var(--accent) 1.4px,transparent 1.6px);background-size:9px 9px}
+    .campaign-detail-kpi span,.campaign-detail-kpi small{display:block}.campaign-detail-kpi span{color:#596170;font-size:.67rem;font-weight:900;letter-spacing:.03em;text-transform:uppercase}.campaign-detail-kpi strong{display:block;margin-top:8px;color:#263024;font-size:1.55rem;font-weight:900;line-height:1.1}.campaign-detail-kpi small{margin-top:7px;color:#7f8878;font-size:.62rem;font-weight:600}
+    .campaign-detail-kpi>i{width:50px;height:50px;display:grid;place-items:center;flex:0 0 50px;border-radius:14px;background:var(--accent);color:#fff;font-size:1.1rem;box-shadow:0 8px 17px rgba(var(--rgb),.27)}
+    .kpi-calendar{--accent:#7da533;--soft:#f0f6e7;--rgb:125,165,51}.kpi-progress{--accent:#117e8c;--soft:#e6f4f5;--rgb:17,126,140}.kpi-deadline{--accent:#5b2b76;--soft:#f3edf6;--rgb:91,43,118}
+    .campaign-detail-grid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(300px,.85fr);gap:18px}
+    .campaign-detail-sidebar{display:grid;align-content:start;gap:18px}
+    .campaign-detail-card{overflow:hidden;border:1px solid #e1e3de;border-radius:16px;background:#fff;box-shadow:0 9px 22px rgba(55,60,52,.06)}
+    .campaign-card-header{display:flex;align-items:center;gap:13px;padding:20px 22px 16px;border-bottom:1px solid #eceeea}.campaign-card-header.compact{padding:16px 18px 14px}
+    .campaign-card-title-icon{width:42px;height:42px;display:grid;place-items:center;flex:0 0 42px;border-radius:12px;color:#fff;box-shadow:0 7px 15px rgba(55,60,52,.14)}.campaign-card-title-icon.is-indigo{background:#4f46e5}.campaign-card-title-icon.is-teal{background:#117e8c}.campaign-card-title-icon.is-purple{background:#5b2b76}
+    .campaign-card-header span{display:block;margin-bottom:2px;color:#8a9186;font-size:.58rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.campaign-card-header h2{margin:0;color:#25272b;font-size:.96rem;font-weight:900;letter-spacing:-.015em}
+    .campaign-card-body{padding:22px}.campaign-card-body.compact{padding:17px 18px}
+    .campaign-name-block small,.campaign-description-block small{display:block;color:#8a9186;font-size:.6rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase}.campaign-name-block h3{margin:5px 0 0;color:#272b31;font-size:1.15rem;font-weight:900}.campaign-description-block{margin-top:21px;padding-top:19px;border-top:1px solid #eceeea}.campaign-description-block p{margin:7px 0 0;color:#626a60;font-size:.77rem;font-weight:600;line-height:1.65}
+    .campaign-schedule{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:20px}.campaign-date{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid #dce8cc;border-radius:13px;background:#f5f9ef}.campaign-date.is-end{border-color:#e6d9eb;background:#f8f3fa}.campaign-date>i{width:34px;height:34px;display:grid;place-items:center;flex:0 0 34px;border-radius:10px;background:#7da533;color:#fff;font-size:.72rem}.campaign-date.is-end>i{background:#5b2b76}.campaign-date small,.campaign-date strong{display:block}.campaign-date small{color:#7e8778;font-size:.57rem;font-weight:850;text-transform:uppercase}.campaign-date strong{margin-top:3px;color:#353a32;font-size:.74rem;font-weight:900}
+    .campaign-progress{margin-top:20px;padding:15px;border:1px solid #e1e4de;border-radius:13px;background:#fafbf9}.campaign-progress>div:first-child{display:flex;justify-content:space-between;color:#596170;font-size:.68rem;font-weight:850}.campaign-progress-track{height:8px;margin:10px 0 8px;overflow:hidden;border-radius:999px;background:#e8ebe5}.campaign-progress-track span{display:block;height:100%;border-radius:inherit;background:#117e8c}.campaign-progress>small{color:#8a9186;font-size:.58rem;font-weight:600}
+    .campaign-person{min-width:0;display:flex;align-items:center;gap:11px}.campaign-person+.campaign-person{margin-top:14px;padding-top:14px;border-top:1px solid #eceeea}.campaign-avatar{width:40px;height:40px;display:grid;place-items:center;flex:0 0 40px;border-radius:11px;color:#fff;font-size:.72rem;font-weight:900}.campaign-avatar.is-teal{background:#117e8c}.campaign-avatar.is-indigo{background:#4f46e5}.campaign-avatar.is-purple{background:#5b2b76}.campaign-person>div{min-width:0}.campaign-person strong,.campaign-person small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.campaign-person strong{color:#30352e;font-size:.73rem;font-weight:900}.campaign-person small{margin-top:2px;color:#858d82;font-size:.59rem;font-weight:600}.campaign-team .campaign-person small{margin:0 0 2px;font-size:.56rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+    .campaign-company-row{margin-top:15px;padding-top:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #eceeea}.campaign-company-row>div{display:flex;align-items:center;gap:7px;color:#477323;font-size:.61rem;font-weight:800}.campaign-company-row a{color:#4f46e5;font-size:.6rem;font-weight:900;text-decoration:none}.campaign-company-row a i{margin-left:3px}.campaign-empty-note{margin-top:15px;padding:10px;border:1px solid #f4dcaa;border-radius:10px;background:#fff8e8;color:#9a6512;font-size:.61rem;font-weight:800}
+    .campaign-analytics-card{display:grid;grid-template-columns:42px minmax(0,1fr) 34px;align-items:center;gap:12px;padding:16px;border:1px solid #d9d0df;border-radius:16px;background:linear-gradient(135deg,#fff 40%,#f3edf6);box-shadow:0 9px 22px rgba(91,43,118,.08)}.campaign-analytics-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:#5b2b76;color:#fff}.campaign-analytics-card span,.campaign-analytics-card strong,.campaign-analytics-card small{display:block}.campaign-analytics-card span{color:#8c6c9d;font-size:.56rem;font-weight:900;text-transform:uppercase}.campaign-analytics-card strong{margin-top:2px;color:#35253d;font-size:.74rem;font-weight:900}.campaign-analytics-card small{margin-top:3px;color:#807485;font-size:.56rem}.campaign-analytics-card>a{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#fff;color:#5b2b76;box-shadow:0 4px 10px rgba(91,43,118,.12);text-decoration:none;transition:.18s}.campaign-analytics-card>a:hover{transform:translateX(2px);background:#5b2b76;color:#fff}
+    .campaign-tasks>.mt-0.m-8{margin:22px 24px 0!important}.campaign-tasks section{border:1px solid #e1e3de!important;border-radius:16px!important;box-shadow:0 9px 22px rgba(55,60,52,.06)!important}.campaign-tasks section>div:first-child{background:#117e8c!important}.campaign-tasks section>div:first-child>div:first-child h2{font-size:1.35rem!important}.campaign-tasks section>div:first-child>div:first-child p{font-size:.72rem!important}.campaign-tasks section>div:first-child .rounded-2xl{border-radius:12px!important}
+
+    /* Espacio de trabajo simplificado */
+    .campaign-detail-content,.campaign-tasks{width:min(1280px,calc(100% - 48px));margin-right:auto;margin-left:auto}
+    .campaign-detail-content{padding:24px 0 0}
+    .campaign-detail-hero-content{padding-left:max(48px,calc((100% - 1280px)/2));}
+    .campaign-detail-heading{gap:0}
+    .campaign-status>span{width:6px;height:6px;border-radius:50%;background:#cbd5e1}.campaign-status.is-active>span{background:#bef264}.campaign-status.is-paused>span{background:#fde047}
+    .campaign-detail-kpis{gap:0;margin-bottom:18px;overflow:hidden;border:1px solid #e2e5df;border-radius:12px;background:#fff;box-shadow:0 5px 15px rgba(55,60,52,.04)}
+    .campaign-detail-kpi{min-height:88px;padding:16px 20px;border:0;border-right:1px solid #e8ebe5;border-radius:0;background:#fff;box-shadow:inset 0 3px 0 var(--accent)}
+    .campaign-detail-kpi:last-child{border-right:0}.campaign-detail-kpi:after{display:none}.campaign-detail-kpi strong{margin-top:5px;font-size:1.12rem}.campaign-detail-kpi small{margin-top:4px}
+    .campaign-detail-grid{gap:16px}.campaign-detail-sidebar{gap:16px}
+    .campaign-detail-card{border-radius:12px;box-shadow:0 5px 15px rgba(55,60,52,.04)}
+    .campaign-card-header,.campaign-card-header.compact{padding:16px 18px;gap:0}.campaign-card-body{padding:18px}.campaign-card-body.compact{padding:16px 18px}
+    .campaign-underlined-title{margin:0;color:#302832;font-size:1rem;font-weight:900;letter-spacing:-.02em}.campaign-underlined-title:after,.campaign-card-header h2:after,.campaign-analytics-card strong:after{content:'';display:block;width:44px;height:3px;margin-top:7px;border-radius:999px;background:#117e8c}
+    .campaign-description-block{margin-top:0;padding-top:0;border-top:0}.campaign-description-block p{margin-top:12px}
+    .campaign-schedule{gap:0;border-top:1px solid #eceeea;border-bottom:1px solid #eceeea}.campaign-date,.campaign-date.is-end{padding:14px 0;border:0;border-radius:0;background:#fff}.campaign-date+.campaign-date{padding-left:18px;border-left:1px solid #eceeea}
+    .campaign-analytics-card{grid-template-columns:minmax(0,1fr) auto;border-radius:12px;background:#faf8fb;box-shadow:none}.campaign-analytics-card>a{width:auto;height:auto;padding:8px 10px;border:1px solid #ddd3e2;border-radius:8px;box-shadow:none;font-size:.58rem;font-weight:900;white-space:nowrap}
+    .campaign-tasks{margin-top:16px}.campaign-tasks .tasks-workspace{border-radius:12px!important;box-shadow:0 5px 15px rgba(55,60,52,.04)!important}
+    @media(max-width:1080px){.campaign-detail-hero-content{padding-right:430px}.campaign-detail-grid{grid-template-columns:1fr}.campaign-detail-sidebar{grid-template-columns:repeat(2,minmax(0,1fr))}.campaign-analytics-card{grid-column:1/-1}}
+    @media(max-width:900px){.campaign-detail-actions{position:static;padding:14px 24px 0;justify-content:center}.campaign-detail-action{border-color:#dce4f3;background:#f4f7fd;color:#4f46e5}.campaign-detail-action.is-primary{background:#4f46e5;color:#fff}.campaign-detail-hero{margin-top:14px}.campaign-detail-hero-content{padding:28px 24px}.campaign-status{flex:0 0 auto}.campaign-detail-kpis{grid-template-columns:1fr 1fr}.campaign-detail-kpi:last-child{grid-column:1/-1;border-top:1px solid #e8ebe5}.campaign-detail-kpi:nth-child(2){border-right:0}.campaign-detail-content,.campaign-tasks{width:calc(100% - 32px)}}
+    @media(max-width:640px){.campaign-detail-page{padding-bottom:24px}.campaign-detail-actions{display:grid;grid-template-columns:1fr;padding:12px}.campaign-detail-action{width:100%}.campaign-detail-hero{min-height:200px;margin-top:0}.campaign-detail-hero-content{min-height:200px;align-items:flex-start;flex-direction:column;justify-content:center;padding:28px 20px}.campaign-detail-heading{align-items:flex-start}.campaign-detail-heading h1{white-space:normal}.campaign-detail-content,.campaign-tasks{width:calc(100% - 24px)}.campaign-detail-content{padding-top:14px}.campaign-detail-kpis{grid-template-columns:1fr}.campaign-detail-kpi,.campaign-detail-kpi:nth-child(2){border-right:0;border-bottom:1px solid #e8ebe5}.campaign-detail-kpi:last-child{grid-column:auto;border-top:0;border-bottom:0}.campaign-detail-sidebar{grid-template-columns:1fr}.campaign-analytics-card{grid-column:auto}.campaign-schedule{grid-template-columns:1fr}.campaign-date+.campaign-date{padding-left:0;border-top:1px solid #eceeea;border-left:0}.campaign-card-body{padding:18px}.campaign-company-row{align-items:flex-start;flex-direction:column}}
+</style>
 @endsection

@@ -11,42 +11,34 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<div class="min-h-screen" style="background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 45%, #F5F3FF 100%);">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Banner con fondo geométrico -->
-        <div class="mb-8 rounded-2xl overflow-hidden relative rp-banner">
+<div class="publication-page min-h-screen">
+    <div class="publication-shell max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <header class="publication-hero overflow-hidden relative rp-banner">
             <div class="rp-banner-overlay absolute inset-0"></div>
-            <div class="relative z-10 px-8 py-9">
-                <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                    <div class="flex h-16 w-16 items-center justify-center rounded-2xl flex-shrink-0 rp-icon-pulse" style="background: rgba(255,255,255,0.22); backdrop-filter: blur(6px); box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
-                        <i class="fas fa-share-alt text-white text-2xl"></i>
+            <div class="publication-hero-body relative z-10">
+                <div class="publication-hero-layout">
+                    <div class="publication-hero-copy">
+                        <span>Operación de marketing</span>
+                        <h1>Preparar publicación</h1>
+                        <p>Revisa el contenido aprobado, define el mensaje y elige cuándo compartirlo en las redes del cliente.</p>
                     </div>
-                    <div class="flex-1 text-center sm:text-left">
-                        <h1 class="text-3xl font-bold text-white mb-1 tracking-tight">Crear Nueva Publicación</h1>
-                        <p style="color: #dbe6ff; font-size: 0.92rem;">Comparte contenido en las redes sociales de tu cliente</p>
-                    </div>
-                    <div class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);">
-                        <i class="fas fa-bolt text-white text-xs"></i>
-                        <span class="text-white text-xs font-semibold">Listo para publicar</span>
-                    </div>
+                    <nav class="publication-hero-actions" aria-label="Acciones de publicación">
+                        <a href="{{ route('administrador.tareas.ver-subidas', $tarea->id) }}" class="publication-hero-action is-primary"><i class="fas fa-folder-open"></i>Entregables</a>
+                        @if($tarea->campania)<a href="{{ route('administrador.campañas.show', $tarea->campania_id) }}" class="publication-hero-action"><i class="fas fa-arrow-left"></i>Volver a campaña</a>@endif
+                    </nav>
                 </div>
             </div>
-        </div>
+        </header>
+
+        <section class="publication-context" aria-label="Contexto de la publicación">
+            <div><small>Tarea</small><strong>{{ $tarea->titulo }}</strong></div>
+            <div><small>Campaña</small><strong>{{ $tarea->campania?->nombre ?? 'Sin campaña' }}</strong></div>
+            <div><small>Cliente</small><strong>{{ $cliente?->name ?? 'Sin cliente' }}</strong></div>
+            <div><small>Contenido aprobado</small><strong>{{ $tarea->archivos->count() }} {{ $tarea->archivos->count() === 1 ? 'archivo' : 'archivos' }}</strong></div>
+            <div class="{{ $facebookReady ? 'is-ready' : 'is-pending' }}"><small>Conexión con Meta</small><strong><i class="fas fa-circle"></i>{{ $facebookReady ? 'Lista para publicar' : 'Requiere vinculación' }}</strong></div>
+        </section>
 
         <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden rp-card">
-            <!-- Encabezado con gradiente -->
-            <div class="px-8 py-6 bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-50 border-b border-indigo-100">
-                <div class="flex items-center gap-3">
-                    <div class="w-11 h-11 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #ea9f21, #e37225);">
-                        <i class="fas fa-rocket text-white text-sm"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-900">Nueva Publicación</h2>
-                        <p class="text-gray-500 text-sm mt-0.5">Comparte contenido en redes sociales</p>
-                    </div>
-                </div>
-            </div>
-
             <!-- Contenido principal -->
             <div class="p-6 md:p-8 space-y-6">
                 <!-- Panel de publicación -->
@@ -90,7 +82,8 @@
                         @csrf
                         <input type="hidden" name="tarea_id" value="{{ $tarea->id }}">
                         <!-- Selección de cuenta y plataforma -->
-                        <div class="mb-6">
+                        <div class="publication-step publication-step-platforms mb-6">
+                            <span class="publication-step-label">Paso 1 de 4</span>
                             <label class="block text-sm font-semibold text-gray-700 mb-3">
                                 <i class="fas fa-users mr-2 text-indigo-400"></i>
                                 Cuenta y Plataformas
@@ -145,7 +138,8 @@
                         </div>
                         
                         <!-- Contenido multimedia aprobado -->
-                        <div class="mb-6">
+                        <div class="publication-step publication-step-media mb-6">
+                            <span class="publication-step-label">Paso 2 de 4</span>
                             <label class="block text-sm font-semibold text-gray-700 mb-3">
                                 <i class="fas fa-images mr-2 text-indigo-400"></i>
                                 Contenido Multimedia Aprobado
@@ -193,7 +187,8 @@
                         </div>
                         
                         <!-- Texto de la publicación -->
-                        <div class="mb-6">
+                        <div class="publication-step publication-step-copy mb-6">
+                            <span class="publication-step-label">Paso 3 de 4</span>
                             <div class="flex justify-between items-center mb-2">
                                 <label for="content" class="block text-sm font-semibold text-gray-700">
                                     <i class="fas fa-align-left mr-2 text-indigo-400"></i>
@@ -211,7 +206,8 @@
                         </div>
                         
                         <!-- Configuración de publicación -->
-                        <div class="mb-6">
+                        <div class="publication-step publication-step-schedule mb-6">
+                            <span class="publication-step-label">Paso 4 de 4</span>
                             <label class="block text-sm font-semibold text-gray-700 mb-3">
                                 <i class="fas fa-gear mr-2 text-indigo-400"></i>
                                 Configuración de Publicación
@@ -336,7 +332,8 @@
                             $previewImage = $approvedImageFiles->first();
                             $hasCarouselPreview = $approvedImageFiles->count() > 1;
                         @endphp
-                        <div class="mb-6" id="publication-preview">
+                        <div class="publication-preview-column mb-6" id="publication-preview">
+                            <span class="publication-step-label">Vista previa en tiempo real</span>
                             <label class="block text-sm font-semibold text-gray-700 mb-3">
                                 <i class="fas fa-eye mr-2 text-indigo-400"></i>
                                 Vista Previa
@@ -473,7 +470,7 @@
                         </div>
                         @endif
 
-                        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-5 border-t border-gray-200">
+                        <div class="publication-form-actions flex flex-col sm:flex-row justify-between items-center gap-4 pt-5 border-t border-gray-200">
                             <button type="button" onclick="togglePreview()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 rp-secondary-btn" style="color: #4f46e5; background: #eef2ff;">
                                 <i class="fas fa-eye"></i>
                                 <span id="preview-toggle-text">Ocultar Vista Previa</span>
@@ -886,6 +883,15 @@
     }
 </style>
 
+<style>
+    .publication-page{min-height:100vh;padding:0 0 48px;background:#fff!important;color:#302832;font-family:Inter,'Segoe UI',sans-serif}.publication-shell{width:100%;max-width:none!important;padding:0!important}.publication-hero{position:relative;min-height:180px;display:flex;align-items:center;border-radius:0!important;box-shadow:none}.publication-hero .rp-banner-overlay{background:linear-gradient(rgba(15,23,42,.22),rgba(15,23,42,.22)),radial-gradient(circle at 0 0,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 100% 0,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 100% 100%,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 0 100%,rgba(255,255,255,.2),transparent 50%);background-size:100% 100%,50% 50%,50% 50%,50% 50%,50% 50%;background-position:0 0,0 0,100% 0,100% 100%,0 100%;background-repeat:no-repeat}.publication-hero-body{width:100%;padding:30px 48px}.publication-hero-layout{display:flex;align-items:center;justify-content:space-between;gap:28px}.publication-hero-copy{min-width:0;flex:1}.publication-hero-copy>span{display:block;margin-bottom:7px;color:#dbeafe;font-size:.68rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase}.publication-hero h1{margin:0;color:#fff;font-size:clamp(1.55rem,3vw,2.25rem);font-weight:900;letter-spacing:-.04em}.publication-hero p{max-width:700px;margin:8px 0 0;color:#e0e7ff;font-size:.84rem;line-height:1.55}.publication-hero-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}.publication-hero-action{min-height:41px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 14px;border:1px solid rgba(255,255,255,.16);border-radius:.65rem;background:rgba(255,255,255,.12);color:#fff;font-size:.7rem;font-weight:900;text-decoration:none;white-space:nowrap;transition:.18s}.publication-hero-action.is-primary{border-color:#fff;background:#fff;color:#4f46e5}.publication-hero-action:hover{transform:translateY(-2px);border-color:#fff;background:#fff;color:#4f46e5;box-shadow:0 8px 20px rgba(31,41,55,.16)}
+    .publication-context{display:grid;grid-template-columns:1.25fr 1fr 1fr .72fr .9fr;margin:18px 24px 0;border:1px solid #e4e7e1;border-radius:1rem;background:linear-gradient(135deg,#fff 0%,#fbf8fc 58%,#f2fbfa 100%);box-shadow:0 7px 18px rgba(61,23,79,.055)}.publication-context>div{min-width:0;padding:13px 15px;border-right:1px solid #e8eae5}.publication-context>div:last-child{border-right:0}.publication-context small,.publication-context strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.publication-context small{color:#8a818e;font-size:.51rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.publication-context strong{margin-top:4px;color:#34303a;font-size:.64rem;font-weight:900}.publication-context strong i{margin-right:6px;font-size:.46rem}.publication-context .is-ready strong{color:#4f7a25}.publication-context .is-pending strong{color:#c45d1b}
+    .publication-page .rp-card{margin:18px 24px 0;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}.publication-page .rp-card>.px-8{display:none}.publication-page .rp-card>.p-6{padding:0!important}.publication-page .rp-card>.p-6>div{padding:0!important;border:0!important;background:transparent!important}.publication-page #publishing-form{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(390px,.72fr);align-items:start;gap:14px 18px}.publication-step{grid-column:1;min-width:0;margin:0!important;padding:18px;border:1px solid #e4e7e1;border-radius:.85rem;background:#fff;box-shadow:0 5px 15px rgba(48,40,52,.045)}.publication-step-label{display:block;margin-bottom:6px;color:#8b9288;font-size:.51rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.publication-step>label,.publication-step>div>label,.publication-preview-column>label{margin-bottom:12px!important;color:#302832!important;font-size:.75rem!important;font-weight:900!important}.publication-step>label>i,.publication-step>div>label>i,.publication-preview-column>label>i{color:#117e8c!important}.publication-preview-column{grid-column:2;grid-row:1/5;position:sticky;top:14px;min-width:0;margin:0!important;padding:18px;border:1px solid #e4e7e1;border-radius:.85rem;background:#fff;box-shadow:0 5px 15px rgba(48,40,52,.045)}.publication-page #publishing-form>.mb-4{grid-column:1;margin:0!important}.publication-form-actions{grid-column:1/-1;position:sticky;z-index:15;bottom:0;margin-top:3px;padding:13px 15px!important;border:1px solid #e4e7e1!important;border-radius:.85rem;background:rgba(255,255,255,.96);box-shadow:0 -6px 18px rgba(48,40,52,.055);backdrop-filter:blur(8px)}
+    .publication-page .rp-account-card,.publication-page .rp-file-card{border-color:#e5e7eb!important;border-radius:.7rem!important;background:#fff!important;box-shadow:none}.publication-page .rp-account-card:hover,.publication-page .rp-file-card:hover{border-color:#bfdcdf!important;background:#fff!important;transform:translateX(2px)}.publication-page .rp-checkbox-pill{border-color:#e2e7df;border-radius:.65rem;background:#fff}.publication-page textarea{min-height:135px;border-color:#dfe3dd!important;border-radius:.7rem!important;background:#fff!important;color:#374151;font-family:inherit;font-size:.72rem;line-height:1.55}.publication-page textarea:focus,.publication-page input:focus,.publication-page select:focus{border-color:#117e8c!important;box-shadow:0 0 0 3px rgba(17,126,140,.1)!important}.publication-page #generate-copy-btn{border-radius:.6rem!important;background:#e3a122!important;box-shadow:0 5px 13px rgba(227,161,34,.2)!important;font-weight:900}.publication-page #generate-copy-btn:hover{background:#ca8914!important}.publication-page .publication-step-schedule>.grid>div{border-color:#e4e7e1!important;background:#fff!important}.publication-page .rp-schedule-card{border-color:#e1e5df;background:#fafbf9}.publication-page .rp-schedule-card__icon{background:#117e8c}.publication-page .rp-schedule-field__control:focus-within{border-color:#117e8c;box-shadow:0 0 0 3px rgba(17,126,140,.1)}.publication-page .rp-schedule-chip:hover,.publication-page .rp-schedule-chip.is-active{border-color:#117e8c;background:#117e8c;color:#fff}.publication-page .rp-facebook-preview{overflow:hidden;border-color:#d9dde1!important;border-radius:.75rem!important;box-shadow:0 7px 18px rgba(15,23,42,.07)}.publication-page .rp-preview-carousel,.publication-page .rp-preview-carousel__track,.publication-page .rp-preview-carousel__slide{min-height:360px}.publication-page #preview-media-facebook,.publication-page #preview-media-instagram{min-height:360px!important}.publication-page .rp-secondary-btn{border:1px solid #dfe4dc;background:#f8faf7!important;color:#687065!important;font-weight:900}.publication-page .rp-secondary-btn:hover{border-color:#117e8c;background:#e9f5f6!important;color:#117e8c!important}.publication-page .rp-publish-btn{border-radius:.65rem!important;background:#117e8c!important;box-shadow:0 7px 17px rgba(17,126,140,.24)!important}.publication-page .rp-publish-btn:hover{background:#0e6c78!important}.publication-page .rp-publish-btn:disabled{cursor:not-allowed;opacity:.5;transform:none}.publication-page .rp-optimization-time:hover,.publication-page .rp-optimization-time.is-active{border-color:#117e8c;background:#117e8c}.publication-page .rp-download-btn:hover{background:#e4f3f4;color:#117e8c}
+    @media(max-width:1050px){.publication-hero{min-height:205px}.publication-hero-layout{justify-content:center;flex-direction:column;text-align:center}.publication-hero-actions{justify-content:center}.publication-context{grid-template-columns:repeat(3,minmax(0,1fr))}.publication-context>div:nth-child(3){border-right:0}.publication-context>div:nth-child(-n+3){border-bottom:1px solid #e8eae5}.publication-page #publishing-form{grid-template-columns:1fr}.publication-step,.publication-preview-column{grid-column:1}.publication-preview-column{grid-row:auto;position:relative;top:auto}.publication-form-actions{grid-column:1}}
+    @media(max-width:640px){.publication-page{padding-bottom:28px}.publication-hero-body{padding:24px 20px}.publication-hero-actions{width:100%}.publication-hero-action{flex:1}.publication-context{grid-template-columns:1fr;margin:14px 12px 0}.publication-context>div{border-right:0;border-bottom:1px solid #e8eae5}.publication-context>div:last-child{border-bottom:0}.publication-page .rp-card{margin:14px 12px 0}.publication-step,.publication-preview-column{padding:15px}.publication-step-copy>div:nth-child(2){align-items:flex-start;flex-direction:column;gap:8px}.publication-page #generate-copy-btn{width:100%;justify-content:center}.publication-form-actions{position:static;align-items:stretch}.publication-form-actions button{width:100%;justify-content:center}.publication-page .rp-preview-carousel,.publication-page .rp-preview-carousel__track,.publication-page .rp-preview-carousel__slide{min-height:300px}.publication-page #preview-media-facebook,.publication-page #preview-media-instagram{min-height:300px!important}}
+</style>
+
 <script>
     // Estado de la vista previa
     let previewVisible = true;
@@ -1089,27 +1095,27 @@
         }
 
         optimizationChart = new Chart(canvas.getContext('2d'), {
-            type: 'line',
+            type: 'bar',
             data: {
                 labels: ['8 am', '10 am', '12 pm', '2 pm', '5 pm', '8 pm'],
                 datasets: [
                     {
                         label: 'Instagram',
                         data: [22, 38, 82, 56, 48, 91],
-                        borderColor: '#4f46e5',
-                        backgroundColor: 'rgba(79,70,229,0.12)',
-                        tension: 0.4,
-                        fill: true,
-                        pointRadius: 4
+                        backgroundColor: '#5b2b76',
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        categoryPercentage: 0.72,
+                        barPercentage: 0.82
                     },
                     {
                         label: 'Facebook',
                         data: [18, 35, 76, 51, 44, 84],
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16,185,129,0.08)',
-                        tension: 0.4,
-                        borderDash: [6, 6],
-                        pointRadius: 4
+                        backgroundColor: '#117e8c',
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        categoryPercentage: 0.72,
+                        barPercentage: 0.82
                     }
                 ]
             },
@@ -1118,15 +1124,28 @@
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'bottom'
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: 'rectRounded',
+                            padding: 18
+                        }
                     }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
                         max: 100,
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.16)'
+                        },
                         ticks: {
                             callback: function(value) { return value + '%'; }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
                         }
                     }
                 }
