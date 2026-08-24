@@ -387,6 +387,8 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
             ->name('administrador.campañas.guardar');
         Route::get('/recomendar-community-manager', [\App\Http\Controllers\Admin\CampañasController::class, 'recomendarCommunityManager'])
             ->name('administrador.campañas.recomendar-community-manager');
+        Route::get('/obtener-plan-ia/{empresa}', [\App\Http\Controllers\Admin\CampañasController::class, 'obtenerPlanIA'])
+            ->name('administrador.campañas.plan-ia');
         Route::get('/{campania}', [\App\Http\Controllers\Admin\CampañasController::class, 'show'])
             ->name('administrador.campañas.show');
         Route::get('/{campania}/editar', [\App\Http\Controllers\Admin\CampañasController::class, 'edit'])
@@ -399,9 +401,6 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
             ->name('administrador.campañas.destroy');
         Route::get('/{campania}/calendario', [\App\Http\Controllers\Admin\TareaController::class, 'calendario'])
             ->name('administrador.campañas.calendario');
-        Route::get('/obtener-plan-ia/{usuario_id}', [\App\Http\Controllers\Admin\CampañasController::class, 'obtenerPlanIA'])
-            ->name('administrador.campañas.plan-ia');
-
     // Rutas para tareas
     Route::prefix('/{campania}/tareas')->group(function () {
         Route::get('/crear', [\App\Http\Controllers\Admin\TareaController::class, 'create'])
@@ -603,7 +602,6 @@ Route::prefix('administrador/cuestionario/estructura')->name('administrador.cues
     Route::delete('/{tema}', [App\Http\Controllers\Admin\CuestionarioEstructuraController::class, 'destroy'])->name('destroy');
     Route::post('/reorder', [App\Http\Controllers\Admin\CuestionarioEstructuraController::class, 'reorder'])->name('reorder');
 });
-
 
 
 

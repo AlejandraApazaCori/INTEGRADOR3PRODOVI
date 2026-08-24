@@ -98,6 +98,7 @@
                             <tr>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Cliente</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Empresa</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Plan</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Fin Suscripción</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
@@ -147,6 +148,26 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $cliente['email'] }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($cliente['tiene_empresa'])
+                                            <a href="{{ route('administrador.empresas.show', $cliente['empresa_id']) }}" class="text-sm font-semibold text-gray-900 hover:text-indigo-600">
+                                                {{ $cliente['empresa_nombre'] }}
+                                            </a>
+                                            <div class="mt-1">
+                                                @if($cliente['tiene_plan_marketing'])
+                                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700">
+                                                        <i class="fas fa-circle-check"></i> Plan de marketing activo
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700">
+                                                        <i class="fas fa-triangle-exclamation"></i> Sin plan de marketing
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="text-sm text-gray-400">Sin empresa</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                             {{ $cliente['plan'] }}
                                         </span>
@@ -183,14 +204,34 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                            @else
-                                                <button onclick="llenarConIA('{{ $cliente['id'] }}', '{{ $cliente['suscripcion_id'] }}', this)" 
+                                            @elseif($cliente['tiene_plan_marketing'])
+                                                <button type="button"
+                                                        data-plan-url="{{ route('administrador.campañas.plan-ia', ['empresa' => $cliente['empresa_id'], 'suscripcion_id' => $cliente['suscripcion_id']]) }}"
+                                                        onclick="llenarConIA('{{ $cliente['suscripcion_id'] }}', this)"
                                                         class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow-md">
                                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                                     </svg>
                                                     CREAR CON IA
                                                 </button>
+                                            @else
+                                                <div class="relative group">
+                                                    <button type="button" disabled
+                                                            class="inline-flex items-center px-4 py-2 bg-gray-400 text-white text-sm font-medium rounded-lg cursor-not-allowed shadow-sm">
+                                                        <i class="fas fa-wand-magic-sparkles mr-2"></i>
+                                                        CREAR CON IA
+                                                    </button>
+                                                    <div class="absolute bottom-full left-1/2 z-50 mb-2 hidden min-w-[240px] -translate-x-1/2 group-hover:block">
+                                                        <div class="rounded-xl bg-gray-900 p-4 text-center text-white shadow-2xl">
+                                                            <p class="mb-1 text-xs font-bold text-amber-400">ESTA EMPRESA NO TIENE PLAN</p>
+                                                            <p class="mb-3 text-[10px] text-gray-300">Genera primero el plan de marketing de {{ $cliente['empresa_nombre'] }}.</p>
+                                                            <a href="{{ route('administrador.empresas.show', $cliente['empresa_id']) }}"
+                                                               class="inline-flex w-full items-center justify-center rounded-lg bg-purple-600 px-3 py-2 text-[10px] font-bold text-white hover:bg-purple-700">
+                                                                <i class="fas fa-building mr-1"></i> IR A LA EMPRESA
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             @endif
 
                                             <button onclick="mostrarFormulario('{{ $cliente['suscripcion_id'] }}')" 
@@ -206,7 +247,7 @@
                                 
                                 <!-- Formulario mejorado -->
                                 <tr id="form-{{ $cliente['suscripcion_id'] }}" data-form-for="{{ $cliente['suscripcion_id'] }}" class="hidden bg-gradient-to-r from-blue-50 to-indigo-50">
-                                    <td colspan="5" class="px-6 py-8">
+                                    <td colspan="6" class="px-6 py-8">
                                         <div class="campaign-create-card bg-white">
                                             <header class="campaign-create-header">
                                                 <div class="campaign-create-heading">
@@ -651,7 +692,7 @@
     }
 
     // Función para crear campaña con IA
-    function llenarConIA(clienteId, formKey, btn) {
+    function llenarConIA(formKey, btn) {
         const originalContent = btn.innerHTML;
         btn.disabled = true;
         btn.classList.add('opacity-75', 'cursor-not-allowed');
@@ -663,7 +704,9 @@
             Obteniendo Plan...
         `;
 
-        fetch(`/administrador/campañas/obtener-plan-ia/${clienteId}?suscripcion_id=${formKey}`)
+        fetch(btn.dataset.planUrl, {
+            headers: { 'Accept': 'application/json' }
+        })
             .then(response => {
                 if (!response.ok) {
                     return response.json().then(err => { throw new Error(err.error || 'Error al obtener el plan'); });

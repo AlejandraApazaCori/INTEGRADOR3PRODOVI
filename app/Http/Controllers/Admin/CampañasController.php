@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Campania;
+use App\Models\Empresa;
 use App\Models\User;
 use App\Models\Pago;
 use App\Models\PlanMarketing;
@@ -21,7 +22,7 @@ class CampañasController extends Controller
     public function index()
     {
         // 1. Obtener usuarios con suscripción activa que no tienen campaña activa
-        $clientesSinCampania = Pago::with(['usuario', 'suscripcion.empresa', 'plan'])
+        $clientesSinCampania = Pago::with(['usuario', 'suscripcion.empresa.planesMarketing', 'plan'])
             ->where('estado', 'completado')
             ->whereHas('suscripcion', function($query) {
                 $query->where('estado', 'activa')
@@ -38,6 +39,12 @@ class CampañasController extends Controller
             ->get()
             ->map(function($pago) {
                 $empresa = $pago->suscripcion->empresa;
+                $planesActivos = $empresa?->planesMarketing
+                    ->where('estado', 'activo')
+                    ->sortByDesc('id')
+                    ?? collect();
+                $planMarketing = $planesActivos->firstWhere('suscripcion_id', $pago->suscripcion->id)
+                    ?? $planesActivos->first();
 
                 return [
                     'id' => $pago->usuario->id,
@@ -49,6 +56,9 @@ class CampañasController extends Controller
                     'fecha_fin_suscripcion_raw' => $pago->suscripcion->vigencia_activada_at ? $pago->suscripcion->fecha_fin->format('Y-m-d') : null,
                     'tiene_empresa' => $empresa !== null,
                     'empresa_id' => $empresa ? $empresa->id : null,
+                    'empresa_nombre' => $empresa?->nombre_empresa,
+                    'tiene_plan_marketing' => $planMarketing !== null,
+                    'plan_marketing_id' => $planMarketing?->id,
                 ];
             })
             ->sortByDesc('fecha_fin_suscripcion_raw')
@@ -253,34 +263,39 @@ class CampañasController extends Controller
             ->with('success', 'Campaña actualizada exitosamente');
     }
 
-    public function obtenerPlanIA(Request $request, $usuario_id)
+    public function obtenerPlanIA(Request $request, Empresa $empresa)
     {
         try {
             $request->validate(['suscripcion_id' => 'required|integer|exists:suscripciones,id']);
-            $pago = Pago::with('suscripcion.empresa')
-                ->where('usuario_id', $usuario_id)
+            $pago = Pago::with('suscripcion')
+                ->where('usuario_id', $empresa->usuario_id)
                 ->where('suscripcion_id', $request->integer('suscripcion_id'))
                 ->where('estado', 'completado')
                 ->firstOrFail();
-            $empresa = $pago->suscripcion->empresa;
 
-            if (!$empresa) {
-                return response()->json(['error' => 'El cliente no tiene una empresa registrada.'], 404);
+            if ((int) $empresa->suscripcion_id !== (int) $pago->suscripcion_id) {
+                return response()->json([
+                    'error' => 'La empresa seleccionada no corresponde a esta suscripción.',
+                ], 422);
             }
 
             // Priorizar el plan de la suscripción seleccionada. Los registros
             // creados antes de vincular empresas y suscripciones pueden conservar
             // otro suscripcion_id aunque el plan sí pertenezca a esta empresa.
             $plan = PlanMarketing::where('empresa_id', $empresa->id)
+                ->where('estado', 'activo')
                 ->where('suscripcion_id', $pago->suscripcion_id)
                 ->latest()
                 ->first()
                 ?? PlanMarketing::where('empresa_id', $empresa->id)
+                    ->where('estado', 'activo')
                     ->latest()
                     ->first();
 
             if (!$plan) {
-                return response()->json(['error' => 'No se encontró un plan de marketing para este cliente.'], 404);
+                return response()->json([
+                    'error' => "La empresa {$empresa->nombre_empresa} no tiene un plan de marketing activo.",
+                ], 404);
             }
 
             $contenido = (string) $plan->contenido;
