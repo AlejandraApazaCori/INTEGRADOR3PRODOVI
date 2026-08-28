@@ -26,6 +26,10 @@ class ClienteController extends Controller
     {
         $user = Auth::user();
 
+        if ($user->hasAnyRole(['Super Administrador', 'Administrador'])) {
+            return redirect()->route('administrador.dashboard');
+        }
+
         $tieneSuscripcionActiva = Suscripcion::where('usuario_id', $user->id)
             ->where('estado', 'activa')
             ->where(function ($query) {

@@ -7,6 +7,17 @@
     $facebookPageName = optional($facebookPage)->display_name ?? optional($facebookPage)->username ?? 'Sin página vinculada';
     $facebookPageInitial = strtoupper(substr($facebookPageName, 0, 1));
     $facebookReady = filled(optional($facebookPage)->provider_user_id) && filled(optional($facebookPage)->access_token);
+    $instagramAccountName = optional($instagramAccount)->username ?? optional($instagramAccount)->display_name ?? 'Sin cuenta vinculada';
+    $instagramAccountInitial = strtoupper(substr($instagramAccountName, 0, 1));
+    $instagramReady = filled(optional($instagramAccount)->provider_user_id) && filled(optional($instagramAccount)->access_token);
+    $metaReady = $facebookReady || $instagramReady;
+    $selectedPlatforms = old('platforms', $facebookReady ? ['facebook'] : ($instagramReady ? ['instagram'] : []));
+    $appUrlHost = strtolower((string) parse_url(config('app.url'), PHP_URL_HOST));
+    $instagramMediaPublic = parse_url(config('app.url'), PHP_URL_SCHEME) === 'https'
+        && ! in_array($appUrlHost, ['localhost', '127.0.0.1', '::1'], true);
+    $publicationFormat = $tarea->tipo_contenido
+        ? \Illuminate\Support\Str::headline($tarea->tipo_contenido)
+        : 'No definido';
 @endphp
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -34,8 +45,9 @@
             <div><small>Tarea</small><strong>{{ $tarea->titulo }}</strong></div>
             <div><small>Campaña</small><strong>{{ $tarea->campania?->nombre ?? 'Sin campaña' }}</strong></div>
             <div><small>Cliente</small><strong>{{ $cliente?->name ?? 'Sin cliente' }}</strong></div>
+            <div><small>Formato</small><strong><i class="fas fa-photo-film"></i>{{ $publicationFormat }}</strong></div>
             <div><small>Contenido aprobado</small><strong>{{ $tarea->archivos->count() }} {{ $tarea->archivos->count() === 1 ? 'archivo' : 'archivos' }}</strong></div>
-            <div class="{{ $facebookReady ? 'is-ready' : 'is-pending' }}"><small>Conexión con Meta</small><strong><i class="fas fa-circle"></i>{{ $facebookReady ? 'Lista para publicar' : 'Requiere vinculación' }}</strong></div>
+            <div class="{{ $metaReady ? 'is-ready' : 'is-pending' }}"><small>Conexión con Meta</small><strong><i class="fas fa-circle"></i>{{ $metaReady ? ($facebookReady && $instagramReady ? 'Facebook e Instagram' : ($facebookReady ? 'Facebook disponible' : 'Instagram disponible')) : 'Requiere vinculación' }}</strong></div>
         </section>
 
         <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden rp-card">
@@ -90,7 +102,7 @@
                             </label>
                             
                             <div class="mb-4 space-y-3" id="account-display">
-                                <div id="facebook-account" class="flex items-center space-x-3 p-3 rounded-xl border rp-account-card" style="background: #ffffff; border-color: #e2e8f0;">
+                                <div id="facebook-account" class="{{ in_array('facebook', $selectedPlatforms, true) ? '' : 'hidden' }} flex items-center space-x-3 p-3 rounded-xl border rp-account-card" style="background: #ffffff; border-color: #e2e8f0;">
                                     <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm" style="background: linear-gradient(135deg, #1877f2, #0d5dc7);">
                                         {{ $facebookPageInitial }}
                                     </div>
@@ -104,13 +116,13 @@
                                     </div>
                                 </div>
                                 
-                                <div id="instagram-account" class="hidden flex items-center space-x-3 p-3 rounded-xl border rp-account-card" style="background: #ffffff; border-color: #e2e8f0;">
+                                <div id="instagram-account" class="{{ in_array('instagram', $selectedPlatforms, true) ? '' : 'hidden' }} flex items-center space-x-3 p-3 rounded-xl border rp-account-card" style="background: #ffffff; border-color: #e2e8f0;">
                                     <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm" style="background: linear-gradient(135deg, #e4405f, #c1306d);">
-                                        L
+                                        {{ $instagramAccountInitial }}
                                     </div>
                                     <div class="flex-1">
                                         <div class="flex items-center space-x-2">
-                                            <span class="font-semibold text-gray-800">la_llajuitaa</span>
+                                            <span class="font-semibold text-gray-800">{{ $instagramAccountName }}</span>
                                             <span class="text-xs px-2 py-1 rounded-full font-medium" style="background: #fdf2f8; color: #db2777;">
                                                 <i class="fab fa-instagram mr-1"></i>instagram
                                             </span>
@@ -120,21 +132,29 @@
                             </div>
                             
                             <div class="flex flex-wrap gap-3">
-                                <label class="rp-checkbox-pill" for="facebook-checkbox">
-                                    <input id="facebook-checkbox" name="platforms[]" value="facebook" type="checkbox" checked class="h-4 w-4 rounded focus:ring-2" style="accent-color: #1877f2; border-color: #d1d5db;" onchange="updateAccountDisplay(); updatePreview();">
+                                <label class="rp-checkbox-pill {{ ! $facebookReady ? 'is-disabled' : '' }}" for="facebook-checkbox">
+                                    <input id="facebook-checkbox" name="platforms[]" value="facebook" type="checkbox" {{ in_array('facebook', $selectedPlatforms, true) ? 'checked' : '' }} {{ ! $facebookReady ? 'disabled' : '' }} class="h-4 w-4 rounded focus:ring-2" style="accent-color: #1877f2; border-color: #d1d5db;" onchange="updateAccountDisplay(); updatePreview();">
                                     <span class="ml-2 text-sm text-gray-700 flex items-center">
                                         <i class="fab fa-facebook mr-1.5" style="color: #1877f2;"></i>
                                         Facebook
+                                        @if(! $facebookReady)<small class="ml-1 text-gray-400">No vinculada</small>@endif
                                     </span>
                                 </label>
-                                <label class="rp-checkbox-pill" for="instagram-checkbox">
-                                    <input id="instagram-checkbox" name="platforms[]" value="instagram" type="checkbox" class="h-4 w-4 rounded focus:ring-2" style="accent-color: #e4405f; border-color: #d1d5db;" onchange="updateAccountDisplay(); updatePreview();">
+                                <label class="rp-checkbox-pill {{ ! $instagramReady ? 'is-disabled' : '' }}" for="instagram-checkbox">
+                                    <input id="instagram-checkbox" name="platforms[]" value="instagram" type="checkbox" {{ in_array('instagram', $selectedPlatforms, true) ? 'checked' : '' }} {{ ! $instagramReady ? 'disabled' : '' }} class="h-4 w-4 rounded focus:ring-2" style="accent-color: #e4405f; border-color: #d1d5db;" onchange="updateAccountDisplay(); updatePreview();">
                                     <span class="ml-2 text-sm text-gray-700 flex items-center">
                                         <i class="fab fa-instagram mr-1.5" style="color: #e4405f;"></i>
                                         Instagram
+                                        @if(! $instagramReady)<small class="ml-1 text-gray-400">No vinculada</small>@endif
                                     </span>
                                 </label>
                             </div>
+                            @if($instagramReady && ! $instagramMediaPublic)
+                                <div class="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                                    <i class="fas fa-link mr-1"></i>
+                                    Instagram está conectado, pero Meta necesita una URL pública HTTPS para descargar el contenido. Configura <strong>APP_URL</strong> con el dominio público antes de publicar.
+                                </div>
+                            @endif
                         </div>
                         
                         <!-- Contenido multimedia aprobado -->
@@ -343,10 +363,10 @@
                                     <div class="px-3 pt-3 pb-2">
                                         <div class="flex items-start justify-between gap-3">
                                             <div class="flex items-start gap-2.5">
-                                                <div class="rp-facebook-avatar">P</div>
+                                                <div class="rp-facebook-avatar">{{ $facebookPageInitial }}</div>
                                                 <div>
                                                     <div class="flex items-center gap-1 flex-wrap">
-                                                        <span class="text-[14px] font-semibold text-black">PRODOVI</span>
+                                                        <span class="text-[14px] font-semibold text-black">{{ $facebookPageName }}</span>
                                                     </div>
                                                     <div class="flex items-center gap-1 text-[12px] text-gray-500 leading-none mt-1">
                                                         <span id="preview-facebook-time">Ahora mismo</span>
@@ -404,10 +424,10 @@
                                     <div class="px-3 pt-3 pb-2">
                                         <div class="flex items-start justify-between gap-3">
                                             <div class="flex items-start gap-2.5">
-                                                <div class="rp-facebook-avatar">P</div>
+                                                <div class="rp-facebook-avatar">{{ $instagramAccountInitial }}</div>
                                                 <div>
                                                     <div class="flex items-center gap-1 flex-wrap">
-                                                        <span class="text-[14px] font-semibold text-black">PRODOVI</span>
+                                                        <span class="text-[14px] font-semibold text-black">{{ $instagramAccountName }}</span>
                                                     </div>
                                                     <div class="flex items-center gap-1 text-[12px] text-gray-500 leading-none mt-1">
                                                         <span id="preview-instagram-time">Ahora mismo</span>
@@ -464,18 +484,12 @@
                         </div>
                         
                         <!-- Botones de acción -->
-                        @if(! $facebookReady)
-                        <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                            Este cliente todavía no tiene una página de Facebook autorizada con token válido. Vincula Facebook desde su panel antes de publicar.
-                        </div>
-                        @endif
-
                         <div class="publication-form-actions flex flex-col sm:flex-row justify-between items-center gap-4 pt-5 border-t border-gray-200">
                             <button type="button" onclick="togglePreview()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 rp-secondary-btn" style="color: #4f46e5; background: #eef2ff;">
                                 <i class="fas fa-eye"></i>
                                 <span id="preview-toggle-text">Ocultar Vista Previa</span>
                             </button>
-                            <button type="submit" id="publish-submit-btn" {{ ! $facebookReady ? 'disabled' : '' }} 
+                            <button type="submit" id="publish-submit-btn" {{ ! $metaReady ? 'disabled' : '' }}
                                     class="inline-flex items-center gap-2 px-7 py-3 rounded-xl text-white font-semibold shadow-lg transition-all duration-200 hover:shadow-2xl hover:-translate-y-0.5 rp-publish-btn" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);">
                                 <i class="fas fa-rocket"></i>
                                 Publicar
@@ -487,6 +501,23 @@
         </div>
     </div>
 </div>
+
+@if(! $metaReady)
+<div class="publication-meta-modal" id="publication-meta-modal" hidden data-auto-open="true">
+    <button type="button" class="publication-meta-backdrop" data-close-meta-modal aria-label="Cerrar aviso"></button>
+    <section class="publication-meta-dialog" role="alertdialog" aria-modal="true" aria-labelledby="publication-meta-title" aria-describedby="publication-meta-description">
+        <div class="publication-meta-icon"><i class="fas fa-share-nodes"></i><span><i class="fas fa-exclamation"></i></span></div>
+        <span class="publication-meta-eyebrow">ACCIÓN REQUERIDA</span>
+        <h2 id="publication-meta-title">No se puede publicar todavía</h2>
+        <p id="publication-meta-description">Este cliente todavía no tiene una página de Facebook ni una cuenta profesional de Instagram autorizadas con un token válido.</p>
+        <div class="publication-meta-instruction"><i class="fas fa-circle-info"></i><span>Solicita a <strong>{{ $cliente?->name ?? 'este cliente' }}</strong> que ingrese a su panel y vincule Meta antes de continuar.</span></div>
+        <footer>
+            <a href="{{ route('administrador.tareas.ver-subidas', $tarea->id) }}"><i class="fas fa-folder-open"></i> Revisar entregables</a>
+            <button type="button" data-close-meta-modal>Entendido</button>
+        </footer>
+    </section>
+</div>
+@endif
 
 <style>
     .rp-banner {
@@ -890,6 +921,25 @@
     .publication-page .rp-account-card,.publication-page .rp-file-card{border-color:#e5e7eb!important;border-radius:.7rem!important;background:#fff!important;box-shadow:none}.publication-page .rp-account-card:hover,.publication-page .rp-file-card:hover{border-color:#bfdcdf!important;background:#fff!important;transform:translateX(2px)}.publication-page .rp-checkbox-pill{border-color:#e2e7df;border-radius:.65rem;background:#fff}.publication-page textarea{min-height:135px;border-color:#dfe3dd!important;border-radius:.7rem!important;background:#fff!important;color:#374151;font-family:inherit;font-size:.72rem;line-height:1.55}.publication-page textarea:focus,.publication-page input:focus,.publication-page select:focus{border-color:#117e8c!important;box-shadow:0 0 0 3px rgba(17,126,140,.1)!important}.publication-page #generate-copy-btn{border-radius:.6rem!important;background:#e3a122!important;box-shadow:0 5px 13px rgba(227,161,34,.2)!important;font-weight:900}.publication-page #generate-copy-btn:hover{background:#ca8914!important}.publication-page .publication-step-schedule>.grid>div{border-color:#e4e7e1!important;background:#fff!important}.publication-page .rp-schedule-card{border-color:#e1e5df;background:#fafbf9}.publication-page .rp-schedule-card__icon{background:#117e8c}.publication-page .rp-schedule-field__control:focus-within{border-color:#117e8c;box-shadow:0 0 0 3px rgba(17,126,140,.1)}.publication-page .rp-schedule-chip:hover,.publication-page .rp-schedule-chip.is-active{border-color:#117e8c;background:#117e8c;color:#fff}.publication-page .rp-facebook-preview{overflow:hidden;border-color:#d9dde1!important;border-radius:.75rem!important;box-shadow:0 7px 18px rgba(15,23,42,.07)}.publication-page .rp-preview-carousel,.publication-page .rp-preview-carousel__track,.publication-page .rp-preview-carousel__slide{min-height:360px}.publication-page #preview-media-facebook,.publication-page #preview-media-instagram{min-height:360px!important}.publication-page .rp-secondary-btn{border:1px solid #dfe4dc;background:#f8faf7!important;color:#687065!important;font-weight:900}.publication-page .rp-secondary-btn:hover{border-color:#117e8c;background:#e9f5f6!important;color:#117e8c!important}.publication-page .rp-publish-btn{border-radius:.65rem!important;background:#117e8c!important;box-shadow:0 7px 17px rgba(17,126,140,.24)!important}.publication-page .rp-publish-btn:hover{background:#0e6c78!important}.publication-page .rp-publish-btn:disabled{cursor:not-allowed;opacity:.5;transform:none}.publication-page .rp-optimization-time:hover,.publication-page .rp-optimization-time.is-active{border-color:#117e8c;background:#117e8c}.publication-page .rp-download-btn:hover{background:#e4f3f4;color:#117e8c}
     @media(max-width:1050px){.publication-hero{min-height:205px}.publication-hero-layout{justify-content:center;flex-direction:column;text-align:center}.publication-hero-actions{justify-content:center}.publication-context{grid-template-columns:repeat(3,minmax(0,1fr))}.publication-context>div:nth-child(3){border-right:0}.publication-context>div:nth-child(-n+3){border-bottom:1px solid #e8eae5}.publication-page #publishing-form{grid-template-columns:1fr}.publication-step,.publication-preview-column{grid-column:1}.publication-preview-column{grid-row:auto;position:relative;top:auto}.publication-form-actions{grid-column:1}}
     @media(max-width:640px){.publication-page{padding-bottom:28px}.publication-hero-body{padding:24px 20px}.publication-hero-actions{width:100%}.publication-hero-action{flex:1}.publication-context{grid-template-columns:1fr;margin:14px 12px 0}.publication-context>div{border-right:0;border-bottom:1px solid #e8eae5}.publication-context>div:last-child{border-bottom:0}.publication-page .rp-card{margin:14px 12px 0}.publication-step,.publication-preview-column{padding:15px}.publication-step-copy>div:nth-child(2){align-items:flex-start;flex-direction:column;gap:8px}.publication-page #generate-copy-btn{width:100%;justify-content:center}.publication-form-actions{position:static;align-items:stretch}.publication-form-actions button{width:100%;justify-content:center}.publication-page .rp-preview-carousel,.publication-page .rp-preview-carousel__track,.publication-page .rp-preview-carousel__slide{min-height:300px}.publication-page #preview-media-facebook,.publication-page #preview-media-instagram{min-height:300px!important}}
+
+    /* Sistema visual Prodovi compartido con campañas y revisión de entregables. */
+    .publication-page .rp-banner{background:linear-gradient(135deg,#789d32 25%,transparent 25%) -50px 0,linear-gradient(225deg,#789d32 25%,transparent 25%) -50px 0,linear-gradient(315deg,#789d32 25%,transparent 25%),linear-gradient(45deg,#789d32 25%,transparent 25%),linear-gradient(to bottom,#8aae3e 0%,#638522 100%);background-size:100px 100px,100px 100px,100px 100px,100px 100px,100% 100%;background-color:#638522}
+    .publication-hero .rp-banner-overlay{background:linear-gradient(rgba(26,46,13,.22),rgba(26,46,13,.22)),radial-gradient(circle at 0 0,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 100% 100%,rgba(255,255,255,.2),transparent 50%)}
+    .publication-hero-body{width:min(1280px,100%);margin:0 auto;padding:30px 24px}.publication-hero-copy>span{color:#edf6df}.publication-hero p{color:#edf6df}.publication-hero-action.is-primary,.publication-hero-action:hover{color:#638522}
+    .publication-context,.publication-page .rp-card{width:min(1280px,calc(100% - 48px));margin-right:auto!important;margin-left:auto!important}.publication-context{grid-template-columns:1.2fr 1fr .95fr .62fr .72fr .92fr;overflow:hidden;border-color:#d8e3c7;border-top:4px solid #7da533;background:#fff;box-shadow:0 7px 20px rgba(91,121,38,.075)}.publication-context>div{padding:15px 17px}.publication-context small{color:#7e8778}.publication-context strong{color:#30362e;font-size:.67rem}
+    .publication-step,.publication-preview-column{--publication-accent:#7da533;overflow:hidden;border-color:#e1e5de;border-radius:14px;background:linear-gradient(180deg,color-mix(in srgb,var(--publication-accent) 4%,#fff),#fff 74px);box-shadow:0 7px 20px rgba(48,40,52,.055)}.publication-step-platforms{--publication-accent:#5b2b76}.publication-step-media{--publication-accent:#ef6c22}.publication-step-copy{--publication-accent:#117e8c}.publication-step-schedule{--publication-accent:#7da533}.publication-preview-column{--publication-accent:#c94f0c}.publication-step-label{color:var(--publication-accent)}.publication-step>label>i,.publication-step>div>label>i,.publication-preview-column>label>i{color:var(--publication-accent)!important}.publication-step>label,.publication-step>div>label,.publication-preview-column>label{font-size:.78rem!important}.publication-step>label:after,.publication-step>div>label:after,.publication-preview-column>label:after{content:'';display:block;width:42px;height:3px;margin-top:7px;border-radius:999px;background:var(--publication-accent)}
+    .publication-step-platforms{background:#fff}.publication-step-platforms .publication-step-label{color:#8b9288}.publication-step-platforms>label:after,.publication-step-platforms>div>label:after{display:none!important}.publication-step-platforms>label>i{color:#697067!important}.publication-step-platforms .rp-checkbox-pill{position:relative;min-height:42px;padding:0 14px 0 11px;border:1px solid #dfe4dc;border-radius:10px;background:#fff;box-shadow:0 2px 7px rgba(48,40,52,.04);transition:.18s}.publication-step-platforms .rp-checkbox-pill:hover{transform:translateY(-1px);box-shadow:0 6px 13px rgba(48,40,52,.08)}.publication-step-platforms .rp-checkbox-pill:has(input:checked){border-color:#b8c9aa;background:#f6f9f2;box-shadow:0 0 0 3px rgba(125,165,51,.1)}.publication-step-platforms .rp-checkbox-pill input{position:relative;width:21px!important;height:21px!important;display:grid;place-items:center;flex:0 0 21px;appearance:none;border:2px solid #b9c0b5!important;border-radius:6px;background:#fff;cursor:pointer;box-shadow:none!important}.publication-step-platforms .rp-checkbox-pill input:checked{border-color:#7da533!important;background:#7da533}.publication-step-platforms .rp-checkbox-pill input:checked:after{content:'\2713';color:#fff;font-size:.72rem;font-weight:900;line-height:1}.publication-step-platforms .rp-checkbox-pill input:focus-visible{outline:3px solid rgba(125,165,51,.2);outline-offset:2px}.publication-step-platforms .rp-checkbox-pill>span{margin-left:8px!important;font-size:.68rem;font-weight:850}.publication-step-platforms .rp-checkbox-pill:has(#facebook-checkbox:checked){border-color:#b7d3f8;background:#f2f7fe;box-shadow:0 0 0 3px rgba(24,119,242,.09)}.publication-step-platforms #facebook-checkbox:checked{border-color:#1877f2!important;background:#1877f2}.publication-step-platforms .rp-checkbox-pill:has(#instagram-checkbox:checked){border-color:#efc3d2;background:#fdf5f8;box-shadow:0 0 0 3px rgba(228,64,95,.08)}.publication-step-platforms #instagram-checkbox:checked{border-color:#e4405f!important;background:#e4405f}
+    .publication-step-platforms .rp-checkbox-pill.is-disabled{cursor:not-allowed;opacity:.55;background:#f4f5f3;box-shadow:none}.publication-step-platforms .rp-checkbox-pill.is-disabled:hover{transform:none;box-shadow:none}.publication-step-platforms .rp-checkbox-pill input:disabled{cursor:not-allowed;background:#e5e7eb}
+    .publication-page .rp-account-card,.publication-page .rp-file-card{border-color:#e1e5de!important;box-shadow:0 3px 9px rgba(48,40,52,.035)}.publication-page .rp-account-card:hover,.publication-page .rp-file-card:hover{border-color:color-mix(in srgb,var(--publication-accent,#117e8c) 35%,#dfe3dd)!important;transform:translateY(-1px)}.publication-page .rp-checkbox-pill{border-color:#dfe4dc;background:#fafbf9}.publication-page .rp-checkbox-pill:hover{border-color:#7da533;background:#f4f8ee;box-shadow:0 4px 10px rgba(91,121,38,.09)}
+    .publication-page #generate-copy-btn{background:linear-gradient(135deg,#f5a900,#ef6c22)!important;box-shadow:0 7px 15px rgba(239,108,34,.23)!important}.publication-page #generate-copy-btn:hover{background:linear-gradient(135deg,#e79f00,#d85b16)!important}.publication-page textarea:focus,.publication-page input:focus,.publication-page select:focus{border-color:#117e8c!important;box-shadow:0 0 0 3px rgba(17,126,140,.11)!important}
+    .publication-page .rp-schedule-card{border-color:#d8e3c7;background:linear-gradient(135deg,#fff,#f5f9ef)}.publication-page .rp-schedule-card__icon{background:#7da533;box-shadow:0 7px 16px rgba(125,165,51,.22)}.publication-page .rp-schedule-field__label{color:#638522}.publication-page .rp-schedule-field__control i{color:#7da533}.publication-page .rp-schedule-chip{border-color:#d8e3c7;color:#638522}.publication-page .rp-schedule-chip:hover,.publication-page .rp-schedule-chip.is-active{border-color:#7da533;background:#7da533;box-shadow:0 8px 17px rgba(125,165,51,.22)}.publication-page .rp-schedule-summary{border-color:#d8e3c7;background:#f3f8ec}.publication-page .rp-schedule-summary__label{color:#638522}.publication-page .rp-optimization-time{border-color:#cfe0e2;color:#117e8c}.publication-page .rp-optimization-time:hover,.publication-page .rp-optimization-time.is-active{border-color:#117e8c;background:#117e8c;box-shadow:0 8px 17px rgba(17,126,140,.2)}
+    .publication-page .rp-facebook-preview{border-color:#d9ddd6!important;border-radius:12px!important;box-shadow:0 10px 25px rgba(35,45,30,.1)}.publication-page .rp-facebook-avatar{background:linear-gradient(135deg,#7da533,#117e8c)}.publication-page .rp-preview-carousel__dot.is-active{background:#ef6c22;border-color:#ef6c22}.publication-page .rp-download-btn{color:#117e8c}.publication-page .rp-download-btn:hover{background:#e7f4f5;color:#0d6975}
+    .publication-form-actions{border-color:#d8e3c7!important;border-radius:14px;background:rgba(255,255,255,.97);box-shadow:0 -7px 22px rgba(48,40,52,.075)}.publication-page .rp-secondary-btn{min-height:43px;border-color:#d8e3c7;background:#f6f9f2!important;color:#638522!important}.publication-page .rp-secondary-btn:hover{border-color:#7da533;background:#edf4e4!important;color:#587923!important}.publication-page .rp-publish-btn{min-width:170px;min-height:46px;border:1px solid #d85b16;border-radius:10px!important;background:linear-gradient(135deg,#ef6c22,#c94f0c)!important;font-size:.72rem;font-weight:900;box-shadow:0 10px 22px rgba(201,79,12,.3)!important}.publication-page .rp-publish-btn:hover{background:linear-gradient(135deg,#e6631d,#b94608)!important;box-shadow:0 14px 27px rgba(201,79,12,.36)!important}.publication-page .rp-publish-btn:disabled{border-color:#d4d8d1;background:#b5bbb1!important;color:#f4f5f3;box-shadow:none!important;opacity:1}
+    .publication-page .rp-card .rp-alert-success{border-left:4px solid #7da533!important}.publication-page .rp-card [class*="border-red-200"]{border-left:4px solid #b23e2c!important}.publication-page .rp-card [class*="border-amber-200"]{border-left:4px solid #ef6c22!important}
+    .publication-meta-modal{position:fixed;z-index:10300;inset:0;display:grid;place-items:center;padding:20px}.publication-meta-modal[hidden]{display:none}.publication-meta-backdrop{position:absolute;inset:0;border:0;background:rgba(20,25,18,.78);backdrop-filter:blur(5px);cursor:pointer}.publication-meta-dialog{position:relative;width:min(480px,100%);padding:30px;border:1px solid #e5dfe7;border-radius:18px;background:#fff;text-align:center;box-shadow:0 30px 85px rgba(17,24,13,.38);animation:publicationMetaIn .24s ease both}@keyframes publicationMetaIn{from{transform:translateY(14px) scale(.97);opacity:0}to{transform:none;opacity:1}}.publication-meta-icon{position:relative;width:72px;height:72px;display:grid;place-items:center;margin:0 auto 18px;border-radius:22px;background:linear-gradient(135deg,#1877f2,#0d5dc7);color:#fff;font-size:1.8rem;box-shadow:0 13px 26px rgba(24,119,242,.24)}.publication-meta-icon>span{position:absolute;right:-6px;bottom:-6px;width:27px;height:27px;display:grid;place-items:center;border:4px solid #fff;border-radius:50%;background:#ef6c22;color:#fff;font-size:.58rem}.publication-meta-eyebrow{display:block;color:#c94f0c;font-size:.58rem;font-weight:900;letter-spacing:.13em}.publication-meta-dialog h2{margin:7px 0 0;color:#302834;font-size:1.4rem;font-weight:900;letter-spacing:-.025em}.publication-meta-dialog>p{max-width:390px;margin:9px auto 0;color:#756a7a;font-size:.74rem;line-height:1.6}.publication-meta-instruction{display:flex;align-items:flex-start;gap:9px;margin-top:20px;padding:13px 14px;border-left:4px solid #ef6c22;border-radius:8px;background:#fff5ed;color:#6d4a36;text-align:left;font-size:.68rem;line-height:1.55}.publication-meta-instruction>i{margin-top:2px;color:#ef6c22}.publication-meta-dialog footer{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:23px}.publication-meta-dialog footer a,.publication-meta-dialog footer button{min-height:44px;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 13px;border-radius:10px;font-size:.67rem;font-weight:900;text-decoration:none;cursor:pointer}.publication-meta-dialog footer a{border:1px solid #d8e3c7;background:#f6f9f2;color:#638522}.publication-meta-dialog footer button{border:1px solid #d85b16;background:linear-gradient(135deg,#ef6c22,#c94f0c);color:#fff;box-shadow:0 8px 17px rgba(201,79,12,.22)}.publication-meta-dialog footer a:hover,.publication-meta-dialog footer button:hover{transform:translateY(-1px)}
+
+    @media(max-width:1050px){.publication-context{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(max-width:640px){.publication-context,.publication-page .rp-card{width:calc(100% - 24px)}.publication-context{grid-template-columns:1fr}.publication-hero-body{padding:26px 20px}.publication-step>label:after,.publication-step>div>label:after,.publication-preview-column>label:after{margin-top:6px}.publication-page .rp-publish-btn{min-width:0}.publication-meta-modal{padding:12px}.publication-meta-dialog{padding:25px 18px}.publication-meta-dialog footer{grid-template-columns:1fr}}
 </style>
 
 <script>
@@ -898,8 +948,8 @@
 
     // Función para actualizar la visualización de cuentas
     function updateAccountDisplay() {
-        const facebookChecked = document.getElementById('facebook-checkbox').checked;
-        const instagramChecked = document.getElementById('instagram-checkbox').checked;
+        const facebookChecked = document.getElementById('facebook-checkbox')?.checked ?? false;
+        const instagramChecked = document.getElementById('instagram-checkbox')?.checked ?? false;
         
         document.getElementById('facebook-account').classList.toggle('hidden', !facebookChecked);
         document.getElementById('instagram-account').classList.toggle('hidden', !instagramChecked);
@@ -928,12 +978,14 @@
 
     // Función para actualizar la vista previa
     function updatePreview() {
-        const facebookChecked = document.getElementById('facebook-checkbox').checked;
-        const instagramChecked = document.getElementById('instagram-checkbox').checked;
+        const facebookChecked = document.getElementById('facebook-checkbox')?.checked ?? false;
+        const instagramChecked = document.getElementById('instagram-checkbox')?.checked ?? false;
+        const noPlatformSelected = !facebookChecked && !instagramChecked;
         const contentText = document.getElementById('content').value || "Escribe tu mensaje aquí...";
         const scheduleText = getPreviewScheduleText();
         
-        document.getElementById('facebook-preview').classList.toggle('hidden', !facebookChecked);
+        // La vista previa de referencia permanece visible aunque Meta no esté vinculado.
+        document.getElementById('facebook-preview').classList.toggle('hidden', !facebookChecked && !noPlatformSelected);
         document.getElementById('preview-content-facebook').textContent = contentText;
         document.getElementById('preview-facebook-time').textContent = scheduleText;
         
@@ -1328,6 +1380,27 @@
             btn.disabled = false;
             btn.innerHTML = `<i class="fas fa-wand-magic-sparkles mr-1"></i> Generar Copy con IA`;
         }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const metaModal = document.getElementById('publication-meta-modal');
+        if (!metaModal || metaModal.dataset.autoOpen !== 'true') return;
+
+        const openMetaModal = () => {
+            metaModal.hidden = false;
+            document.body.style.overflow = 'hidden';
+            metaModal.querySelector('.publication-meta-dialog [data-close-meta-modal]')?.focus();
+        };
+        const closeMetaModal = () => {
+            metaModal.hidden = true;
+            document.body.style.overflow = '';
+        };
+
+        metaModal.querySelectorAll('[data-close-meta-modal]').forEach(button => button.addEventListener('click', closeMetaModal));
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && !metaModal.hidden) closeMetaModal();
+        });
+        openMetaModal();
     });
 </script>
 @endsection

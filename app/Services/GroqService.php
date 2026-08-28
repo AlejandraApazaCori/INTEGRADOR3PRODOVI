@@ -10,9 +10,7 @@ class GroqService
     /**
      * Genera un brief estrategico ejecutivo basado en las respuestas de un cuestionario.
      *
-     * @param string $nombreEmpresa
-     * @param array $respuestas Formato: [['pregunta' => '...', 'respuesta' => '...'], ...]
-     * @return string|null
+     * @param  array  $respuestas  Formato: [['pregunta' => '...', 'respuesta' => '...'], ...]
      */
     public function generateSummary(string $nombreEmpresa, array $respuestas): ?string
     {
@@ -67,11 +65,14 @@ FORMATO DE SALIDA:
 - Usa Markdown.
 - Manten un tono profesional, claro, sobrio y ejecutivo.
 - Maximo 1,200 palabras.
-- No uses tablas Markdown ni tablas de ningun tipo.
+- Puedes usar tablas Markdown cuando existan al menos dos datos comparables y la tabla mejore realmente la lectura.
+- Usa listas para enumeraciones y parrafos breves para el analisis.
+- No uses separadores horizontales (---), encabezados duplicados ni numeros aislados entre secciones.
+- Finaliza con el contenido ejecutivo disponible. No agregues un "Proximo paso", no solicites recopilar informacion faltante y no hagas referencia a secciones omitidas.
 
 {$reglasCanales}
 
-ESTRUCTURA OBLIGATORIA:
+ESTRUCTURA DISPONIBLE (INCLUYE SOLO LAS SECCIONES RESPALDADAS POR RESPUESTAS UTILES):
 
 ## 1 Resumen general de la empresa
 Describe brevemente que hace la empresa, a quien atiende y cual es su proposito principal.
@@ -103,18 +104,6 @@ Resume las metas de 6 a 12 meses usando las palabras del cliente cuando sea posi
 ## 10 Recursos disponibles
 Resume presupuesto, equipo actual y recursos mencionados. No hagas distribucion porcentual del presupuesto.
 
-## 11 Informacion faltante o por validar
-Lista la informacion que hace falta o que conviene validar antes de crear un plan de marketing mas preciso.
-Incluye solo vacios realmente relevantes detectados a partir del cuestionario.
-Si corresponde, puedes mencionar ejemplos como:
-- ubicacion exacta o zona de atencion;
-- ticket promedio real;
-- capacidad maxima de atencion;
-- calendario de inscripciones;
-- testimonios disponibles;
-- presupuesto mensual exacto;
-- restricciones legales o de privacidad.
-
 ## 12 Conclusion ejecutiva
 Cierra con un resumen breve de la situacion actual y de la direccion estrategica general recomendada, sin entrar todavia en calendario, tacticas detalladas ni plan de accion completo.
 
@@ -131,8 +120,12 @@ INSTRUCCIONES ESTRICTAS:
 - No desarrolles tacticas demasiado detalladas.
 - No recomiendes acciones que dependan de recursos no confirmados.
 - Diferencia claramente entre "Dato proporcionado" y "Supuesto" cuando aplique.
-- Si una respuesta del cuestionario esta vacia o no aporta informacion, ignorala o reflejala en "Informacion faltante o por validar".
-- Si el cuestionario no contiene datos suficientes para una seccion, indicalo de forma profesional.
+- Si una respuesta esta vacia, no aporta informacion o equivale a "sin respuesta", ignorala por completo.
+- Si no hay informacion suficiente para una seccion, omite toda la seccion.
+- Nunca escribas "Dato no proporcionado", "No se especifico", "No se menciono" ni expresiones equivalentes.
+- No inventes servicios, segmentos, competidores, canales, recursos ni problemas para completar una seccion.
+- No generes tablas con celdas vacias o datos ausentes.
+- Todo Markdown debe ser valido: las tablas deben tener encabezado, separador y filas completas; las listas deben usar un unico nivel coherente.
 - El contenido debe ser util como insumo para un servicio posterior que generara el plan de marketing.
 
 DATOS DEL CUESTIONARIO:
@@ -141,9 +134,9 @@ EOT;
 
         // 3. Preparar y hacer la llamada a la API de Groq
         $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . config('services.groq.key'),
-                'Content-Type' => 'application/json',
-            ])
+            'Authorization' => 'Bearer '.config('services.groq.key'),
+            'Content-Type' => 'application/json',
+        ])
             ->withOptions([
                 'verify' => false,
             ])
@@ -168,7 +161,7 @@ EOT;
                 $data['choices'][0]['message']['content'] ?? 'No se pudo generar el resumen.'
             );
         } else {
-            Log::error('Error en la API de Groq: ' . $response->body());
+            Log::error('Error en la API de Groq: '.$response->body());
 
             return 'Hubo un error al generar el resumen.';
         }

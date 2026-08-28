@@ -54,11 +54,14 @@ return [
         ],
     ],
 
-
     'groq' => [
         'key' => env('GROQ_API_KEY'),
         'url' => env('GROQ_URL'),
         'model' => env('GROQ_MODEL'),
+        'fallback_models' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('GROQ_FALLBACK_MODELS', ''))
+        ))),
     ],
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
@@ -68,7 +71,6 @@ return [
             'verify' => false,
         ],
     ],
-
 
     'facebook' => [
         'client_id' => env('FACEBOOK_CLIENT_ID'),
@@ -84,5 +86,3 @@ return [
     ],
 
 ];
-
-

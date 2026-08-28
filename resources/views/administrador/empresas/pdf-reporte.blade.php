@@ -2,148 +2,43 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>Reporte Ejecutivo - {{ $empresa->nombre_empresa }}</title>
+    <title>Resumen ejecutivo - {{ $empresa->nombre_empresa }}</title>
     <style>
-        /* --- ESTILOS COMPATIBLES CON DOMPDF --- */
-        
-        /* Fuente y cuerpo */
-        body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-size: 14px;
-            line-height: 1.6;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            background-color: #fff;
-        }
-        
-        /* Contenedor principal */
-        .container {
-            width: 100%;
-            max-width: 100%;
-            margin: 0 auto;
-        }
-        
-        /* Portada - Usando color sólido en lugar de degradado */
-        .header {
-            background-color: #4f46e5; /* Un azul sólido en lugar del degradado */
-            color: white;
-            padding: 40px;
-            text-align: center;
-            border-bottom: 4px solid #312e81; /* Un borde más oscuro para dar profundidad */
-        }
-        
-        .header h1 {
-            font-size: 32px;
-            margin: 0 0 10px 0;
-            font-weight: bold;
-        }
-        
-        .header h2 {
-            font-family: sans-serif;
-            font-size: 24px;
-            font-weight: 300;
-            margin: 0;
-        }
-        
-        .header-info {
-            font-size: 14px;
-            margin-top: 20px;
-            opacity: 0.9;
-        }
-        
-        /* Contenido */
-        .content {
-            padding: 40px;
-        }
-        
-        .section {
-            margin-bottom: 30px;
-            page-break-inside: avoid; /* Evita que una sección se corte entre páginas */
-        }
-        
-        .section h2 {
-            font-size: 20px;
-            color: #1f2937;
-            border-bottom: 2px solid #3b82f6;
-            padding-bottom: 8px;
-            margin-bottom: 15px;
-        }
-        
-        .section-content {
-            white-space: pre-wrap;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-size: 14px;
-            text-align: left;
-        }
-        
-        /* Pie de página */
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            text-align: center;
-            font-size: 12px;
-            color: #6b7280;
-        }
-        
-        /* Para listas si las hay en el contenido */
-        ul, ol {
-            margin: 10px 0;
-            padding-left: 30px;
-        }
-        
-        li {
-            margin-bottom: 5px;
-        }
-        
-        /* Para texto en negrita si lo hay */
-        strong {
-            font-weight: bold;
-        }
-        
-        /* Saltos de página entre secciones si es necesario */
-        .page-break {
-            page-break-after: always;
-        }
-            .footer img {
-            max-width: 120px;
-            margin-bottom: 10px;
-        }
+        @page{margin:22px 20px 66px}*{box-sizing:border-box}body{margin:0;color:#374151;font-family:DejaVu Sans,sans-serif;font-size:9px;line-height:1.55}.report-head{margin:-22px -20px 14px;padding:10px 22px;background:#343a40}.report-head table{width:100%;border-collapse:collapse}.report-head td{padding:0;border:0;vertical-align:middle}.report-head-logo{width:125px}.report-head-logo img{display:block;width:92px}.report-head-copy{text-align:right}.report-head h1{margin:0;color:#fff;font-size:17px}.report-head p{margin:4px 0 0;color:#d9ded6;font-size:8px}.pdf-footer{position:fixed;right:-20px;bottom:-66px;left:-20px;height:52px;background:#343a40}.pdf-footer table{width:100%;height:52px;border-collapse:collapse}.pdf-footer td{height:52px;padding:0 28px;border:0;vertical-align:middle}.pdf-footer-logo{width:120px}.pdf-footer-logo img{display:block;width:84px}.pdf-footer-copy{color:#d9ded6;font-size:7px;letter-spacing:.04em;text-align:center;text-transform:uppercase}.pdf-footer-page-space{width:120px}.company-block{margin-bottom:22px;padding:13px 15px;border:1px solid #d7d9dc;background:#f3f4f6}.company-block h2{margin:0;color:#343a40;font-size:16px}.company-block p{margin:4px 0 0;color:#6b7280}.document-label{margin-top:8px;color:#687064;font-size:8px;font-style:italic}.report-section{margin-bottom:22px;page-break-inside:auto}.section-title{margin:0 0 12px;padding:7px 9px;border-left:4px solid #565d64;background:#f3f4f6;color:#343a40;font-size:13px}.section-content{color:#4b5563}.section-content p{margin:0 0 9px}.section-content strong{color:#374151;font-weight:bold}.section-content ul,.section-content ol{margin:6px 0 10px;padding-left:21px}.section-content li{margin:0 0 4px}.section-content table{width:100%;margin:9px 0 13px;border-collapse:collapse;page-break-inside:avoid;font-size:8px}.section-content th{padding:7px 8px;border:1px solid #c7cbd1;background:#e5e7eb;color:#343a40;text-align:left}.section-content td{padding:7px 8px;border:1px solid #d7d9dc;vertical-align:top}.section-content tr:nth-child(even) td{background:#f7f7f8}.section-content blockquote{margin:9px 0;padding:7px 9px;border-left:4px solid #7da533;background:#f5f8f0;color:#596156}
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Portada -->
-        <div class="header">
-            <h1>Reporte Ejecutivo</h1>
-            <h2>{{ $empresa->nombre_empresa }}</h2>
-            <div class="header-info">
-                {{ $empresa->tipo_empresa }} • {{ now()->format('d/m/Y') }}
-            </div>
-        </div>
+    <footer class="pdf-footer"><table><tr>
+        <td class="pdf-footer-logo"><img src="{{ public_path('imagenes/logoblanco.png') }}" alt="PRODOVI"></td>
+        <td class="pdf-footer-copy">PRODOVI · Resumen ejecutivo empresarial</td>
+        <td class="pdf-footer-page-space"></td>
+    </tr></table></footer>
 
-        <!-- Contenido del reporte -->
-        <div class="content">
-            @foreach($secciones as $index => $seccion)
-                <div class="section">
-                    <h2>{{ $seccion['titulo'] }}</h2>
-                    <div class="section-content">{{ $seccion['contenido'] }}</div>
-                </div>
-                
-                {{-- Opcional: Añadir un salto de página después de ciertas secciones --}}
-                @if($index == 1) <!-- Después de la segunda sección -->
-                    <div class="page-break"></div>
-                @endif
-            @endforeach
-        </div>
+    <header class="report-head"><table><tr>
+        <td class="report-head-logo"><img src="{{ public_path('imagenes/logoblanco.png') }}" alt="PRODOVI"></td>
+        <td class="report-head-copy"><h1>Resumen ejecutivo empresarial</h1><p>Documento generado el {{ now()->format('d/m/Y H:i') }} · {{ $empresa->nombre_empresa }}</p></td>
+    </tr></table></header>
 
-        <!-- Pie de página -->
-        <div class="footer">
-            <img src="{{ public_path('imagenes/logonegro.png') }}" alt="Logo de PRODOVI"> 
+    <section class="company-block">
+        <h2>{{ $empresa->nombre_empresa }}</h2>
+        <p>{{ collect([$empresa->tipo_empresa, 'Propietario: '.($empresa->usuario?->name ?? ''), $empresa->usuario?->email])->filter()->implode(' · ') }}</p>
+        <div class="document-label">Diagnóstico estratégico elaborado a partir de las respuestas del cuestionario empresarial.</div>
+    </section>
 
-            <p>Fecha de generación: {{ now()->format('d/m/Y H:i') }}</p>
-        </div>
-    </div>
+    @forelse($secciones as $seccion)
+        <section class="report-section">
+            <h2 class="section-title">{{ $loop->iteration }}. {{ $seccion['titulo'] }}</h2>
+            <div class="section-content">{!! $seccion['html'] !!}</div>
+        </section>
+    @empty
+        <section class="company-block"><p>No hay información estructurada disponible para mostrar.</p></section>
+    @endforelse
+
+    <script type="text/php">
+        if (isset($pdf, $fontMetrics)) {
+            $font = $fontMetrics->getFont('DejaVu Sans', 'normal');
+            $pdf->page_text($pdf->get_width() - 108, $pdf->get_height() - 24, 'Página {PAGE_NUM} de {PAGE_COUNT}', $font, 7, [1,1,1]);
+        }
+    </script>
 </body>
 </html>

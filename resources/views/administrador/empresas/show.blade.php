@@ -25,10 +25,18 @@
                         <p>{{ $empresa->tipo_empresa }} <span aria-hidden="true">•</span> {{ $empresa->usuario->name }} ({{ $empresa->usuario->email }})</p>
                     </div>
                 </div>
-                <a href="{{ route('administrador.empresas.index') }}" class="company-detail-back">
-                    <i class="fas fa-arrow-left"></i>
-                    Volver a empresas
-                </a>
+                <div class="company-detail-hero-actions">
+                    @if($campaniaActiva)
+                        <a href="{{ route('administrador.campañas.show', $campaniaActiva) }}" class="company-detail-campaign">
+                            <i class="fas fa-bullhorn"></i>
+                            Ver campaña
+                        </a>
+                    @endif
+                    <a href="{{ route('administrador.empresas.index') }}" class="company-detail-back">
+                        <i class="fas fa-arrow-left"></i>
+                        Volver a empresas
+                    </a>
+                </div>
             </div>
         </header>
 
@@ -58,113 +66,64 @@
 
                         <!-- Estado del Cuestionario -->
                         <section class="detail-section detail-questionnaire">
-                            <h2 class="text-2xl font-bold text-gray-900 mb-4">Estado del Cuestionario</h2>
-                            @if($empresa->cuestionario_completado)
-                                <div class="flex items-center p-4 bg-green-50 border border-green-200 rounded-xl">
-                                    <svg class="w-8 h-8 text-green-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <div>
-                                        <p class="font-semibold text-green-800">Cuestionario Completado</p>
-                                        <p class="text-sm text-green-600">Gracias por proporcionar toda la información necesaria.</p>
-                                    </div>
-                                    <div class="questionnaire-status-actions">
-                                        <a href="{{ route('administrador.empresas.cuestionario.pdf', $empresa->id) }}" title="Descargar cuestionario en PDF">
-                                            <i class="fas fa-file-pdf"></i><span>PDF</span>
-                                        </a>
-                                        <button type="button" id="company-detail-drive-open" title="Guardar y abrir en Google Docs">
-                                            <i class="fab fa-google-drive"></i><span>Docs</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            @else
-                                <div class="flex items-center p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                                    <svg class="w-8 h-8 text-amber-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <div>
-                                        <p class="font-semibold text-amber-800">Cuestionario Pendiente</p>
-                                        <p class="text-sm text-amber-600">Es importante que completes el cuestionario para poder empezar.</p>
-                                    </div>
-                                </div>
-                            @endif
+                            <div class="detail-summary-heading">
+                                <div><span>Documento base</span><h2>Cuestionario empresarial</h2><p>Información utilizada para elaborar el diagnóstico y la estrategia.</p></div>
+                                <span class="detail-summary-status {{ $empresa->cuestionario_completado ? '' : 'is-pending' }}"><i class="fas {{ $empresa->cuestionario_completado ? 'fa-circle-check' : 'fa-clock' }}"></i>{{ $empresa->cuestionario_completado ? 'Completado' : 'Pendiente' }}</span>
+                            </div>
+                            <div class="detail-summary-preview">
+                                <span><i class="fas fa-clipboard-list"></i></span>
+                                <div><small>{{ $empresa->cuestionario_completado ? 'Información registrada' : 'Información requerida' }}</small><p>{{ $empresa->cuestionario_completado ? 'Las respuestas empresariales están disponibles para consulta, edición y generación de documentos.' : 'Completa las respuestas empresariales antes de generar el resumen ejecutivo y el plan de marketing.' }}</p><a href="{{ route('administrador.empresas.cuestionario.show', $empresa->id) }}">{{ $empresa->cuestionario_completado ? 'Ver respuestas completas' : 'Completar cuestionario' }} <i class="fas fa-arrow-right"></i></a></div>
+                            </div>
+                            <div class="detail-summary-actions">
+                                <a href="{{ route('administrador.empresas.cuestionario.show', $empresa->id) }}" class="is-primary"><i class="fas fa-eye"></i>{{ $empresa->cuestionario_completado ? 'Ver cuestionario' : 'Completar cuestionario' }}</a>
+                                @if($empresa->cuestionario_completado)
+                                    <a href="{{ route('administrador.empresas.cuestionario.pdf', $empresa->id) }}" class="is-pdf"><i class="fas fa-file-pdf"></i>PDF</a>
+                                    <button type="button" id="company-detail-drive-open" class="is-doc"><i class="fab fa-google-drive"></i>Google Docs</button>
+                                @endif
+                            </div>
                         </section>
 
                         {{-- Sección para mostrar el resumen ejecutivo --}}
                         @if($empresa->resumen_ejecutivo)
-                            <section class="detail-section detail-summary mt-6 p-6 bg-blue-50 border border-blue-200 rounded-xl">
-                                <div class="flex justify-between items-center mb-4">
-                                    <h2 class="text-2xl font-bold text-blue-900">Resumen Ejecutivo Generado</h2>
-                                    <div class="flex space-x-2">
-                                        <a href="{{ route('administrador.empresas.editar-resumen', $empresa->id) }}" class="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                            </svg>
-                                            Editar
-                                        </a>
-                                        <a href="{{ route('administrador.empresas.reporte', $empresa->id) }}" class="inline-flex items-center px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                            </svg>
-                                            Ver Reporte
-                                        </a>
-                                        <a href="{{ route('administrador.empresas.reporte.pdf', $empresa->id) }}" class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                            </svg>
-                                            Descargar PDF
-                                        </a>
-                                        <form action="{{ route('administrador.empresas.eliminar-resumen', $empresa->id) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este Resumen Ejecutivo?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="inline-flex items-center px-3 py-1 bg-red-800 text-white text-sm rounded-lg hover:bg-red-900 transition-colors">
-                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                </svg>
-                                                Eliminar
-                                            </button>
-                                        </form>
-                                    </div>
+                            <section class="detail-section detail-summary">
+                                <div class="detail-summary-heading">
+                                    <div><span>Documento estratégico</span><h2>Resumen ejecutivo</h2><p>{{ count($resumenSecciones) }} secciones elaboradas a partir del cuestionario empresarial.</p></div>
+                                    <span class="detail-summary-status"><i class="fas fa-circle-check"></i>Generado</span>
                                 </div>
-                                <div class="prose prose-sm max-w-none text-gray-700">
-                                    <p>{!! nl2br(e($empresa->resumen_ejecutivo)) !!}</p>
+                                <div class="detail-summary-preview">
+                                    <span><i class="fas fa-file-lines"></i></span>
+                                    <div><small>Vista resumida</small><p>{{ $resumenVistaPrevia ?: 'El documento está disponible para su consulta.' }}</p><a href="{{ route('administrador.empresas.reporte', $empresa->id) }}">Leer documento completo <i class="fas fa-arrow-right"></i></a></div>
+                                </div>
+                                <div class="detail-summary-actions">
+                                    <a href="{{ route('administrador.empresas.reporte', $empresa->id) }}" class="is-primary"><i class="fas fa-eye"></i>Ver resumen completo</a>
+                                    <a href="{{ route('administrador.empresas.editar-resumen', $empresa->id) }}"><i class="fas fa-pen"></i>Editar</a>
+                                    <a href="{{ route('administrador.empresas.reporte.pdf', $empresa->id) }}" class="is-pdf"><i class="fas fa-file-pdf"></i>PDF</a>
+                                    <form action="{{ route('administrador.empresas.eliminar-resumen', $empresa->id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este Resumen Ejecutivo?');">@csrf @method('DELETE')<button type="submit" title="Eliminar resumen"><i class="fas fa-trash-can"></i></button></form>
                                 </div>
                             </section>
                         @endif
 
                         {{-- NUEVA SECCIÓN: Mostrar Planes de Marketing Existentes --}}
                         @if($empresa->planesMarketing->isNotEmpty())
-                            <section class="detail-section detail-marketing mt-6 p-6 bg-purple-50 border border-purple-200 rounded-xl">
-                                <h2 class="text-2xl font-bold text-purple-900 mb-4">Planes de Marketing Generados</h2>
-                                <div class="space-y-3">
+                            <section class="detail-section detail-marketing">
+                                <div class="detail-summary-heading">
+                                    <div><span>Documento operativo</span><h2>Plan de marketing</h2><p>{{ $empresa->planesMarketing->count() }} {{ $empresa->planesMarketing->count() === 1 ? 'plan generado' : 'planes generados' }} para esta empresa.</p></div>
+                                    <span class="detail-summary-status"><i class="fas fa-circle-check"></i>Activo</span>
+                                </div>
+                                <div class="detail-marketing-list">
                                     @foreach($empresa->planesMarketing as $plan)
-                                        <div class="marketing-plan-row flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-purple-100">
-                                            <div>
-                                                <p class="font-semibold text-gray-900">Plan</p>
-                                                <p class="text-sm text-gray-600">Creado el: {{ $plan->created_at->format('d/m/Y H:i') }}</p>
-                                                <p class="text-sm text-gray-600">Basado en suscripción: {{ $plan->suscripcion->plan->nombre }} (Estado: {{ $plan->suscripcion->estado }})</p>
+                                        <article class="detail-plan-item">
+                                            <div class="detail-summary-preview">
+                                                <span><i class="fas fa-bullseye"></i></span>
+                                                <div><small>{{ $plan->suscripcion->plan->nombre }}</small><p>Plan estratégico creado el {{ $plan->created_at->format('d/m/Y H:i') }}. Suscripción {{ $plan->suscripcion->estado }} y documento {{ $plan->estado }}.</p><a href="{{ route('administrador.empresas.planes-marketing.show', $plan) }}">Consultar plan completo <i class="fas fa-arrow-right"></i></a></div>
                                             </div>
-                                            <div class="flex space-x-2">
-                                                <a href="{{ route('administrador.empresas.planes-marketing.show', $plan->id) }}" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-md">
-                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                                    </svg>
-                                                    Ver Plan
-                                                </a>
-                                                <form action="{{ route('administrador.empresas.planes-marketing.destroy', $plan->id) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este Plan de Marketing?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-md">
-                                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                        </svg>
-                                                        Eliminar
-                                                    </button>
-                                                </form>
+                                            <div class="detail-summary-actions">
+                                                <a href="{{ route('administrador.empresas.planes-marketing.show', $plan) }}" class="is-primary"><i class="fas fa-eye"></i>Ver plan completo</a>
+                                                <a href="{{ route('administrador.empresas.planes-marketing.edit', $plan) }}"><i class="fas fa-pen"></i>Editar</a>
+                                                <a href="{{ route('administrador.empresas.planes-marketing.download-pdf', $plan) }}" class="is-pdf"><i class="fas fa-file-pdf"></i>PDF</a>
+                                                <form action="{{ route('administrador.empresas.planes-marketing.destroy', $plan) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este Plan de Marketing?');">@csrf @method('DELETE')<button type="submit" title="Eliminar plan"><i class="fas fa-trash-can"></i></button></form>
                                             </div>
-
-                                        </div>
+                                        </article>
                                     @endforeach
                                 </div>
                             </section>
@@ -316,12 +275,12 @@
     .rp-banner {
         position: relative;
         background:
-            linear-gradient(135deg, #4f46e5 25%, transparent 25%) -50px 0,
-            linear-gradient(225deg, #4f46e5 25%, transparent 25%) -50px 0,
-            linear-gradient(315deg, #4f46e5 25%, transparent 25%),
-            linear-gradient(45deg, #4f46e5 25%, transparent 25%),
-            linear-gradient(to bottom, #3b82f6 0%, #2563eb 100%);
-        background-color: #1d4ed8;
+            linear-gradient(135deg, #789d32 25%, transparent 25%) -50px 0,
+            linear-gradient(225deg, #789d32 25%, transparent 25%) -50px 0,
+            linear-gradient(315deg, #789d32 25%, transparent 25%),
+            linear-gradient(45deg, #789d32 25%, transparent 25%),
+            linear-gradient(to bottom, #8aae3e 0%, #638522 100%);
+        background-color: #638522;
         background-size: 100px 100px, 100px 100px, 100px 100px, 100px 100px, 100% 100%;
     }
 
@@ -336,7 +295,7 @@
         position: absolute;
         inset: 0;
         background:
-            linear-gradient(rgba(15,23,42,.28), rgba(15,23,42,.28)),
+            linear-gradient(rgba(26,46,13,.22), rgba(26,46,13,.22)),
             radial-gradient(circle at 0 0, rgba(255,255,255,.2), transparent 50%),
             radial-gradient(circle at 100% 0, rgba(255,255,255,.2), transparent 50%),
             radial-gradient(circle at 100% 100%, rgba(255,255,255,.2), transparent 50%),
@@ -393,7 +352,7 @@
     .company-detail-eyebrow {
         display: block;
         margin-bottom: 7px;
-        color: #dbeafe;
+        color: #ecfccb;
         font-size: .68rem;
         font-weight: 900;
         letter-spacing: .15em;
@@ -411,12 +370,21 @@
 
     .company-detail-hero p {
         margin: 0;
-        color: #dbeafe;
+        color: #f0fdf4;
         font-size: .74rem;
         font-weight: 600;
     }
 
-    .company-detail-back {
+    .company-detail-hero-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 9px;
+        flex: 0 0 auto;
+    }
+
+    .company-detail-back,
+    .company-detail-campaign {
         min-height: 42px;
         display: inline-flex;
         align-items: center;
@@ -427,14 +395,15 @@
         border: 1px solid #fff;
         border-radius: .65rem;
         background: #fff;
-        color: #4f46e5;
+        color: #638522;
         font-size: .69rem;
         font-weight: 900;
         transition: transform .18s, box-shadow .18s;
     }
 
-    .company-detail-back:hover {
-        color: #4338ca;
+    .company-detail-back:hover,
+    .company-detail-campaign:hover {
+        color: #4f6c1b;
         transform: translateY(-2px);
         box-shadow: 0 8px 18px rgba(15,23,42,.18);
     }
@@ -580,6 +549,8 @@
         line-height: 1.75;
     }
 
+    .detail-summary-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:18px}.detail-summary-heading>div>span{display:block;margin-bottom:5px;color:#7da533;font-size:.6rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.detail-summary-heading h2{margin:0!important;color:#302834!important;font-size:1.15rem!important;font-weight:900}.detail-summary-heading h2:after{content:'';display:block;width:44px;height:3px;margin-top:8px;border-radius:999px;background:#7da533}.detail-summary-heading p{margin:9px 0 0;color:#7b8277;font-size:.68rem}.detail-summary-status{display:inline-flex;align-items:center;gap:6px;flex:none;padding:7px 10px;border-radius:999px;background:#edf7e3;color:#567622;font-size:.62rem;font-weight:900}.detail-summary-status.is-pending{background:#fff5dc;color:#9a6814}.detail-summary-preview{display:flex;align-items:flex-start;gap:14px;padding:17px;border:1px solid #dfe4da;border-radius:13px;background:#fafbf9}.detail-summary-preview>span{width:42px;height:42px;display:grid;place-items:center;flex:none;border-radius:11px;background:#eef5e5;color:#638522}.detail-summary-preview>div{min-width:0}.detail-summary-preview small{display:block;color:#8b9187;font-size:.59rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.detail-summary-preview p{display:-webkit-box;overflow:hidden;margin:6px 0 9px;color:#535a50;font-size:.73rem;line-height:1.65;-webkit-box-orient:vertical;-webkit-line-clamp:3}.detail-summary-preview a{display:inline-flex!important;align-items:center;gap:6px;min-height:0!important;color:#638522!important;font-size:.65rem!important;font-weight:900}.detail-summary-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:13px}.detail-summary-actions>a,.detail-summary-actions button{min-height:38px!important;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 11px;border:1px solid #d9dcd6!important;border-radius:9px!important;background:#fff!important;color:#62685f!important;font-size:.66rem!important;font-weight:900}.detail-summary-actions>a.is-primary{border-color:#7da533!important;background:#7da533!important;color:#fff!important}.detail-summary-actions>a.is-pdf{border-color:#f3c4c4!important;color:#b42323!important}.detail-summary-actions button.is-doc{border-color:#cfd8f6!important;color:#3158a5!important}.detail-summary-actions form{margin-left:auto}.detail-summary-actions form button{width:38px;padding:0;color:#b42323!important}.detail-summary-actions>a:hover,.detail-summary-actions button:hover{transform:translateY(-1px)}.detail-marketing-list{display:grid;gap:22px}.detail-plan-item+.detail-plan-item{padding-top:22px;border-top:1px solid #e5e7eb}
+
     .detail-summary a,
     .detail-summary button,
     .marketing-plan-row a,
@@ -719,7 +690,14 @@
             align-items: flex-start;
         }
 
-        .company-detail-back {
+        .company-detail-hero-actions {
+            display: grid;
+            grid-template-columns: 1fr;
+            width: 100%;
+        }
+
+        .company-detail-back,
+        .company-detail-campaign {
             width: 100%;
         }
 
@@ -731,21 +709,21 @@
             padding: 28px 20px 0 !important;
         }
 
-        .detail-summary > div:first-child,
+        .detail-summary-heading,
         .marketing-plan-row {
             align-items: stretch !important;
             flex-direction: column;
         }
 
-        .detail-summary > div:first-child > div,
+        .detail-summary-actions,
         .marketing-plan-row > div:last-child {
             display: grid !important;
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 8px;
         }
 
-        .detail-summary form,
-        .detail-summary form button {
+        .detail-summary-actions form,
+        .detail-summary-actions form button {
             width: 100%;
         }
 

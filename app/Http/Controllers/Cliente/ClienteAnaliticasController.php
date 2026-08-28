@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Cliente;
 
 use App\Http\Controllers\Controller;
+use App\Models\Empresa;
+use App\Services\MetaCampaignAnalyticsService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,8 +20,25 @@ class ClienteAnaliticasController extends Controller
             ->first();
 
         $data = $this->loadAnalyticsData('last30days');
+        $empresas = Auth::user()->empresas()
+            ->with('socialAccounts')
+            ->orderBy('nombre_empresa')
+            ->get();
 
-        return view('clientes.analiticas', compact('data', 'campaniaActual'));
+        return view('clientes.analiticas', compact('data', 'campaniaActual', 'empresas'));
+    }
+
+    public function companyData(Request $request, Empresa $empresa, MetaCampaignAnalyticsService $analyticsService)
+    {
+        abort_unless($empresa->usuario_id === Auth::id(), 404);
+
+        $validated = $request->validate([
+            'days' => 'nullable|integer|in:7,30,90',
+        ]);
+
+        return response()->json(
+            $analyticsService->forCompany($empresa, (int) ($validated['days'] ?? 30))
+        );
     }
 
     public function loadView(Request $request)
@@ -47,7 +66,7 @@ class ClienteAnaliticasController extends Controller
         $pdf->setOption('isHtml5ParserEnabled', true);
         $pdf->setOption('isRemoteEnabled', true);
 
-        return $pdf->download('informe_analiticas_' . $request->input('periodo', '30dias') . '.pdf');
+        return $pdf->download('informe_analiticas_'.$request->input('periodo', '30dias').'.pdf');
     }
 
     public function exportarReporteEngagement(Request $request)
@@ -62,7 +81,7 @@ class ClienteAnaliticasController extends Controller
         $pdf->setOption('isHtml5ParserEnabled', true);
         $pdf->setOption('isRemoteEnabled', true);
 
-        return $pdf->download('informe_engagement_' . $request->input('view', '30dias') . '.pdf');
+        return $pdf->download('informe_engagement_'.$request->input('view', '30dias').'.pdf');
     }
 
     public function exportarReporteAlcance(Request $request)
@@ -77,7 +96,7 @@ class ClienteAnaliticasController extends Controller
         $pdf->setOption('isHtml5ParserEnabled', true);
         $pdf->setOption('isRemoteEnabled', true);
 
-        return $pdf->download('informe_alcance_' . $request->input('view', '30dias') . '.pdf');
+        return $pdf->download('informe_alcance_'.$request->input('view', '30dias').'.pdf');
     }
 
     public function exportarReporteSeguidores(Request $request)
@@ -92,7 +111,7 @@ class ClienteAnaliticasController extends Controller
         $pdf->setOption('isHtml5ParserEnabled', true);
         $pdf->setOption('isRemoteEnabled', true);
 
-        return $pdf->download('informe_seguidores_' . $request->input('view', '30dias') . '.pdf');
+        return $pdf->download('informe_seguidores_'.$request->input('view', '30dias').'.pdf');
     }
 
     public function exportarReporteCTR(Request $request)
@@ -139,6 +158,7 @@ class ClienteAnaliticasController extends Controller
         if (file_exists($jsonPath)) {
             $jsonString = file_get_contents($jsonPath);
             $allData = json_decode($jsonString, true);
+
             return $allData[$periodKey] ?? [];
         }
 

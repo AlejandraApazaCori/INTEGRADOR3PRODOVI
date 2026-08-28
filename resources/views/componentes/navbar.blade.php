@@ -52,8 +52,8 @@
             
             <!-- Login Button -->
             <div class="navbar-actions">
-                <a href="{{ auth()->check() ? route('clientes.home') : route('login') }}" class="login-button">
-                    Ver planes
+                <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="login-button">
+                    {{ auth()->check() ? 'Ir a mi panel' : 'Ver planes' }}
                 </a>
             </div>
         </div>
@@ -99,8 +99,8 @@
                 </a>
             </div>
             
-            <a href="{{ auth()->check() ? route('clientes.home') : route('login') }}" class="mobile-login-button">
-                {{ auth()->check() ? 'Ver planes' : 'Iniciar Sesión' }}
+            <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="mobile-login-button">
+                {{ auth()->check() ? 'Ir a mi panel' : 'Iniciar Sesión' }}
             </a>
         </div>
     </div>

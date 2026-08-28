@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Schema;
 
 class User extends Authenticatable
 {
-    use SoftDeletes, HasFactory, Notifiable, Auditable;
+    use Auditable, HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -86,6 +86,29 @@ class User extends Authenticatable
     public function campaniasComoCM()
     {
         return $this->hasMany(Campania::class, 'community_manager_id');
+    }
+
+    public function campaniasComoDisenador()
+    {
+        return $this->hasMany(Campania::class, 'disenador_id');
+    }
+
+    public function campaniasComoParteDiseno()
+    {
+        return $this->belongsToMany(Campania::class, 'campania_disenador', 'user_id', 'campania_id')
+            ->withTimestamps();
+    }
+
+    public function tareasComoResponsable()
+    {
+        return $this->belongsToMany(Tarea::class, 'tarea_user', 'user_id', 'tarea_id')
+            ->withTimestamps();
+    }
+
+    public function reuniones()
+    {
+        return $this->belongsToMany(Reunion::class, 'reunion_user', 'user_id', 'reunion_id')
+            ->withTimestamps();
     }
 
     public function campaniasCliente()

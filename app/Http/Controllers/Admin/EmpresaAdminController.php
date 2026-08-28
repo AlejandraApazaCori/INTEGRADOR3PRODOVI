@@ -3,14 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Campania;
 use App\Models\Empresa;
-use App\Models\User;
-use App\Models\Suscripcion;
 use App\Models\Plan;
+use App\Models\Suscripcion;
+use App\Models\User;
+use App\Services\ExecutiveSummaryFormatter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class EmpresaAdminController extends Controller
 {
@@ -20,7 +22,7 @@ class EmpresaAdminController extends Controller
     public function index(Request $request)
     {
         // 1. Verificar si el usuario está autenticado
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 
@@ -28,7 +30,7 @@ class EmpresaAdminController extends Controller
         $user = Auth::user();
 
         // 3. Verificar si el usuario tiene el rol de "Administrador"
-        if (!$user->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+        if (! $user->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
             abort(403, 'No tienes permisos para acceder a esta página.');
         }
 
@@ -95,7 +97,7 @@ class EmpresaAdminController extends Controller
     public function show($id)
     {
         // 1. Verificar si el usuario está autenticado
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 
@@ -103,23 +105,49 @@ class EmpresaAdminController extends Controller
         $user = Auth::user();
 
         // 3. Verificar si el usuario tiene el rol de "Administrador"
-        if (!$user->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+        if (! $user->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
             abort(403, 'No tienes permisos para acceder a esta página.');
         }
 
         // 4. Obtener la empresa con sus relaciones
         $empresa = Empresa::with([
-            'usuario', 
-            'planesMarketing.suscripcion.plan'
+            'usuario',
+            'planesMarketing.suscripcion.plan',
         ])->findOrFail($id);
-        
+
         // 5. Obtener la suscripción activa del usuario
         $suscripcionActiva = Suscripcion::with('plan.caracteristicas')
             ->where('usuario_id', $empresa->usuario_id)
             ->where('estado', 'activa')
             ->first();
-            
-        return view('administrador.empresas.show', compact('empresa', 'suscripcionActiva'));
+
+        $campaniaActiva = Campania::query()
+            ->where('estado', 'activa')
+            ->where('fecha_fin', '>', now())
+            ->where(function ($query) use ($empresa) {
+                if ($empresa->suscripcion_id) {
+                    $query->where('suscripcion_id', $empresa->suscripcion_id)
+                        ->orWhereHas('empresas', fn ($empresaQuery) => $empresaQuery->whereKey($empresa->id));
+
+                    return;
+                }
+
+                $query->whereHas('empresas', fn ($empresaQuery) => $empresaQuery->whereKey($empresa->id));
+            })
+            ->latest('fecha_inicio')
+            ->first();
+
+        $resumenSecciones = $empresa->resumen_ejecutivo
+            ? app(ExecutiveSummaryFormatter::class)->sections($empresa->resumen_ejecutivo)
+            : [];
+        $resumenHtml = collect($resumenSecciones)->pluck('html')->implode(' ');
+        $resumenHtml = preg_replace('/<\/(?:p|li|tr|h[1-6])>/iu', '$0 ', $resumenHtml);
+        $resumenVistaPrevia = $resumenSecciones === [] ? null : Str::limit(
+            trim((string) preg_replace('/\s+/u', ' ', strip_tags((string) $resumenHtml))),
+            360
+        );
+
+        return view('administrador.empresas.show', compact('empresa', 'suscripcionActiva', 'campaniaActiva', 'resumenSecciones', 'resumenVistaPrevia'));
     }
 
     /**
@@ -178,7 +206,7 @@ class EmpresaAdminController extends Controller
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $empresa = new Empresa();
+        $empresa = new Empresa;
         $empresa->usuario_id = $user->id;
         $empresa->nombre_empresa = $request->nombre_empresa;
         $empresa->tipo_empresa = $request->tipo_empresa;
@@ -200,13 +228,13 @@ class EmpresaAdminController extends Controller
      */
     public function destroy($id)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 
         $user = Auth::user();
 
-        if (!$user->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+        if (! $user->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
             abort(403, 'No tienes permisos para realizar esta acción.');
         }
 
@@ -223,15 +251,27 @@ class EmpresaAdminController extends Controller
      */
     public function guardarParaUsuario(Request $request)
     {
-        $request->validate([
+        $preguntas = \App\Models\PreguntaCuestionario::query()->orderBy('orden')->get();
+        $rules = [
             'usuario_id' => 'required|exists:users,id',
             'suscripcion_id' => 'required|exists:suscripciones,id',
             'nombre_empresa' => 'required|string|max:255',
             'tipo_empresa' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
-        ]);
+            'continuar_campania' => 'nullable|integer|exists:suscripciones,id',
+        ];
+        foreach ($preguntas as $pregunta) {
+            if ($pregunta->tipo_respuesta === 'checkbox') {
+                $rules["respuesta_{$pregunta->id}"] = $pregunta->requerido ? 'required|array|min:1' : 'nullable|array';
+                $rules["respuesta_{$pregunta->id}.*"] = 'string|max:255';
+            } else {
+                $rules["respuesta_{$pregunta->id}"] = ($pregunta->requerido ? 'required' : 'nullable').'|string';
+            }
+            $rules["respuesta_{$pregunta->id}_otro"] = 'nullable|string|max:500';
+        }
+        $request->validate($rules);
 
-        DB::transaction(function () use ($request) {
+        $empresa = DB::transaction(function () use ($request, $preguntas) {
             $suscripcion = Suscripcion::query()
                 ->whereKey($request->integer('suscripcion_id'))
                 ->where('usuario_id', $request->integer('usuario_id'))
@@ -260,24 +300,36 @@ class EmpresaAdminController extends Controller
                 'cuestionario_completado' => true,
             ]);
 
-            $preguntas = \App\Models\PreguntaCuestionario::all();
             foreach ($preguntas as $pregunta) {
-                $respuestaTexto = $request->input("respuesta_{$pregunta->id}");
-                if ($respuestaTexto) {
+                $respuesta = $request->input("respuesta_{$pregunta->id}");
+                $valores = collect(is_array($respuesta) ? $respuesta : [$respuesta])
+                    ->filter(fn ($valor) => filled($valor))
+                    ->map(fn ($valor) => trim((string) $valor));
+                $otro = trim((string) $request->input("respuesta_{$pregunta->id}_otro", ''));
+                if ($otro !== '' && $valores->contains('Otro')) {
+                    $valores = $valores->reject(fn ($valor) => $valor === 'Otro')->push('Otro: '.$otro);
+                }
+                $respuestaTexto = $valores->implode(' | ');
+
+                if ($respuestaTexto !== '') {
                     \App\Models\RespuestaCuestionario::create([
                         'empresa_id' => $empresa->id,
                         'pregunta_id' => $pregunta->id,
-                        'respuesta' => $respuestaTexto
+                        'respuesta' => $respuestaTexto,
                     ]);
                 }
             }
+
+            return $empresa;
         });
+
+        if ($request->filled('continuar_campania')
+            && (int) $request->continuar_campania === (int) $empresa->suscripcion_id) {
+            return redirect()->route('administrador.campañas.preparar', $empresa->suscripcion_id)
+                ->with('success', 'Empresa y cuestionario guardados. Ahora prepararemos el resumen y el plan de marketing.');
+        }
 
         return redirect()->route('administrador.campañas.index')
             ->with('success', 'Empresa creada y cuestionario guardado correctamente.');
     }
 }
-
-
-
-

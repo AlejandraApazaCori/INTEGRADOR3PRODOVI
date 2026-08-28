@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Términos y Condiciones | PRODOVI</title>
-    <link rel="icon" type="image/png" href="{{ asset('imagenes/iconoweb.png') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('imagenes/favicon-prodovi.svg') }}?v=3">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rowdies:wght@300;400;700&family=Varela+Round&display=swap" rel="stylesheet">

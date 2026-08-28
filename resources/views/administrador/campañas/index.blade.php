@@ -174,56 +174,11 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $cliente['fecha_fin_suscripcion'] }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center space-x-2">
-                                            @if(!$cliente['tiene_empresa'])
-                                                <div class="relative group">
-                                                    <button type="button" 
-                                                            class="inline-flex items-center px-4 py-2 bg-gray-400 text-white text-sm font-medium rounded-lg cursor-not-allowed transition-all duration-200 shadow-sm">
-                                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                                        </svg>
-                                                        CREAR CON IA
-                                                    </button>
-                                                    
-                                                    <!-- Hover Tooltip -->
-                                                    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50">
-                                                        <div class="bg-gray-900 text-white p-4 rounded-xl shadow-2xl min-w-[220px] text-center">
-                                                            <p class="text-xs font-bold text-amber-400 mb-1">SIN EMPRESA REGISTRADA</p>
-                                                            <p class="text-[10px] text-gray-400 mb-3">Se requiere información de la empresa para usar la IA.</p>
-                                                            <a href="{{ route('administrador.empresas.crear-con-cuestionario', ['usuario_id' => $cliente['id'], 'suscripcion_id' => $cliente['suscripcion_id']]) }}"
-                                                               class="inline-flex items-center justify-center w-full px-3 py-2 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 transition-colors">
-                                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                                                </svg>
-                                                                CREAR EMPRESA AHORA
-                                                            </a>
-                                                            <!-- Flecha del tooltip -->
-                                                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                                                                <div class="border-8 border-transparent border-t-gray-900"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @else
-                                                <button type="button"
-                                                        data-plan-url="{{ route('administrador.campañas.plan-ia', ['empresa' => $cliente['empresa_id'], 'suscripcion_id' => $cliente['suscripcion_id']]) }}"
-                                                        onclick="llenarConIA('{{ $cliente['suscripcion_id'] }}', this)"
-                                                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow-md">
-                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                                    </svg>
-                                                    CREAR CON IA
-                                                </button>
-                                            @endif
-
-                                            <button onclick="mostrarFormulario('{{ $cliente['suscripcion_id'] }}')" 
-                                                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-sm hover:shadow-md">
-                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                                </svg>
-                                                Crear Campaña
-                                            </button>
-                                        </div>
+                                        <a href="{{ route('administrador.campañas.preparar', $cliente['suscripcion_id']) }}"
+                                           class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-sm hover:shadow-md">
+                                            <i class="fas fa-wand-magic-sparkles mr-2"></i>
+                                            Crear campaña
+                                        </a>
                                     </td>
                                 </tr>
                                 
@@ -429,10 +384,10 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $campania->communityManager->name }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
-                                            {{ $campania->estado == 'activa' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                            {{ $campania->es_borrador ? 'bg-purple-100 text-purple-800' : ($campania->estado == 'activa' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800') }}">
                                             <div class="w-2 h-2 rounded-full mr-2 
-                                                {{ $campania->estado == 'activa' ? 'bg-green-400' : 'bg-yellow-400' }}"></div>
-                                            {{ ucfirst($campania->estado) }}
+                                                {{ $campania->es_borrador ? 'bg-purple-400' : ($campania->estado == 'activa' ? 'bg-green-400' : 'bg-yellow-400') }}"></div>
+                                            {{ $campania->es_borrador ? 'Borrador IA' : ucfirst($campania->estado) }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">

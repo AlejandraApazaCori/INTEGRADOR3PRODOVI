@@ -41,29 +41,31 @@
                 <div class="resources-grid">
                     @foreach($recursos as $recurso)
                         <article class="resource-card">
-                            <details class="resource-card-options">
-                                <summary aria-label="Opciones de {{ $recurso->nombre }}" title="Más opciones"><i class="fas fa-ellipsis-vertical"></i></summary>
-                                <div class="resource-options-menu">
-                                    <button type="button" data-rename-resource data-resource-name="{{ $recurso->nombre }}" data-update-url="{{ route('clientes.recursos.update-name', $recurso) }}"><i class="fas fa-pen"></i> Cambiar nombre</button>
-                                    <form class="rename-resource-form" method="POST" action="{{ route('clientes.recursos.update-name', $recurso) }}">
-                                        @csrf
-                                        @method('PATCH')
-                                        <input type="hidden" name="nombre" value="{{ $recurso->nombre }}">
-                                    </form>
-                                    <form method="POST" action="{{ route('clientes.recursos.destroy', $recurso) }}" onsubmit="return confirm('¿Eliminar este recurso? Esta acción no se puede deshacer.')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="resource-delete-option"><i class="fas fa-trash"></i> Eliminar</button>
-                                    </form>
-                                </div>
-                            </details>
+                            @if($recurso->origen === 'cliente')
+                                <details class="resource-card-options">
+                                    <summary aria-label="Opciones de {{ $recurso->nombre }}" title="Más opciones"><i class="fas fa-ellipsis-vertical"></i></summary>
+                                    <div class="resource-options-menu">
+                                        <button type="button" data-rename-resource data-resource-name="{{ $recurso->nombre }}" data-update-url="{{ route('clientes.recursos.update-name', $recurso) }}"><i class="fas fa-pen"></i> Cambiar nombre</button>
+                                        <form class="rename-resource-form" method="POST" action="{{ route('clientes.recursos.update-name', $recurso) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="nombre" value="{{ $recurso->nombre }}">
+                                        </form>
+                                        <form method="POST" action="{{ route('clientes.recursos.destroy', $recurso) }}" onsubmit="return confirm('¿Eliminar este recurso? Esta acción no se puede deshacer.')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="resource-delete-option"><i class="fas fa-trash"></i> Eliminar</button>
+                                        </form>
+                                    </div>
+                                </details>
+                            @endif
                             @if($recurso->tipo === 'imagen')
                                 <a href="{{ Storage::url($recurso->archivo_path) }}" target="_blank" class="resource-preview"><img src="{{ Storage::url($recurso->archivo_path) }}" alt="{{ $recurso->nombre }}"></a>
                             @else
                                 <a href="{{ $recurso->url }}" target="_blank" rel="noopener noreferrer" class="resource-preview resource-link-preview"><i class="fab {{ str_contains($recurso->url, 'youtube') || str_contains($recurso->url, 'youtu.be') ? 'fa-youtube' : 'fa-google-drive' }}"></i><span>Abrir enlace</span></a>
                             @endif
                             <div class="resource-meta">
-                                <span><small>{{ $recurso->tipo === 'imagen' ? 'Imagen' : 'Enlace' }}</small><strong title="{{ $recurso->nombre }}">{{ $recurso->nombre }}</strong></span>
+                                <span><small>{{ $recurso->origen === 'administracion' ? 'Compartido por el equipo' : ($recurso->tipo === 'imagen' ? 'Imagen' : 'Enlace') }}</small><strong title="{{ $recurso->nombre }}">{{ $recurso->nombre }}</strong></span>
                                 @if($recurso->tipo === 'imagen')
                                     <a class="resource-download-action" href="{{ Storage::url($recurso->archivo_path) }}" download="{{ $recurso->nombre }}" aria-label="Descargar {{ $recurso->nombre }}" title="Descargar"><i class="fas fa-download"></i></a>
                                 @else

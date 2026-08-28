@@ -13,10 +13,14 @@ class Tarea extends Model
     protected $fillable = [
         'titulo',
         'descripcion',
+        'entregable',
+        'tipo_contenido',
         'fecha_inicio',
         'fecha_limite',
         'estado',
         'prioridad',
+        'requiere_aprobacion',
+        'visible_cliente',
         'campania_id',
         'creador_id',
         'asignado_id',
@@ -24,8 +28,10 @@ class Tarea extends Model
         'publication_scheduled_at',
         'published_at',
         'facebook_post_id',
+        'instagram_media_id',
         'publication_error',
         'publication_message',
+        'publication_platforms',
     ];
 
     protected $casts = [
@@ -33,6 +39,9 @@ class Tarea extends Model
         'fecha_limite' => 'date',
         'publication_scheduled_at' => 'datetime',
         'published_at' => 'datetime',
+        'publication_platforms' => 'array',
+        'requiere_aprobacion' => 'boolean',
+        'visible_cliente' => 'boolean',
     ];
 
     public function campania()
@@ -48,6 +57,12 @@ class Tarea extends Model
     public function asignado()
     {
         return $this->belongsTo(User::class, 'asignado_id');
+    }
+
+    public function responsables()
+    {
+        return $this->belongsToMany(User::class, 'tarea_user', 'tarea_id', 'user_id')
+            ->withTimestamps();
     }
 
     public function scopePendientes($query)

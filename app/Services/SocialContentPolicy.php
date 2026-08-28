@@ -10,9 +10,9 @@ class SocialContentPolicy
     {
         return <<<'RULES'
 CANALES OBLIGATORIOS PARA TODO CONTENIDO GENERADO:
-- Trabaja exclusivamente con Facebook, Instagram y TikTok.
-- No menciones ni recomiendes WhatsApp, correo electronico, email, e-mail o Gmail.
-- Todas las publicaciones, llamados a la accion, objetivos, tareas y metricas deben corresponder a Facebook, Instagram o TikTok.
+- Trabaja exclusivamente con Facebook, Instagram, TikTok y WhatsApp.
+- No menciones ni recomiendes correo electronico, email, e-mail o Gmail.
+- Todas las publicaciones, llamados a la accion, objetivos, tareas y metricas deben corresponder a Facebook, Instagram, TikTok o WhatsApp.
 - No uses tablas. Presenta la informacion como texto breve o listas simples.
 RULES;
     }
@@ -21,7 +21,7 @@ RULES;
     {
         $normalized = Str::lower(Str::ascii($content));
 
-        return preg_match('/whats\s*app|gmail|e-?mail|correo(?:s)?(?:\s+electronico(?:s)?)?/', $normalized) === 1;
+        return preg_match('/gmail|e-?mail|correo(?:s)?(?:\s+electronico(?:s)?)?/', $normalized) === 1;
     }
 
     public static function sanitize(string $content): string
@@ -32,13 +32,8 @@ RULES;
             $content
         );
         $content = preg_replace(
-            '/\b(?:cat[aá]logo\s+de\s+Whats\s*App|clics?\s+a\s+Whats\s*App)\b/ui',
-            'contenido e interacciones en Facebook, Instagram y TikTok',
-            (string) $content
-        );
-        $content = preg_replace(
-            '/\b(?:Whats\s*App|Gmail|e-?mail|correos?\s+electr[oó]nicos?|correos?)\b/ui',
-            'Facebook, Instagram y TikTok',
+            '/\b(?:Gmail|e-?mail|correos?\s+electr[oó]nicos?|correos?)\b/ui',
+            'mensajería de la marca',
             (string) $content
         );
         $content = preg_replace(

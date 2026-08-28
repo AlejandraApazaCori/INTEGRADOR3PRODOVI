@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Empresa;
 use App\Services\GroqService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class ResumenController extends Controller
 {
@@ -20,7 +18,6 @@ class ResumenController extends Controller
     /**
      * Genera y guarda el resumen ejecutivo para una empresa.
      *
-     * @param int $empresaId
      * @return \Illuminate\Http\JsonResponse
      */
     public function generate(int $empresaId)
@@ -39,6 +36,13 @@ class ResumenController extends Controller
         // 3. Llamar al servicio de Groq para generar el resumen
         $resumen = $this->groqService->generateSummary($empresa->nombre_empresa, $datosParaIa);
 
+        if (blank($resumen) || str_contains(mb_strtolower($resumen), 'hubo un error')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo generar el resumen ejecutivo. Inténtalo nuevamente.',
+            ], 422);
+        }
+
         // 4. Guardar el resumen en la base de datos
         $empresa->resumen_ejecutivo = $resumen;
         $empresa->save();
@@ -47,7 +51,7 @@ class ResumenController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Resumen ejecutivo generado con éxito.',
-            'summary' => $resumen
+            'summary' => $resumen,
         ]);
     }
 }

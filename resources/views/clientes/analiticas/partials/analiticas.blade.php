@@ -123,6 +123,11 @@
     </div>
 </div>
 
+{{--
+    BLOQUE ANTERIOR CONSERVADO PARA COMPARACIÓN / POSIBLE REACTIVACIÓN.
+    Se oculta visualmente por solicitud; permanecen activos arriba los cuatro
+    reportes principales y abajo sus datos y funciones de exportación.
+
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         <div class="flex justify-between items-center mb-4">
@@ -221,6 +226,7 @@
         </div>
     </div>
 </div>
+--}}
 
 <script type="application/json" id="analytics-json">@json($data)</script>
 <script>

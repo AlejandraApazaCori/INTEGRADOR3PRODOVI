@@ -5,7 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - @yield('title')</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/png" href="{{ asset('imagenes/iconoweb.png') }}">
+    <script>
+        try {
+            if (localStorage.getItem('admin_sidebar_collapsed') === '1') {
+                document.documentElement.classList.add('admin-sidebar-collapsed');
+            }
+        } catch (error) {}
+    </script>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('imagenes/favicon-prodovi.svg') }}?v=3">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -70,7 +77,7 @@
     </style>
     @stack('styles')
 </head>
-<body class="bg-gray-100 ">
+<body class="bg-gray-100">
     @include('componentes.navbar-admin')
 
     <!-- Barra superior -->
@@ -238,14 +245,53 @@
                 </div>
             </div>
 
-            <div class="topbar-user">
-                <div class="topbar-user-avatar">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                        <circle cx="12" cy="7" r="4"/>
+            <button type="button" class="topbar-notification-btn" title="Chat" aria-label="Abrir chat">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
+                    <path d="M8 9h8"/>
+                    <path d="M8 13h5"/>
+                </svg>
+            </button>
+
+            <div class="topbar-profile-container">
+                <button type="button" class="topbar-user" id="topbarProfileBtn" onclick="toggleTopbarProfile(event)" aria-haspopup="true" aria-expanded="false">
+                    <div class="topbar-user-avatar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                    <span class="topbar-user-name">{{ auth()->user()->name }}</span>
+                    <svg class="topbar-user-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <polyline points="6 9 12 15 18 9"/>
                     </svg>
+                </button>
+
+                <div class="dropdown-content topbar-profile-dropdown" id="topbarProfileDropdown">
+                    <div class="dropdown-header">
+                        <div class="dropdown-avatar">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                        <div class="dropdown-user-info">
+                            <span class="dropdown-user-name">{{ auth()->user()->name }}</span>
+                            <span class="dropdown-user-email">{{ auth()->user()->email ?? 'usuario@prodovi.com' }}</span>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item">
+                        <button type="button" class="logout-button" onclick="showLogoutConfirmation()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            <span>Cerrar sesión</span>
+                        </button>
+                    </div>
                 </div>
-                <span class="topbar-user-name">{{ auth()->user()->name }}</span>
             </div>
         </div>
     </div>
@@ -288,10 +334,22 @@
 
             const userMenu = document.getElementById('userDropdownMenu');
             if (userMenu) userMenu.classList.remove('show');
+            const profileMenu = document.getElementById('topbarProfileDropdown');
+            if (profileMenu) profileMenu.classList.remove('show');
 
             if (isOpening) {
                 marcarNotificacionesVistas();
             }
+        }
+
+        function toggleTopbarProfile(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('topbarProfileDropdown');
+            const button = document.getElementById('topbarProfileBtn');
+            const isOpen = dropdown.classList.toggle('show');
+            button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            document.getElementById('notificationDropdown')?.classList.remove('show');
+            document.getElementById('userDropdownMenu')?.classList.remove('show');
         }
 
         function marcarNotificacionesVistas() {
@@ -359,6 +417,13 @@
             const btn = document.getElementById('notificationBtn');
             if (dropdown && !dropdown.contains(event.target) && !btn.contains(event.target)) {
                 dropdown.classList.remove('show');
+            }
+
+            const profileDropdown = document.getElementById('topbarProfileDropdown');
+            const profileBtn = document.getElementById('topbarProfileBtn');
+            if (profileDropdown && profileBtn && !profileDropdown.contains(event.target) && !profileBtn.contains(event.target)) {
+                profileDropdown.classList.remove('show');
+                profileBtn.setAttribute('aria-expanded', 'false');
             }
         });
     </script>

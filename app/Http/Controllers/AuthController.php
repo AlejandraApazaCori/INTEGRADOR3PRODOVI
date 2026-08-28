@@ -21,7 +21,16 @@ class AuthController extends Controller
 {
     public function showLoginForm()
     {
+        if (Auth::check()) {
+            return $this->redirectToDashboard();
+        }
+
         return view('login');
+    }
+
+    public function dashboard()
+    {
+        return $this->redirectToDashboard();
     }
 
     public function login(Request $request)
@@ -44,25 +53,7 @@ class AuthController extends Controller
                 'details' => ['method' => 'manual_login', 'email' => $request->email],
             ]);
 
-            $userWithRoles = User::with('roles')->find($user->id);
-
-            if ($userWithRoles->roles->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->isNotEmpty()) {
-                return redirect()->route('administrador.dashboard');
-            }
-
-            $tieneSuscripcionActiva = Suscripcion::where('usuario_id', $user->id)
-                ->where('estado', 'activa')
-                ->where(function ($query) {
-                    $query->whereNull('vigencia_activada_at')
-                        ->orWhere('fecha_fin', '>', now());
-                })
-                ->exists();
-
-            if ($tieneSuscripcionActiva) {
-                return redirect()->route('clientes.dashboard');
-            }
-
-            return redirect()->route('clientes.home');
+            return $this->redirectToDashboard();
         }
 
         $failedUser = User::where('email', $request->email)->first();
@@ -137,5 +128,24 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/');
+    }
+
+    private function redirectToDashboard()
+    {
+        $user = Auth::user();
+
+        if ($user->hasAnyRole(['Super Administrador', 'Administrador'])) {
+            return redirect()->route('administrador.dashboard');
+        }
+
+        $tieneSuscripcionActiva = Suscripcion::where('usuario_id', $user->id)
+            ->where('estado', 'activa')
+            ->where(function ($query) {
+                $query->whereNull('vigencia_activada_at')
+                    ->orWhere('fecha_fin', '>', now());
+            })
+            ->exists();
+
+        return redirect()->route($tieneSuscripcionActiva ? 'clientes.dashboard' : 'clientes.home');
     }
 }

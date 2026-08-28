@@ -8,21 +8,42 @@ use App\Models\TareaArchivo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class TareaArchivoController extends Controller
 {
     public function create(Tarea $tarea)
     {
-        return view('administrador.tareas.subir', compact('tarea'));
+        return redirect()->to(route('administrador.tareas.ver-subidas', $tarea).'?subir=1');
     }
 
     public function store(Request $request, Tarea $tarea)
     {
-        $request->validate([
-            'archivos' => 'required',
-            'archivos.*' => 'file|max:1000240', // Máximo 1000MB por archivo
-            'descripcion' => 'nullable|string',
+        $fromCampaign = $request->input('contexto') === 'campania' && $tarea->campania_id;
+        $fromReview = $request->input('contexto') === 'revision';
+        $validator = Validator::make($request->all(), [
+            'archivos' => ['required', 'array', 'min:1'],
+            'archivos.*' => ['file', 'max:1000240'], // Máximo aproximado de 1 GB por archivo
+            'descripcion' => ['nullable', 'string'],
         ]);
+
+        if ($validator->fails()) {
+            if ($fromCampaign) {
+                return redirect()->to(route('administrador.campañas.show', $tarea->campania_id).'#tareas')
+                    ->withErrors($validator, 'taskUpload')
+                    ->withInput()
+                    ->with('upload_task_id', $tarea->id);
+            }
+
+            if ($fromReview) {
+                return redirect()->route('administrador.tareas.ver-subidas', $tarea)
+                    ->withErrors($validator, 'reviewUpload')
+                    ->withInput()
+                    ->with('open_upload_drawer', true);
+            }
+
+            return back()->withErrors($validator)->withInput();
+        }
 
         if ($request->hasFile('archivos')) {
             foreach ($request->file('archivos') as $archivo) {
@@ -39,6 +60,16 @@ class TareaArchivoController extends Controller
                     'descripcion' => $request->descripcion,
                 ]);
             }
+        }
+
+        if ($fromCampaign) {
+            return redirect()->to(route('administrador.campañas.show', $tarea->campania_id).'#tareas')
+                ->with('success', 'Archivo(s) subido(s) correctamente');
+        }
+
+        if ($fromReview) {
+            return redirect()->route('administrador.tareas.ver-subidas', $tarea)
+                ->with('success', 'Archivo(s) subido(s) correctamente');
         }
 
         return redirect()->route('administrador.tareas.show', $tarea->id)

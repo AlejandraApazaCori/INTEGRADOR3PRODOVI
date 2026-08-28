@@ -54,6 +54,9 @@
         </section>
     @endif
     </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    @include('clientes.analiticas.partials.insights-por-empresa', ['empresas' => $empresas])
     </main>
 </div>
 
@@ -104,7 +107,6 @@
 </style>
 
 @if($campaniaActual)
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     window.analyticsUserId = {{ auth()->id() }};
 

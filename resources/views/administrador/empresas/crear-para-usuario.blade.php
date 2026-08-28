@@ -19,6 +19,9 @@
         <form action="{{ route('administrador.empresas.guardar-con-cuestionario') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="usuario_id" value="{{ $user->id }}">
+            @if(request('continuar_campania'))
+                <input type="hidden" name="continuar_campania" value="{{ request('continuar_campania') }}">
+            @endif
 
             <div class="mb-6 rounded-2xl border border-indigo-100 bg-indigo-50 p-5">
                 <label for="suscripcion_id" class="mb-2 block text-sm font-semibold text-indigo-950">Plan pagado que se asociará a la empresa</label>
@@ -105,9 +108,34 @@
                                         @if($pregunta->tipo_respuesta === 'texto_largo')
                                             <textarea name="respuesta_{{ $pregunta->id }}" rows="4" {{ $pregunta->requerido ? 'required' : '' }}
                                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-                                                      placeholder="Escribe tu respuesta aquí..."></textarea>
+                                                      placeholder="Escribe tu respuesta aquí...">{{ old("respuesta_{$pregunta->id}") }}</textarea>
+                                        @elseif($pregunta->tipo_respuesta === 'opcion_multiple')
+                                            <div class="grid gap-3 sm:grid-cols-2">
+                                                @foreach($pregunta->opciones ?? [] as $opcion)
+                                                    <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 p-3 hover:border-indigo-300 hover:bg-indigo-50">
+                                                        <input type="radio" name="respuesta_{{ $pregunta->id }}" value="{{ $opcion }}" @checked(old("respuesta_{$pregunta->id}") === $opcion) {{ $pregunta->requerido ? 'required' : '' }}>
+                                                        <span class="text-sm text-gray-700">{{ $opcion }}</span>
+                                                    </label>
+                                                @endforeach
+                                            </div>
+                                            @if(in_array('Otro', $pregunta->opciones ?? [], true))
+                                                <input type="text" name="respuesta_{{ $pregunta->id }}_otro" value="{{ old("respuesta_{$pregunta->id}_otro") }}" class="mt-3 w-full rounded-xl border border-gray-300 px-4 py-3" placeholder="Especifica otra opción">
+                                            @endif
+                                        @elseif($pregunta->tipo_respuesta === 'checkbox')
+                                            @php($marcadas = old("respuesta_{$pregunta->id}", []))
+                                            <div class="grid gap-3 sm:grid-cols-2">
+                                                @foreach($pregunta->opciones ?? [] as $opcion)
+                                                    <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 p-3 hover:border-indigo-300 hover:bg-indigo-50">
+                                                        <input type="checkbox" name="respuesta_{{ $pregunta->id }}[]" value="{{ $opcion }}" @checked(in_array($opcion, (array) $marcadas, true))>
+                                                        <span class="text-sm text-gray-700">{{ $opcion }}</span>
+                                                    </label>
+                                                @endforeach
+                                            </div>
+                                            @if(in_array('Otro', $pregunta->opciones ?? [], true))
+                                                <input type="text" name="respuesta_{{ $pregunta->id }}_otro" value="{{ old("respuesta_{$pregunta->id}_otro") }}" class="mt-3 w-full rounded-xl border border-gray-300 px-4 py-3" placeholder="Especifica otra opción">
+                                            @endif
                                         @else
-                                            <input type="text" name="respuesta_{{ $pregunta->id }}" {{ $pregunta->requerido ? 'required' : '' }}
+                                            <input type="{{ $pregunta->tipo_respuesta === 'numero' ? 'number' : 'text' }}" name="respuesta_{{ $pregunta->id }}" value="{{ old("respuesta_{$pregunta->id}") }}" {{ $pregunta->requerido ? 'required' : '' }}
                                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                                                    placeholder="Escribe tu respuesta aquí...">
                                         @endif

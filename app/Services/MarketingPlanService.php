@@ -9,12 +9,6 @@ class MarketingPlanService
 {
     /**
      * Genera un plan de marketing personalizado basado en el resumen ejecutivo y las caracteristicas del plan.
-     *
-     * @param string $nombreEmpresa
-     * @param string $resumenEjecutivo
-     * @param array $caracteristicasPlan
-     * @param array $planContexto
-     * @return string|null
      */
     public function generateMarketingPlan(
         string $nombreEmpresa,
@@ -37,19 +31,19 @@ class MarketingPlanService
 
         $lineasPlan = [];
         if ($nombrePlan !== '') {
-            $lineasPlan[] = '- Nombre del plan: ' . $nombrePlan;
+            $lineasPlan[] = '- Nombre del plan: '.$nombrePlan;
         }
         if ($descripcionPlan !== '') {
-            $lineasPlan[] = '- Descripcion comercial del plan: ' . $descripcionPlan;
+            $lineasPlan[] = '- Descripcion comercial del plan: '.$descripcionPlan;
         }
         if ($periodoFacturacion !== '') {
-            $lineasPlan[] = '- Periodo de facturacion: ' . $periodoFacturacion;
+            $lineasPlan[] = '- Periodo de facturacion: '.$periodoFacturacion;
         }
         if ($precioPlan !== null && $precioPlan !== '') {
-            $lineasPlan[] = '- Precio registrado del plan: ' . $precioPlan . ($monedaPlan !== '' ? ' ' . $monedaPlan : '');
+            $lineasPlan[] = '- Precio registrado del plan: '.$precioPlan.($monedaPlan !== '' ? ' '.$monedaPlan : '');
         }
 
-        $contextoGeneralPlan = !empty($lineasPlan)
+        $contextoGeneralPlan = ! empty($lineasPlan)
             ? implode("\n", $lineasPlan)
             : '- No se recibio contexto general del plan.';
 
@@ -73,7 +67,7 @@ class MarketingPlanService
             $orden = $caracteristica['orden'] ?? null;
             $esDestacado = (bool) ($caracteristica['es_destacado'] ?? false);
 
-            if (SocialContentPolicy::containsExcludedChannel($nombre . ' ' . $descripcion)) {
+            if (SocialContentPolicy::containsExcludedChannel($nombre.' '.$descripcion)) {
                 continue;
             }
 
@@ -98,14 +92,14 @@ class MarketingPlanService
             }
 
             if ($orden !== null && $orden !== '') {
-                $partes[] = 'orden interno: ' . $orden;
+                $partes[] = 'orden interno: '.$orden;
             }
 
             if ($esDestacado) {
                 $partes[] = 'prioridad comercial: destacado';
             }
 
-            $lineasContexto[] = '- ' . implode(' | ', $partes);
+            $lineasContexto[] = '- '.implode(' | ', $partes);
 
             $caracteristicasNormalizadas[] = [
                 'nombre' => $nombre,
@@ -118,7 +112,7 @@ class MarketingPlanService
             ];
         }
 
-        $contextoPlan = !empty($lineasContexto)
+        $contextoPlan = ! empty($lineasContexto)
             ? implode("\n", $lineasContexto)
             : '- No se recibieron recursos contratados con detalle suficiente.';
 
@@ -144,6 +138,7 @@ FORMATO DE SALIDA:
 - Tono profesional, claro, accionable y especifico.
 - Maximo 1,800 palabras.
 - No uses tablas Markdown ni tablas de ningun tipo.
+- Escribe cada elemento de una lista numerada o con viñetas en una línea independiente; nunca unas varios elementos en un mismo párrafo.
 
 {$reglasCanales}
 
@@ -179,7 +174,7 @@ REGLAS ESTRICTAS:
 2. Respeta exactamente cantidades, frecuencias y alcances cuando esten disponibles.
 3. Si el plan indica recursos semanales, distribuyelos exactamente por cada una de las 4 semanas del mes.
 4. Si el plan indica recursos mensuales, distribuyelos de forma logica y explicita dentro del mes.
-5. No agregues servicios, formatos, piezas, campañas o acciones que no esten incluidos en los recursos listados. Los unicos canales permitidos son Facebook, Instagram y TikTok.
+5. No agregues servicios, formatos, piezas, campañas o acciones que no esten incluidos en los recursos listados. Los unicos canales permitidos son Facebook, Instagram, TikTok y WhatsApp.
 6. No propongas publicidad pagada si el plan no la incluye explicitamente.
 7. No inventes presupuestos, porcentajes, ROI, ingresos, CAC, ROAS ni proyecciones financieras.
 8. No inventes competidores, datos externos de mercado ni resultados esperados.
@@ -219,7 +214,7 @@ ENTREGABLE OBLIGATORIO:
 ## 6 Embudo de marketing
 - Divide en reconocimiento, consideracion y conversion.
 - Para cada etapa indica objetivo, tipo de mensaje, formatos permitidos por el plan y CTA recomendado.
-- Explica el papel exacto de las publicaciones de Facebook, Instagram y TikTok dentro del embudo.
+- Explica el papel exacto de las publicaciones de Facebook, Instagram, TikTok y WhatsApp dentro del embudo.
 
 ## 7 Calendario operativo mensual
 Esta debe ser la seccion mas detallada.
@@ -244,7 +239,7 @@ Reglas operativas del calendario:
 - Si incluye videos mensuales, define tema, objetivo, guion breve y CTA para cada video.
 - Si incluye TikTok semanal, define ideas concretas por semana y respeta exactamente la cantidad.
 - Si incluye fotografia mensual, indica que fotos tomar y en que piezas se reutilizaran.
-- Toda pieza del calendario debe asignarse a Facebook, Instagram o TikTok.
+- Toda pieza del calendario debe asignarse a Facebook, Instagram, TikTok o WhatsApp.
 - No uses rangos vagos cuando exista cantidad exacta.
 
 ## 8 Uso exacto de recursos contratados
@@ -261,7 +256,7 @@ Reglas operativas del calendario:
 - Define entre 5 y 8 KPIs realistas.
 - Deben corresponder a los recursos realmente contratados y a los objetivos del brief.
 - Indica como medir cada KPI.
-- Si no hay datos financieros, usa indicadores de Facebook, Instagram y TikTok como interacciones, alcance, guardados, reproducciones, crecimiento de comunidad y conversiones atribuibles a publicaciones.
+- Si no hay datos financieros, usa indicadores de Facebook, Instagram, TikTok y WhatsApp como interacciones, alcance, guardados, reproducciones, crecimiento de comunidad y conversiones atribuibles a publicaciones.
 
 ## 10 Recomendaciones finales
 - Cierra con recomendaciones accionables y priorizadas.
@@ -278,9 +273,9 @@ EOT;
 
         // 5. Preparar y hacer la llamada a la API de Groq
         $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . config('services.groq.key'),
-                'Content-Type' => 'application/json',
-            ])
+            'Authorization' => 'Bearer '.config('services.groq.key'),
+            'Content-Type' => 'application/json',
+        ])
             ->withOptions([
                 'verify' => false,
             ])
@@ -306,7 +301,7 @@ EOT;
             );
         }
 
-        Log::error('Error en la API de Groq al generar plan de marketing: ' . $response->body());
+        Log::error('Error en la API de Groq al generar plan de marketing: '.$response->body());
 
         return 'Hubo un error e intentalo nuevamente.';
     }

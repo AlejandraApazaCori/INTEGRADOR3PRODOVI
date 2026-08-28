@@ -22,7 +22,7 @@ class CuestionarioAdminController extends Controller
      */
     public function show($id)
     {
-        if (!auth()->check() || !auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+        if (! auth()->check() || ! auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
             abort(403, 'No tienes permisos para acceder a esta pagina.');
         }
 
@@ -44,7 +44,7 @@ class CuestionarioAdminController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (!auth()->check() || !auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+        if (! auth()->check() || ! auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
             abort(403, 'No tienes permisos para realizar esta accion.');
         }
 
@@ -67,6 +67,10 @@ class CuestionarioAdminController extends Controller
 
         $request->validate($rules);
 
+        $request->validate([
+            'continuar_campania' => 'nullable|integer|exists:suscripciones,id',
+        ]);
+
         DB::transaction(function () use ($request, $empresa, $preguntas) {
             foreach ($preguntas as $pregunta) {
                 $respuestaTexto = $this->formatAnswer(
@@ -83,6 +87,7 @@ class CuestionarioAdminController extends Controller
                     if ($respuesta->exists) {
                         $respuesta->delete();
                     }
+
                     continue;
                 }
 
@@ -97,6 +102,12 @@ class CuestionarioAdminController extends Controller
             $empresa->cuestionario_completado = true;
             $empresa->save();
         });
+
+        if ($request->filled('continuar_campania')
+            && (int) $request->continuar_campania === (int) $empresa->suscripcion_id) {
+            return redirect()->route('administrador.campañas.preparar', $empresa->suscripcion_id)
+                ->with('success', 'Cuestionario completado. Ahora prepararemos el resumen y el plan de marketing.');
+        }
 
         return redirect()->route('administrador.empresas.cuestionario.show', $empresa->id)
             ->with('success', 'Las respuestas del cuestionario se han guardado correctamente.');
@@ -164,19 +175,21 @@ class CuestionarioAdminController extends Controller
             $currentChild = $stored ? collect($locations['folders'])->firstWhere('id', $stored->folder_id) : null;
             $locations['current_folder'] = $stored ? [
                 'id' => $stored->folder_id === $locations['root']['id'] || $currentChild ? $stored->folder_id : $locations['root']['id'],
-                'name' => $stored->folder_id === $locations['root']['id'] || !$currentChild ? $locations['root']['name'] : $currentChild['name'],
+                'name' => $stored->folder_id === $locations['root']['id'] || ! $currentChild ? $locations['root']['name'] : $currentChild['name'],
             ] : null;
             $locations['current_document'] = $stored ? ['name' => $stored->file_name, 'url' => $stored->web_view_link] : null;
+
             return response()->json($locations);
         } catch (\Throwable $exception) {
             report($exception);
+
             return response()->json(['message' => 'No se pudieron consultar las carpetas de la empresa.'], 500);
         }
     }
 
     private function questionnaireDocx(array $data): string
     {
-        $phpWord = new PhpWord();
+        $phpWord = new PhpWord;
         $phpWord->setDefaultFontName('Arial');
         $phpWord->setDefaultFontSize(10);
         $section = $phpWord->addSection(['marginTop' => 900, 'marginRight' => 900, 'marginBottom' => 900, 'marginLeft' => 900]);
@@ -185,8 +198,11 @@ class CuestionarioAdminController extends Controller
         $table->addRow(620);
         $left = $table->addCell(3600, ['bgColor' => '343A40', 'valign' => 'center']);
         $logoPath = public_path('imagenes/logoblanco.png');
-        if (is_file($logoPath)) $left->addImage($logoPath, ['width' => 92, 'alignment' => 'left']);
-        else $left->addText('PRODOVI', ['bold' => true, 'size' => 16, 'color' => 'FFFFFF']);
+        if (is_file($logoPath)) {
+            $left->addImage($logoPath, ['width' => 92, 'alignment' => 'left']);
+        } else {
+            $left->addText('PRODOVI', ['bold' => true, 'size' => 16, 'color' => 'FFFFFF']);
+        }
         $right = $table->addCell(5800, ['bgColor' => '343A40', 'valign' => 'center']);
         $right->addText('Cuestionario empresarial', ['bold' => true, 'size' => 12, 'color' => 'FFFFFF'], ['alignment' => 'right', 'spaceAfter' => 40]);
         $right->addText('Documento generado el '.now()->format('d/m/Y H:i'), ['size' => 8, 'color' => 'D9DED6'], ['alignment' => 'right']);
@@ -197,7 +213,9 @@ class CuestionarioAdminController extends Controller
         $section->addTextBreak();
         foreach ($data['temas'] as $index => $tema) {
             $section->addTitle(($index + 1).'. '.$tema->nombre_tema, 2);
-            if ($tema->descripcion_tema) $section->addText($tema->descripcion_tema, ['italic' => true, 'color' => '7D847A']);
+            if ($tema->descripcion_tema) {
+                $section->addText($tema->descripcion_tema, ['italic' => true, 'color' => '7D847A']);
+            }
             foreach ($tema->preguntas as $pregunta) {
                 $section->addText($pregunta->pregunta, ['bold' => true, 'color' => '3E463B'], ['spaceBefore' => 160, 'spaceAfter' => 60]);
                 $answer = trim((string) ($data['respuestas'][$pregunta->id] ?? ''));
@@ -217,9 +235,12 @@ class CuestionarioAdminController extends Controller
         $temporary = tempnam(sys_get_temp_dir(), 'prodovi-questionnaire-');
         try {
             IOFactory::createWriter($phpWord, 'Word2007')->save($temporary);
+
             return (string) file_get_contents($temporary);
         } finally {
-            if (is_file($temporary)) unlink($temporary);
+            if (is_file($temporary)) {
+                unlink($temporary);
+            }
         }
     }
 

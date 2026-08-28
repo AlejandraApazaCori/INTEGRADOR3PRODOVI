@@ -15,7 +15,15 @@ class RecursoClienteController extends Controller
     {
         $empresas = $request->user()->empresas()->orderBy('nombre_empresa')->get();
         $empresaSeleccionada = $empresas->firstWhere('id', (int) $request->query('empresa_id')) ?? $empresas->first();
-        $recursos = $empresaSeleccionada ? $empresaSeleccionada->recursos()->latest()->get() : collect();
+        $recursos = $empresaSeleccionada
+            ? $empresaSeleccionada->recursos()
+                ->where(function ($query) {
+                    $query->where('origen', 'cliente')
+                        ->orWhere('visible_cliente', true);
+                })
+                ->latest()
+                ->get()
+            : collect();
 
         return view('clientes.recursos.index', compact('empresas', 'empresaSeleccionada', 'recursos'));
     }
@@ -46,12 +54,26 @@ class RecursoClienteController extends Controller
 
         foreach ($request->file('imagenes', []) as $imagen) {
             $path = $imagen->store("recursos-empresa/{$empresa->id}", 'public');
-            $empresa->recursos()->create(['tipo' => 'imagen', 'nombre' => $imagen->getClientOriginalName(), 'archivo_path' => $path]);
+            $empresa->recursos()->create([
+                'tipo' => 'imagen',
+                'nombre' => $imagen->getClientOriginalName(),
+                'archivo_path' => $path,
+                'origen' => 'cliente',
+                'visible_cliente' => true,
+                'creado_por_id' => $request->user()->id,
+            ]);
         }
 
         foreach ($enlaces as $url) {
             $host = parse_url($url, PHP_URL_HOST) ?: 'Enlace de video';
-            $empresa->recursos()->create(['tipo' => 'enlace', 'nombre' => preg_replace('/^www\./', '', $host), 'url' => $url]);
+            $empresa->recursos()->create([
+                'tipo' => 'enlace',
+                'nombre' => preg_replace('/^www\./', '', $host),
+                'url' => $url,
+                'origen' => 'cliente',
+                'visible_cliente' => true,
+                'creado_por_id' => $request->user()->id,
+            ]);
         }
 
         return redirect()->route('clientes.recursos', ['empresa_id' => $empresa->id])->with('success', 'Los recursos fueron agregados correctamente.');
@@ -59,7 +81,11 @@ class RecursoClienteController extends Controller
 
     public function destroy(Request $request, RecursoEmpresa $recurso)
     {
-        abort_unless($recurso->empresa()->where('usuario_id', $request->user()->id)->exists(), 403);
+        abort_unless(
+            $recurso->origen === 'cliente'
+                && $recurso->empresa()->where('usuario_id', $request->user()->id)->exists(),
+            403
+        );
         if ($recurso->archivo_path) Storage::disk('public')->delete($recurso->archivo_path);
         $empresaId = $recurso->empresa_id;
         $recurso->delete();
@@ -69,7 +95,11 @@ class RecursoClienteController extends Controller
 
     public function updateName(Request $request, RecursoEmpresa $recurso)
     {
-        abort_unless($recurso->empresa()->where('usuario_id', $request->user()->id)->exists(), 403);
+        abort_unless(
+            $recurso->origen === 'cliente'
+                && $recurso->empresa()->where('usuario_id', $request->user()->id)->exists(),
+            403
+        );
 
         $validated = $request->validate([
             'nombre' => ['required', 'string', 'max:255'],

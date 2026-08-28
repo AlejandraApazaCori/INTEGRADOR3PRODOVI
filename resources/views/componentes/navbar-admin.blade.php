@@ -1,13 +1,22 @@
+@php
+    $sidebarLogoData = 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('imagenes/logonegro.png')));
+@endphp
 @include('a.css.componentes.navbar-admin')
 </head>
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
+        <script>
+            if (document.documentElement.classList.contains('admin-sidebar-collapsed')) {
+                document.currentScript.parentElement.classList.add('collapsed');
+                document.body.classList.add('sidebar-collapsed');
+            }
+        </script>
         <!-- Header con Logo -->
         <div class="sidebar-header">
             <a href="{{ route('administrador.dashboard') }}" class="logo">
                 <div class="logo-icon">
-                    <img src="{{ asset('imagenes/logoblanco.png') }}" alt="PRODOVI Logo" class="logo-img">
+                    <img src="{{ $sidebarLogoData }}" alt="PRODOVI Logo" class="logo-img" width="495" height="110" decoding="sync">
                 </div>
             </a>
         </div>
@@ -17,8 +26,8 @@
             <div class="menu-label">MENU</div>
             
             <!-- Dashboard -->
-            <div class="menu-item">
-                <a href="{{ route('administrador.dashboard') }}" class="menu-link">
+            <div class="menu-item menu-purple">
+                <a href="{{ route('administrador.dashboard') }}" class="menu-link {{ request()->routeIs('administrador.dashboard') ? 'active' : '' }}">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="7" height="7"/>
                         <rect x="14" y="3" width="7" height="7"/>
@@ -33,7 +42,7 @@
             @php
                 $usuariosMenuOpen = request()->routeIs('administrador.usuarios.*') || request()->routeIs('administrador.roles.*') || request()->routeIs('administrador.permisos.*') || request()->routeIs('administrador.usuarios.eliminados');
             @endphp
-            <div class="menu-item">
+            <div class="menu-item menu-orange-dark">
                 <a href="#" class="menu-link {{ $usuariosMenuOpen ? 'active' : '' }}" onclick="toggleSubmenu(this); return false;">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -47,6 +56,7 @@
                     </svg>
                 </a>
                 <div class="submenu {{ $usuariosMenuOpen ? 'open' : '' }}">
+                    <div class="submenu-title">Usuarios</div>
                     <div class="submenu-item">
                         <a href="{{ route('administrador.usuarios.index') }}" class="submenu-link {{ request()->routeIs('administrador.usuarios.index') ? 'active' : '' }}">General</a>
                     </div>
@@ -66,7 +76,7 @@
             @php
                 $pagosMenuOpen = request()->routeIs('administrador.pagos.*') || request()->routeIs('admin.analiticas.*');
             @endphp
-            <div class="menu-item">
+            <div class="menu-item menu-orange">
                 <a href="#" class="menu-link {{ $pagosMenuOpen ? 'active' : '' }}" onclick="toggleSubmenu(this); return false;">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
@@ -78,6 +88,7 @@
                     </svg>
                 </a>
                 <div class="submenu {{ $pagosMenuOpen ? 'open' : '' }}">
+                    <div class="submenu-title">Pagos</div>
                     
                     <div class="submenu-item">
                         <a href="{{ route('administrador.pagos.index') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.index') ? 'active' : '' }}">General</a>
@@ -94,8 +105,8 @@
                 </div>
             </div>            <!-- Campañas -->
             <!-- Planes -->
-            <div class="menu-item">
-                <a href="{{ route('administrador.planes.index') }}" class="menu-link">
+            <div class="menu-item menu-green">
+                <a href="{{ route('administrador.planes.index') }}" class="menu-link {{ request()->routeIs('administrador.planes.*') ? 'active' : '' }}">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                         <line x1="9" y1="9" x2="15" y2="9"></line>
@@ -106,8 +117,8 @@
             </div>
 
             <!-- Cuestionario Briefing -->
-            <div class="menu-item">
-                <a href="{{ route('administrador.cuestionario.estructura.index') }}" class="menu-link">
+            <div class="menu-item menu-teal">
+                <a href="{{ route('administrador.cuestionario.estructura.index') }}" class="menu-link {{ request()->routeIs('administrador.cuestionario.estructura.*') ? 'active' : '' }}">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
@@ -120,8 +131,8 @@
             </div>
 
             <!-- Empresas -->
-            <div class="menu-item">
-                <a href="{{ route('administrador.empresas.index') }}" class="menu-link">
+            <div class="menu-item menu-purple">
+                <a href="{{ route('administrador.empresas.index') }}" class="menu-link {{ request()->routeIs('administrador.empresas.*') ? 'active' : '' }}">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M3 21h18"></path>
                         <path d="M5 21V7l8-4v18"></path>
@@ -137,10 +148,10 @@
             @php
                 $currentRouteName = (string) (request()->route()?->getName() ?? '');
                 $campanasMenuOpen = str_starts_with($currentRouteName, 'administrador.camp') || str_starts_with($currentRouteName, 'administrador.tareas.');
-                $campanasIndexActive = str_starts_with($currentRouteName, 'administrador.camp') && str_ends_with($currentRouteName, '.index');
                 $campanasAnaliticasActive = str_starts_with($currentRouteName, 'administrador.camp') && str_contains($currentRouteName, '.analiticas');
+                $campanasIndexActive = $campanasMenuOpen && ! $campanasAnaliticasActive;
             @endphp
-            <div class="menu-item">
+            <div class="menu-item menu-orange-dark">
                 <a href="#" class="menu-link {{ $campanasMenuOpen ? 'active' : '' }}" onclick="toggleSubmenu(this); return false;">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
@@ -152,6 +163,7 @@
                     </svg>
                 </a>
                 <div class="submenu {{ $campanasMenuOpen ? 'open' : '' }}">
+                    <div class="submenu-title">Campañas</div>
                     <div class="submenu-item">
                         <a href="{{ route('administrador.campañas.index') }}" class="submenu-link {{ $campanasIndexActive ? 'active' : '' }}">General</a>
                     </div>
@@ -162,7 +174,7 @@
             </div>
 
             <!-- Logs -->
-            <div class="menu-item">
+            <div class="menu-item menu-orange">
                 <a href="{{ route('administrador.logs.index') }}" class="menu-link {{ request()->routeIs('administrador.logs.*') ? 'active' : '' }}">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
@@ -177,7 +189,7 @@
             </div>
 
             <!-- Backups -->
-            <div class="menu-item">
+            <div class="menu-item menu-green">
                 <a href="{{ route('administrador.backups.index') }}" class="menu-link {{ request()->routeIs('administrador.backups.*') ? 'active' : '' }}">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <ellipse cx="12" cy="5" rx="8" ry="3"></ellipse>
@@ -223,16 +235,6 @@
                             <span class="dropdown-user-email">{{ auth()->user()->email ?? 'usuario@prodovi.com' }}</span>
                         </div>
                     </div>
-                    
-                    <div class="dropdown-divider"></div>
-                    
-                    <a href="#" class="dropdown-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
-                        </svg>
-                        <span>Mi Perfil</span>
-                    </a>
                     
                     <div class="dropdown-divider"></div>
                     

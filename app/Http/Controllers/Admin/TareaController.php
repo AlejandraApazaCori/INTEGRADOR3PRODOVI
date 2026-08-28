@@ -23,12 +23,12 @@ class TareaController extends Controller
         })->with('roles')->get();
 
         $cm = User::with('roles')->find($campania->community_manager_id);
-        if ($cm && !$asignables->contains('id', $cm->id)) {
+        if ($cm && ! $asignables->contains('id', $cm->id)) {
             $asignables->push($cm);
         }
 
         $adminActual = Auth::user()?->loadMissing('roles');
-        if ($adminActual && !in_array($adminActual->id, $asignables->pluck('id')->toArray(), true)) {
+        if ($adminActual && ! in_array($adminActual->id, $asignables->pluck('id')->toArray(), true)) {
             $asignables->push($adminActual);
         }
 
@@ -74,12 +74,12 @@ class TareaController extends Controller
         })->with('roles')->get();
 
         $cm = User::with('roles')->find($tarea->campania->community_manager_id);
-        if ($cm && !$asignables->contains('id', $cm->id)) {
+        if ($cm && ! $asignables->contains('id', $cm->id)) {
             $asignables->push($cm);
         }
 
         $adminActual = Auth::user()?->loadMissing('roles');
-        if ($adminActual && !in_array($adminActual->id, $asignables->pluck('id')->toArray(), true)) {
+        if ($adminActual && ! in_array($adminActual->id, $asignables->pluck('id')->toArray(), true)) {
             $asignables->push($adminActual);
         }
 
@@ -110,6 +110,20 @@ class TareaController extends Controller
             ->with('success', 'Tarea actualizada exitosamente');
     }
 
+    public function updateEstado(Request $request, Tarea $tarea)
+    {
+        $validated = $request->validate([
+            'estado' => 'required|in:pendiente,en_progreso,completada',
+        ]);
+
+        $tarea->update(['estado' => $validated['estado']]);
+
+        return response()->json([
+            'message' => 'Estado de la tarea actualizado.',
+            'estado' => $tarea->estado,
+        ]);
+    }
+
     public function obtenerRecomendacionIA(Campania $campania)
     {
         $campania->loadMissing('cliente.empresas');
@@ -118,7 +132,7 @@ class TareaController extends Controller
         $fechaFinCampania = $this->formatearFecha($campania->fecha_fin);
 
         $empresa = $campania->cliente?->empresas?->sortByDesc('id')->first();
-        if (!$empresa) {
+        if (! $empresa) {
             return response()->json(['error' => 'No se encontro una empresa asociada al cliente de esta campaña.'], 404);
         }
 
@@ -126,7 +140,7 @@ class TareaController extends Controller
             ->latest()
             ->first();
 
-        if (!$planMarketing) {
+        if (! $planMarketing) {
             return response()->json(['error' => 'No se encontro un plan de marketing para esta empresa.'], 404);
         }
 
@@ -181,9 +195,9 @@ FORMATO JSON OBLIGATORIO:
 EOT;
 
         $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . config('services.groq.key'),
-                'Content-Type' => 'application/json',
-            ])
+            'Authorization' => 'Bearer '.config('services.groq.key'),
+            'Content-Type' => 'application/json',
+        ])
             ->withOptions([
                 'verify' => false,
             ])
@@ -200,14 +214,14 @@ EOT;
                 'stream' => false,
             ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             return response()->json(['error' => 'Hubo un error al generar la recomendacion con IA.'], 500);
         }
 
         $contenido = $response->json('choices.0.message.content') ?? '';
         $recomendacion = $this->decodificarJsonIA($contenido);
 
-        if (!$recomendacion) {
+        if (! $recomendacion) {
             return response()->json(['error' => 'La IA devolvio una respuesta invalida para la recomendacion de tarea.'], 500);
         }
 
