@@ -288,6 +288,114 @@
     .field-group input:focus,
     .field-group select:focus { border-color: var(--prodovi-turquoise); }
 
+    .payment-native-select {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+    }
+
+    .payment-custom-select { position: relative; }
+    .payment-select-trigger {
+        width: 100%;
+        min-height: 46px;
+        display: grid;
+        grid-template-columns: 30px minmax(0, 1fr) 16px;
+        align-items: center;
+        gap: 9px;
+        padding: 7px 10px;
+        border: 1px solid #403c43;
+        border-radius: 8px;
+        outline: none;
+        background: #0c0c0d;
+        color: #fff;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+        transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+    .payment-select-trigger:hover,
+    .payment-select-trigger[aria-expanded="true"] {
+        border-color: var(--prodovi-turquoise);
+        background: #111113;
+        box-shadow: 0 0 0 3px rgba(17, 126, 140, .15);
+    }
+    .payment-select-icon {
+        width: 30px;
+        height: 30px;
+        display: grid;
+        place-items: center;
+        border-radius: 7px;
+        background: rgba(17, 126, 140, .17);
+        color: #55c4d0;
+        font-size: .7rem;
+    }
+    .payment-select-value { min-width: 0; }
+    .payment-select-value strong,
+    .payment-select-value small {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .payment-select-value strong { color: #fff; font-size: .78rem; }
+    .payment-select-value small { margin-top: 2px; color: #918b95; font-size: .62rem; }
+    .payment-select-chevron { color: #8e8891; font-size: .58rem; transition: transform .18s ease; }
+    .payment-select-trigger[aria-expanded="true"] .payment-select-chevron { transform: rotate(180deg); }
+    .payment-select-menu {
+        position: absolute;
+        z-index: 120;
+        top: calc(100% + 7px);
+        right: 0;
+        left: 0;
+        max-height: 280px;
+        padding: 6px;
+        overflow-y: auto;
+        border: 1px solid #48434b;
+        border-radius: 10px;
+        background: #171619;
+        box-shadow: 0 18px 38px rgba(0, 0, 0, .42);
+    }
+    .payment-select-menu[hidden] { display: none; }
+    .payment-select-menu button {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 28px minmax(0, 1fr) 14px;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        border: 0;
+        border-radius: 7px;
+        background: transparent;
+        color: #e8e3ea;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+    }
+    .payment-select-menu button:hover,
+    .payment-select-menu button:focus-visible { outline: none; background: rgba(17, 126, 140, .15); }
+    .payment-select-menu button[aria-selected="true"] { background: rgba(17, 126, 140, .22); color: #76d4dd; }
+    .payment-select-menu button > span:first-child {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        border-radius: 7px;
+        background: #262329;
+        color: var(--prodovi-orange);
+        font-size: .66rem;
+    }
+    .payment-select-menu button strong,
+    .payment-select-menu button small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .payment-select-menu button strong { font-size: .73rem; }
+    .payment-select-menu button small { margin-top: 2px; color: #938d97; font-size: .6rem; }
+    .payment-select-menu button > i { visibility: hidden; color: #76d4dd; font-size: .58rem; }
+    .payment-select-menu button[aria-selected="true"] > i { visibility: visible; }
+    .payment-option:first-child { z-index: 4; overflow: visible; }
+
     .qr-code,
     .physical-payment {
         padding: 22px;

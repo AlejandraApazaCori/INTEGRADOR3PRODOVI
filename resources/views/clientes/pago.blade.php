@@ -61,13 +61,27 @@
                                 </div>
                                 <div class="field-group">
                                     <label for="document-type">Tipo de documento</label>
-                                    <select id="document-type">
+                                    <select id="document-type" class="payment-native-select" tabindex="-1" aria-hidden="true">
                                         <option value="1">Carnet de identidad</option>
                                         <option value="2">Carnet de extranjeria</option>
                                         <option value="3">Pasaporte</option>
                                         <option value="4">Otro documento</option>
                                         <option value="5">NIT</option>
                                     </select>
+                                    <div class="payment-custom-select" data-payment-select="document-type">
+                                        <button type="button" class="payment-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                            <span class="payment-select-icon"><i class="fas fa-id-card"></i></span>
+                                            <span class="payment-select-value"><strong>Carnet de identidad</strong><small>Documento nacional</small></span>
+                                            <i class="fas fa-chevron-down payment-select-chevron"></i>
+                                        </button>
+                                        <div class="payment-select-menu" role="listbox" hidden>
+                                            <button type="button" role="option" aria-selected="true" data-value="1" data-label="Carnet de identidad" data-detail="Documento nacional" data-icon="fa-id-card"><span><i class="fas fa-id-card"></i></span><span><strong>Carnet de identidad</strong><small>Documento nacional</small></span><i class="fas fa-check"></i></button>
+                                            <button type="button" role="option" aria-selected="false" data-value="2" data-label="Carnet de extranjeria" data-detail="Documento para extranjeros" data-icon="fa-address-card"><span><i class="fas fa-address-card"></i></span><span><strong>Carnet de extranjeria</strong><small>Documento para extranjeros</small></span><i class="fas fa-check"></i></button>
+                                            <button type="button" role="option" aria-selected="false" data-value="3" data-label="Pasaporte" data-detail="Documento internacional" data-icon="fa-passport"><span><i class="fas fa-passport"></i></span><span><strong>Pasaporte</strong><small>Documento internacional</small></span><i class="fas fa-check"></i></button>
+                                            <button type="button" role="option" aria-selected="false" data-value="4" data-label="Otro documento" data-detail="Otra identificación válida" data-icon="fa-file-lines"><span><i class="fas fa-file-lines"></i></span><span><strong>Otro documento</strong><small>Otra identificación válida</small></span><i class="fas fa-check"></i></button>
+                                            <button type="button" role="option" aria-selected="false" data-value="5" data-label="NIT" data-detail="Identificación tributaria" data-icon="fa-receipt"><span><i class="fas fa-receipt"></i></span><span><strong>NIT</strong><small>Identificación tributaria</small></span><i class="fas fa-check"></i></button>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="field-group">
                                     <label for="document-number">Numero de documento</label>
@@ -79,7 +93,7 @@
                                 </div>
                                 <div class="field-group">
                                     <label for="document-extension">Extension</label>
-                                    <select id="document-extension">
+                                    <select id="document-extension" class="payment-native-select" tabindex="-1" aria-hidden="true">
                                         <option value="">Sin extension</option>
                                         <option value="LP">LP</option>
                                         <option value="CB">CB</option>
@@ -91,6 +105,23 @@
                                         <option value="BE">BE</option>
                                         <option value="PD">PD</option>
                                     </select>
+                                    <div class="payment-custom-select" data-payment-select="document-extension">
+                                        <button type="button" class="payment-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                            <span class="payment-select-icon"><i class="fas fa-location-dot"></i></span>
+                                            <span class="payment-select-value"><strong>Sin extension</strong><small>No aplica extensión</small></span>
+                                            <i class="fas fa-chevron-down payment-select-chevron"></i>
+                                        </button>
+                                        <div class="payment-select-menu payment-extension-menu" role="listbox" hidden>
+                                            @foreach([
+                                                '' => ['Sin extension', 'No aplica extensión'],
+                                                'LP' => ['LP', 'La Paz'], 'CB' => ['CB', 'Cochabamba'], 'SC' => ['SC', 'Santa Cruz'],
+                                                'OR' => ['OR', 'Oruro'], 'PT' => ['PT', 'Potosí'], 'TJ' => ['TJ', 'Tarija'],
+                                                'CH' => ['CH', 'Chuquisaca'], 'BE' => ['BE', 'Beni'], 'PD' => ['PD', 'Pando'],
+                                            ] as $code => [$label, $detail])
+                                                <button type="button" role="option" aria-selected="{{ $code === '' ? 'true' : 'false' }}" data-value="{{ $code }}" data-label="{{ $label }}" data-detail="{{ $detail }}" data-icon="fa-location-dot"><span><i class="fas fa-location-dot"></i></span><span><strong>{{ $label }}</strong><small>{{ $detail }}</small></span><i class="fas fa-check"></i></button>
+                                            @endforeach
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -183,6 +214,72 @@ document.addEventListener('DOMContentLoaded', () => {
     let pollTimer = null;
 
     const buttonContent = (icon, label) => `<i class="fas ${icon}"></i> ${label}`;
+    const paymentDropdowns = Array.from(document.querySelectorAll('[data-payment-select]'));
+
+    function closePaymentDropdown(container, restoreFocus = false) {
+        const trigger = container.querySelector('.payment-select-trigger');
+        const menu = container.querySelector('.payment-select-menu');
+        menu.hidden = true;
+        trigger.setAttribute('aria-expanded', 'false');
+        if (restoreFocus) trigger.focus();
+    }
+
+    function initPaymentDropdown(container) {
+        const nativeSelect = document.getElementById(container.dataset.paymentSelect);
+        const trigger = container.querySelector('.payment-select-trigger');
+        const menu = container.querySelector('.payment-select-menu');
+        const options = Array.from(menu.querySelectorAll('[role="option"]'));
+
+        const selectOption = (option, emitChange = true) => {
+            nativeSelect.value = option.dataset.value;
+            options.forEach(item => item.setAttribute('aria-selected', item === option ? 'true' : 'false'));
+            trigger.querySelector('.payment-select-value strong').textContent = option.dataset.label;
+            trigger.querySelector('.payment-select-value small').textContent = option.dataset.detail;
+            trigger.querySelector('.payment-select-icon i').className = `fas ${option.dataset.icon}`;
+            if (emitChange) nativeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        };
+
+        trigger.addEventListener('click', () => {
+            const willOpen = menu.hidden;
+            paymentDropdowns.forEach(dropdown => closePaymentDropdown(dropdown));
+            menu.hidden = !willOpen;
+            trigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            if (willOpen) options.find(option => option.getAttribute('aria-selected') === 'true')?.focus();
+        });
+
+        trigger.addEventListener('keydown', event => {
+            if (!['ArrowDown', 'Enter', ' '].includes(event.key)) return;
+            event.preventDefault();
+            paymentDropdowns.forEach(dropdown => closePaymentDropdown(dropdown));
+            menu.hidden = false;
+            trigger.setAttribute('aria-expanded', 'true');
+            options.find(option => option.getAttribute('aria-selected') === 'true')?.focus();
+        });
+
+        options.forEach((option, index) => {
+            option.addEventListener('click', () => {
+                selectOption(option);
+                closePaymentDropdown(container, true);
+            });
+            option.addEventListener('keydown', event => {
+                if (event.key === 'Escape') { event.preventDefault(); closePaymentDropdown(container, true); }
+                if (event.key === 'ArrowDown') { event.preventDefault(); options[(index + 1) % options.length].focus(); }
+                if (event.key === 'ArrowUp') { event.preventDefault(); options[(index - 1 + options.length) % options.length].focus(); }
+            });
+        });
+
+        nativeSelect.addEventListener('change', () => {
+            const selected = options.find(option => option.dataset.value === nativeSelect.value);
+            if (selected) selectOption(selected, false);
+        });
+    }
+
+    paymentDropdowns.forEach(initPaymentDropdown);
+    document.addEventListener('click', event => {
+        paymentDropdowns.forEach(dropdown => {
+            if (!dropdown.contains(event.target)) closePaymentDropdown(dropdown);
+        });
+    });
 
     function selectMethod(method) {
         const qr = method === 'qr';
