@@ -79,7 +79,7 @@ class CampaignMetaAnalyticsTest extends TestCase
             if (str_ends_with($path, '/page-10')) {
                 return Http::response(['id' => 'page-10', 'name' => 'Página real', 'followers_count' => 125], 200);
             }
-            if (str_ends_with($path, '/page-10/posts')) {
+            if (str_ends_with($path, '/page-10/published_posts')) {
                 return Http::response(['data' => [
                     $this->facebookPost('fb-1', $firstPublication, 12, 3, 2),
                     $this->facebookPost('fb-2', $secondPublication, 18, 4, 1),
@@ -159,7 +159,7 @@ class CampaignMetaAnalyticsTest extends TestCase
             if (str_ends_with($path, '/page-only')) {
                 return Http::response(['id' => 'page-only', 'name' => 'Solo Facebook', 'followers_count' => 80]);
             }
-            if (str_ends_with($path, '/page-only/posts')) {
+            if (str_ends_with($path, '/page-only/published_posts')) {
                 return Http::response(['data' => [$this->facebookPost('fb-only-1', $publishedAt, 9, 2, 1)]]);
             }
 
@@ -207,6 +207,43 @@ class CampaignMetaAnalyticsTest extends TestCase
             ->assertJsonPath('platforms.instagram.totals.posts', 1)
             ->assertJsonPath('summary.totals.followers', 95)
             ->assertJsonPath('summary.totals.posts', 1);
+    }
+
+    public function test_facebook_posts_fall_back_to_page_owned_content_when_user_content_permission_is_missing(): void
+    {
+        [$admin, $campaign, $company, $client] = $this->campaignContext();
+        $this->connect($client, $company, 'facebook_page', 'page-limited', 'facebook-token');
+        $publishedAt = now('America/La_Paz')->subDay()->utc()->toIso8601String();
+
+        Http::fake(function (Request $request) use ($publishedAt) {
+            $path = (string) parse_url($request->url(), PHP_URL_PATH);
+            parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
+            $data = array_merge($query, $request->data());
+
+            if (str_ends_with($path, '/page-limited')) {
+                return Http::response(['id' => 'page-limited', 'name' => 'Página limitada', 'followers_count' => 70]);
+            }
+            if (str_ends_with($path, '/page-limited/published_posts')) {
+                if (str_contains((string) ($data['fields'] ?? ''), 'comments')) {
+                    return Http::response(['error' => ['message' => "(#10) Requires pages_read_user_content"]], 400);
+                }
+
+                return Http::response(['data' => [$this->facebookPost('fb-limited', $publishedAt, 0, 0, 0)]]);
+            }
+            if (str_ends_with($path, '/fb-limited/insights')) {
+                return Http::response(['data' => []]);
+            }
+
+            return Http::response(['data' => []]);
+        });
+
+        $this->actingAs($admin)
+            ->getJson(route('administrador.campañas.analiticas.datos', $campaign))
+            ->assertOk()
+            ->assertJsonPath('platforms.facebook.connected', true)
+            ->assertJsonPath('platforms.facebook.totals.followers', 70)
+            ->assertJsonPath('platforms.facebook.totals.posts', 1)
+            ->assertJsonCount(0, 'errors');
     }
 
     public function test_meta_errors_do_not_break_the_campaign_analytics_endpoint(): void

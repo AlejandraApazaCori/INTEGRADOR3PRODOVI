@@ -151,13 +151,7 @@ class MetaCampaignAnalyticsService
         $platform['totals']['views'] = $this->sumInsight($views);
         $platform['totals']['clicks'] = $this->sumInsight($clicks);
 
-        $postsPayload = $this->get("{$pageId}/posts", [
-            'fields' => 'id,message,created_time,permalink_url,full_picture,attachments.limit(1){media_type,type},reactions.limit(0).summary(true),comments.limit(0).summary(true),shares',
-            'since' => $sinceUnix,
-            'until' => $untilUnix,
-            'limit' => 100,
-            'access_token' => $token,
-        ], 'facebook', 'posts');
+        $postsPayload = $this->facebookPublishedPosts($pageId, $token, $sinceUnix, $untilUnix);
 
         $facebookPosts = collect($postsPayload['data'] ?? [])->take(50)->values();
         $postInsights = $this->facebookPostInsights($facebookPosts->all(), $token);
@@ -194,6 +188,43 @@ class MetaCampaignAnalyticsService
         $platform['audience'] = $this->facebookAudience($pageId, $token);
 
         return $platform;
+    }
+
+    private function facebookPublishedPosts(string $pageId, string $token, int $since, int $until): ?array
+    {
+        $baseParams = [
+            'since' => $since,
+            'until' => $until,
+            'limit' => 100,
+            'access_token' => $token,
+        ];
+        $baseFields = 'id,message,created_time,permalink_url,full_picture,attachments.limit(1){media_type,type}';
+
+        $payload = $this->get("{$pageId}/published_posts", [
+            ...$baseParams,
+            'fields' => $baseFields.',reactions.limit(0).summary(true),comments.limit(0).summary(true),shares',
+        ], 'facebook', 'published_posts', false);
+
+        if ($payload !== null) {
+            return $payload;
+        }
+
+        // Los comentarios y reacciones pueden requerir permisos adicionales. En ese
+        // caso conservamos las publicaciones y obtenemos sus Insights por separado.
+        $payload = $this->get("{$pageId}/published_posts", [
+            ...$baseParams,
+            'fields' => $baseFields,
+        ], 'facebook', 'published_posts_basic', false);
+
+        if ($payload !== null) {
+            return $payload;
+        }
+
+        // Compatibilidad con páginas/versiones antiguas de Graph API.
+        return $this->get("{$pageId}/posts", [
+            ...$baseParams,
+            'fields' => $baseFields,
+        ], 'facebook', 'posts');
     }
 
     private function facebookPostInsights(array $posts, string $token): array

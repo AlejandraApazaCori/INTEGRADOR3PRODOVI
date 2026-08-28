@@ -61,6 +61,7 @@ class SocialAccountController extends Controller
                 'public_profile',
                 'pages_show_list',
                 'pages_read_engagement',
+                'pages_read_user_content',
                 'read_insights',
                 'pages_manage_posts',
                 'instagram_basic',
