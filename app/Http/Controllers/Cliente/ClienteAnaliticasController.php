@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ClienteAnaliticasController extends Controller
 {
-    public function index()
+    public function index(MetaCampaignAnalyticsService $analyticsService)
     {
         $campaniaActual = Auth::user()
             ->campaniasCliente()
@@ -24,6 +24,13 @@ class ClienteAnaliticasController extends Controller
             ->with('socialAccounts')
             ->orderBy('nombre_empresa')
             ->get();
+
+        $empresas->each(function (Empresa $empresa) use ($analyticsService) {
+            $empresa->setAttribute(
+                'analytics_providers',
+                $analyticsService->connectedProvidersForCompany($empresa)
+            );
+        });
 
         return view('clientes.analiticas', compact('data', 'campaniaActual', 'empresas'));
     }
@@ -41,8 +48,20 @@ class ClienteAnaliticasController extends Controller
         );
     }
 
-    public function loadView(Request $request)
+    public function loadView(Request $request, MetaCampaignAnalyticsService $analyticsService)
     {
+        if ($request->boolean('meta')) {
+            $validated = $request->validate([
+                'empresa_id' => 'required|integer',
+                'days' => 'nullable|integer|in:7,30,90',
+            ]);
+            $empresa = Empresa::where('usuario_id', Auth::id())->findOrFail($validated['empresa_id']);
+
+            return response()->json(
+                $analyticsService->forCompany($empresa, (int) ($validated['days'] ?? 30))
+            );
+        }
+
         $periodKey = $this->resolvePeriodKey($request->input('view', '30dias'));
         $userId = $request->filled('user_id') ? (int) $request->input('user_id') : null;
         $data = $this->loadAnalyticsData($periodKey, $userId);

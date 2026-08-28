@@ -63,6 +63,16 @@ class MetaCampaignAnalyticsService
         );
     }
 
+    public function connectedProvidersForCompany(Empresa $empresa): array
+    {
+        $accounts = $this->companyAccountMap($empresa);
+
+        return collect([
+            ($accounts->has('facebook_page') || $accounts->has('facebook')) ? 'facebook' : null,
+            $accounts->has('instagram') ? 'instagram' : null,
+        ])->filter()->values()->all();
+    }
+
     private function collect(array $context, array $accounts, int $days): array
     {
         $this->errors = [];
@@ -572,23 +582,60 @@ class MetaCampaignAnalyticsService
 
     private function resolveCompanyAccounts(Empresa $empresa)
     {
-        $empresa->loadMissing(['socialAccounts', 'usuario.empresas']);
-        $accounts = $empresa->socialAccounts
-            ->whereIn('provider', ['facebook_page', 'instagram'])
-            ->keyBy('provider');
-
-        if ($accounts->isEmpty() && $empresa->usuario?->empresas->count() === 1) {
-            $accounts = $empresa->usuario->socialAccounts()
-                ->whereNull('empresa_id')
-                ->whereIn('provider', ['facebook_page', 'instagram'])
-                ->get()
-                ->keyBy('provider');
-        }
+        $accounts = $this->companyAccountMap($empresa);
+        $facebookPage = $accounts->get('facebook_page')
+            ?? $this->facebookPageFromProfile($accounts->get('facebook'));
 
         return collect([
-            'facebook_page' => $accounts->get('facebook_page'),
+            'facebook_page' => $facebookPage,
             'instagram' => $accounts->get('instagram'),
         ])->filter();
+    }
+
+    private function companyAccountMap(Empresa $empresa)
+    {
+        $empresa->loadMissing(['socialAccounts', 'usuario.empresas']);
+        $accounts = $empresa->socialAccounts->keyBy('provider');
+        $firstCompanyId = $empresa->usuario?->empresas->min('id');
+
+        if ((int) $firstCompanyId === (int) $empresa->id && $empresa->usuario) {
+            $legacyAccounts = $empresa->usuario->socialAccounts()
+                ->whereNull('empresa_id')
+                ->get()
+                ->keyBy('provider');
+
+            $accounts = $accounts->union($legacyAccounts);
+        }
+
+        return $accounts;
+    }
+
+    private function facebookPageFromProfile(?SocialAccount $facebook): ?SocialAccount
+    {
+        if (! $facebook) {
+            return null;
+        }
+
+        $pages = collect(data_get($facebook->metadata, 'pages', []));
+        $page = $pages->first(fn ($item) => filled(data_get($item, 'id')) && filled(data_get($item, 'access_token')));
+        $pageId = data_get($page, 'id') ?: data_get($facebook->metadata, 'page_id');
+        $pageToken = data_get($page, 'access_token') ?: data_get($facebook->metadata, 'page_access_token');
+
+        if (! filled($pageId) || ! filled($pageToken)) {
+            return null;
+        }
+
+        $pageAccount = $facebook->replicate();
+        $pageAccount->provider = 'facebook_page';
+        $pageAccount->provider_user_id = (string) $pageId;
+        $pageAccount->display_name = data_get($page, 'name') ?: $facebook->display_name;
+        $pageAccount->access_token = $pageToken;
+        $pageAccount->metadata = array_merge($facebook->metadata ?? [], [
+            'page_id' => (string) $pageId,
+            'page_name' => data_get($page, 'name'),
+        ]);
+
+        return $pageAccount;
     }
 
     private function get(string $path, array $params, string $platform, string $scope, bool $recordError = true): ?array

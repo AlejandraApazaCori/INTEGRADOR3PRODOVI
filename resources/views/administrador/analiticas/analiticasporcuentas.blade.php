@@ -2,6 +2,7 @@
     class="meta-analytics"
     id="campaign-meta-analytics"
     data-endpoint="{{ $analyticsEndpoint ?? route('administrador.campañas.analiticas.datos', $campania) }}"
+    data-fallback-endpoint="{{ $analyticsFallbackEndpoint ?? '' }}"
     data-empty-message="{{ $analyticsEmptyMessage ?? 'No hay cuentas de Meta vinculadas a esta campaña' }}"
     data-empty-detail="{{ $analyticsEmptyDetail ?? 'El cliente debe vincular su página de Facebook o cuenta profesional de Instagram desde su panel.' }}">
     <header class="meta-analytics-head">
@@ -263,7 +264,15 @@
         state.hidden = false; content.hidden = true;
         state.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i><strong>Consultando Meta Insights</strong><span>Esto puede tardar unos segundos.</span>';
         try {
-            const response = await fetch(`${root.dataset.endpoint}?days=${days}`, {headers:{'Accept':'application/json','X-Requested-With':'XMLHttpRequest'}});
+            const request = endpoint => {
+                const url = new URL(endpoint, window.location.origin);
+                url.searchParams.set('days', days);
+                return fetch(url.toString(), {headers:{'Accept':'application/json','X-Requested-With':'XMLHttpRequest'}});
+            };
+            let response = await request(root.dataset.endpoint);
+            if (response.status === 404 && root.dataset.fallbackEndpoint) {
+                response = await request(root.dataset.fallbackEndpoint);
+            }
             if (!response.ok) throw new Error(`Solicitud rechazada (${response.status})`);
             analytics = await response.json(); loadedDays = days;
             const connected = Object.values(analytics.platforms || {}).some(item => item.connected);
@@ -280,8 +289,9 @@
     root.querySelectorAll('[data-analytics-scope]').forEach(button => button.addEventListener('click', () => { if (button.disabled) return; currentScope = button.dataset.analyticsScope; render(); }));
     period.addEventListener('change', () => load(true));
     window.loadCampaignAnalytics = () => load(false);
-    window.reloadMetaAnalytics = endpoint => {
+    window.reloadMetaAnalytics = (endpoint, fallbackEndpoint = '') => {
         root.dataset.endpoint = endpoint;
+        root.dataset.fallbackEndpoint = fallbackEndpoint;
         analytics = null;
         loadedDays = null;
         currentScope = 'summary';

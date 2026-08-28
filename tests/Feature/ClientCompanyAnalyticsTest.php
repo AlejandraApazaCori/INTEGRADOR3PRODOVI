@@ -46,6 +46,7 @@ class ClientCompanyAnalyticsTest extends TestCase
             ->assertSee($companies[1]->nombre_empresa)
             ->assertSee(route('clientes.analiticas.empresa.datos', $companies[0]), false)
             ->assertSee(route('clientes.analiticas.empresa.datos', $companies[1]), false)
+            ->assertSee(route('clientes.analiticas.load-view', ['meta' => 1, 'empresa_id' => $companies[0]->id]))
             ->assertSee('window.loadCampaignAnalytics?.();', false)
             ->assertDontSee('id="followersGrowthChart"', false)
             ->assertDontSee('id="engagementDistributionChart"', false)
@@ -102,6 +103,94 @@ class ClientCompanyAnalyticsTest extends TestCase
         $this->actingAs($otherClient)
             ->getJson(route('clientes.analiticas.empresa.datos', $otherCompanies[0]))
             ->assertOk();
+    }
+
+    public function test_legacy_accounts_are_resolved_for_the_clients_first_company(): void
+    {
+        [$client, $companies] = $this->clientWithCompanies();
+        $firstCompany = collect($companies)->sortBy('id')->first();
+
+        SocialAccount::create([
+            'user_id' => $client->id, 'empresa_id' => null, 'provider' => 'facebook_page',
+            'provider_user_id' => 'legacy-page', 'display_name' => 'Página heredada',
+            'access_token' => 'legacy-page-token',
+        ]);
+        SocialAccount::create([
+            'user_id' => $client->id, 'empresa_id' => null, 'provider' => 'instagram',
+            'provider_user_id' => 'legacy-instagram', 'display_name' => 'Instagram heredado',
+            'access_token' => 'legacy-instagram-token',
+        ]);
+
+        Http::fake(fn () => Http::response(['data' => []]));
+
+        $this->actingAs($client)
+            ->get(route('clientes.analiticas'))
+            ->assertOk()
+            ->assertSee('Facebook + Instagram');
+
+        $this->actingAs($client)
+            ->getJson(route('clientes.analiticas.empresa.datos', $firstCompany))
+            ->assertOk()
+            ->assertJsonPath('platforms.facebook.connected', true)
+            ->assertJsonPath('platforms.instagram.connected', true);
+    }
+
+    public function test_existing_load_view_route_can_return_company_meta_analytics_as_fallback(): void
+    {
+        [$client, $companies] = $this->clientWithCompanies();
+        $this->connect($client, $companies[0], 'instagram', 'fallback-instagram');
+        Http::fake(fn () => Http::response(['data' => []]));
+
+        $this->actingAs($client)
+            ->getJson(route('clientes.analiticas.load-view', [
+                'meta' => 1,
+                'empresa_id' => $companies[0]->id,
+                'days' => 7,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('company.id', $companies[0]->id)
+            ->assertJsonPath('period.days', 7)
+            ->assertJsonPath('platforms.instagram.connected', true);
+    }
+
+    public function test_legacy_facebook_profile_with_page_credentials_can_supply_page_insights(): void
+    {
+        [$client, $companies] = $this->clientWithCompanies();
+        $firstCompany = collect($companies)->sortBy('id')->first();
+        SocialAccount::create([
+            'user_id' => $client->id,
+            'empresa_id' => null,
+            'provider' => 'facebook',
+            'provider_user_id' => 'facebook-user',
+            'display_name' => 'Perfil autorizado',
+            'access_token' => 'user-token',
+            'metadata' => [
+                'pages' => [[
+                    'id' => 'page-from-profile',
+                    'name' => 'Página desde perfil',
+                    'access_token' => 'page-token',
+                ]],
+            ],
+        ]);
+
+        Http::fake(function (Request $request) {
+            if (str_ends_with((string) parse_url($request->url(), PHP_URL_PATH), '/page-from-profile')) {
+                return Http::response([
+                    'id' => 'page-from-profile',
+                    'name' => 'Página desde perfil',
+                    'followers_count' => 44,
+                ]);
+            }
+
+            return Http::response(['data' => []]);
+        });
+
+        $this->actingAs($client)
+            ->getJson(route('clientes.analiticas.empresa.datos', $firstCompany))
+            ->assertOk()
+            ->assertJsonPath('platforms.facebook.connected', true)
+            ->assertJsonPath('platforms.facebook.account.id', 'page-from-profile')
+            ->assertJsonPath('platforms.facebook.totals.followers', 44);
     }
 
     private function clientWithCompanies(string $suffix = ''): array

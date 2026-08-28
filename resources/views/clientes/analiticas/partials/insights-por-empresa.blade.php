@@ -2,9 +2,9 @@
     @if($empresas->isNotEmpty())
         @php
             $empresaInicial = $empresas->first();
-            $initialProviders = $empresaInicial->socialAccounts->pluck('provider');
+            $initialProviders = collect($empresaInicial->analytics_providers ?? []);
             $initialNetworks = collect([
-                $initialProviders->contains('facebook_page') ? 'Facebook' : null,
+                $initialProviders->contains('facebook') ? 'Facebook' : null,
                 $initialProviders->contains('instagram') ? 'Instagram' : null,
             ])->filter()->implode(' + ') ?: 'Sin cuentas vinculadas';
         @endphp
@@ -18,16 +18,17 @@
                 <select id="client-analytics-company" class="client-custom-native" tabindex="-1" aria-hidden="true">
                     @foreach($empresas as $empresa)
                         @php
-                            $providers = $empresa->socialAccounts->pluck('provider');
+                            $providers = collect($empresa->analytics_providers ?? []);
                             $networks = collect([
-                                $providers->contains('facebook_page') ? 'Facebook' : null,
+                                $providers->contains('facebook') ? 'Facebook' : null,
                                 $providers->contains('instagram') ? 'Instagram' : null,
                             ])->filter()->implode(' + ');
                         @endphp
                         <option
                             value="{{ $empresa->id }}"
                             data-company-name="{{ $empresa->nombre_empresa }}"
-                            data-endpoint="{{ route('clientes.analiticas.empresa.datos', $empresa) }}">
+                            data-endpoint="{{ route('clientes.analiticas.empresa.datos', $empresa) }}"
+                            data-fallback-endpoint="{{ route('clientes.analiticas.load-view', ['meta' => 1, 'empresa_id' => $empresa->id]) }}">
                             {{ $empresa->nombre_empresa }}{{ $networks ? ' — '.$networks : ' — Sin cuentas vinculadas' }}
                         </option>
                     @endforeach
@@ -41,9 +42,9 @@
                     <div class="client-company-menu" role="listbox" hidden>
                         @foreach($empresas as $empresa)
                             @php
-                                $providers = $empresa->socialAccounts->pluck('provider');
+                                $providers = collect($empresa->analytics_providers ?? []);
                                 $networks = collect([
-                                    $providers->contains('facebook_page') ? 'Facebook' : null,
+                                    $providers->contains('facebook') ? 'Facebook' : null,
                                     $providers->contains('instagram') ? 'Instagram' : null,
                                 ])->filter()->implode(' + ') ?: 'Sin cuentas vinculadas';
                             @endphp
@@ -65,6 +66,7 @@
 
         @include('administrador.analiticas.analiticasporcuentas', [
             'analyticsEndpoint' => route('clientes.analiticas.empresa.datos', $empresaInicial),
+            'analyticsFallbackEndpoint' => route('clientes.analiticas.load-view', ['meta' => 1, 'empresa_id' => $empresaInicial->id]),
             'loadChartJs' => false,
             'analyticsEmptyMessage' => 'Esta empresa no tiene cuentas de Meta vinculadas',
             'analyticsEmptyDetail' => 'Vincula su página de Facebook o cuenta profesional de Instagram desde Mi cuenta.',
@@ -132,7 +134,7 @@ document.addEventListener('click', event => {
 companySelect?.addEventListener('change', function () {
     const option = this.options[this.selectedIndex];
     document.getElementById('client-analytics-company-name').textContent = option.dataset.companyName;
-    window.reloadMetaAnalytics?.(option.dataset.endpoint);
+    window.reloadMetaAnalytics?.(option.dataset.endpoint, option.dataset.fallbackEndpoint);
 });
 window.loadCampaignAnalytics?.();
 </script>
