@@ -15,6 +15,9 @@
                 <option value="7">Últimos 7 días</option>
                 <option value="30" selected>Últimos 30 días</option>
                 <option value="90">Últimos 90 días</option>
+                <option value="365">Último año</option>
+                <option value="730">Últimos 2 años</option>
+                <option value="all">Todo el historial</option>
             </select>
             <div class="meta-period-dropdown" data-period-dropdown>
                 <button type="button" class="meta-period-trigger" aria-haspopup="listbox" aria-expanded="false">
@@ -24,6 +27,9 @@
                     <button type="button" role="option" aria-selected="false" data-period-option data-value="7"><span>7</span><strong>Últimos 7 días</strong><i class="fas fa-check"></i></button>
                     <button type="button" role="option" aria-selected="true" data-period-option data-value="30"><span>30</span><strong>Últimos 30 días</strong><i class="fas fa-check"></i></button>
                     <button type="button" role="option" aria-selected="false" data-period-option data-value="90"><span>90</span><strong>Últimos 90 días</strong><i class="fas fa-check"></i></button>
+                    <button type="button" role="option" aria-selected="false" data-period-option data-value="365"><span>1A</span><strong>Último año</strong><i class="fas fa-check"></i></button>
+                    <button type="button" role="option" aria-selected="false" data-period-option data-value="730"><span>2A</span><strong>Últimos 2 años</strong><i class="fas fa-check"></i></button>
+                    <button type="button" role="option" aria-selected="false" data-period-option data-value="all"><span>∞</span><strong>Todo el historial</strong><i class="fas fa-check"></i></button>
                 </div>
             </div>
         </div>
@@ -259,7 +265,7 @@
     }
 
     async function load(force = false) {
-        const days = Number(period.value || 30);
+        const days = period.value || '30';
         if (!force && analytics && loadedDays === days) { render(); return; }
         state.hidden = false; content.hidden = true;
         state.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i><strong>Consultando Meta Insights</strong><span>Esto puede tardar unos segundos.</span>';

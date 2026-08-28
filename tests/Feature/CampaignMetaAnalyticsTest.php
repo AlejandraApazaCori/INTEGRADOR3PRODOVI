@@ -38,6 +38,9 @@ class CampaignMetaAnalyticsTest extends TestCase
             ->assertSee('data-campaign-panel="analytics"', false)
             ->assertSee('id="campaign-meta-analytics"', false)
             ->assertSee(route('administrador.campañas.analiticas.datos', $campaign), false)
+            ->assertSee('Último año')
+            ->assertSee('Últimos 2 años')
+            ->assertSee('Todo el historial')
             ->assertSee("'#analiticas': 'analytics'", false)
             ->assertDontSee('analiticas_por_campania.json');
 
@@ -57,6 +60,24 @@ class CampaignMetaAnalyticsTest extends TestCase
             ->assertJsonPath('summary.totals.posts', 0)
             ->assertJsonPath('period.timezone', 'America/La_Paz')
             ->assertJsonCount(0, 'errors');
+
+        Http::assertNothingSent();
+    }
+
+    public function test_analytics_accepts_one_year_two_years_and_all_available_history(): void
+    {
+        [$admin, $campaign] = $this->campaignContext();
+        Http::fake(fn () => Http::response([], 500));
+
+        foreach ([365, 730, 'all'] as $period) {
+            $response = $this->actingAs($admin)
+                ->getJson(route('administrador.campañas.analiticas.datos', [$campaign, 'days' => $period]))
+                ->assertOk()
+                ->assertJsonPath('period.days', $period)
+                ->assertJsonPath('period.granularity', 'month');
+
+            $this->assertLessThanOrEqual(280, count($response->json('summary.followers.labels')));
+        }
 
         Http::assertNothingSent();
     }

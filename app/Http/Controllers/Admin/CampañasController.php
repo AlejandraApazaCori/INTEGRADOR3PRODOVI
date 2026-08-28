@@ -613,11 +613,11 @@ class CampañasController extends Controller
     public function analyticsData(Request $request, Campania $campania, MetaCampaignAnalyticsService $analyticsService)
     {
         $validated = $request->validate([
-            'days' => 'nullable|integer|in:7,30,90',
+            'days' => 'nullable|in:7,30,90,365,730,all',
         ]);
 
         return response()->json(
-            $analyticsService->forCampaign($campania, (int) ($validated['days'] ?? 30))
+            $analyticsService->forCampaign($campania, $validated['days'] ?? 30)
         );
     }
 

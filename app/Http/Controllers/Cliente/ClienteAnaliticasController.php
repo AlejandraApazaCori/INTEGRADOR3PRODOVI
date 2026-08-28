@@ -40,11 +40,11 @@ class ClienteAnaliticasController extends Controller
         abort_unless($empresa->usuario_id === Auth::id(), 404);
 
         $validated = $request->validate([
-            'days' => 'nullable|integer|in:7,30,90',
+            'days' => 'nullable|in:7,30,90,365,730,all',
         ]);
 
         return response()->json(
-            $analyticsService->forCompany($empresa, (int) ($validated['days'] ?? 30))
+            $analyticsService->forCompany($empresa, $validated['days'] ?? 30)
         );
     }
 
@@ -53,12 +53,12 @@ class ClienteAnaliticasController extends Controller
         if ($request->boolean('meta')) {
             $validated = $request->validate([
                 'empresa_id' => 'required|integer',
-                'days' => 'nullable|integer|in:7,30,90',
+                'days' => 'nullable|in:7,30,90,365,730,all',
             ]);
             $empresa = Empresa::where('usuario_id', Auth::id())->findOrFail($validated['empresa_id']);
 
             return response()->json(
-                $analyticsService->forCompany($empresa, (int) ($validated['days'] ?? 30))
+                $analyticsService->forCompany($empresa, $validated['days'] ?? 30)
             );
         }
 

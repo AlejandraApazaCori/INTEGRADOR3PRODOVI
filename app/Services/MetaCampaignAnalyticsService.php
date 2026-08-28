@@ -27,9 +27,9 @@ class MetaCampaignAnalyticsService
         $this->timezone = config('app.timezone', 'UTC');
     }
 
-    public function forCampaign(Campania $campania, int $days = 30): array
+    public function forCampaign(Campania $campania, int|string $days = 30): array
     {
-        $days = in_array($days, [7, 30, 90], true) ? $days : 30;
+        $days = $this->normalizePeriod($days);
         $accounts = $this->resolveAccounts($campania);
         $accountStamp = $accounts->map(fn (?SocialAccount $account) => $account?->updated_at?->timestamp ?? 0)->implode('-');
 
@@ -42,9 +42,9 @@ class MetaCampaignAnalyticsService
         );
     }
 
-    public function forCompany(Empresa $empresa, int $days = 30): array
+    public function forCompany(Empresa $empresa, int|string $days = 30): array
     {
-        $days = in_array($days, [7, 30, 90], true) ? $days : 30;
+        $days = $this->normalizePeriod($days);
         $accounts = $this->resolveCompanyAccounts($empresa);
         $accountStamp = $accounts
             ->map(fn (?SocialAccount $account) => $account?->updated_at?->timestamp ?? 0)
@@ -73,13 +73,16 @@ class MetaCampaignAnalyticsService
         ])->filter()->values()->all();
     }
 
-    private function collect(array $context, array $accounts, int $days): array
+    private function collect(array $context, array $accounts, int|string $days): array
     {
         $this->errors = [];
         $until = now($this->timezone)->endOfDay();
-        $since = $until->copy()->subDays($days - 1)->startOfDay();
-        $labels = collect(CarbonPeriod::create($since, '1 day', $until))
-            ->map(fn (Carbon $date) => $date->format('Y-m-d'))
+        $since = $days === 'all'
+            ? Carbon::create(2004, 2, 4, 0, 0, 0, $this->timezone)
+            : $until->copy()->subDays($days - 1)->startOfDay();
+        $monthly = $days === 'all' || $days > 90;
+        $labels = collect(CarbonPeriod::create($since, $monthly ? '1 month' : '1 day', $until))
+            ->map(fn (Carbon $date) => $date->format($monthly ? 'Y-m' : 'Y-m-d'))
             ->values()->all();
 
         $facebook = isset($accounts['facebook_page'])
@@ -96,12 +99,24 @@ class MetaCampaignAnalyticsService
                 'since' => $since->toDateString(),
                 'until' => $until->toDateString(),
                 'timezone' => $this->timezone,
+                'granularity' => $monthly ? 'month' : 'day',
             ],
             'generated_at' => now($this->timezone)->toIso8601String(),
             'platforms' => compact('facebook', 'instagram'),
             'summary' => $this->summary($facebook, $instagram, $labels),
             'errors' => $this->errors,
         ];
+    }
+
+    private function normalizePeriod(int|string $period): int|string
+    {
+        if ($period === 'all') {
+            return 'all';
+        }
+
+        $days = (int) $period;
+
+        return in_array($days, [7, 30, 90, 365, 730], true) ? $days : 30;
     }
 
     private function facebook(SocialAccount $account, Carbon $since, Carbon $until, array $labels): array
@@ -153,7 +168,7 @@ class MetaCampaignAnalyticsService
 
         $postsPayload = $this->facebookPublishedPosts($pageId, $token, $sinceUnix, $untilUnix);
 
-        $facebookPosts = collect($postsPayload['data'] ?? [])->take(50)->values();
+        $facebookPosts = collect($postsPayload['data'] ?? [])->values();
         $postInsights = $this->facebookPostInsights($facebookPosts->all(), $token);
         $platform['posts'] = $facebookPosts->map(function (array $post, int $index) use ($postInsights) {
             $insights = $postInsights[$index] ?? [];
@@ -200,7 +215,7 @@ class MetaCampaignAnalyticsService
         ];
         $baseFields = 'id,message,created_time,permalink_url,full_picture,attachments.limit(1){media_type,type}';
 
-        $payload = $this->get("{$pageId}/published_posts", [
+        $payload = $this->getPaginated("{$pageId}/published_posts", [
             ...$baseParams,
             'fields' => $baseFields.',reactions.limit(0).summary(true),comments.limit(0).summary(true),shares',
         ], 'facebook', 'published_posts', false);
@@ -211,7 +226,7 @@ class MetaCampaignAnalyticsService
 
         // Los comentarios y reacciones pueden requerir permisos adicionales. En ese
         // caso conservamos las publicaciones y obtenemos sus Insights por separado.
-        $payload = $this->get("{$pageId}/published_posts", [
+        $payload = $this->getPaginated("{$pageId}/published_posts", [
             ...$baseParams,
             'fields' => $baseFields,
         ], 'facebook', 'published_posts_basic', false);
@@ -221,7 +236,7 @@ class MetaCampaignAnalyticsService
         }
 
         // Compatibilidad con páginas/versiones antiguas de Graph API.
-        return $this->get("{$pageId}/posts", [
+        return $this->getPaginated("{$pageId}/posts", [
             ...$baseParams,
             'fields' => $baseFields,
         ], 'facebook', 'posts');
@@ -233,25 +248,31 @@ class MetaCampaignAnalyticsService
             return [];
         }
 
-        $responses = Http::pool(function (Pool $pool) use ($posts, $token) {
-            return collect($posts)->map(fn (array $post, int $index) => $pool
-                ->as((string) $index)
-                ->timeout(25)
-                ->get($this->graphUrl(($post['id'] ?? '').'/insights'), [
-                    'metric' => 'post_total_media_view_unique,post_clicks,post_clicks_by_type',
-                    'access_token' => $token,
-                ]))->all();
-        });
+        $results = [];
+        foreach (array_chunk(array_slice($posts, 0, 200), 50) as $chunk) {
+            $responses = Http::pool(function (Pool $pool) use ($chunk, $token) {
+                return collect($chunk)->map(fn (array $post, int $index) => $pool
+                    ->as((string) $index)
+                    ->timeout(25)
+                    ->get($this->graphUrl(($post['id'] ?? '').'/insights'), [
+                        'metric' => 'post_total_media_view_unique,post_clicks,post_clicks_by_type',
+                        'access_token' => $token,
+                    ]))->all();
+            });
 
-        return collect($responses)->map(function (Response $response, int|string $index) use ($posts) {
-            if (! $response->successful()) {
-                $this->recordApiError('facebook', 'post_insights:'.($posts[(int) $index]['id'] ?? $index), $response, false);
+            $chunkResults = collect($responses)->map(function (Response $response, int|string $index) use ($chunk) {
+                if (! $response->successful()) {
+                    $this->recordApiError('facebook', 'post_insights:'.($chunk[(int) $index]['id'] ?? $index), $response, false);
 
-                return [];
-            }
+                    return [];
+                }
 
-            return $this->metricMap($response->json('data', []));
-        })->values()->all();
+                return $this->metricMap($response->json('data', []));
+            })->values()->all();
+            $results = array_merge($results, $chunkResults);
+        }
+
+        return $results;
     }
 
     private function instagram(SocialAccount $account, Carbon $since, Carbon $until, array $labels): array
@@ -296,7 +317,7 @@ class MetaCampaignAnalyticsService
         $platform['totals']['views'] = $this->sumInsight($views);
         $platform['totals']['clicks'] = $this->sumInsight($clicks);
 
-        $mediaPayload = $this->get("{$instagramId}/media", [
+        $mediaPayload = $this->getPaginated("{$instagramId}/media", [
             'fields' => 'id,caption,media_type,media_product_type,timestamp,permalink,thumbnail_url,media_url,like_count,comments_count',
             'since' => $sinceUnix,
             'until' => $untilUnix,
@@ -312,7 +333,6 @@ class MetaCampaignAnalyticsService
 
                 return $publishedAt->betweenIncluded($since, $until);
             })
-            ->take(50)
             ->values();
         $insights = $this->instagramMediaInsights($media->all(), $token);
 
@@ -361,29 +381,35 @@ class MetaCampaignAnalyticsService
             return [];
         }
 
-        $responses = Http::pool(function (Pool $pool) use ($media, $token) {
-            return collect($media)->map(function (array $item, int $index) use ($pool, $token) {
-                $product = strtoupper((string) ($item['media_product_type'] ?? $item['media_type'] ?? ''));
-                $metrics = $product === 'STORY'
-                    ? 'reach,views,total_interactions,shares,replies,navigation'
-                    : 'reach,views,total_interactions,likes,comments,shares,saved,plays,ig_reels_video_view_total_time';
+        $results = [];
+        foreach (array_chunk(array_slice($media, 0, 200), 50) as $chunk) {
+            $responses = Http::pool(function (Pool $pool) use ($chunk, $token) {
+                return collect($chunk)->map(function (array $item, int $index) use ($pool, $token) {
+                    $product = strtoupper((string) ($item['media_product_type'] ?? $item['media_type'] ?? ''));
+                    $metrics = $product === 'STORY'
+                        ? 'reach,views,total_interactions,shares,replies,navigation'
+                        : 'reach,views,total_interactions,likes,comments,shares,saved,plays,ig_reels_video_view_total_time';
 
-                return $pool->as((string) $index)->timeout(25)->get(
-                    $this->graphUrl(($item['id'] ?? '').'/insights'),
-                    ['metric' => $metrics, 'access_token' => $token]
-                );
-            })->all();
-        });
+                    return $pool->as((string) $index)->timeout(25)->get(
+                        $this->graphUrl(($item['id'] ?? '').'/insights'),
+                        ['metric' => $metrics, 'access_token' => $token]
+                    );
+                })->all();
+            });
 
-        return collect($responses)->map(function (Response $response, int|string $index) use ($media) {
-            if (! $response->successful()) {
-                $this->recordApiError('instagram', 'media_insights:'.($media[(int) $index]['id'] ?? $index), $response, false);
+            $chunkResults = collect($responses)->map(function (Response $response, int|string $index) use ($chunk) {
+                if (! $response->successful()) {
+                    $this->recordApiError('instagram', 'media_insights:'.($chunk[(int) $index]['id'] ?? $index), $response, false);
 
-                return [];
-            }
+                    return [];
+                }
 
-            return $this->metricMap($response->json('data', []));
-        })->values()->all();
+                return $this->metricMap($response->json('data', []));
+            })->values()->all();
+            $results = array_merge($results, $chunkResults);
+        }
+
+        return $results;
     }
 
     private function facebookAudience(string $pageId, string $token): array
@@ -701,6 +727,52 @@ class MetaCampaignAnalyticsService
         }
     }
 
+    private function getPaginated(string $path, array $params, string $platform, string $scope, bool $recordError = true): ?array
+    {
+        $items = [];
+        $next = $this->graphUrl($path);
+        $page = 0;
+
+        try {
+            while ($next && $page < 25) {
+                $response = Http::timeout(30)->retry(2, 250)->get($next, $page === 0 ? $params : []);
+
+                if (! $response->successful()) {
+                    $this->recordApiError($platform, $scope, $response, $recordError);
+
+                    return $page === 0 ? null : ['data' => $items];
+                }
+
+                $payload = $response->json();
+                $items = array_merge($items, is_array($payload['data'] ?? null) ? $payload['data'] : []);
+                $next = data_get($payload, 'paging.next');
+                $page++;
+
+                if ($next && parse_url($next, PHP_URL_HOST) !== 'graph.facebook.com') {
+                    Log::warning('Meta Analytics pagination returned an unexpected host.', compact('platform', 'scope'));
+                    $next = null;
+                }
+            }
+
+            if ($next) {
+                $this->addError($platform, $scope, 'Meta devolvió más de 2.500 registros. Se muestran los 2.500 más recientes.');
+            }
+
+            return ['data' => $items];
+        } catch (\Throwable $e) {
+            Log::warning('Meta Analytics paginated request exception.', [
+                'platform' => $platform,
+                'scope' => $scope,
+                'error' => $e->getMessage(),
+            ]);
+            if ($recordError) {
+                $this->addError($platform, $scope, $e->getMessage());
+            }
+
+            return $page === 0 ? null : ['data' => $items];
+        }
+    }
+
     private function recordApiError(string $platform, string $scope, Response $response, bool $recordError): void
     {
         $message = $response->json('error.message') ?? 'Meta no devolvió datos para esta consulta.';
@@ -737,8 +809,9 @@ class MetaCampaignAnalyticsService
 
     private function alignInsightValues(array $insight, array $labels): array
     {
-        $values = collect($insight['values'] ?? [])->mapWithKeys(function (array $item) {
-            $date = isset($item['end_time']) ? Carbon::parse($item['end_time'])->setTimezone($this->timezone)->format('Y-m-d') : null;
+        $format = isset($labels[0]) && strlen($labels[0]) === 7 ? 'Y-m' : 'Y-m-d';
+        $values = collect($insight['values'] ?? [])->mapWithKeys(function (array $item) use ($format) {
+            $date = isset($item['end_time']) ? Carbon::parse($item['end_time'])->setTimezone($this->timezone)->format($format) : null;
 
             return $date ? [$date => $this->number($item['value'] ?? null)] : [];
         });
@@ -755,9 +828,16 @@ class MetaCampaignAnalyticsService
         $removeMap = $this->insightDateMap($removes);
         $running = $current;
         $series = [];
+        $monthly = isset($labels[0]) && strlen($labels[0]) === 7;
         foreach (array_reverse($labels) as $date) {
             $series[$date] = $running;
-            $running -= ($addMap[$date] ?? 0) - ($removeMap[$date] ?? 0);
+            $addsForPeriod = $monthly
+                ? collect($addMap)->filter(fn ($value, $key) => str_starts_with($key, $date))->sum()
+                : ($addMap[$date] ?? 0);
+            $removesForPeriod = $monthly
+                ? collect($removeMap)->filter(fn ($value, $key) => str_starts_with($key, $date))->sum()
+                : ($removeMap[$date] ?? 0);
+            $running -= $addsForPeriod - $removesForPeriod;
         }
 
         return collect($labels)->map(fn (string $date) => $series[$date] ?? null)->all();
