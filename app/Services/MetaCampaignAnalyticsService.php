@@ -160,8 +160,8 @@ class MetaCampaignAnalyticsService
             $reactions = $this->number(data_get($post, 'reactions.summary.total_count')) ?? 0;
             $comments = $this->number(data_get($post, 'comments.summary.total_count')) ?? 0;
             $shares = $this->number(data_get($post, 'shares.count')) ?? 0;
-            $reach = $this->number($insights['post_media_viewers'] ?? null);
-            $views = $this->number($insights['post_media_view'] ?? null);
+            $reach = $this->number($insights['post_total_media_view_unique'] ?? null);
+            $views = null;
             $clicks = $this->number($insights['post_clicks'] ?? null);
 
             return [
@@ -238,7 +238,7 @@ class MetaCampaignAnalyticsService
                 ->as((string) $index)
                 ->timeout(25)
                 ->get($this->graphUrl(($post['id'] ?? '').'/insights'), [
-                    'metric' => 'post_media_view,post_media_viewers,post_clicks',
+                    'metric' => 'post_total_media_view_unique,post_clicks,post_clicks_by_type',
                     'access_token' => $token,
                 ]))->all();
         });
@@ -389,8 +389,8 @@ class MetaCampaignAnalyticsService
     private function facebookAudience(string $pageId, string $token): array
     {
         $genderAge = $this->insight($pageId, $token, 'page_fans_gender_age', 'lifetime', null, null, 'facebook');
-        $cities = $this->insight($pageId, $token, 'page_fans_city', 'lifetime', null, null, 'facebook');
-        $countries = $this->insight($pageId, $token, 'page_fans_country', 'lifetime', null, null, 'facebook');
+        $cities = $this->firstInsight($pageId, $token, ['page_follows_city', 'page_fans_city'], 'lifetime', null, null, 'facebook');
+        $countries = $this->firstInsight($pageId, $token, ['page_follows_country', 'page_fans_country'], 'lifetime', null, null, 'facebook');
 
         return [
             'age_gender' => $this->facebookBreakdown($genderAge, 'age_gender'),
@@ -461,6 +461,13 @@ class MetaCampaignAnalyticsService
     private function finishPlatform(array $platform): array
     {
         $posts = collect($platform['posts']);
+
+        foreach (['reach', 'views', 'clicks'] as $metric) {
+            if ($platform['totals'][$metric] === null && $posts->contains(fn (array $post) => $post[$metric] !== null)) {
+                $platform['totals'][$metric] = $posts->sum(fn (array $post) => $post[$metric] ?? 0);
+            }
+        }
+
         $platform['totals']['posts'] = $posts->count();
         $platform['totals']['engagement'] = $posts->sum('engagement');
         $platform['totals']['average_engagement'] = $posts->isNotEmpty()

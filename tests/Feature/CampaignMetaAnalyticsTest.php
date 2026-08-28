@@ -90,9 +90,9 @@ class CampaignMetaAnalyticsTest extends TestCase
             }
             if (str_contains($path, '/fb-') && str_ends_with($path, '/insights')) {
                 return Http::response(['data' => [
-                    ['name' => 'post_media_view', 'values' => [['value' => 700]]],
-                    ['name' => 'post_media_viewers', 'values' => [['value' => 420]]],
+                    ['name' => 'post_total_media_view_unique', 'values' => [['value' => 420]]],
                     ['name' => 'post_clicks', 'values' => [['value' => 17]]],
+                    ['name' => 'post_clicks_by_type', 'values' => [['value' => ['link clicks' => 17]]]],
                 ]], 200);
             }
             if (str_ends_with($path, '/ig-20')) {
@@ -146,6 +146,8 @@ class CampaignMetaAnalyticsTest extends TestCase
         $this->assertNotEmpty($response->json('summary.followers.instagram'));
         $this->assertNotEmpty($response->json('platforms.instagram.audience.cities'));
         $this->assertNotEmpty($response->json('platforms.instagram.audience.countries'));
+        $this->assertNotEmpty($response->json('platforms.facebook.audience.cities'));
+        $this->assertNotEmpty($response->json('platforms.facebook.audience.countries'));
     }
 
     public function test_facebook_only_keeps_its_charts_available_and_instagram_disconnected(): void
@@ -333,9 +335,9 @@ class CampaignMetaAnalyticsTest extends TestCase
         };
         if ($metric === 'page_fans_gender_age') {
             $values = ['F.25-34' => 60, 'M.25-34' => 40];
-        } elseif ($metric === 'page_fans_city') {
+        } elseif ($metric === 'page_follows_city') {
             $values = ['La Paz, Bolivia' => 70, 'Cochabamba, Bolivia' => 30];
-        } elseif ($metric === 'page_fans_country') {
+        } elseif ($metric === 'page_follows_country') {
             $values = ['BO' => 90, 'PE' => 10];
         }
         if ($values === null) {
