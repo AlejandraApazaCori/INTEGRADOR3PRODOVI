@@ -70,6 +70,8 @@ class SocialAccountController extends Controller
             ])
             ->with([
                 'config_id' => config('services.facebook.login_config_id'),
+                'auth_type' => 'rerequest',
+                'return_scopes' => 'true',
             ])
             ->redirect();
     }
@@ -101,6 +103,7 @@ class SocialAccountController extends Controller
             $facebookPages = $this->fetchFacebookPages($socialUser->token);
             $primaryPage = $facebookPages[0] ?? null;
             $rawUserData = method_exists($socialUser, 'user') ? ($socialUser->user ?? []) : [];
+            $grantedPermissions = $this->fetchGrantedFacebookPermissions($socialUser->token);
 
             $user->socialAccounts()->updateOrCreate(
                 ['empresa_id' => $empresa?->id, 'provider' => 'facebook'],
@@ -117,7 +120,7 @@ class SocialAccountController extends Controller
                         'provider' => 'facebook',
                         'user_access_token' => $socialUser->token,
                         'facebook_user_id' => $socialUser->getId(),
-                        'granted_scopes' => $rawUserData['granted_scopes'] ?? [],
+                        'granted_scopes' => $grantedPermissions ?? ($rawUserData['granted_scopes'] ?? []),
                         'pages' => $facebookPages,
                         'raw' => $rawUserData,
                     ],
@@ -149,6 +152,7 @@ class SocialAccountController extends Controller
                         'page_name' => $primaryPage['name'],
                         'source' => 'me/accounts',
                         'linked_facebook_user_id' => $socialUser->getId(),
+                        'granted_scopes' => $grantedPermissions ?? [],
                         'raw' => $primaryPage,
                         'all_pages' => $facebookPages,
                     ],
@@ -175,6 +179,15 @@ class SocialAccountController extends Controller
                     ? '@'.ltrim($instagramAccount->username, '@')
                     : $instagramAccount->display_name;
                 $successMessage .= " Instagram {$instagramName} también fue vinculado.";
+            }
+
+            if (is_array($grantedPermissions)) {
+                $analyticsPermissions = ['pages_read_engagement', 'read_insights', 'instagram_basic', 'instagram_manage_insights'];
+                $missingPermissions = array_values(array_diff($analyticsPermissions, $grantedPermissions));
+
+                if ($missingPermissions !== []) {
+                    $successMessage .= ' Meta no concedió todos los permisos de analíticas: '.implode(', ', $missingPermissions).'.';
+                }
             }
 
             return redirect($returnUrl)->with('social_accounts_success', $successMessage);
@@ -270,6 +283,7 @@ class SocialAccountController extends Controller
                     'source' => 'instagram_business_account',
                     'facebook_page_id' => $pageId,
                     'facebook_page_name' => $facebookPage->display_name,
+                    'granted_scopes' => data_get($facebookPage->metadata, 'granted_scopes', []),
                     'profile_picture_url' => $profilePictureUrl,
                     'raw' => $instagram,
                 ],
@@ -370,6 +384,31 @@ class SocialAccountController extends Controller
                 ];
             })
             ->filter(fn (array $page): bool => filled($page['id']) && filled($page['access_token']))
+            ->values()
+            ->all();
+    }
+
+    private function fetchGrantedFacebookPermissions(string $userAccessToken): ?array
+    {
+        $response = Http::timeout(20)->get(
+            'https://graph.facebook.com/'.config('facebook.api_version', 'v25.0').'/me/permissions',
+            ['access_token' => $userAccessToken]
+        );
+
+        if (! $response->successful()) {
+            Log::warning('No se pudieron verificar los permisos concedidos por Facebook.', [
+                'status' => $response->status(),
+                'token' => $this->maskToken($userAccessToken),
+                'error' => $response->json('error.message'),
+            ]);
+
+            return null;
+        }
+
+        return collect($response->json('data', []))
+            ->filter(fn (array $permission): bool => ($permission['status'] ?? null) === 'granted')
+            ->pluck('permission')
+            ->filter()
             ->values()
             ->all();
     }
