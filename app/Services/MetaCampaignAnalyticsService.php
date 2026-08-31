@@ -34,7 +34,7 @@ class MetaCampaignAnalyticsService
         $accountStamp = $accounts->map(fn (?SocialAccount $account) => $account?->updated_at?->timestamp ?? 0)->implode('-');
 
         return Cache::remember(
-            "meta-campaign-analytics:v2:{$campania->id}:{$days}:{$accountStamp}",
+            "meta-campaign-analytics:v3:{$campania->id}:{$days}:{$accountStamp}",
             now()->addMinutes(15),
             fn () => $this->collect([
                 'campaign' => ['id' => $campania->id, 'name' => $campania->nombre],
@@ -51,7 +51,7 @@ class MetaCampaignAnalyticsService
             ->implode('-');
 
         return Cache::remember(
-            "meta-company-analytics:v2:{$empresa->id}:{$days}:{$accountStamp}",
+            "meta-company-analytics:v3:{$empresa->id}:{$days}:{$accountStamp}",
             now()->addMinutes(15),
             fn () => $this->collect([
                 'company' => [
@@ -208,6 +208,11 @@ class MetaCampaignAnalyticsService
 
         $platform = $this->finishPlatform($platform);
         $platform['audience'] = $this->facebookAudience($pageId, $token);
+        $facebookScopes = collect(data_get($account->metadata, 'granted_scopes', []));
+        $platform['audience_status'] = [
+            'permission' => $facebookScopes->isEmpty() ? null : $facebookScopes->contains('read_insights'),
+            'has_data' => collect($platform['audience'])->contains(fn (array $items) => $items !== []),
+        ];
 
         return $platform;
     }
@@ -378,6 +383,13 @@ class MetaCampaignAnalyticsService
 
         $platform = $this->finishPlatform($platform);
         $platform['audience'] = $this->instagramAudience($instagramId, $token);
+        $instagramScopes = collect(data_get($account->metadata, 'granted_scopes', []));
+        $platform['audience_status'] = [
+            'followers' => $platform['totals']['followers'],
+            'minimum_followers' => 100,
+            'permission' => $instagramScopes->isEmpty() ? null : $instagramScopes->contains('instagram_manage_insights'),
+            'has_data' => collect($platform['audience'])->contains(fn (array $items) => $items !== []),
+        ];
 
         return $platform;
     }
@@ -457,7 +469,7 @@ class MetaCampaignAnalyticsService
                 'breakdown' => $breakdown,
                 'timeframe' => 'last_90_days',
                 'access_token' => $token,
-            ], 'instagram', 'audience_'.$breakdown.'_'.$metric, false);
+            ], 'instagram', 'audience_'.$breakdown.'_'.$metric, $metric === 'follower_demographics');
             $results = data_get($payload, 'data.0.total_value.breakdowns.0.results', []);
 
             if (is_array($results) && $results !== []) {
@@ -571,6 +583,10 @@ class MetaCampaignAnalyticsService
                 'cities' => $this->mergeBreakdowns($facebook['audience']['cities'], $instagram['audience']['cities']),
                 'countries' => $this->mergeBreakdowns($facebook['audience']['countries'], $instagram['audience']['countries']),
             ],
+            'audience_status' => [
+                'facebook' => $facebook['audience_status'] ?? null,
+                'instagram' => $instagram['audience_status'] ?? null,
+            ],
             'content_types' => $this->mergeContentTypes($facebook['content_types'], $instagram['content_types']),
         ];
     }
@@ -640,6 +656,7 @@ class MetaCampaignAnalyticsService
             'followers' => ['labels' => [], 'values' => []],
             'engagement' => ['reactions' => null, 'comments' => null, 'shares' => null, 'saves' => null, 'clicks' => null],
             'audience' => ['age_gender' => [], 'cities' => [], 'countries' => []],
+            'audience_status' => null,
             'posts' => [],
             'top_posts' => [],
             'content_types' => [],

@@ -271,12 +271,27 @@
 
     function renderAudience(data) {
         const audience = data.audience || {age_gender:[],cities:[],countries:[]};
+        const status = data.audience_status || {};
+        const instagramStatus = status.instagram || (currentScope === 'instagram' ? status : null);
+        const facebookStatus = status.facebook || (currentScope === 'facebook' ? status : null);
+        let unavailableMessage = 'Meta aún no liberó datos demográficos para esta audiencia.';
+
+        if (instagramStatus?.permission === false) {
+            unavailableMessage = 'Falta conceder el permiso instagram_manage_insights. Vuelve a conectar Facebook y acepta todos los permisos.';
+        } else if (facebookStatus?.permission === false && !instagramStatus) {
+            unavailableMessage = 'Falta conceder el permiso read_insights. Vuelve a conectar Facebook y acepta todos los permisos.';
+        } else if (instagramStatus?.followers !== null && instagramStatus?.followers !== undefined && Number(instagramStatus.followers) < Number(instagramStatus.minimum_followers || 100)) {
+            unavailableMessage = `La cuenta de Instagram tiene ${number(instagramStatus.followers)} seguidores. Meta exige al menos ${number(instagramStatus.minimum_followers || 100)} para habilitar datos demográficos.`;
+        } else if ((analytics.errors || []).some(error => String(error.scope || '').startsWith('audience_'))) {
+            unavailableMessage = 'Meta rechazó la consulta demográfica. Revisa el detalle técnico mostrado debajo de las analíticas.';
+        }
+
         setEmpty('age', audience.age_gender.length === 0);
         const ageEmpty = root.querySelector('[data-empty="age"]');
-        if (ageEmpty && audience.age_gender.length === 0) ageEmpty.textContent = 'Meta no habilitó datos demográficos para esta audiencia todavía.';
+        if (ageEmpty && audience.age_gender.length === 0) ageEmpty.textContent = unavailableMessage;
         chart('age','meta-age-chart',{type:'bar',data:{labels:audience.age_gender.map(item => item.name),datasets:[{label:'Audiencia',data:audience.age_gender.map(item => item.value),backgroundColor:'#5b2b76'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true},y:{grid:{display:false}}}}});
-        renderRanking('meta-cities', audience.cities, 'Meta no habilitó ciudades para esta audiencia todavía.');
-        renderRanking('meta-countries', audience.countries, 'Meta no habilitó países para esta audiencia todavía.');
+        renderRanking('meta-cities', audience.cities, unavailableMessage);
+        renderRanking('meta-countries', audience.countries, unavailableMessage);
     }
 
     function renderRanking(id, items, emptyMessage = 'Datos no disponibles') {
