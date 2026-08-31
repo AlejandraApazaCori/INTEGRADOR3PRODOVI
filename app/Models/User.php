@@ -111,6 +111,11 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function mensajesCampania()
+    {
+        return $this->hasMany(CampaniaMensaje::class, 'remitente_id');
+    }
+
     public function campaniasCliente()
     {
         return $this->hasMany(Campania::class, 'usuario_cliente_id');

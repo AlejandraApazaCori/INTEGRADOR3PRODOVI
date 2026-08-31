@@ -2,6 +2,20 @@
     $navbarEmpresas = auth()->user()->empresas()
         ->orderBy('nombre_empresa')
         ->get(['id', 'nombre_empresa']);
+    $navbarFeedbackService = app(\App\Services\CampaignFeedbackService::class);
+    $navbarRouteCampaign = request()->route('campania');
+    if (! $navbarRouteCampaign instanceof \App\Models\Campania) {
+        $navbarRouteCampaign = is_numeric($navbarRouteCampaign) ? (int) $navbarRouteCampaign : null;
+    }
+    $navbarCompanyId = request()->integer('empresa') ?: null;
+    $navbarMessageCampaign = $navbarFeedbackService->clientCampaign(auth()->user(), $navbarCompanyId, $navbarRouteCampaign);
+    $navbarUnreadMessages = $navbarMessageCampaign
+        ? $navbarFeedbackService->unreadCount($navbarMessageCampaign, auth()->user())
+        : 0;
+    $navbarUnreadUrl = route('clientes.mensajes.no-leidos', array_filter([
+        'empresa' => $navbarCompanyId,
+        'campania' => $navbarMessageCampaign?->id,
+    ]));
 @endphp
 
 <header class="client-navbar" id="client-navbar">
@@ -37,6 +51,12 @@
             <button type="button" class="theme-toggle-button" id="theme-toggle-button" aria-label="Cambiar a modo oscuro" title="Cambiar tema">
                 <i class="fas fa-moon"></i>
             </button>
+            @if($navbarMessageCampaign)
+                <a href="{{ route('clientes.campanias.feedback', $navbarMessageCampaign) }}" class="client-message-button" data-client-message-button data-unread-url="{{ $navbarUnreadUrl }}" aria-label="Mensajes con el equipo{{ $navbarUnreadMessages ? ': '.$navbarUnreadMessages.' sin leer' : '' }}" title="Mensajes con el equipo">
+                    <i class="fas fa-comment-dots"></i>
+                    <span class="client-message-badge" data-client-message-badge {{ $navbarUnreadMessages > 0 ? '' : 'hidden' }}>{{ $navbarUnreadMessages }}</span>
+                </a>
+            @endif
             <div class="client-notifications">
                 <button type="button" class="notification-button" id="notification-button" aria-label="Notificaciones" aria-expanded="false"><i class="fas fa-bell"></i></button>
                 <div class="notification-menu">
@@ -113,6 +133,7 @@
     html[data-client-theme="dark"] .mq-dialog,html[data-client-theme="dark"] .mq-slides,html[data-client-theme="dark"] .mq-slide,html[data-client-theme="dark"] .mq-question textarea,html[data-client-theme="dark"] .mq-select-trigger,html[data-client-theme="dark"] .mq-select-menu{background:#1e1b21!important;color:#eeeaf0!important;border-color:#46404a!important}
     @media(max-width:900px){.client-navbar-inner{flex-wrap:wrap;gap:10px;padding:12px 16px}.client-mobile-toggle{display:grid;place-items:center}.client-nav-links{order:3;width:100%;display:none;flex-direction:column;align-items:stretch;padding-top:8px}.client-navbar.is-mobile-open .client-nav-links{display:flex}.client-nav-link{min-height:44px;padding:0 12px}.client-nav-link.is-active::after{top:8px;right:auto;bottom:8px;left:0;width:3px;height:auto}.client-nav-dropdown{display:block}.client-nav-dropdown .client-nav-link{width:100%}.client-nav-menu{position:static;margin:4px 0 0 14px;box-shadow:none}.client-navbar-actions{margin-left:auto}.client-user-chip{min-width:0}.client-user-copy{display:none}.client-user-menu,.notification-menu{position:fixed;top:76px;right:12px}.client-brand img{width:120px}}
     @media(max-width:520px){.client-navbar-inner{padding-inline:11px}.client-navbar-actions{gap:6px}.client-user-chip{padding:4px}.client-user-chevron{display:none}.notification-menu,.client-user-menu{right:8px;left:8px;width:auto}}
+    .client-message-button{position:relative;width:42px;height:42px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.16);border-radius:3px;background:rgba(255,255,255,.07);color:#fff;text-decoration:none;transition:.2s}.client-message-button:hover,.client-message-button:focus{border-color:var(--client-turquoise);background:var(--client-turquoise);color:#fff}.client-message-badge{position:absolute;top:-6px;right:-6px;min-width:19px;height:19px;display:grid;place-items:center;padding:0 5px;border:2px solid #242426;border-radius:999px;background:#ef4444;color:#fff;font-size:.58rem;font-weight:900;line-height:1}.client-message-badge[hidden]{display:none!important}
 </style>
 
 <script>
@@ -134,5 +155,19 @@ document.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('client-logout-button')?.addEventListener('click',()=>{confirmation.classList.add('is-open');confirmation.setAttribute('aria-hidden','false')});
     cancel?.addEventListener('click',()=>{confirmation.classList.remove('is-open');confirmation.setAttribute('aria-hidden','true')});
     confirmation?.querySelector('.client-confirmation-backdrop')?.addEventListener('click',()=>cancel.click());
+    const messageButton=document.querySelector('[data-client-message-button]'),messageBadge=document.querySelector('[data-client-message-badge]');
+    const syncUnreadMessages=async()=>{
+        if(!messageButton||!messageBadge||document.visibilityState!=='visible')return;
+        try{
+            const response=await fetch(messageButton.dataset.unreadUrl,{headers:{Accept:'application/json'}});
+            if(!response.ok)return;
+            const data=await response.json(),count=Number(data.count)||0;
+            messageBadge.textContent=count>99?'99+':String(count);
+            messageBadge.hidden=count===0;
+            messageButton.setAttribute('aria-label',count?`Mensajes con el equipo: ${count} sin leer`:'Mensajes con el equipo');
+            if(data.url)messageButton.href=data.url;
+        }catch(error){}
+    };
+    window.setInterval(syncUnreadMessages,10000);
 });
 </script>

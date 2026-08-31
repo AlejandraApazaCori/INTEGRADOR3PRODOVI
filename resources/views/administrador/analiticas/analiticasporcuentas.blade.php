@@ -9,6 +9,7 @@
         <div>
             <h2>Analíticas por cuenta</h2>
         </div>
+        @if(!($hideAnalyticsPeriod ?? false))
         <div class="meta-period-field">
             <span>Periodo</span>
             <select id="meta-analytics-period" class="meta-custom-native" tabindex="-1" aria-hidden="true">
@@ -33,6 +34,11 @@
                 </div>
             </div>
         </div>
+        @else
+            <select id="meta-analytics-period" hidden aria-hidden="true">
+                <option value="{{ $defaultAnalyticsDays ?? 'all' }}" selected>Todo el historial</option>
+            </select>
+        @endif
     </header>
 
     <nav class="meta-analytics-tabs" aria-label="Filtros de analíticas">
@@ -42,6 +48,7 @@
         <button type="button" data-analytics-scope="audience"><i class="fas fa-users"></i>Audiencia</button>
     </nav>
 
+    <div class="meta-analytics-body">
     <div class="meta-analytics-state" id="meta-analytics-state">
         <i class="fas fa-circle-notch fa-spin"></i><strong>Consultando Meta Insights</strong><span>Esto puede tardar unos segundos.</span>
     </div>
@@ -72,10 +79,11 @@
         <section class="meta-card meta-top-posts" data-analytics-general><header><div><small>Contenido histórico del periodo</small><h3>Top 5 publicaciones</h3></div></header><div id="meta-top-posts"></div></section>
         <details class="meta-api-notes" id="meta-api-notes" hidden><summary>Algunas métricas no estuvieron disponibles</summary><div></div></details>
     </div>
+    </div>
 </section>
 
 <style>
-.meta-analytics{--ma-purple:#5b2b76;--ma-orange:#ef6c22;--ma-green:#7da533;--ma-teal:#117e8c;min-height:430px;padding-bottom:35px;color:#302834}.meta-analytics-head{display:flex;align-items:flex-end;justify-content:space-between;gap:22px;padding:23px 25px;border:1px solid #e2dee5;border-radius:13px 13px 0 0;background:#fff}.meta-analytics-head small,.meta-analytics-head h2,.meta-analytics-head p{display:block}.meta-analytics-head small{color:var(--ma-purple);font-size:.57rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.meta-analytics-head h2{margin:4px 0 0;color:#29222d;font-size:1.2rem;font-weight:900;letter-spacing:-.025em}.meta-analytics-head h2:after,.meta-section-title h3:after,.meta-card>header h3:after{content:'';display:block;width:42px;height:3px;margin-top:7px;border-radius:999px;background:var(--ma-purple)}.meta-analytics-head p{margin:7px 0 0;color:#7d7580;font-size:.67rem}.meta-analytics-head label{display:grid;gap:5px;color:#756d78;font-size:.57rem;font-weight:900;text-transform:uppercase}.meta-analytics-head select{min-width:155px;height:39px;padding:0 34px 0 11px;border:1px solid #dcd7df;border-radius:9px;background:#fff;color:#423947;font-size:.65rem;font-weight:800}.meta-analytics-tabs{display:flex;overflow-x:auto;border-right:1px solid #e2dee5;border-bottom:1px solid #e2dee5;border-left:1px solid #e2dee5;background:#fff}.meta-analytics-tabs button{min-width:130px;min-height:47px;display:flex;align-items:center;justify-content:center;gap:7px;flex:1;border:0;border-right:1px solid #eeeaf0;background:#fff;color:#79717c;font-size:.64rem;font-weight:900;cursor:pointer}.meta-analytics-tabs button:last-child{border-right:0}.meta-analytics-tabs button.is-active{box-shadow:inset 0 -3px 0 var(--ma-purple);color:var(--ma-purple);background:#faf8fb}.meta-analytics-tabs button:disabled{cursor:not-allowed;opacity:.42}.meta-analytics-state{min-height:310px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:7px;border:1px solid #e7e3e9;border-top:0;background:#fff;color:#817986}.meta-analytics-state>i{margin-bottom:6px;color:var(--ma-purple);font-size:1.35rem}.meta-analytics-state strong{color:#403646;font-size:.78rem}.meta-analytics-state span{font-size:.62rem}.meta-account-strip{display:flex;flex-wrap:wrap;gap:8px;padding:13px 0}.meta-account{display:flex;align-items:center;gap:9px;padding:8px 11px;border:1px solid #e2dee5;border-radius:10px;background:#fff}.meta-account>span{width:28px;height:28px;display:grid;place-items:center;border-radius:8px;color:#fff}.meta-account.is-facebook>span{background:#1877f2}.meta-account.is-instagram>span{background:linear-gradient(135deg,#f58529,#dd2a7b,#8134af)}.meta-account strong,.meta-account small{display:block}.meta-account strong{color:#3a323e;font-size:.62rem}.meta-account small{margin-top:2px;color:#918995;font-size:.52rem}.meta-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));overflow:hidden;border:1px solid #e4e0e6;border-radius:12px;background:#fff}.meta-kpi{min-width:0;padding:15px;border-right:1px solid #ece8ee;box-shadow:inset 0 3px 0 var(--kpi,var(--ma-purple))}.meta-kpi:last-child{border-right:0}.meta-kpi small,.meta-kpi strong,.meta-kpi span{display:block}.meta-kpi small{color:#8b838e;font-size:.51rem;font-weight:900;text-transform:uppercase}.meta-kpi strong{margin-top:6px;overflow:hidden;color:#322a36;font-size:1.05rem;font-weight:900;text-overflow:ellipsis}.meta-kpi span{margin-top:4px;color:#9a929d;font-size:.5rem}.meta-chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:13px}.meta-card{min-width:0;padding:17px;border:1px solid #e4e0e6;border-radius:12px;background:#fff;box-shadow:0 5px 14px rgba(48,40,52,.04)}.meta-card>header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:15px}.meta-card>header small,.meta-card>header h3{display:block}.meta-card>header small{color:#8c8490;font-size:.51rem;font-weight:900;text-transform:uppercase}.meta-card>header h3,.meta-section-title h3{margin:3px 0 0;color:#332b37;font-size:.78rem;font-weight:900}.meta-card>header h3:after{width:34px;height:2px;margin-top:6px}.meta-chart{position:relative;height:285px}.meta-no-data{position:absolute;inset:0;display:grid;place-items:center;border:1px dashed #dcd7df;border-radius:10px;background:#faf9fb;color:#928b96;font-size:.63rem;font-weight:800}.meta-evidence{padding:6px 8px;border-radius:999px;background:#f3edf6;color:var(--ma-purple);font-size:.5rem;font-weight:900}.meta-best-list{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:13px}.meta-best-slot{padding:8px 10px;border:1px solid #ddd3e2;border-radius:9px;background:#faf8fb}.meta-best-slot strong,.meta-best-slot small{display:block}.meta-best-slot strong{color:#493351;font-size:.59rem}.meta-best-slot small{margin-top:2px;color:#8d7c94;font-size:.49rem}.meta-empty-inline{padding:18px;border:1px dashed #dcd7df;border-radius:9px;color:#928b96;text-align:center;font-size:.61rem}.meta-heatmap-wrap{overflow-x:auto}.meta-heatmap{min-width:680px;display:grid;grid-template-columns:66px repeat(24,1fr);gap:3px}.meta-heatmap>span{min-height:19px;display:grid;place-items:center;border-radius:4px;color:#827a86;font-size:.42rem}.meta-heatmap .day{justify-content:start;font-size:.49rem;font-weight:900}.meta-heatmap .cell{background:rgba(91,43,118,var(--heat,.05))}.meta-audience{margin-top:18px;padding-top:18px;border-top:1px solid #e6e2e8}.meta-section-title{margin-bottom:12px}.meta-section-title small{color:#8c8490;font-size:.52rem;font-weight:900;text-transform:uppercase}.meta-audience-grid{display:grid;grid-template-columns:1.2fr .9fr .9fr;gap:13px}.meta-ranking>div{display:grid;gap:10px}.meta-rank{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px}.meta-rank>div{grid-column:1/-1;height:5px;overflow:hidden;border-radius:999px;background:#eeeaf0}.meta-rank>div>span{display:block;height:100%;border-radius:inherit;background:var(--ma-purple)}.meta-rank strong{overflow:hidden;color:#59505e;font-size:.58rem;text-overflow:ellipsis;white-space:nowrap}.meta-rank small{color:#7e7084;font-size:.53rem;font-weight:900}.meta-top-posts{margin-top:13px}.meta-post-list{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}.meta-post{min-width:0;overflow:hidden;border:1px solid #e6e2e8;border-radius:10px;background:#faf9fb}.meta-post-media{height:95px;display:grid;place-items:center;overflow:hidden;background:#eeebef;color:#a39ca6}.meta-post-media img{width:100%;height:100%;object-fit:cover}.meta-post-body{padding:10px}.meta-post-platform{display:inline-flex;align-items:center;gap:4px;color:var(--ma-purple);font-size:.48rem;font-weight:900;text-transform:uppercase}.meta-post p{height:34px;margin:6px 0!important;overflow:hidden;color:#5f5763!important;font-size:.54rem!important;line-height:1.45}.meta-post-metrics{display:flex;flex-wrap:wrap;gap:5px;color:#7e7582;font-size:.48rem}.meta-api-notes{margin-top:12px;padding:11px 13px;border:1px solid #f0d9aa;border-radius:9px;background:#fff9ed;color:#846324;font-size:.57rem}.meta-api-notes summary{font-weight:900;cursor:pointer}.meta-api-notes p{margin:6px 0 0}.meta-api-notes code{font-size:.52rem}.meta-analytics.is-audience [data-analytics-general],.meta-analytics.is-audience #meta-kpis,.meta-analytics.is-audience #meta-account-strip{display:none}.meta-analytics.is-audience .meta-audience{margin-top:13px;padding-top:0;border-top:0}
+.meta-analytics{--ma-purple:#5b2b76;--ma-orange:#ef6c22;--ma-green:#7da533;--ma-teal:#117e8c;min-height:430px;padding-bottom:35px;color:#302834}.meta-analytics [hidden]{display:none!important}.meta-analytics-body{position:relative;min-height:310px}.meta-analytics-head{display:flex;align-items:flex-end;justify-content:space-between;gap:22px;padding:23px 25px;border:1px solid #e2dee5;border-radius:13px 13px 0 0;background:#fff}.meta-analytics-head small,.meta-analytics-head h2,.meta-analytics-head p{display:block}.meta-analytics-head small{color:var(--ma-purple);font-size:.57rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.meta-analytics-head h2{margin:4px 0 0;color:#29222d;font-size:1.2rem;font-weight:900;letter-spacing:-.025em}.meta-analytics-head h2:after,.meta-section-title h3:after,.meta-card>header h3:after{content:'';display:block;width:42px;height:3px;margin-top:7px;border-radius:999px;background:var(--ma-purple)}.meta-analytics-head p{margin:7px 0 0;color:#7d7580;font-size:.67rem}.meta-analytics-head label{display:grid;gap:5px;color:#756d78;font-size:.57rem;font-weight:900;text-transform:uppercase}.meta-analytics-head select{min-width:155px;height:39px;padding:0 34px 0 11px;border:1px solid #dcd7df;border-radius:9px;background:#fff;color:#423947;font-size:.65rem;font-weight:800}.meta-analytics-tabs{display:flex;overflow-x:auto;border-right:1px solid #e2dee5;border-bottom:1px solid #e2dee5;border-left:1px solid #e2dee5;background:#fff}.meta-analytics-tabs button{min-width:130px;min-height:47px;display:flex;align-items:center;justify-content:center;gap:7px;flex:1;border:0;border-right:1px solid #eeeaf0;background:#fff;color:#79717c;font-size:.64rem;font-weight:900;cursor:pointer}.meta-analytics-tabs button:last-child{border-right:0}.meta-analytics-tabs button.is-active{box-shadow:inset 0 -3px 0 var(--ma-purple);color:var(--ma-purple);background:#faf8fb}.meta-analytics-tabs button:disabled{cursor:not-allowed;opacity:.42}.meta-analytics-state{position:absolute;z-index:50;inset:0;min-height:310px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:7px;border:1px solid #e7e3e9;border-top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(3px);color:#817986}.meta-analytics-state>i{margin-bottom:6px;color:var(--ma-purple);font-size:1.35rem}.meta-analytics-state strong{color:#403646;font-size:.78rem}.meta-analytics-state span{font-size:.62rem}.meta-account-strip{display:flex;flex-wrap:wrap;gap:8px;padding:13px 0}.meta-account{display:flex;align-items:center;gap:9px;padding:8px 11px;border:1px solid #e2dee5;border-radius:10px;background:#fff}.meta-account>span{width:28px;height:28px;display:grid;place-items:center;border-radius:8px;color:#fff}.meta-account.is-facebook>span{background:#1877f2}.meta-account.is-instagram>span{background:linear-gradient(135deg,#f58529,#dd2a7b,#8134af)}.meta-account strong,.meta-account small{display:block}.meta-account strong{color:#3a323e;font-size:.62rem}.meta-account small{margin-top:2px;color:#918995;font-size:.52rem}.meta-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));overflow:hidden;border:1px solid #e4e0e6;border-radius:12px;background:#fff}.meta-kpi{min-width:0;padding:15px;border-right:1px solid #ece8ee;box-shadow:inset 0 3px 0 var(--kpi,var(--ma-purple))}.meta-kpi:last-child{border-right:0}.meta-kpi small,.meta-kpi strong,.meta-kpi span{display:block}.meta-kpi small{color:#8b838e;font-size:.51rem;font-weight:900;text-transform:uppercase}.meta-kpi strong{margin-top:6px;overflow:hidden;color:#322a36;font-size:1.05rem;font-weight:900;text-overflow:ellipsis}.meta-kpi span{margin-top:4px;color:#9a929d;font-size:.5rem}.meta-chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:13px}.meta-card{min-width:0;padding:17px;border:1px solid #e4e0e6;border-radius:12px;background:#fff;box-shadow:0 5px 14px rgba(48,40,52,.04)}.meta-card>header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:15px}.meta-card>header small,.meta-card>header h3{display:block}.meta-card>header small{color:#8c8490;font-size:.51rem;font-weight:900;text-transform:uppercase}.meta-card>header h3,.meta-section-title h3{margin:3px 0 0;color:#332b37;font-size:.78rem;font-weight:900}.meta-card>header h3:after{width:34px;height:2px;margin-top:6px}.meta-chart{position:relative;height:285px}.meta-no-data{position:absolute;inset:0;display:grid;place-items:center;border:1px dashed #dcd7df;border-radius:10px;background:#faf9fb;color:#928b96;font-size:.63rem;font-weight:800}.meta-evidence{padding:6px 8px;border-radius:999px;background:#f3edf6;color:var(--ma-purple);font-size:.5rem;font-weight:900}.meta-best-list{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:13px}.meta-best-slot{padding:8px 10px;border:1px solid #ddd3e2;border-radius:9px;background:#faf8fb}.meta-best-slot strong,.meta-best-slot small{display:block}.meta-best-slot strong{color:#493351;font-size:.59rem}.meta-best-slot small{margin-top:2px;color:#8d7c94;font-size:.49rem}.meta-empty-inline{padding:18px;border:1px dashed #dcd7df;border-radius:9px;color:#928b96;text-align:center;font-size:.61rem}.meta-heatmap-wrap{overflow-x:auto}.meta-heatmap{min-width:680px;display:grid;grid-template-columns:66px repeat(24,1fr);gap:3px}.meta-heatmap>span{min-height:19px;display:grid;place-items:center;border-radius:4px;color:#827a86;font-size:.42rem}.meta-heatmap .day{justify-content:start;font-size:.49rem;font-weight:900}.meta-heatmap .cell{background:rgba(91,43,118,var(--heat,.05))}.meta-audience{margin-top:18px;padding-top:18px;border-top:1px solid #e6e2e8}.meta-section-title{margin-bottom:12px}.meta-section-title small{color:#8c8490;font-size:.52rem;font-weight:900;text-transform:uppercase}.meta-audience-grid{display:grid;grid-template-columns:1.2fr .9fr .9fr;gap:13px}.meta-ranking>div{display:grid;gap:10px}.meta-rank{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px}.meta-rank>div{grid-column:1/-1;height:5px;overflow:hidden;border-radius:999px;background:#eeeaf0}.meta-rank>div>span{display:block;height:100%;border-radius:inherit;background:var(--ma-purple)}.meta-rank strong{overflow:hidden;color:#59505e;font-size:.58rem;text-overflow:ellipsis;white-space:nowrap}.meta-rank small{color:#7e7084;font-size:.53rem;font-weight:900}.meta-top-posts{margin-top:13px}.meta-post-list{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}.meta-post{min-width:0;overflow:hidden;border:1px solid #e6e2e8;border-radius:10px;background:#faf9fb}.meta-post-media{height:95px;display:grid;place-items:center;overflow:hidden;background:#eeebef;color:#a39ca6}.meta-post-media img{width:100%;height:100%;object-fit:cover}.meta-post-body{padding:10px}.meta-post-platform{display:inline-flex;align-items:center;gap:4px;color:var(--ma-purple);font-size:.48rem;font-weight:900;text-transform:uppercase}.meta-post p{height:34px;margin:6px 0!important;overflow:hidden;color:#5f5763!important;font-size:.54rem!important;line-height:1.45}.meta-post-metrics{display:flex;flex-wrap:wrap;gap:5px;color:#7e7582;font-size:.48rem}.meta-api-notes{margin-top:12px;padding:11px 13px;border:1px solid #f0d9aa;border-radius:9px;background:#fff9ed;color:#846324;font-size:.57rem}.meta-api-notes summary{font-weight:900;cursor:pointer}.meta-api-notes p{margin:6px 0 0}.meta-api-notes code{font-size:.52rem}.meta-analytics.is-audience [data-analytics-general],.meta-analytics.is-audience #meta-kpis,.meta-analytics.is-audience #meta-account-strip{display:none}.meta-analytics.is-audience .meta-audience{margin-top:13px;padding-top:0;border-top:0}
 @media(max-width:1050px){.meta-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.meta-kpi:nth-child(3){border-right:0}.meta-kpi:nth-child(-n+3){border-bottom:1px solid #ece8ee}.meta-audience-grid{grid-template-columns:1fr 1fr}.meta-audience-grid>.meta-card:first-child{grid-column:1/-1}.meta-post-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:720px){.meta-analytics-head{align-items:stretch;flex-direction:column}.meta-analytics-head select{width:100%}.meta-chart-grid{grid-template-columns:1fr}.meta-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.meta-kpi:nth-child(2n){border-right:0}.meta-kpi:nth-child(3){border-right:1px solid #ece8ee}.meta-kpi:nth-child(-n+4){border-bottom:1px solid #ece8ee}.meta-audience-grid{grid-template-columns:1fr}.meta-audience-grid>.meta-card:first-child{grid-column:auto}.meta-post-list{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.meta-post-list{grid-template-columns:1fr}.meta-analytics-tabs button{min-width:112px}.meta-card{padding:14px}}
@@ -102,6 +110,7 @@
     let analytics = null;
     let currentScope = 'summary';
     let loadedDays = null;
+    let loadSequence = 0;
     const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[char]));
     const number = value => value === null || value === undefined ? 'Datos no disponibles' : new Intl.NumberFormat('es-BO', {maximumFractionDigits:1}).format(value);
     const hasValues = values => Array.isArray(values) && values.some(value => value !== null && value !== undefined);
@@ -164,15 +173,16 @@
     }
 
     function renderKpis(data) {
+        const insightsPeriod = analytics?.period?.insights_limited ? 'Últimos 90 días disponibles' : 'Periodo seleccionado';
         const items = [
-            ['Seguidores', data.totals.followers, 'fa-users', '#5b2b76'],
-            ['Alcance', data.totals.reach, 'fa-signal', '#117e8c'],
-            ['Visualizaciones', data.totals.views, 'fa-eye', '#7da533'],
-            ['Engagement', data.totals.engagement, 'fa-heart', '#ef6c22'],
-            ['Publicaciones', data.totals.posts, 'fa-photo-film', '#c94f0c'],
-            ['Promedio / post', data.totals.average_engagement, 'fa-chart-line', '#5b2b76'],
+            ['Seguidores', data.totals.followers, 'fa-users', '#5b2b76', 'Total actual'],
+            ['Alcance', data.totals.reach, 'fa-signal', '#117e8c', insightsPeriod],
+            ['Visualizaciones', data.totals.views, 'fa-eye', '#7da533', insightsPeriod],
+            ['Engagement', data.totals.engagement, 'fa-heart', '#ef6c22', 'Periodo seleccionado'],
+            ['Publicaciones', data.totals.posts, 'fa-photo-film', '#c94f0c', 'Periodo seleccionado'],
+            ['Promedio / post', data.totals.average_engagement, 'fa-chart-line', '#5b2b76', 'Periodo seleccionado'],
         ];
-        document.getElementById('meta-kpis').innerHTML = items.map(([label,value,icon,color]) => `<article class="meta-kpi" style="--kpi:${color}"><small><i class="fas ${icon}"></i> ${label}</small><strong>${number(value)}</strong><span>Periodo seleccionado</span></article>`).join('');
+        document.getElementById('meta-kpis').innerHTML = items.map(([label,value,icon,color,note]) => `<article class="meta-kpi" style="--kpi:${color}"><small><i class="fas ${icon}"></i> ${label}</small><strong>${number(value)}</strong><span>${note}</span></article>`).join('');
     }
 
     function renderFollowers(data) {
@@ -200,6 +210,22 @@
         } else {
             datasets = [{label:currentScope === 'facebook' ? 'Facebook' : 'Instagram',data:categories.map(key => data.engagement[key] ?? null),backgroundColor:currentScope === 'facebook' ? '#1877f2' : '#dd2a7b'}].filter(dataset => hasValues(dataset.data));
         }
+        if (datasets.length === 0 && data.top_posts?.length) {
+            const postsByPlatform = data.top_posts.reduce((groups, post) => {
+                const platform = post.platform || currentScope;
+                (groups[platform] ||= []).push(post);
+                return groups;
+            }, {});
+            datasets = Object.entries(postsByPlatform).map(([platform, posts]) => ({
+                label: platform === 'facebook' ? 'Facebook' : 'Instagram',
+                data: categories.map(key => {
+                    const postKey = key === 'reactions' ? 'likes' : key;
+                    const available = posts.filter(post => post[postKey] !== null && post[postKey] !== undefined);
+                    return available.length ? available.reduce((sum, post) => sum + Number(post[postKey] || 0), 0) : null;
+                }),
+                backgroundColor: platform === 'facebook' ? '#1877f2' : '#dd2a7b',
+            })).filter(dataset => hasValues(dataset.data));
+        }
         setEmpty('engagement', datasets.length === 0);
         chart('engagement','meta-engagement-chart',{type:'bar',data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{usePointStyle:true}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true}}}});
     }
@@ -225,22 +251,37 @@
     }
 
     function renderContent(data) {
-        const items = data.content_types || [];
+        let items = data.content_types || [];
+        if (items.length === 0 && data.top_posts?.length) {
+            const postsByType = data.top_posts.reduce((groups, post) => {
+                const type = post.type || 'POST';
+                (groups[type] ||= []).push(post);
+                return groups;
+            }, {});
+            items = Object.entries(postsByType).map(([type, posts]) => ({
+                type,
+                posts: posts.length,
+                engagement: posts.reduce((sum, post) => sum + Number(post.engagement || post.likes || post.reactions || 0), 0),
+            }));
+        }
+        const useEngagement = items.some(item => Number(item.engagement || 0) > 0);
         setEmpty('content', items.length === 0);
-        chart('content','meta-content-chart',{type:'doughnut',data:{labels:items.map(item => item.type),datasets:[{data:items.map(item => item.engagement),backgroundColor:['#5b2b76','#ef6c22','#7da533','#117e8c','#c94f0c','#1877f2'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:{usePointStyle:true}}}}});
+        chart('content','meta-content-chart',{type:'doughnut',data:{labels:items.map(item => item.type),datasets:[{data:items.map(item => useEngagement ? item.engagement : item.posts),backgroundColor:['#5b2b76','#ef6c22','#7da533','#117e8c','#c94f0c','#1877f2'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:{usePointStyle:true}}}}});
     }
 
     function renderAudience(data) {
         const audience = data.audience || {age_gender:[],cities:[],countries:[]};
         setEmpty('age', audience.age_gender.length === 0);
+        const ageEmpty = root.querySelector('[data-empty="age"]');
+        if (ageEmpty && audience.age_gender.length === 0) ageEmpty.textContent = 'Meta no habilitó datos demográficos para esta audiencia todavía.';
         chart('age','meta-age-chart',{type:'bar',data:{labels:audience.age_gender.map(item => item.name),datasets:[{label:'Audiencia',data:audience.age_gender.map(item => item.value),backgroundColor:'#5b2b76'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true},y:{grid:{display:false}}}}});
-        renderRanking('meta-cities', audience.cities);
-        renderRanking('meta-countries', audience.countries);
+        renderRanking('meta-cities', audience.cities, 'Meta no habilitó ciudades para esta audiencia todavía.');
+        renderRanking('meta-countries', audience.countries, 'Meta no habilitó países para esta audiencia todavía.');
     }
 
-    function renderRanking(id, items) {
+    function renderRanking(id, items, emptyMessage = 'Datos no disponibles') {
         const node = document.getElementById(id);
-        if (!items?.length) { node.innerHTML = '<div class="meta-empty-inline">Datos no disponibles</div>'; return; }
+        if (!items?.length) { node.innerHTML = `<div class="meta-empty-inline">${esc(emptyMessage)}</div>`; return; }
         const total = items.reduce((sum,item)=>sum+Number(item.value || 0),0);
         const max = Math.max(...items.map(item=>Number(item.value || 0)),1);
         node.innerHTML = items.slice(0,10).map(item => `<div class="meta-rank"><strong>${esc(item.name)}</strong><small>${number(item.value)} · ${total > 0 ? number(item.value/total*100)+'%' : ''}</small><div><span style="width:${Number(item.value || 0)/max*100}%"></span></div></div>`).join('');
@@ -265,9 +306,11 @@
     }
 
     async function load(force = false) {
-        const days = period.value || '30';
-        if (!force && analytics && loadedDays === days) { render(); return; }
-        state.hidden = false; content.hidden = true;
+        const days = period.value || '{{ $defaultAnalyticsDays ?? '30' }}';
+        if (!force && analytics && loadedDays === days) { content.hidden = false; render(); state.hidden = true; return; }
+        const currentLoad = ++loadSequence;
+        state.hidden = false;
+        content.hidden = !analytics;
         state.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i><strong>Consultando Meta Insights</strong><span>Esto puede tardar unos segundos.</span>';
         try {
             const request = endpoint => {
@@ -280,20 +323,25 @@
                 response = await request(root.dataset.fallbackEndpoint);
             }
             if (!response.ok) throw new Error(`Solicitud rechazada (${response.status})`);
-            analytics = await response.json(); loadedDays = days;
+            const responseAnalytics = await response.json();
+            if (currentLoad !== loadSequence) return;
+            analytics = responseAnalytics; loadedDays = days;
             const connected = Object.values(analytics.platforms || {}).some(item => item.connected);
             if (!connected) {
                 state.innerHTML = `<i class="fas fa-link"></i><strong>${esc(root.dataset.emptyMessage)}</strong><span>${esc(root.dataset.emptyDetail)}</span>`;
                 return;
             }
-            state.hidden = true; content.hidden = false; render();
+            content.hidden = false;
+            render();
+            state.hidden = true;
         } catch (error) {
+            if (currentLoad !== loadSequence) return;
             state.innerHTML = `<i class="fas fa-triangle-exclamation"></i><strong>No se pudieron cargar las analíticas</strong><span>${esc(error.message)}</span>`;
         }
     }
 
     root.querySelectorAll('[data-analytics-scope]').forEach(button => button.addEventListener('click', () => { if (button.disabled) return; currentScope = button.dataset.analyticsScope; render(); }));
-    period.addEventListener('change', () => load(true));
+    period?.addEventListener('change', () => load(true));
     window.loadCampaignAnalytics = () => load(false);
     window.reloadMetaAnalytics = (endpoint, fallbackEndpoint = '') => {
         root.dataset.endpoint = endpoint;

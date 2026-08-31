@@ -27,11 +27,6 @@
 
         @if($campaniaActual)
             <div class="flex space-x-3 mt-4 sm:mt-0">
-                <select id="timeRange" class="bg-gray-50 border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 text-sm">
-                    <option value="7">Ultimos 7 dias</option>
-                    <option value="30" selected>Ultimos 30 dias</option>
-                    <option value="365">Este ano</option>
-                </select>
                 <button onclick="exportData(event)" class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
@@ -109,25 +104,6 @@
 @if($campaniaActual)
 <script>
     window.analyticsUserId = {{ auth()->id() }};
-
-    document.getElementById('timeRange').addEventListener('change', function() {
-        const timeRange = this.value;
-        let viewName;
-
-        switch(timeRange) {
-            case '7': viewName = '7dias'; break;
-            case '30': viewName = '30dias'; break;
-            case '365': viewName = 'anual'; break;
-            default: viewName = '30dias';
-        }
-
-        fetch(`{{ route('clientes.analiticas.load-view') }}?view=${viewName}&user_id=${window.analyticsUserId}`)
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('metricsContainer').innerHTML = html;
-                initCharts();
-            });
-    });
 
     function hydrateAnalyticsData() {
         const jsonNode = document.getElementById('analytics-json');
@@ -262,15 +238,7 @@
         const originalHtml = btnExportar.innerHTML;
         btnExportar.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Generando informe...';
         btnExportar.disabled = true;
-        const timeRangeSelect = document.getElementById('timeRange');
-        let periodo = '30dias';
-        if (timeRangeSelect) {
-            switch (timeRangeSelect.value) {
-                case '7': periodo = '7dias'; break;
-                case '30': periodo = '30dias'; break;
-                case '365': periodo = 'anual'; break;
-            }
-        }
+        const periodo = 'historial';
         fetch(`{{ route('clientes.analiticas.exportar-pdf') }}?periodo=${periodo}&user_id=${window.analyticsUserId}`, { method: 'GET', headers: { 'Accept': 'application/pdf', 'X-Requested-With': 'XMLHttpRequest' } })
             .then(response => { if (!response.ok) throw new Error('Error al generar el informe'); return response.blob(); })
             .then(blob => {

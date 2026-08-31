@@ -70,6 +70,8 @@
             'loadChartJs' => false,
             'analyticsEmptyMessage' => 'Esta empresa no tiene cuentas de Meta vinculadas',
             'analyticsEmptyDetail' => 'Vincula su página de Facebook o cuenta profesional de Instagram desde Mi cuenta.',
+            'hideAnalyticsPeriod' => true,
+            'defaultAnalyticsDays' => 'all',
         ])
     @else
         <div class="client-company-insights-empty">

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminAnaliticasController;
 use App\Http\Controllers\Admin\PagoAdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatbotController;
+use App\Http\Controllers\CampaignFeedbackController;
 use App\Http\Controllers\Cliente\PagoClienteController;
 use App\Http\Controllers\Cliente\RecursoClienteController;
 use App\Http\Controllers\Cliente\SocialAccountController;
@@ -142,6 +143,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/clientes/configuracion/empresa', [ClienteController::class, 'storeOnboardingCompany'])->name('clientes.onboarding.empresa');
     Route::post('/clientes/configuracion/completar', [ClienteController::class, 'completeOnboarding'])->name('clientes.onboarding.complete');
     Route::get('/clientes/dashboard', [ClienteController::class, 'dashboard'])->name('clientes.dashboard');
+    Route::post('/clientes/tareas/archivos/{archivo}/revision', [App\Http\Controllers\Cliente\ClienteTareaRevisionController::class, 'store'])
+        ->name('clientes.tareas.archivos.revision');
     Route::get('/clientes/micuenta', [ClienteController::class, 'miCuenta'])->name('clientes.micuenta');
     Route::get('/clientes/recursos', [RecursoClienteController::class, 'index'])->name('clientes.recursos');
     Route::post('/clientes/recursos', [RecursoClienteController::class, 'store'])->name('clientes.recursos.store');
@@ -180,6 +183,21 @@ Route::middleware('auth')->group(function () {
     Route::post('/clientes/social/setup-social-accounts', [SocialAccountController::class, 'setupSocialAccountsTable'])->name('clientes.social.setup-social-accounts');
     Route::get('/clientes/social/{provider}/redirect', [SocialAccountController::class, 'redirect'])->name('clientes.social.redirect');
     Route::get('/clientes/social/{provider}/callback', [SocialAccountController::class, 'callback'])->name('clientes.social.callback');
+
+    Route::get('/clientes/campanias/{campania}/feedback', [CampaignFeedbackController::class, 'clientPage'])
+        ->name('clientes.campanias.feedback');
+    Route::get('/clientes/mensajes/no-leidos', [CampaignFeedbackController::class, 'clientUnreadCount'])
+        ->name('clientes.mensajes.no-leidos');
+    Route::get('/campanias/{campania}/mensajes', [CampaignFeedbackController::class, 'index'])
+        ->name('campanias.mensajes.index');
+    Route::post('/campanias/{campania}/mensajes', [CampaignFeedbackController::class, 'store'])
+        ->name('campanias.mensajes.store');
+    Route::post('/campanias/{campania}/mensajes/contextos', [CampaignFeedbackController::class, 'storeContext'])
+        ->name('campanias.mensajes.contextos.store');
+    Route::patch('/campanias/{campania}/mensajes/{mensaje}', [CampaignFeedbackController::class, 'update'])
+        ->name('campanias.mensajes.update');
+    Route::delete('/campanias/{campania}/mensajes/{mensaje}', [CampaignFeedbackController::class, 'destroy'])
+        ->name('campanias.mensajes.destroy');
 });
 
 Route::post('/libelula/callback', [PagoClienteController::class, 'callbackLibelula'])

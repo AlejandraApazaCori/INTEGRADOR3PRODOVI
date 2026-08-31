@@ -237,7 +237,7 @@
     function exportEngagementReport(event) {
         event.preventDefault();
         const timeRangeSelect = document.getElementById('timeRange');
-        let viewName = '30dias';
+        let viewName = 'historial';
         if (timeRangeSelect) {
             switch (timeRangeSelect.value) {
                 case '7': viewName = '7dias'; break;
@@ -262,7 +262,7 @@
     function exportReachReport(event) {
         event.preventDefault();
         const timeRangeSelect = document.getElementById('timeRange');
-        let viewName = '30dias';
+        let viewName = 'historial';
         if (timeRangeSelect) {
             switch (timeRangeSelect.value) {
                 case '7': viewName = '7dias'; break;
@@ -287,7 +287,7 @@
     function exportFollowersReport(event) {
         event.preventDefault();
         const timeRangeSelect = document.getElementById('timeRange');
-        let viewName = '30dias';
+        let viewName = 'historial';
         if (timeRangeSelect) {
             switch (timeRangeSelect.value) {
                 case '7': viewName = '7dias'; break;
@@ -312,7 +312,7 @@
     function exportCTRReport(event) {
         event.preventDefault();
         const timeRangeSelect = document.getElementById('timeRange');
-        let viewName = '30dias';
+        let viewName = 'historial';
         if (timeRangeSelect) {
             switch (timeRangeSelect.value) {
                 case '7': viewName = '7dias'; break;

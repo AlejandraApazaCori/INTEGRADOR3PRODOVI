@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\CampaignAudienceService;
 use App\Services\CampaignBlueprintService;
 use App\Services\CampaignBriefPrefillService;
+use App\Services\CampaignFeedbackService;
 use App\Services\CampaignPreparationService;
 use App\Services\CampaignTaskPrefillService;
 use App\Services\CommunityManagerRecommender;
@@ -577,7 +578,11 @@ class CampañasController extends Controller
     }
 
     // Mostrar detalles de una campaña
-    public function show(Campania $campania, CampaignAudienceService $audienceService)
+    public function show(
+        Campania $campania,
+        CampaignAudienceService $audienceService,
+        CampaignFeedbackService $feedbackService
+    )
     {
         $campania->loadMissing([
             'suscripcion.empresa',
@@ -604,9 +609,10 @@ class CampañasController extends Controller
             ? $empresa->recursos()->where('origen', 'administracion')->with('creador')->latest()->get()
             : collect();
         $publicosObjetivo = $audienceService->parse((string) $campania->publico_objetivo);
+        $feedbackParticipants = $feedbackService->participants($campania);
 
         return view('administrador.campañas.show', compact(
-            'campania', 'empresa', 'recursosCliente', 'recursosAdministracion', 'publicosObjetivo'
+            'campania', 'empresa', 'recursosCliente', 'recursosAdministracion', 'publicosObjetivo', 'feedbackParticipants'
         ));
     }
 

@@ -19,7 +19,7 @@ class ClienteAnaliticasController extends Controller
             ->latest('fecha_inicio')
             ->first();
 
-        $data = $this->loadAnalyticsData('last30days');
+        $data = $this->loadAnalyticsData('thisyear');
         $empresas = Auth::user()->empresas()
             ->with('socialAccounts')
             ->orderBy('nombre_empresa')
@@ -44,7 +44,7 @@ class ClienteAnaliticasController extends Controller
         ]);
 
         return response()->json(
-            $analyticsService->forCompany($empresa, $validated['days'] ?? 30)
+            $analyticsService->forCompany($empresa, $validated['days'] ?? 'all')
         );
     }
 
@@ -58,11 +58,11 @@ class ClienteAnaliticasController extends Controller
             $empresa = Empresa::where('usuario_id', Auth::id())->findOrFail($validated['empresa_id']);
 
             return response()->json(
-                $analyticsService->forCompany($empresa, $validated['days'] ?? 30)
+                $analyticsService->forCompany($empresa, $validated['days'] ?? 'all')
             );
         }
 
-        $periodKey = $this->resolvePeriodKey($request->input('view', '30dias'));
+        $periodKey = $this->resolvePeriodKey($request->input('view', 'historial'));
         $userId = $request->filled('user_id') ? (int) $request->input('user_id') : null;
         $data = $this->loadAnalyticsData($periodKey, $userId);
 
@@ -71,7 +71,7 @@ class ClienteAnaliticasController extends Controller
 
     public function exportarPDF(Request $request)
     {
-        $periodKey = $this->resolvePeriodKey($request->input('periodo', '30dias'));
+        $periodKey = $this->resolvePeriodKey($request->input('periodo', 'historial'));
         $userId = $request->filled('user_id') ? (int) $request->input('user_id') : null;
         $jsonData = $this->loadAnalyticsData($periodKey, $userId);
 
@@ -85,12 +85,12 @@ class ClienteAnaliticasController extends Controller
         $pdf->setOption('isHtml5ParserEnabled', true);
         $pdf->setOption('isRemoteEnabled', true);
 
-        return $pdf->download('informe_analiticas_'.$request->input('periodo', '30dias').'.pdf');
+        return $pdf->download('informe_analiticas_'.$request->input('periodo', 'historial').'.pdf');
     }
 
     public function exportarReporteEngagement(Request $request)
     {
-        $periodKey = $this->resolvePeriodKey($request->input('view', '30dias'));
+        $periodKey = $this->resolvePeriodKey($request->input('view', 'historial'));
         $userId = $request->filled('user_id') ? (int) $request->input('user_id') : null;
         $data = $this->loadAnalyticsData($periodKey, $userId);
         $pdfData = ['fecha_generacion' => now()->format('d/m/Y H:i'), 'data' => $data];
@@ -100,12 +100,12 @@ class ClienteAnaliticasController extends Controller
         $pdf->setOption('isHtml5ParserEnabled', true);
         $pdf->setOption('isRemoteEnabled', true);
 
-        return $pdf->download('informe_engagement_'.$request->input('view', '30dias').'.pdf');
+        return $pdf->download('informe_engagement_'.$request->input('view', 'historial').'.pdf');
     }
 
     public function exportarReporteAlcance(Request $request)
     {
-        $periodKey = $this->resolvePeriodKey($request->input('view', '30dias'));
+        $periodKey = $this->resolvePeriodKey($request->input('view', 'historial'));
         $userId = $request->filled('user_id') ? (int) $request->input('user_id') : null;
         $data = $this->loadAnalyticsData($periodKey, $userId);
         $pdfData = ['fecha_generacion' => now()->format('d/m/Y H:i'), 'data' => $data];
@@ -115,12 +115,12 @@ class ClienteAnaliticasController extends Controller
         $pdf->setOption('isHtml5ParserEnabled', true);
         $pdf->setOption('isRemoteEnabled', true);
 
-        return $pdf->download('informe_alcance_'.$request->input('view', '30dias').'.pdf');
+        return $pdf->download('informe_alcance_'.$request->input('view', 'historial').'.pdf');
     }
 
     public function exportarReporteSeguidores(Request $request)
     {
-        $periodKey = $this->resolvePeriodKey($request->input('view', '30dias'));
+        $periodKey = $this->resolvePeriodKey($request->input('view', 'historial'));
         $userId = $request->filled('user_id') ? (int) $request->input('user_id') : null;
         $data = $this->loadAnalyticsData($periodKey, $userId);
         $pdfData = ['fecha_generacion' => now()->format('d/m/Y H:i'), 'data' => $data];
@@ -130,12 +130,12 @@ class ClienteAnaliticasController extends Controller
         $pdf->setOption('isHtml5ParserEnabled', true);
         $pdf->setOption('isRemoteEnabled', true);
 
-        return $pdf->download('informe_seguidores_'.$request->input('view', '30dias').'.pdf');
+        return $pdf->download('informe_seguidores_'.$request->input('view', 'historial').'.pdf');
     }
 
     public function exportarReporteCTR(Request $request)
     {
-        $periodKey = $this->resolvePeriodKey($request->input('view', '30dias'));
+        $periodKey = $this->resolvePeriodKey($request->input('view', 'historial'));
         $userId = $request->filled('user_id') ? (int) $request->input('user_id') : null;
         $data = $this->loadAnalyticsData($periodKey, $userId);
         $pdfData = ['fecha_generacion' => now()->format('d/m/Y H:i'), 'data' => $data];
@@ -154,6 +154,7 @@ class ClienteAnaliticasController extends Controller
             '7dias' => 'last7days',
             '30dias' => 'last30days',
             'anual' => 'thisyear',
+            'historial' => 'thisyear',
         ];
 
         return $periodMap[$view] ?? 'last30days';

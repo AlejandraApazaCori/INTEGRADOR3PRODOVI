@@ -34,7 +34,7 @@ class MetaCampaignAnalyticsService
         $accountStamp = $accounts->map(fn (?SocialAccount $account) => $account?->updated_at?->timestamp ?? 0)->implode('-');
 
         return Cache::remember(
-            "meta-campaign-analytics:{$campania->id}:{$days}:{$accountStamp}",
+            "meta-campaign-analytics:v2:{$campania->id}:{$days}:{$accountStamp}",
             now()->addMinutes(15),
             fn () => $this->collect([
                 'campaign' => ['id' => $campania->id, 'name' => $campania->nombre],
@@ -51,7 +51,7 @@ class MetaCampaignAnalyticsService
             ->implode('-');
 
         return Cache::remember(
-            "meta-company-analytics:{$empresa->id}:{$days}:{$accountStamp}",
+            "meta-company-analytics:v2:{$empresa->id}:{$days}:{$accountStamp}",
             now()->addMinutes(15),
             fn () => $this->collect([
                 'company' => [
@@ -80,16 +80,21 @@ class MetaCampaignAnalyticsService
         $since = $days === 'all'
             ? Carbon::create(2004, 2, 4, 0, 0, 0, $this->timezone)
             : $until->copy()->subDays($days - 1)->startOfDay();
-        $monthly = $days === 'all' || $days > 90;
-        $labels = collect(CarbonPeriod::create($since, $monthly ? '1 month' : '1 day', $until))
-            ->map(fn (Carbon $date) => $date->format($monthly ? 'Y-m' : 'Y-m-d'))
+        // Meta limita varias series de Insights de cuenta a ventanas cortas. Las
+        // publicaciones mantienen el periodo solicitado, pero las series se
+        // consultan en una ventana segura de hasta 90 días.
+        $insightsSince = $since->greaterThan($until->copy()->subDays(89)->startOfDay())
+            ? $since->copy()
+            : $until->copy()->subDays(89)->startOfDay();
+        $labels = collect(CarbonPeriod::create($insightsSince, '1 day', $until))
+            ->map(fn (Carbon $date) => $date->format('Y-m-d'))
             ->values()->all();
 
         $facebook = isset($accounts['facebook_page'])
-            ? $this->facebook($accounts['facebook_page'], $since, $until, $labels)
+            ? $this->facebook($accounts['facebook_page'], $since, $until, $labels, $insightsSince)
             : $this->emptyPlatform('facebook');
         $instagram = isset($accounts['instagram'])
-            ? $this->instagram($accounts['instagram'], $since, $until, $labels)
+            ? $this->instagram($accounts['instagram'], $since, $until, $labels, $insightsSince)
             : $this->emptyPlatform('instagram');
 
         return [
@@ -99,7 +104,9 @@ class MetaCampaignAnalyticsService
                 'since' => $since->toDateString(),
                 'until' => $until->toDateString(),
                 'timezone' => $this->timezone,
-                'granularity' => $monthly ? 'month' : 'day',
+                'granularity' => 'day',
+                'insights_since' => $insightsSince->toDateString(),
+                'insights_limited' => $insightsSince->greaterThan($since),
             ],
             'generated_at' => now($this->timezone)->toIso8601String(),
             'platforms' => compact('facebook', 'instagram'),
@@ -119,7 +126,7 @@ class MetaCampaignAnalyticsService
         return in_array($days, [7, 30, 90, 365, 730], true) ? $days : 30;
     }
 
-    private function facebook(SocialAccount $account, Carbon $since, Carbon $until, array $labels): array
+    private function facebook(SocialAccount $account, Carbon $since, Carbon $until, array $labels, Carbon $insightsSince): array
     {
         $pageId = $account->provider_user_id ?: data_get($account->metadata, 'page_id');
         $token = $account->access_token;
@@ -146,7 +153,7 @@ class MetaCampaignAnalyticsService
             $platform['totals']['followers'] = $this->number($profile['followers_count'] ?? $profile['fan_count'] ?? null);
         }
 
-        $sinceUnix = $since->copy()->utc()->timestamp;
+        $sinceUnix = $insightsSince->copy()->utc()->timestamp;
         $untilUnix = $until->copy()->utc()->timestamp;
         $dailyFollowers = $this->firstInsight($pageId, $token, ['page_daily_follows', 'page_fan_adds'], 'day', $sinceUnix, $untilUnix, 'facebook');
         $dailyUnfollows = $this->firstInsight($pageId, $token, ['page_daily_unfollows', 'page_fan_removes'], 'day', $sinceUnix, $untilUnix, 'facebook');
@@ -159,14 +166,14 @@ class MetaCampaignAnalyticsService
                 : $this->reconstructFollowers($platform['totals']['followers'], $dailyFollowers, $dailyUnfollows, $labels),
         ];
 
-        $reach = $this->firstInsight($pageId, $token, ['page_media_viewers', 'page_impressions_unique'], 'day', $sinceUnix, $untilUnix, 'facebook');
-        $views = $this->firstInsight($pageId, $token, ['page_media_views', 'page_impressions'], 'day', $sinceUnix, $untilUnix, 'facebook');
+        $reach = $this->firstInsight($pageId, $token, ['page_total_media_view_unique', 'page_media_viewers', 'page_impressions_unique'], 'day', $sinceUnix, $untilUnix, 'facebook');
+        $views = $this->firstInsight($pageId, $token, ['page_media_view', 'page_media_views', 'page_impressions'], 'day', $sinceUnix, $untilUnix, 'facebook');
         $clicks = $this->firstInsight($pageId, $token, ['page_total_actions'], 'day', $sinceUnix, $untilUnix, 'facebook');
         $platform['totals']['reach'] = $this->sumInsight($reach);
         $platform['totals']['views'] = $this->sumInsight($views);
         $platform['totals']['clicks'] = $this->sumInsight($clicks);
 
-        $postsPayload = $this->facebookPublishedPosts($pageId, $token, $sinceUnix, $untilUnix);
+        $postsPayload = $this->facebookPublishedPosts($pageId, $token, $since->copy()->utc()->timestamp, $untilUnix);
 
         $facebookPosts = collect($postsPayload['data'] ?? [])->values();
         $postInsights = $this->facebookPostInsights($facebookPosts->all(), $token);
@@ -176,8 +183,8 @@ class MetaCampaignAnalyticsService
             $comments = $this->number(data_get($post, 'comments.summary.total_count')) ?? 0;
             $shares = $this->number(data_get($post, 'shares.count')) ?? 0;
             $reach = $this->number($insights['post_total_media_view_unique'] ?? null);
-            $views = null;
-            $clicks = $this->number($insights['post_clicks'] ?? null);
+            $views = $this->number($insights['post_media_view'] ?? $insights['post_media_views'] ?? null);
+            $clicks = null;
 
             return [
                 'id' => $post['id'] ?? null,
@@ -255,7 +262,7 @@ class MetaCampaignAnalyticsService
                     ->as((string) $index)
                     ->timeout(25)
                     ->get($this->graphUrl(($post['id'] ?? '').'/insights'), [
-                        'metric' => 'post_total_media_view_unique,post_clicks,post_clicks_by_type',
+                        'metric' => 'post_media_view',
                         'access_token' => $token,
                     ]))->all();
             });
@@ -275,7 +282,7 @@ class MetaCampaignAnalyticsService
         return $results;
     }
 
-    private function instagram(SocialAccount $account, Carbon $since, Carbon $until, array $labels): array
+    private function instagram(SocialAccount $account, Carbon $since, Carbon $until, array $labels, Carbon $insightsSince): array
     {
         $instagramId = $account->provider_user_id;
         $token = $account->access_token;
@@ -302,7 +309,7 @@ class MetaCampaignAnalyticsService
             $platform['totals']['followers'] = $this->number($profile['followers_count'] ?? null);
         }
 
-        $sinceUnix = $since->copy()->utc()->timestamp;
+        $sinceUnix = $insightsSince->copy()->utc()->timestamp;
         $untilUnix = $until->copy()->utc()->timestamp;
         $followers = $this->insight($instagramId, $token, 'follower_count', 'day', $sinceUnix, $untilUnix, 'instagram');
         $reach = $this->insight($instagramId, $token, 'reach', 'day', $sinceUnix, $untilUnix, 'instagram');
@@ -319,7 +326,7 @@ class MetaCampaignAnalyticsService
 
         $mediaPayload = $this->getPaginated("{$instagramId}/media", [
             'fields' => 'id,caption,media_type,media_product_type,timestamp,permalink,thumbnail_url,media_url,like_count,comments_count',
-            'since' => $sinceUnix,
+            'since' => $since->copy()->utc()->timestamp,
             'until' => $untilUnix,
             'limit' => 100,
             'access_token' => $token,
@@ -370,7 +377,7 @@ class MetaCampaignAnalyticsService
         })->filter(fn (array $post) => filled($post['id']) && filled($post['timestamp']))->values()->all();
 
         $platform = $this->finishPlatform($platform);
-        $platform['audience'] = $this->instagramAudience($instagramId, $token, $since, $until);
+        $platform['audience'] = $this->instagramAudience($instagramId, $token);
 
         return $platform;
     }
@@ -387,8 +394,8 @@ class MetaCampaignAnalyticsService
                 return collect($chunk)->map(function (array $item, int $index) use ($pool, $token) {
                     $product = strtoupper((string) ($item['media_product_type'] ?? $item['media_type'] ?? ''));
                     $metrics = $product === 'STORY'
-                        ? 'reach,views,total_interactions,shares,replies,navigation'
-                        : 'reach,views,total_interactions,likes,comments,shares,saved,plays,ig_reels_video_view_total_time';
+                        ? 'reach,views,shares,replies'
+                        : 'reach,views,total_interactions,likes,comments,shares,saved';
 
                     return $pool->as((string) $index)->timeout(25)->get(
                         $this->graphUrl(($item['id'] ?? '').'/insights'),
@@ -414,7 +421,7 @@ class MetaCampaignAnalyticsService
 
     private function facebookAudience(string $pageId, string $token): array
     {
-        $genderAge = $this->insight($pageId, $token, 'page_fans_gender_age', 'lifetime', null, null, 'facebook');
+        $genderAge = $this->firstInsight($pageId, $token, ['page_follows_gender_age', 'page_fans_gender_age'], 'lifetime', null, null, 'facebook');
         $cities = $this->firstInsight($pageId, $token, ['page_follows_city', 'page_fans_city'], 'lifetime', null, null, 'facebook');
         $countries = $this->firstInsight($pageId, $token, ['page_follows_country', 'page_fans_country'], 'lifetime', null, null, 'facebook');
 
@@ -425,33 +432,44 @@ class MetaCampaignAnalyticsService
         ];
     }
 
-    private function instagramAudience(string $instagramId, string $token, Carbon $since, Carbon $until): array
+    private function instagramAudience(string $instagramId, string $token): array
     {
+        $age = $this->instagramDemographic($instagramId, $token, 'age');
+        $gender = $this->instagramDemographic($instagramId, $token, 'gender');
+
         return [
-            'age_gender' => $this->instagramDemographic($instagramId, $token, 'age,gender', $since, $until),
-            'cities' => $this->instagramDemographic($instagramId, $token, 'city', $since, $until),
-            'countries' => $this->instagramDemographic($instagramId, $token, 'country', $since, $until),
+            'age_gender' => collect($age)->map(fn (array $item) => [...$item, 'name' => 'Edad '.$item['name']])
+                ->concat(collect($gender)->map(fn (array $item) => [...$item, 'name' => 'Sexo '.$item['name']]))
+                ->values()->all(),
+            'cities' => $this->instagramDemographic($instagramId, $token, 'city'),
+            'countries' => $this->instagramDemographic($instagramId, $token, 'country'),
         ];
     }
 
-    private function instagramDemographic(string $instagramId, string $token, string $breakdown, Carbon $since, Carbon $until): array
+    private function instagramDemographic(string $instagramId, string $token, string $breakdown): array
     {
-        $payload = $this->get("{$instagramId}/insights", [
-            'metric' => 'follower_demographics',
-            'period' => 'lifetime',
-            'metric_type' => 'total_value',
-            'breakdown' => $breakdown,
-            'timeframe' => $until->diffInDays($since) > 30 ? 'last_90_days' : 'last_30_days',
-            'access_token' => $token,
-        ], 'instagram', 'audience_'.$breakdown, false);
+        $results = [];
+        foreach (['follower_demographics', 'engaged_audience_demographics'] as $metric) {
+            $payload = $this->get("{$instagramId}/insights", [
+                'metric' => $metric,
+                'period' => 'lifetime',
+                'metric_type' => 'total_value',
+                'breakdown' => $breakdown,
+                'timeframe' => 'last_90_days',
+                'access_token' => $token,
+            ], 'instagram', 'audience_'.$breakdown.'_'.$metric, false);
+            $results = data_get($payload, 'data.0.total_value.breakdowns.0.results', []);
 
-        $results = data_get($payload, 'data.0.total_value.breakdowns.0.results', []);
+            if (is_array($results) && $results !== []) {
+                break;
+            }
+        }
 
-        return collect(is_array($results) ? $results : [])->map(function (array $result) use ($breakdown) {
+        return collect(is_array($results) ? $results : [])->map(function (array $result) {
             $dimensions = $result['dimension_values'] ?? [];
 
             return [
-                'name' => $breakdown === 'age,gender' ? implode(' · ', $dimensions) : ($dimensions[0] ?? 'Sin identificar'),
+                'name' => $dimensions[0] ?? 'Sin identificar',
                 'value' => $this->number($result['value'] ?? null) ?? 0,
             ];
         })->filter(fn (array $item) => $item['value'] > 0)->sortByDesc('value')->values()->all();
@@ -476,7 +494,11 @@ class MetaCampaignAnalyticsService
     {
         foreach ($metrics as $metric) {
             $insight = $this->insight($objectId, $token, $metric, $period, $since, $until, $platform, false);
-            if ($insight) {
+            if ($insight && (
+                ! empty($insight['values'])
+                || data_get($insight, 'total_value.value') !== null
+                || ! empty(data_get($insight, 'total_value.breakdowns'))
+            )) {
                 return $insight;
             }
         }
@@ -821,8 +843,16 @@ class MetaCampaignAnalyticsService
 
     private function reconstructFollowers(?float $current, ?array $adds, ?array $removes, array $labels): array
     {
-        if ($current === null || ($adds === null && $removes === null)) {
+        if ($current === null) {
             return [];
+        }
+        if ($adds === null && $removes === null) {
+            $series = array_fill(0, count($labels), null);
+            if ($series !== []) {
+                $series[array_key_last($series)] = $current;
+            }
+
+            return $series;
         }
         $addMap = $this->insightDateMap($adds);
         $removeMap = $this->insightDateMap($removes);
@@ -854,7 +884,14 @@ class MetaCampaignAnalyticsService
 
     private function sumInsight(?array $insight): ?float
     {
-        if (! $insight || empty($insight['values'])) {
+        if (! $insight) {
+            return null;
+        }
+        $totalValue = $this->number(data_get($insight, 'total_value.value'));
+        if ($totalValue !== null) {
+            return $totalValue;
+        }
+        if (empty($insight['values'])) {
             return null;
         }
         $values = collect($insight['values'])->map(fn (array $item) => $this->number($item['value'] ?? null))->filter(fn ($value) => $value !== null);

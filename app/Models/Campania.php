@@ -90,6 +90,16 @@ class Campania extends Model
         return $this->hasMany(Reunion::class);
     }
 
+    public function mensajes()
+    {
+        return $this->hasMany(CampaniaMensaje::class);
+    }
+
+    public function mensajeContextos()
+    {
+        return $this->hasMany(CampaniaMensajeContexto::class);
+    }
+
     public function empresas()
     {
         return $this->belongsToMany(Empresa::class, 'empresa_campania', 'campania_id', 'empresa_id')

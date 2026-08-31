@@ -81,7 +81,7 @@
             <button type="button" class="campaign-subtab" style="--tab-color:#7da533" id="campaign-tab-tasks" data-campaign-tab="tasks" role="tab" aria-controls="campaign-panel-tasks" aria-selected="false" tabindex="-1">
                 <span><i class="fas fa-list-check"></i></span>Tareas
             </button>
-            <button type="button" class="campaign-subtab" style="--tab-color:#117e8c" disabled>
+            <button type="button" class="campaign-subtab" style="--tab-color:#117e8c" id="campaign-tab-feedback" data-campaign-tab="feedback" role="tab" aria-controls="campaign-panel-feedback" aria-selected="false" tabindex="-1">
                 <span><i class="fas fa-comments"></i></span>Feedback
             </button>
             <button type="button" class="campaign-subtab" style="--tab-color:#5b2b76" id="campaign-tab-resources" data-campaign-tab="resources" role="tab" aria-controls="campaign-panel-resources" aria-selected="false" tabindex="-1">
@@ -230,6 +230,10 @@
             @include('administrador.tareas.index')
         </div>
 
+        <div class="campaign-feedback campaign-tab-panel" id="campaign-panel-feedback" data-campaign-panel="feedback" role="tabpanel" aria-labelledby="campaign-tab-feedback" hidden>
+            @include('campanias.feedback.workspace', ['feedbackClientMode' => false])
+        </div>
+
         <div class="campaign-resources campaign-tab-panel" id="campaign-panel-resources" data-campaign-panel="resources" role="tabpanel" aria-labelledby="campaign-tab-resources" hidden>
             @include('administrador.campañas.partials.recursos')
         </div>
@@ -337,7 +341,7 @@
             });
 
             if (updateHash) {
-                const hashes = { summary: 'resumen', documents: 'documentos', calendar: 'calendario', tasks: 'tareas', resources: 'recursos', meetings: 'reuniones', analytics: 'analiticas' };
+                const hashes = { summary: 'resumen', documents: 'documentos', calendar: 'calendario', tasks: 'tareas', feedback: 'feedback', resources: 'recursos', meetings: 'reuniones', analytics: 'analiticas' };
                 history.replaceState(null, '', '#' + hashes[tabName]);
             }
 
@@ -350,9 +354,10 @@
             });
         });
 
-        const initialTabs = { '#resumen': 'summary', '#documentos': 'documents', '#tareas': 'tasks', '#calendario': 'calendar', '#recursos': 'resources', '#reuniones': 'meetings', '#analiticas': 'analytics' };
+        const initialTabs = { '#resumen': 'summary', '#documentos': 'documents', '#tareas': 'tasks', '#calendario': 'calendar', '#feedback': 'feedback', '#recursos': 'resources', '#reuniones': 'meetings', '#analiticas': 'analytics' };
         const fallbackTab = @json(($errors->any() && (old('_meeting_form') || $errors->has('reuniones_cliente_por_mes'))) ? 'meetings' : 'summary');
-        activateCampaignTab(initialTabs[window.location.hash] || fallbackTab, false);
+        activateCampaignTab(initialTabs[window.location.hash] || 'summary', false);
+        if (!initialTabs[window.location.hash] && fallbackTab !== 'summary') activateCampaignTab(fallbackTab, false);
     });
 </script>
 @endsection

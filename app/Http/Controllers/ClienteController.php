@@ -17,6 +17,7 @@ use App\Models\Empresa;
 use App\Models\RespuestaCuestionario;
 use App\Models\TemaCuestionario;
 use Carbon\Carbon;
+use App\Services\CampaignFeedbackService;
 
 class ClienteController extends Controller
 {
@@ -80,7 +81,7 @@ class ClienteController extends Controller
         return view('clientes.comprar-plan', compact('planes', 'pagoPendiente'));
     }
 
-    public function dashboard(Request $request)
+    public function dashboard(Request $request, CampaignFeedbackService $feedbackService)
     {
         $user = Auth::user();
         $hasExistingCompany = $user->empresas()->exists();
@@ -130,6 +131,54 @@ class ClienteController extends Controller
         $campaniaDashboard = $suscripcionActiva->campanias()
             ->latest('id')
             ->first();
+        $campaignDashboardSummary = null;
+
+        if ($campaniaDashboard) {
+            $visibleTasks = $campaniaDashboard->tareas()
+                ->where('visible_cliente', true)
+                ->with([
+                    'archivos' => fn ($query) => $query->latest('id'),
+                    'comentarios' => fn ($query) => $query->with('user')->latest('id')->limit(8),
+                ])
+                ->orderBy('fecha_limite')
+                ->get();
+            $totalTasks = $visibleTasks->count();
+            $completedTasks = $visibleTasks->where('estado', 'completada')->count();
+            $pendingReviewFiles = $visibleTasks->flatMap(function ($task) {
+                return $task->requiere_aprobacion
+                    ? $task->archivos->where('estado', 'pendiente')->map(fn ($file) => ['task' => $task, 'file' => $file])
+                    : collect();
+            })->values();
+            $scheduledTasks = $visibleTasks->where('publication_status', 'scheduled');
+            $publishedTasks = $visibleTasks->where('publication_status', 'published');
+            $nextPublication = $scheduledTasks
+                ->filter(fn ($task) => $task->publication_scheduled_at && $task->publication_scheduled_at->isFuture())
+                ->sortBy('publication_scheduled_at')
+                ->first();
+            $upcomingTasks = $visibleTasks
+                ->map(function ($task) {
+                    $task->dashboard_date = $task->publication_scheduled_at ?: $task->fecha_limite;
+
+                    return $task;
+                })
+                ->filter(fn ($task) => $task->dashboard_date && Carbon::parse($task->dashboard_date)->gte(now()->startOfDay()))
+                ->sortBy('dashboard_date')
+                ->take(5)
+                ->values();
+
+            $campaignDashboardSummary = [
+                'tasks' => $visibleTasks,
+                'total_tasks' => $totalTasks,
+                'completed_tasks' => $completedTasks,
+                'progress' => $totalTasks > 0 ? (int) round(($completedTasks / $totalTasks) * 100) : 0,
+                'pending_review_files' => $pendingReviewFiles,
+                'scheduled_count' => $scheduledTasks->count(),
+                'published_count' => $publishedTasks->count(),
+                'next_publication' => $nextPublication,
+                'upcoming_tasks' => $upcomingTasks,
+                'unread_messages' => $feedbackService->unreadCount($campaniaDashboard, $user),
+            ];
+        }
 
         if ($campaniaDashboard?->fecha_fin) {
             $hoy = now()->startOfDay();
@@ -189,6 +238,8 @@ class ClienteController extends Controller
             'empresaCuestionario',
             'temasCuestionario',
             'respuestasCuestionario',
+            'campaniaDashboard',
+            'campaignDashboardSummary',
             'data' // Pasamos los datos de analíticas a la vista
         ));
     }
