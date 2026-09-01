@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\CampaignFeedbackController;
 use App\Http\Controllers\Cliente\PagoClienteController;
+use App\Http\Controllers\Cliente\ClienteNotificationController;
 use App\Http\Controllers\Cliente\RecursoClienteController;
 use App\Http\Controllers\Cliente\SocialAccountController;
 use App\Http\Controllers\ClienteController;
@@ -143,6 +144,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/clientes/configuracion/empresa', [ClienteController::class, 'storeOnboardingCompany'])->name('clientes.onboarding.empresa');
     Route::post('/clientes/configuracion/completar', [ClienteController::class, 'completeOnboarding'])->name('clientes.onboarding.complete');
     Route::get('/clientes/dashboard', [ClienteController::class, 'dashboard'])->name('clientes.dashboard');
+    Route::get('/clientes/notificaciones/{notification}', [ClienteNotificationController::class, 'show'])
+        ->name('clientes.notificaciones.show');
     Route::post('/clientes/tareas/archivos/{archivo}/revision', [App\Http\Controllers\Cliente\ClienteTareaRevisionController::class, 'store'])
         ->name('clientes.tareas.archivos.revision');
     Route::get('/clientes/micuenta', [ClienteController::class, 'miCuenta'])->name('clientes.micuenta');

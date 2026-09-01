@@ -170,6 +170,11 @@
             button.disabled = !analytics.platforms[platform].connected;
             button.title = button.disabled ? 'Cuenta no conectada a esta campaña' : '';
         });
+        const audienceButton = root.querySelector('[data-analytics-scope="audience"]');
+        if (audienceButton) {
+            audienceButton.disabled = !analytics.platforms.instagram.connected;
+            audienceButton.title = audienceButton.disabled ? 'Los datos demográficos están disponibles solamente para Instagram' : '';
+        }
     }
 
     function renderKpis(data) {
@@ -270,16 +275,18 @@
     }
 
     function renderAudience(data) {
+        const audienceSection = document.getElementById('meta-audience');
+        const showAudience = currentScope !== 'facebook' && Boolean(analytics.platforms.instagram.connected);
+        audienceSection.hidden = !showAudience;
+        if (!showAudience) return;
+
         const audience = data.audience || {age_gender:[],cities:[],countries:[]};
         const status = data.audience_status || {};
         const instagramStatus = status.instagram || (currentScope === 'instagram' ? status : null);
-        const facebookStatus = status.facebook || (currentScope === 'facebook' ? status : null);
         let unavailableMessage = 'Meta aún no liberó datos demográficos para esta audiencia.';
 
         if (instagramStatus?.permission === false) {
             unavailableMessage = 'Falta conceder el permiso instagram_manage_insights. Vuelve a conectar Facebook y acepta todos los permisos.';
-        } else if (facebookStatus?.permission === false && !instagramStatus) {
-            unavailableMessage = 'Falta conceder el permiso read_insights. Vuelve a conectar Facebook y acepta todos los permisos.';
         } else if (instagramStatus?.followers !== null && instagramStatus?.followers !== undefined && Number(instagramStatus.followers) < Number(instagramStatus.minimum_followers || 100)) {
             unavailableMessage = `La cuenta de Instagram tiene ${number(instagramStatus.followers)} seguidores. Meta exige al menos ${number(instagramStatus.minimum_followers || 100)} para habilitar datos demográficos.`;
         } else if ((analytics.errors || []).some(error => String(error.scope || '').startsWith('audience_'))) {

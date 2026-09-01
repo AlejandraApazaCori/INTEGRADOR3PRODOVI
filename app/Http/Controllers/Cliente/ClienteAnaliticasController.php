@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Empresa;
 use App\Services\MetaCampaignAnalyticsService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,6 +19,10 @@ class ClienteAnaliticasController extends Controller
             ->whereIn('estado', ['activa', 'pausada'])
             ->latest('fecha_inicio')
             ->first();
+        $campaniaIniciada = $campaniaActual
+            && Carbon::parse($campaniaActual->fecha_inicio, config('app.timezone'))
+                ->startOfDay()
+                ->lte(today(config('app.timezone')));
 
         $data = $this->loadAnalyticsData('thisyear');
         $empresas = Auth::user()->empresas()
@@ -32,7 +37,7 @@ class ClienteAnaliticasController extends Controller
             );
         });
 
-        return view('clientes.analiticas', compact('data', 'campaniaActual', 'empresas'));
+        return view('clientes.analiticas', compact('data', 'campaniaActual', 'campaniaIniciada', 'empresas'));
     }
 
     public function companyData(Request $request, Empresa $empresa, MetaCampaignAnalyticsService $analyticsService)

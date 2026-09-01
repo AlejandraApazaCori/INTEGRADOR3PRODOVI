@@ -34,7 +34,7 @@ class MetaCampaignAnalyticsService
         $accountStamp = $accounts->map(fn (?SocialAccount $account) => $account?->updated_at?->timestamp ?? 0)->implode('-');
 
         return Cache::remember(
-            "meta-campaign-analytics:v3:{$campania->id}:{$days}:{$accountStamp}",
+            "meta-campaign-analytics:v4:{$campania->id}:{$days}:{$accountStamp}",
             now()->addMinutes(15),
             fn () => $this->collect([
                 'campaign' => ['id' => $campania->id, 'name' => $campania->nombre],
@@ -51,7 +51,7 @@ class MetaCampaignAnalyticsService
             ->implode('-');
 
         return Cache::remember(
-            "meta-company-analytics:v3:{$empresa->id}:{$days}:{$accountStamp}",
+            "meta-company-analytics:v4:{$empresa->id}:{$days}:{$accountStamp}",
             now()->addMinutes(15),
             fn () => $this->collect([
                 'company' => [
@@ -207,11 +207,10 @@ class MetaCampaignAnalyticsService
         })->filter(fn (array $post) => filled($post['id']) && filled($post['timestamp']))->values()->all();
 
         $platform = $this->finishPlatform($platform);
-        $platform['audience'] = $this->facebookAudience($pageId, $token);
-        $facebookScopes = collect(data_get($account->metadata, 'granted_scopes', []));
         $platform['audience_status'] = [
-            'permission' => $facebookScopes->isEmpty() ? null : $facebookScopes->contains('read_insights'),
-            'has_data' => collect($platform['audience'])->contains(fn (array $items) => $items !== []),
+            'available' => false,
+            'reason' => 'unsupported_by_meta',
+            'has_data' => false,
         ];
 
         return $platform;
@@ -429,19 +428,6 @@ class MetaCampaignAnalyticsService
         }
 
         return $results;
-    }
-
-    private function facebookAudience(string $pageId, string $token): array
-    {
-        $genderAge = $this->firstInsight($pageId, $token, ['page_follows_gender_age', 'page_fans_gender_age'], 'lifetime', null, null, 'facebook');
-        $cities = $this->firstInsight($pageId, $token, ['page_follows_city', 'page_fans_city'], 'lifetime', null, null, 'facebook');
-        $countries = $this->firstInsight($pageId, $token, ['page_follows_country', 'page_fans_country'], 'lifetime', null, null, 'facebook');
-
-        return [
-            'age_gender' => $this->facebookBreakdown($genderAge, 'age_gender'),
-            'cities' => $this->facebookBreakdown($cities, 'location'),
-            'countries' => $this->facebookBreakdown($countries, 'location'),
-        ];
     }
 
     private function instagramAudience(string $instagramId, string $token): array
@@ -914,23 +900,6 @@ class MetaCampaignAnalyticsService
         $values = collect($insight['values'])->map(fn (array $item) => $this->number($item['value'] ?? null))->filter(fn ($value) => $value !== null);
 
         return $values->isEmpty() ? null : $values->sum();
-    }
-
-    private function facebookBreakdown(?array $insight, string $type): array
-    {
-        $value = data_get($insight, 'values.0.value');
-        if (! is_array($value)) {
-            return [];
-        }
-
-        return collect($value)->map(function ($count, string $name) use ($type) {
-            if ($type === 'age_gender') {
-                [$gender, $age] = array_pad(explode('.', $name, 2), 2, '');
-                $name = trim($age.' · '.$gender);
-            }
-
-            return ['name' => $name, 'value' => $this->number($count) ?? 0];
-        })->filter(fn (array $item) => $item['value'] > 0)->sortByDesc('value')->values()->all();
     }
 
     private function mergeBreakdowns(array ...$groups): array

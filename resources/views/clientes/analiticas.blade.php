@@ -11,21 +11,21 @@
             <p>Consulta el desempeño de tu campaña y descubre cómo está creciendo tu presencia digital.</p>
         </div>
         <div class="analytics-hero-side">
-            <div class="analytics-status"><small>Estado</small><strong>{{ $campaniaActual ? 'Campaña activa' : 'En preparación' }}</strong></div>
+            <div class="analytics-status"><small>Estado</small><strong>{{ $campaniaIniciada ? 'Campaña activa' : 'En preparación' }}</strong></div>
             <div class="login-mosaic" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
         </div>
     </header>
     <main class="analytics-content">
-    <section class="analytics-panel {{ $campaniaActual ? '' : 'is-waiting' }}">
+    <section class="analytics-panel {{ $campaniaIniciada ? '' : 'is-waiting' }}">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
             <h2 class="text-2xl font-bold text-gray-800">Analiticas de Rendimiento</h2>
-            @if($campaniaActual)
+            @if($campaniaIniciada)
                 <p class="mt-2 text-sm font-medium text-indigo-600">Campaña: {{ $campaniaActual->nombre }}</p>
             @endif
         </div>
 
-        @if($campaniaActual)
+        @if($campaniaIniciada)
             <div class="flex space-x-3 mt-4 sm:mt-0">
                 <button onclick="exportData(event)" class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -37,7 +37,7 @@
         @endif
     </div>
 
-    @if($campaniaActual)
+    @if($campaniaIniciada)
         <div id="metricsContainer">
             @include('clientes.analiticas.partials.analiticas')
         </div>
@@ -50,8 +50,10 @@
     @endif
     </section>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    @include('clientes.analiticas.partials.insights-por-empresa', ['empresas' => $empresas])
+    @if($campaniaIniciada)
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        @include('clientes.analiticas.partials.insights-por-empresa', ['empresas' => $empresas])
+    @endif
     </main>
 </div>
 
@@ -101,7 +103,7 @@
     }
 </style>
 
-@if($campaniaActual)
+@if($campaniaIniciada)
 <script>
     window.analyticsUserId = {{ auth()->id() }};
 

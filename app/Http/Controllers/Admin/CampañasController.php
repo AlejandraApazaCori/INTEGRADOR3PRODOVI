@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\CampaignAudienceService;
 use App\Services\CampaignBlueprintService;
 use App\Services\CampaignBriefPrefillService;
+use App\Services\CampaignCreatedNotifier;
 use App\Services\CampaignFeedbackService;
 use App\Services\CampaignPreparationService;
 use App\Services\CampaignTaskPrefillService;
@@ -236,7 +237,11 @@ class CampañasController extends Controller
         }
     }
 
-    public function guardarAvanzada(Request $request, CampaignAudienceService $audienceService)
+    public function guardarAvanzada(
+        Request $request,
+        CampaignAudienceService $audienceService,
+        CampaignCreatedNotifier $campaignNotifier
+    )
     {
         $audiences = $audienceService->normalize($request->input('publicos_objetivo', []));
         $request->merge([
@@ -461,6 +466,8 @@ class CampañasController extends Controller
                 return $campania;
             });
 
+            $campaignNotifier->send($campania);
+
             return redirect()->route('administrador.campañas.show', $campania)
                 ->with('success', $campania->es_borrador
                     ? 'La IA creó la campaña, el equipo y las tareas como borrador. Revísala antes de activarla.'
@@ -472,7 +479,7 @@ class CampañasController extends Controller
         }
     }
 
-    public function guardar(Request $request)
+    public function guardar(Request $request, CampaignCreatedNotifier $campaignNotifier)
     {
         \Log::info('Datos recibidos:', $request->all());
 
@@ -541,6 +548,7 @@ class CampañasController extends Controller
             });
 
             \Log::info('Campaña creada con ID: '.$campania->id);
+            $campaignNotifier->send($campania);
 
             return redirect()->route('administrador.campañas.index')
                 ->with('success', 'Campaña creada exitosamente');
@@ -1131,7 +1139,7 @@ class CampañasController extends Controller
         return Str::limit(implode("\n", $lineasResultado), $maxCaracteres, '');
     }
 
-    public function aprobarBorrador(Campania $campania)
+    public function aprobarBorrador(Campania $campania, CampaignCreatedNotifier $campaignNotifier)
     {
         if (! $campania->es_borrador) {
             return back()->with('error', 'Esta campaña ya fue activada.');
@@ -1167,6 +1175,8 @@ class CampañasController extends Controller
                 'es_borrador' => false,
             ]);
         });
+
+        $campaignNotifier->send($campania->fresh());
 
         return back()->with('success', 'Campaña revisada y activada. La vigencia comenzó hoy.');
     }

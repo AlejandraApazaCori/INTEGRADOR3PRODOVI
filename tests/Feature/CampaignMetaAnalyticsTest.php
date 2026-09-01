@@ -167,8 +167,13 @@ class CampaignMetaAnalyticsTest extends TestCase
         $this->assertNotEmpty($response->json('summary.followers.instagram'));
         $this->assertNotEmpty($response->json('platforms.instagram.audience.cities'));
         $this->assertNotEmpty($response->json('platforms.instagram.audience.countries'));
-        $this->assertNotEmpty($response->json('platforms.facebook.audience.cities'));
-        $this->assertNotEmpty($response->json('platforms.facebook.audience.countries'));
+        $this->assertSame([], $response->json('platforms.facebook.audience.cities'));
+        $this->assertSame([], $response->json('platforms.facebook.audience.countries'));
+        $this->assertFalse($response->json('platforms.facebook.audience_status.available'));
+        $this->assertSame(
+            $response->json('platforms.instagram.audience.cities'),
+            $response->json('summary.audience.cities')
+        );
     }
 
     public function test_facebook_only_keeps_its_charts_available_and_instagram_disconnected(): void
