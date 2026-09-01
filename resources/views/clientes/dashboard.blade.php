@@ -114,7 +114,7 @@
                     </div>
 
                     @if($dashboardHasSocialAccounts)
-                        <section class="dashboard-results-panel is-loading" id="dashboard-meta-results" data-meta-url="{{ route('clientes.analiticas.empresa.datos', ['empresa' => $empresaActiva->id, 'days' => 'all']) }}" aria-labelledby="dashboard-results-title" aria-busy="true">
+                        <section class="dashboard-results-panel is-loading" id="dashboard-meta-results" data-meta-url="{{ route('clientes.analiticas.empresa.datos', ['empresa' => $empresaActiva->id, 'days' => 'all']) }}" data-meta-fallback-url="{{ route('clientes.analiticas.load-view', ['meta' => 1, 'empresa_id' => $empresaActiva->id, 'days' => 'all']) }}" aria-labelledby="dashboard-results-title" aria-busy="true">
                             <header><div><h3 id="dashboard-results-title">Resultados hasta hoy</h3></div><a href="{{ route('clientes.analiticas') }}">Ver analíticas <i class="fas fa-arrow-right"></i></a></header>
                             <div class="dashboard-results-grid">
                                 <article><span><i class="fas fa-signal"></i></span><div><small>Alcance</small><strong data-meta-total="reach">—</strong><em>Todo el historial</em></div></article>
@@ -853,10 +853,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
             return history.slice().reverse().find(value => value !== null && value !== undefined) ?? null;
         };
-        fetch(metaResults.dataset.metaUrl, {
-            headers: { 'Accept': 'application/json' },
-        })
-            .then(response => {
+        const requestAnalytics = endpoint => fetch(endpoint, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+
+        requestAnalytics(metaResults.dataset.metaUrl)
+            .then(async response => {
+                if (!response.ok && metaResults.dataset.metaFallbackUrl) {
+                    response = await requestAnalytics(metaResults.dataset.metaFallbackUrl);
+                }
                 if (!response.ok) throw new Error('No fue posible consultar Meta Insights.');
                 return response.json();
             })
