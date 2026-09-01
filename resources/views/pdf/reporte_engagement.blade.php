@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reporte de Engagement Profesional - {{ $data['period_label'] ?? 'PRODOVI' }}</title>
+    <title>Reporte de Engagement - {{ $data['company'] ?? 'PRODOVI' }}</title>
     <style>
         /* Tipografía y general */
         @page {
@@ -209,7 +209,7 @@
             <tr>
                 <td>
                     <img src="{{ public_path('imagenes/logoblanco.png') }}" style="height: 40px; width: auto;">
-                    <div class="reporte-titulo">Análisis de Engagement - {{ $data['period_label'] ?? 'Consolidado' }}</div>
+                    <div class="reporte-titulo">{{ $data['company'] ?? 'PRODOVI' }} - {{ $data['period_label'] ?? 'Consolidado' }}</div>
                 </td>
                 <td class="generacion-fecha">
                     Emitido el: {{ $fecha_generacion ?? date('d/m/Y') }}<br>
@@ -229,20 +229,27 @@
             <tr>
                 <!-- Engagement Rate -->
                 <td class="kpi-tarjeta" style="width: 50%;">
-                    <div class="kpi-etiqueta">Engagement Rate Promedio</div>
-                    <div class="kpi-valor" style="font-size: 42px; color: #4f46e5;">{{ $data['engagement']['rate'] ?? '0.0%' }}</div>
-                    <span class="tendencia-distintivo {{ (isset($data['engagement']['trend']) && $data['engagement']['trend'] === 'up') ? 'tendencia-alza' : 'tendencia-baja' }}">
-                        {{ $data['engagement']['vs_previous'] ?? '0%' }} vs periodo anterior
+                    <div class="kpi-etiqueta">Tasa de interacción sobre alcance</div>
+                    <div class="kpi-valor" style="font-size: 42px; color: #4f46e5;">{{ $data['engagement']['rate'] !== null ? number_format($data['engagement']['rate'], 2, ',', '.').'%' : 'N/D' }}</div>
+                    <span class="tendencia-distintivo tendencia-alza">
+                        {{ number_format($data['engagement']['interactions'] ?? 0, 0, ',', '.') }} interacciones sobre {{ number_format($data['engagement']['reach'] ?? 0, 0, ',', '.') }} de alcance
                     </span>
                 </td>
                 
                 <!-- Desglose Rápido -->
                 <td style="width: 50%; vertical-align: top; padding-left: 20px;">
                     <div class="insight-box" style="margin-top: 0;">
-                        <strong>Pico de Actividad:</strong> Los usuarios muestran un mayor nivel de respuesta entre las <strong>{{ $data['optimal_time']['range'] ?? 'No disponible' }}</strong>.
+                        <strong>{{ $data['optimal_time']['estimated'] ? 'Horario orientativo' : 'Pico de actividad real' }}:</strong>
+                        <strong>{{ $data['optimal_time']['range'] }}</strong>.
+                        @if($data['optimal_time']['estimated']) Esta franja es una recomendación estratégica porque todavía no existe una muestra suficiente. @else Calculado con {{ $data['optimal_time']['samples'] }} publicaciones comparables. @endif
                     </div>
                     <div class="insight-box" style="border-left-color: #10b981; background-color: #ecfdf5; margin-bottom: 0;">
-                        <strong>Demografía Clave:</strong> El segmento con mayor tasa de respuesta son <strong>Mujeres de 25-34 años</strong> ({{ $data['demographics']['female_25_34'] ?? 0 }}%).
+                        <strong>Audiencia disponible:</strong>
+                        @if(!$data['audience']['estimated'])
+                            {{ data_get($data, 'audience.age.name', 'Edad no disponible') }} y {{ data_get($data, 'audience.gender.name', 'sexo no disponible') }}, según los datos liberados por Instagram.
+                        @else
+                            Meta todavía no liberó una muestra demográfica suficiente; no se presenta un segmento ficticio como dato real.
+                        @endif
                     </div>
                 </td>
             </tr>
@@ -283,7 +290,7 @@
                         <thead>
                             <tr>
                                 <th>Formato</th>
-                                <th style="text-align: center;">Eng. Rate</th>
+                                <th style="text-align: center;">Promedio / post</th>
                                 <th style="text-align: right;">Interacciones</th>
                             </tr>
                         </thead>
@@ -291,7 +298,7 @@
                             @foreach($data['engagement_by_type'] ?? [] as $item)
                                 <tr>
                                     <td style="font-weight: bold;">{{ $item['type'] }}</td>
-                                    <td style="text-align: center;">{{ $item['rate'] }}</td>
+                                    <td style="text-align: center;">{{ number_format($item['average'], 1, ',', '.') }}</td>
                                     <td style="text-align: right;">{{ number_format($item['interactions']) }}</td>
                                 </tr>
                             @endforeach
@@ -300,20 +307,17 @@
                 </td>
                 <td class="contenido-tarjeta" style="width: 40%; background-color: #f9fafb;">
                     <div class="seccion-titulo" style="font-size: 13px; margin-bottom: 15px;">Rendimiento por Plataforma</div>
+                    @php $maxPlatformAverage = max(1, collect($data['engagement_by_platform'] ?? [])->max('average') ?? 1); @endphp
                     @foreach($data['engagement_by_platform'] ?? [] as $platform)
                         <div style="margin-bottom: 15px;">
                             <span style="font-size: 12px; color: #4b5563;">{{ $platform['platform'] }}</span>
-                            <span style="float: right; font-size: 12px; font-weight: bold;">{{ $platform['rate'] }}</span>
+                            <span style="float: right; font-size: 12px; font-weight: bold;">{{ number_format($platform['average'], 1, ',', '.') }} por post</span>
                             <div class="progreso-contenedor">
-                                @php
-                                    $pRate = (float)str_replace('%', '', $platform['rate']);
-                                    $maxRate = 10; // Normalizing for progress bar
-                                    $width = min(($pRate / $maxRate) * 100, 100);
-                                @endphp
+                                @php $width = min(($platform['average'] / $maxPlatformAverage) * 100, 100); @endphp
                                 <div class="progreso-barra" style="width: {{ $width }}%; background-color: {{ $platform['platform'] == 'Instagram' ? '#ec4899' : '#3b82f6' }};"></div>
                             </div>
-                            <div style="font-size: 10px; margin-top: 4px;" class="{{ $platform['trend'] === 'up' ? 'tendencia-alza' : 'tendencia-baja' }}">
-                                {{ $platform['trend'] === 'up' ? 'Tendencia al alza' : 'Tendencia a la baja' }}
+                            <div style="font-size: 10px; margin-top: 4px;" class="tendencia-alza">
+                                {{ number_format($platform['interactions'], 0, ',', '.') }} interacciones en {{ $platform['posts'] }} publicaciones
                             </div>
                         </div>
                     @endforeach
@@ -331,7 +335,14 @@
                 <td style="width: 100%; vertical-align: top; background-color: #f1f5f9; padding: 20px; border-radius: 8px;">
                     <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #1e1b4b;">Análisis de Resultados</div>
                     <p style="font-size: 12px; color: #475569; line-height: 1.6; margin: 0;">
-                        Los datos actuales muestran un engagement rate del {{ $data['engagement']['rate'] ?? '0.0%' }}, con un rendimiento destacado en el formato de contenido que genera mayor interacción. La audiencia de <strong>Mujeres de 25-34 años</strong> sigue siendo el motor principal de participación. Se recomienda enfocar los esfuerzos creativos en la franja horaria de <strong>{{ $data['optimal_time']['range'] ?? 'tarde' }}</strong> para maximizar el alcance orgánico y la interactividad, esperando un incremento del {{ $data['optimal_time']['engagement_boost'] ?? '0%' }} según los patrones observados.
+                        En {{ $data['period_label'] }}, Meta registró <strong>{{ number_format($data['engagement']['interactions'] ?? 0, 0, ',', '.') }} interacciones</strong>
+                        en <strong>{{ number_format($data['totals']['posts'] ?? 0, 0, ',', '.') }} publicaciones</strong>, con un promedio de
+                        <strong>{{ number_format($data['engagement']['average_per_post'] ?? 0, 1, ',', '.') }}</strong> interacciones por publicación.
+                        @if($data['engagement']['rate'] !== null)
+                            La tasa calculada sobre el alcance disponible es de <strong>{{ number_format($data['engagement']['rate'], 2, ',', '.') }}%</strong>.
+                        @endif
+                        Se recomienda priorizar los formatos con mayor promedio real de interacciones y publicar alrededor de <strong>{{ $data['optimal_time']['range'] }}</strong>.
+                        @if($data['optimal_time']['estimated']) Esta recomendación horaria es orientativa y no representa una medición entregada por Meta. @endif
                     </p>
                 </td>
             </tr>
@@ -340,7 +351,7 @@
     </div>
 
     <div class="pie-pagina">
-        Este informe detallado ha sido estructurado y generado algorítmicamente para el análisis exclusivo de PRODOVI.<br>
+        Cifras obtenidas de {{ $data['data_source'] }}. Las recomendaciones marcadas como orientativas no representan mediciones de Meta.<br>
         &copy; {{ date('Y') }} Marketing Estratégico. Todos los derechos reservados.
     </div>
 

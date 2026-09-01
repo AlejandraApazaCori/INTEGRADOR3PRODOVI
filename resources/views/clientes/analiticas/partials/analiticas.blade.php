@@ -231,7 +231,14 @@
 <script type="application/json" id="analytics-json">@json($data)</script>
 <script>
     function getAnalyticsUserQuery() {
-        return window.analyticsUserId ? `&user_id=${window.analyticsUserId}` : '';
+        const params = new URLSearchParams();
+        const companyId = document.getElementById('client-analytics-company')?.value;
+
+        if (window.analyticsUserId) params.set('user_id', window.analyticsUserId);
+        if (companyId) params.set('empresa_id', companyId);
+
+        const query = params.toString();
+        return query ? `&${query}` : '';
     }
 
     function exportEngagementReport(event) {

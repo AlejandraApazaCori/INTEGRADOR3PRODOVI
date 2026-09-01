@@ -93,11 +93,27 @@ class ClienteAnaliticasController extends Controller
         return $pdf->download('informe_analiticas_'.$request->input('periodo', 'historial').'.pdf');
     }
 
-    public function exportarReporteEngagement(Request $request)
+    public function exportarReporteEngagement(Request $request, MetaCampaignAnalyticsService $analyticsService)
     {
-        $periodKey = $this->resolvePeriodKey($request->input('view', 'historial'));
-        $userId = $request->filled('user_id') ? (int) $request->input('user_id') : null;
-        $data = $this->loadAnalyticsData($periodKey, $userId);
+        $validated = $request->validate([
+            'view' => 'nullable|in:7dias,30dias,anual,historial',
+            'empresa_id' => 'nullable|integer',
+        ]);
+        $empresa = Empresa::where('usuario_id', Auth::id())
+            ->when(
+                filled($validated['empresa_id'] ?? null),
+                fn ($query) => $query->whereKey($validated['empresa_id'])
+            )
+            ->orderBy('id')
+            ->firstOrFail();
+        $days = match($validated['view'] ?? 'historial') {
+            '7dias' => 7,
+            '30dias' => 30,
+            'anual' => 365,
+            default => 'all',
+        };
+        $analytics = $analyticsService->forCompany($empresa, $days);
+        $data = $this->engagementReportData($analytics, $empresa);
         $pdfData = ['fecha_generacion' => now()->format('d/m/Y H:i'), 'data' => $data];
 
         $pdf = Pdf::loadView('pdf.reporte_engagement', $pdfData);
@@ -106,6 +122,71 @@ class ClienteAnaliticasController extends Controller
         $pdf->setOption('isRemoteEnabled', true);
 
         return $pdf->download('informe_engagement_'.$request->input('view', 'historial').'.pdf');
+    }
+
+    private function engagementReportData(array $analytics, Empresa $empresa): array
+    {
+        $summary = $analytics['summary'] ?? [];
+        $totals = $summary['totals'] ?? [];
+        $reach = (float) ($totals['reach'] ?? 0);
+        $engagement = (float) ($totals['engagement'] ?? 0);
+        $rate = $reach > 0 ? round(($engagement / $reach) * 100, 2) : null;
+        $platforms = collect($analytics['platforms'] ?? [])->filter(fn (array $platform) => $platform['connected'] ?? false);
+        $interaction = fn (string $metric) => $platforms->sum(fn (array $platform) => (float) data_get($platform, 'engagement.'.$metric, 0));
+        $contentTypes = collect($summary['content_types'] ?? [])->map(fn (array $item) => [
+            'type' => $item['type'] ?? 'Contenido',
+            'posts' => (int) ($item['posts'] ?? 0),
+            'interactions' => (float) ($item['engagement'] ?? 0),
+            'average' => (float) ($item['average_engagement'] ?? 0),
+        ])->values()->all();
+        $platformPerformance = $platforms->map(fn (array $platform) => [
+            'platform' => ucfirst($platform['platform'] ?? 'Meta'),
+            'posts' => (int) data_get($platform, 'totals.posts', 0),
+            'interactions' => (float) data_get($platform, 'totals.engagement', 0),
+            'average' => (float) data_get($platform, 'totals.average_engagement', 0),
+        ])->values()->all();
+        $bestTime = collect(data_get($summary, 'best_posting_times.best', []))->first();
+        $age = collect(data_get($summary, 'audience.age_gender', []))
+            ->filter(fn (array $item) => str_starts_with($item['name'] ?? '', 'Edad '))
+            ->sortByDesc('value')->first();
+        $gender = collect(data_get($summary, 'audience.age_gender', []))
+            ->filter(fn (array $item) => str_starts_with($item['name'] ?? '', 'Sexo '))
+            ->sortByDesc('value')->first();
+
+        return [
+            'company' => $empresa->nombre_empresa,
+            'period_label' => data_get($analytics, 'period.days') === 'all'
+                ? 'Todo el historial disponible'
+                : 'Últimos '.data_get($analytics, 'period.days', 30).' días',
+            'period' => $analytics['period'] ?? [],
+            'totals' => $totals,
+            'engagement' => [
+                'rate' => $rate,
+                'interactions' => $engagement,
+                'reach' => $totals['reach'] ?? null,
+                'average_per_post' => $totals['average_engagement'] ?? null,
+            ],
+            'interactions_breakdown' => [
+                'likes' => $interaction('reactions'),
+                'comments' => $interaction('comments'),
+                'shares' => $interaction('shares'),
+                'saves' => $interaction('saves'),
+            ],
+            'engagement_by_type' => $contentTypes,
+            'engagement_by_platform' => $platformPerformance,
+            'optimal_time' => [
+                'range' => $bestTime['label'] ?? '18:00 a 21:00',
+                'samples' => $bestTime['samples'] ?? 0,
+                'estimated' => $bestTime === null,
+            ],
+            'audience' => [
+                'age' => $age,
+                'gender' => $gender,
+                'estimated' => ! $age && ! $gender,
+            ],
+            'data_source' => 'Meta Insights',
+            'generated_at' => $analytics['generated_at'] ?? now()->toIso8601String(),
+        ];
     }
 
     public function exportarReporteAlcance(Request $request)
