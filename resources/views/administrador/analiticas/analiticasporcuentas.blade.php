@@ -355,6 +355,7 @@
             const responseAnalytics = await response.json();
             if (currentLoad !== loadSequence) return;
             analytics = responseAnalytics; loadedDays = days;
+            window.hydrateRealEngagementCard?.(analytics);
             const connected = Object.values(analytics.platforms || {}).some(item => item.connected);
             if (!connected) {
                 state.innerHTML = `<i class="fas fa-link"></i><strong>${esc(root.dataset.emptyMessage)}</strong><span>${esc(root.dataset.emptyDetail)}</span>`;

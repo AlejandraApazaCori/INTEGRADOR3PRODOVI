@@ -12,10 +12,10 @@
         <div class="flex justify-between items-start">
             <div>
                 <p class="text-sm font-medium text-gray-500 mb-1">Tasa de Engagement</p>
-                <p class="text-3xl font-bold text-gray-800">{{ $data['engagement']['rate'] }}</p>
+                <p class="text-3xl font-bold text-gray-800" data-real-engagement-rate>—</p>
                 <div class="flex items-center mt-1">
-                    <span class="text-xs font-medium px-2 py-0.5 rounded-full {{ $data['engagement']['trend'] === 'up' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} flex items-center">{{ $data['engagement']['vs_previous'] }}</span>
-                    <span class="text-xs text-gray-500 ml-2">vs {{ $data['period_label'] }}</span>
+                    <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-800 flex items-center" data-real-engagement-total>Consultando Meta</span>
+                    <span class="text-xs text-gray-500 ml-2" data-real-engagement-period>Todo el historial</span>
                 </div>
             </div>
             <div class="bg-white p-2 rounded-lg shadow-xs">
@@ -240,6 +240,57 @@
         const query = params.toString();
         return query ? `&${query}` : '';
     }
+
+    window.hydrateRealEngagementCard = function (analytics) {
+        const totals = analytics?.summary?.totals ?? {};
+        const engagement = Number(totals.engagement ?? 0);
+        const reach = Number(totals.reach ?? 0);
+        const rate = reach > 0 ? (engagement / reach) * 100 : null;
+        const formatter = new Intl.NumberFormat('es-BO', { maximumFractionDigits: 1 });
+        const rateNode = document.querySelector('[data-real-engagement-rate]');
+        const totalNode = document.querySelector('[data-real-engagement-total]');
+        const periodNode = document.querySelector('[data-real-engagement-period]');
+
+        if (rateNode) rateNode.textContent = rate === null ? 'N/D' : `${formatter.format(rate)}%`;
+        if (totalNode) totalNode.textContent = `${formatter.format(engagement)} interacciones`;
+        if (periodNode) {
+            periodNode.textContent = analytics?.period?.days === 'all'
+                ? 'Todo el historial'
+                : `Últimos ${analytics?.period?.days ?? 30} días`;
+        }
+
+        const chart = document.getElementById('engagementChart')?.getContext('2d');
+        if (!chart || typeof Chart === 'undefined') return;
+
+        const platforms = ['facebook', 'instagram']
+            .map(platform => ({
+                platform,
+                data: analytics?.platforms?.[platform],
+            }))
+            .filter(item => item.data?.connected);
+
+        if (window.engagementChartInstance) window.engagementChartInstance.destroy();
+        window.engagementChartInstance = new Chart(chart, {
+            type: 'bar',
+            data: {
+                labels: platforms.map(item => item.platform === 'facebook' ? 'Facebook' : 'Instagram'),
+                datasets: [{
+                    data: platforms.map(item => Number(item.data?.totals?.engagement ?? 0)),
+                    backgroundColor: platforms.map(item => item.platform === 'facebook' ? '#3B82F6' : '#EC4899'),
+                    borderRadius: 6,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true, ticks: { precision: 0 } },
+                },
+            },
+        });
+    };
 
     function exportEngagementReport(event) {
         event.preventDefault();
