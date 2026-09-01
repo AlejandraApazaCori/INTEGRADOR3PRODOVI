@@ -243,7 +243,10 @@
         </div>
 
         <div class="campaign-analytics campaign-tab-panel" id="campaign-panel-analytics" data-campaign-panel="analytics" role="tabpanel" aria-labelledby="campaign-tab-analytics" hidden>
-            @include('administrador.analiticas.analiticasporcuentas', ['campania' => $campania])
+            @include('administrador.analiticas.analiticasporcuentas', [
+                'campania' => $campania,
+                'defaultAnalyticsDays' => 'all',
+            ])
         </div>
     </div>
 </div>

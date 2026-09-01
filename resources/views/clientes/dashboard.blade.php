@@ -117,10 +117,10 @@
                         <section class="dashboard-results-panel is-loading" id="dashboard-meta-results" data-meta-url="{{ route('clientes.analiticas.empresa.datos', ['empresa' => $empresaActiva->id, 'days' => 'all']) }}" aria-labelledby="dashboard-results-title" aria-busy="true">
                             <header><div><h3 id="dashboard-results-title">Resultados hasta hoy</h3></div><a href="{{ route('clientes.analiticas') }}">Ver analíticas <i class="fas fa-arrow-right"></i></a></header>
                             <div class="dashboard-results-grid">
-                                <article><span><i class="fas fa-signal"></i></span><div><small>Alcance</small><strong data-meta-total="reach">—</strong><em>Periodo completo</em></div></article>
-                                <article><span><i class="fas fa-heart"></i></span><div><small>Engagement</small><strong data-meta-total="engagement">—</strong><em>Periodo completo</em></div></article>
-                                <article><span><i class="fas fa-photo-film"></i></span><div><small>Publicaciones</small><strong data-meta-total="posts">—</strong><em>Periodo completo</em></div></article>
-                                <article><span><i class="fas fa-chart-line"></i></span><div><small>Promedio / post</small><strong data-meta-total="average_engagement">—</strong><em>Periodo completo</em></div></article>
+                                <article><span><i class="fas fa-signal"></i></span><div><small>Alcance</small><strong data-meta-total="reach">—</strong><em>Todo el historial</em></div></article>
+                                <article><span><i class="fas fa-heart"></i></span><div><small>Engagement</small><strong data-meta-total="engagement">—</strong><em>Todo el historial</em></div></article>
+                                <article><span><i class="fas fa-photo-film"></i></span><div><small>Publicaciones</small><strong data-meta-total="posts">—</strong><em>Todo el historial</em></div></article>
+                                <article><span><i class="fas fa-chart-line"></i></span><div><small>Promedio / post</small><strong data-meta-total="average_engagement">—</strong><em>Todo el historial</em></div></article>
                             </div>
                             <div class="dashboard-results-loading" data-meta-loading><i class="fas fa-circle-notch fa-spin"></i><span>Consultando Meta Insights</span></div>
                         </section>
@@ -840,12 +840,21 @@ document.addEventListener('DOMContentLoaded', function () {
         const number = value => value === null || value === undefined
             ? '—'
             : new Intl.NumberFormat('es-BO', { maximumFractionDigits: 1 }).format(value);
-        const controller = new AbortController();
-        const timeout = window.setTimeout(() => controller.abort(), 45000);
+        const followerTotal = platform => {
+            const currentTotal = platform?.totals?.followers;
 
+            if (currentTotal !== null && currentTotal !== undefined) {
+                return currentTotal;
+            }
+
+            const history = Array.isArray(platform?.followers?.values)
+                ? platform.followers.values
+                : [];
+
+            return history.slice().reverse().find(value => value !== null && value !== undefined) ?? null;
+        };
         fetch(metaResults.dataset.metaUrl, {
             headers: { 'Accept': 'application/json' },
-            signal: controller.signal,
         })
             .then(response => {
                 if (!response.ok) throw new Error('No fue posible consultar Meta Insights.');
@@ -860,7 +869,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 document.querySelectorAll('[data-meta-followers]').forEach(element => {
                     const platform = analytics?.platforms?.[element.dataset.metaFollowers];
-                    element.textContent = platform?.connected ? number(platform?.totals?.followers) : '—';
+                    element.textContent = number(followerTotal(platform));
                 });
             })
             .catch(() => {
@@ -870,7 +879,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             })
             .finally(() => {
-                window.clearTimeout(timeout);
                 metaResults.classList.remove('is-loading');
                 metaResults.setAttribute('aria-busy', 'false');
             });
