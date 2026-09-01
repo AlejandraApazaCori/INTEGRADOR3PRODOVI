@@ -18,12 +18,6 @@
     <main class="analytics-content">
     <section class="analytics-panel {{ $campaniaIniciada ? '' : 'is-waiting' }}">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-800">Analiticas de Rendimiento</h2>
-            @if($campaniaIniciada)
-                <p class="mt-2 text-sm font-medium text-indigo-600">Campaña: {{ $campaniaActual->nombre }}</p>
-            @endif
-        </div>
 
         @if($campaniaIniciada)
             <div class="flex space-x-3 mt-4 sm:mt-0">
