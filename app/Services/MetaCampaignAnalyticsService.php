@@ -184,7 +184,10 @@ class MetaCampaignAnalyticsService
             $shares = $this->number(data_get($post, 'shares.count')) ?? 0;
             $reach = $this->number($insights['post_total_media_view_unique'] ?? null);
             $views = $this->number($insights['post_media_view'] ?? $insights['post_media_views'] ?? null);
-            $clicks = null;
+            $clicks = $this->number($insights['post_clicks'] ?? null);
+            if ($clicks === null && is_array($insights['post_clicks_by_type'] ?? null)) {
+                $clicks = (float) collect($insights['post_clicks_by_type'])->sum();
+            }
 
             return [
                 'id' => $post['id'] ?? null,
@@ -266,7 +269,7 @@ class MetaCampaignAnalyticsService
                     ->as((string) $index)
                     ->timeout(25)
                     ->get($this->graphUrl(($post['id'] ?? '').'/insights'), [
-                        'metric' => 'post_media_view',
+                        'metric' => 'post_total_media_view_unique,post_media_view,post_clicks,post_clicks_by_type',
                         'access_token' => $token,
                     ]))->all();
             });

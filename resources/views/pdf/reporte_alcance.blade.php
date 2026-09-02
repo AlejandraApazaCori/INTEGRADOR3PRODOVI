@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reporte de Alcance Profesional - {{ $data['period_label'] ?? 'PRODOVI' }}</title>
+    <title>Reporte de Alcance - {{ $data['company'] ?? 'PRODOVI' }}</title>
     <style>
         @page { margin: 0cm 0cm; }
         body {
@@ -115,7 +115,7 @@
             <tr>
                 <td>
                     <img src="{{ public_path('imagenes/logoblanco.png') }}" style="height: 40px;">
-                    <div class="reporte-titulo">Análisis de Alcance (Reach) - {{ $data['period_label'] ?? 'Consolidado' }}</div>
+                    <div class="reporte-titulo">{{ $data['company'] ?? 'PRODOVI' }} - {{ $data['period_label'] ?? 'Consolidado' }}</div>
                 </td>
                 <td class="generacion-fecha">
                     Emitido el: {{ $fecha_generacion ?? date('d/m/Y') }}
@@ -134,14 +134,29 @@
             <tr>
                 <td class="kpi-tarjeta">
                     <div class="kpi-etiqueta">Alcance Total del Periodo</div>
-                    <div class="kpi-valor">{{ $data['reach']['total'] ?? '0' }}</div>
-                    <span class="tendencia {{ ($data['reach']['trend'] ?? 'up') === 'up' ? 'tendencia-up' : 'tendencia-down' }}">
-                        {{ $data['reach']['vs_previous'] ?? '0%' }} vs periodo anterior
+                    <div class="kpi-valor">{{ data_get($data, 'reach.available') ? number_format(data_get($data, 'reach.total', 0), 0, ',', '.') : 'N/D' }}</div>
+                    <span class="tendencia tendencia-up">
+                        Datos obtenidos de {{ $data['data_source'] ?? 'Meta Insights' }}
                     </span>
                 </td>
                 <td style="width: 50%; vertical-align: top; padding-left: 20px;">
                     <div style="background-color: #f5f3ff; border-left: 4px solid #9333ea; padding: 15px; border-radius: 0 8px 8px 0; font-size: 13px;">
-                        <strong>Análisis:</strong> El alcance ha mostrado un crecimiento del <strong>{{ $data['reach']['vs_previous'] ?? '0%' }}</strong>, impulsado principalmente por el rendimiento en <strong>Facebook</strong> ({{ $data['reach_by_platform'][0]['percentage'] ?? 0 }}%) y por una audiencia concentrada en <strong>{{ $data['audience']['summary']['location'] ?? 'La Paz, Bolivia' }}</strong>.
+                        <strong>Análisis:</strong>
+                        @if(data_get($data, 'analysis.leading_platform'))
+                            La plataforma con mayor alcance medido es <strong>{{ data_get($data, 'analysis.leading_platform.platform') }}</strong>
+                            @if(data_get($data, 'analysis.leading_platform.percentage') !== null)
+                                ({{ number_format(data_get($data, 'analysis.leading_platform.percentage'), 1, ',', '.') }}% del alcance distribuido entre plataformas).
+                            @else
+                                .
+                            @endif
+                        @else
+                            Meta todavía no entregó datos de alcance para las cuentas conectadas.
+                        @endif
+                        @if(data_get($data, 'analysis.location.name'))
+                            La principal ubicación disponible de la audiencia es <strong>{{ data_get($data, 'analysis.location.name') }}</strong>.
+                        @else
+                            No hay una muestra geográfica disponible para este periodo.
+                        @endif
                     </div>
                 </td>
             </tr>
@@ -166,9 +181,17 @@
                             @foreach($data['reach_by_platform'] ?? [] as $platform)
                             <tr>
                                 <td>{{ $platform['platform'] }}</td>
-                                <td style="text-align: right; font-weight: bold;">{{ $platform['reach'] }}</td>
+                                <td style="text-align: right; font-weight: bold;">
+                                    {{ $platform['reach'] !== null ? number_format($platform['reach'], 0, ',', '.') : 'N/D' }}
+                                    @if($platform['percentage'] !== null)
+                                        <span style="color: #6b7280; font-weight: normal;">({{ number_format($platform['percentage'], 1, ',', '.') }}%)</span>
+                                    @endif
+                                </td>
                             </tr>
                             @endforeach
+                            @if(empty($data['reach_by_platform']))
+                            <tr><td colspan="2" style="color: #6b7280;">No hay cuentas de Meta conectadas.</td></tr>
+                            @endif
                         </tbody>
                     </table>
                 </td>
@@ -178,7 +201,7 @@
                     <table class="tabla-datos">
                         @foreach($data['reach_by_type'] ?? [] as $type)
                         <tr>
-                            <td style="font-size: 11px;">{{ $type['type'] }}</td>
+                            <td style="font-size: 11px;">{{ $type['type'] }}<br><span style="color: #6b7280;">{{ $type['posts'] }} publicaciones · {{ number_format($type['reach'], 0, ',', '.') }}</span></td>
                             <td style="width: 100px;">
                                 <div class="progreso-contenedor">
                                     <div class="progreso-barra" style="width: {{ $type['percentage'] }}%; background-color: #9333ea;"></div>
@@ -187,6 +210,9 @@
                             <td style="text-align: right; font-size: 11px; font-weight: bold;">{{ $type['percentage'] }}%</td>
                         </tr>
                         @endforeach
+                        @if(empty($data['reach_by_type']))
+                        <tr><td style="color: #6b7280;">No hay publicaciones con alcance disponible.</td></tr>
+                        @endif
                     </table>
                 </td>
             </tr>
@@ -211,16 +237,19 @@
                     <td>{{ $post['platform'] ?? 'N/A' }}</td>
                     <td>{{ $post['type'] }}</td>
                     <td>{{ $post['date'] }}</td>
-                    <td style="text-align: right; color: #9333ea; font-weight: bold;">{{ $post['reach'] }}</td>
+                    <td style="text-align: right; color: #9333ea; font-weight: bold;">{{ number_format($post['reach'], 0, ',', '.') }}</td>
                 </tr>
                 @endforeach
+                @if(empty($data['top_publications']))
+                <tr><td colspan="4" style="text-align: center; color: #6b7280;">No hay publicaciones con alcance medido en este periodo.</td></tr>
+                @endif
             </tbody>
         </table>
 
     </div>
 
     <div class="pie-pagina">
-        Este informe técnico de alcance ha sido generado para el análisis de rendimiento de PRODOVI.<br>
+        Fuente: {{ $data['data_source'] ?? 'Meta Insights' }}. No se incluyen comparaciones ni estimaciones sin respaldo de la API.<br>
         &copy; {{ date('Y') }} Marketing Estratégico.
     </div>
 

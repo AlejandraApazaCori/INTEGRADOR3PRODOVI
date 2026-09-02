@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reporte de CTR por Plataforma - {{ $data['period_label'] ?? 'PRODOVI' }}</title>
+    <title>Reporte de CTR por Plataforma - {{ $data['company'] ?? 'PRODOVI' }}</title>
     <style>
         /* Tipografía y general */
         @page {
@@ -184,7 +184,7 @@
             <tr>
                 <td>
                     <img src="{{ public_path('imagenes/logoblanco.png') }}" style="height: 40px; width: auto;">
-                    <div class="reporte-titulo">Reporte de CTR por Plataforma</div>
+                    <div class="reporte-titulo">{{ $data['company'] ?? 'PRODOVI' }} - CTR por Plataforma</div>
                 </td>
                 <td class="generacion-fecha">
                     Emitido el: {{ $fecha_generacion ?? date('d/m/Y') }}<br>
@@ -200,35 +200,38 @@
             <div class="seccion-titulo">Descripción del Reporte</div>
         </div>
         <p style="font-size: 13px; line-height: 1.6; color: #4b5563;">
-            Este reporte compara el rendimiento de las campañas publicitarias entre Facebook e Instagram utilizando la métrica <strong>CTR (Click Through Rate)</strong>. El CTR mide el porcentaje de usuarios que hicieron clic en un anuncio en relación con el número total de impresiones.
+            Este reporte compara la tasa operativa de clics y acciones de Facebook e Instagram usando los datos disponibles en <strong>Meta Insights</strong>. Cuando Meta no entrega impresiones, se utilizan visualizaciones; cualquier componente aproximado aparece identificado como estimado.
         </p>
 
         <div class="formula-box">
             <div class="kpi-etiqueta" style="margin-bottom: 5px;">Fórmula utilizada</div>
-            <div class="formula-text">CTR = (Clics / Impresiones) * 100</div>
+            <div class="formula-text">CTR operativo = (Clics o acciones / Visualizaciones disponibles) * 100</div>
         </div>
 
         <!-- KPI Principal -->
         <table class="kpi-tabla">
             <tr>
                 <td class="kpi-tarjeta">
-                    <div class="kpi-etiqueta">CTR Promedio del Período</div>
-                    <div class="kpi-valor">{{ $data['conversion']['rate'] ?? '0.0%' }}</div>
-                    <span class="tendencia-distintivo {{ ($data['conversion']['trend'] ?? 'up') === 'up' ? 'tendencia-alza' : 'tendencia-baja' }}">
-                        {{ $data['conversion']['vs_previous'] ?? '0%' }} vs {{ $data['period_label'] ?? 'anterior' }}
+                    <div class="kpi-etiqueta">CTR Operativo del Período</div>
+                    <div class="kpi-valor">{{ data_get($data, 'conversion.rate') !== null ? number_format(data_get($data, 'conversion.rate'), 2, ',', '.').'%' : 'N/D' }}</div>
+                    <span class="tendencia-distintivo tendencia-alza">
+                        {{ data_get($data, 'conversion.estimated') ? 'Resultado mixto: contiene estimaciones' : 'Calculado con datos entregados por Meta' }}
                     </span>
                 </td>
                 <td style="vertical-align: top; padding-left: 20px;">
                     <div class="insight-box">
                         <strong>Análisis Automático:</strong>
-                        @php
-                            $fbMetrics = collect($data['conversion']['platform_metrics'] ?? [])->firstWhere('platform', 'Facebook');
-                            $igMetrics = collect($data['conversion']['platform_metrics'] ?? [])->firstWhere('platform', 'Instagram');
-                            $mejorPlataforma = ($fbMetrics['ctr'] ?? 0) > ($igMetrics['ctr'] ?? 0) ? 'Facebook' : 'Instagram';
-                            $mejorCTR = ($fbMetrics['ctr'] ?? 0) > ($igMetrics['ctr'] ?? 0) ? ($fbMetrics['ctr'] ?? 0) : ($igMetrics['ctr'] ?? 0);
-                        @endphp
-                        La plataforma con mejor rendimiento de clics es <strong>{{ $mejorPlataforma }}</strong> con un CTR del <strong>{{ $mejorCTR }}%</strong>. 
-                        Esto indica una mayor relevancia de los anuncios para la audiencia en esta red social.
+                        @if(data_get($data, 'conversion.best_platform'))
+                            La plataforma con la tasa más alta es <strong>{{ data_get($data, 'conversion.best_platform.platform') }}</strong>, con
+                            <strong>{{ number_format(data_get($data, 'conversion.best_platform.ctr'), 2, ',', '.') }}%</strong>.
+                            @if(data_get($data, 'conversion.best_platform.estimated'))
+                                Este resultado es orientativo porque uno o más componentes fueron estimados.
+                            @else
+                                El resultado utiliza exclusivamente métricas disponibles en Meta.
+                            @endif
+                        @else
+                            No existen suficientes visualizaciones y clics para calcular una tasa en este periodo.
+                        @endif
                     </div>
                 </td>
             </tr>
@@ -243,20 +246,25 @@
             <thead>
                 <tr>
                     <th>Plataforma</th>
-                    <th style="text-align: right;">Impresiones</th>
-                    <th style="text-align: right;">Clics</th>
+                    <th style="text-align: right;">Visualizaciones</th>
+                    <th style="text-align: right;">Clics / acciones</th>
                     <th style="text-align: right;">CTR (%)</th>
+                    <th style="text-align: right;">Calidad</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($data['conversion']['platform_metrics'] ?? [] as $metric)
                     <tr>
                         <td style="font-weight: bold;">{{ $metric['platform'] }}</td>
-                        <td style="text-align: right;">{{ number_format($metric['impressions']) }}</td>
-                        <td style="text-align: right;">{{ number_format($metric['clicks']) }}</td>
-                        <td style="text-align: right; color: #059669; font-weight: bold;">{{ number_format($metric['ctr'], 2) }}%</td>
+                        <td style="text-align: right;">{{ $metric['impressions'] !== null ? number_format($metric['impressions'], 0, ',', '.').($metric['views_estimated'] ? ' *' : '') : 'N/D' }}</td>
+                        <td style="text-align: right;">{{ $metric['clicks'] !== null ? number_format($metric['clicks'], 0, ',', '.').($metric['clicks_estimated'] ? ' *' : '') : 'N/D' }}</td>
+                        <td style="text-align: right; color: #059669; font-weight: bold;">{{ $metric['ctr'] !== null ? number_format($metric['ctr'], 2, ',', '.').'%' : 'N/D' }}</td>
+                        <td style="text-align: right; color: {{ $metric['estimated'] ? '#92400e' : '#065f46' }};">{{ $metric['estimated'] ? 'Estimado' : 'Meta' }}</td>
                     </tr>
                 @endforeach
+                @if(empty($data['conversion']['platform_metrics']))
+                    <tr><td colspan="5" style="text-align: center; color: #6b7280;">No hay cuentas de Meta conectadas.</td></tr>
+                @endif
             </tbody>
         </table>
 
@@ -266,15 +274,16 @@
         </div>
         <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
             <p style="font-size: 12px; color: #475569; line-height: 1.6; margin: 0;">
-                Un CTR alto es un indicador de que el contenido creativo y la segmentación están alineados con los intereses del usuario. 
-                Se recomienda observar los formatos que están impulsando el CTR en <strong>{{ $mejorPlataforma }}</strong> y replicar los elementos exitosos (llamadas a la acción, estilo visual, copy) en las demás plataformas para optimizar el presupuesto publicitario.
+                Esta tasa sirve como señal comparativa del interés generado, pero no sustituye el CTR publicitario de Ads Manager. Conviene revisar llamadas a la acción, enlaces y formatos de
+                <strong>{{ data_get($data, 'conversion.best_platform.platform', 'la plataforma con mejores resultados') }}</strong>.
+                @if(data_get($data, 'conversion.estimated')) Los valores marcados con * son aproximaciones construidas con alcance o interacciones reales disponibles. @endif
             </p>
         </div>
 
     </div>
 
     <div class="pie-pagina">
-        Este informe de rendimiento ha sido generado automáticamente para el análisis de PRODOVI.<br>
+        Fuente: {{ $data['data_source'] ?? 'Meta Insights' }}. Los valores estimados se identifican con * y no equivalen a datos oficiales de Ads Manager.<br>
         &copy; {{ date('Y') }} Marketing Digital Inteligente.
     </div>
 

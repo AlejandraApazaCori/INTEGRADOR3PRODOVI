@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reporte de Crecimiento de Audiencia - {{ $data['period_label'] ?? 'PRODOVI' }}</title>
+    <title>Reporte de Crecimiento de Audiencia - {{ $data['company'] ?? 'PRODOVI' }}</title>
     <style>
         @page { margin: 0cm 0cm; }
         body {
@@ -112,7 +112,7 @@
             <tr>
                 <td>
                     <img src="{{ public_path('imagenes/logoblanco.png') }}" style="height: 40px;">
-                    <div class="reporte-titulo">Análisis de Crecimiento de Audiencia - {{ $data['period_label'] ?? 'Consolidado' }}</div>
+                    <div class="reporte-titulo">{{ $data['company'] ?? 'PRODOVI' }} - {{ $data['period_label'] ?? 'Consolidado' }}</div>
                 </td>
                 <td class="generacion-fecha">
                     Emitido el: {{ $fecha_generacion ?? date('d/m/Y') }}
@@ -131,15 +131,34 @@
             <tr>
                 <td class="kpi-tarjeta">
                     <div class="kpi-etiqueta">Seguidores Totales</div>
-                    <div class="kpi-valor">{{ $data['followers']['total'] ?? $data['followers']['new'] ?? '0' }}</div>
-                    <span class="tendencia {{ ($data['followers']['trend'] ?? 'up') === 'up' ? 'tendencia-up' : 'tendencia-down' }}">
-                        {{ $data['followers']['vs_previous'] ?? '0%' }} vs periodo anterior
-                    </span>
+                    <div class="kpi-valor">{{ data_get($data, 'followers.available') ? number_format(data_get($data, 'followers.total', 0), 0, ',', '.') : 'N/D' }}</div>
+                    @if(data_get($data, 'followers.growth_available'))
+                        <span class="tendencia {{ data_get($data, 'followers.net_growth', 0) >= 0 ? 'tendencia-up' : 'tendencia-down' }}">
+                            {{ data_get($data, 'followers.net_growth', 0) >= 0 ? '+' : '' }}{{ number_format(data_get($data, 'followers.net_growth', 0), 0, ',', '.') }}
+                            @if(data_get($data, 'followers.growth_percent') !== null)
+                                ({{ number_format(data_get($data, 'followers.growth_percent'), 2, ',', '.') }}%)
+                            @endif
+                            en la serie disponible
+                        </span>
+                    @else
+                        <span class="tendencia tendencia-up">Total actual obtenido de {{ $data['data_source'] ?? 'Meta Insights' }}</span>
+                    @endif
                 </td>
                 <td style="width: 50%; vertical-align: top; padding-left: 20px;">
                     <div class="insight-box">
-                        <strong>Insight de Adquisición:</strong><br>
-                        {{ $data['acquisition_insights'] ?? 'No hay suficientes datos para generar un insight este periodo.' }}
+                        <strong>Análisis de adquisición:</strong><br>
+                        @if(data_get($data, 'followers.growth_available'))
+                            La audiencia registró una variación neta de
+                            <strong>{{ data_get($data, 'followers.net_growth', 0) >= 0 ? '+' : '' }}{{ number_format(data_get($data, 'followers.net_growth', 0), 0, ',', '.') }}</strong> seguidores.
+                            @if(data_get($data, 'growth_leader.platform'))
+                                La mayor variación correspondió a <strong>{{ data_get($data, 'growth_leader.platform') }}</strong>.
+                            @endif
+                        @else
+                            Meta entrega el total actual, pero no una serie histórica suficiente para calcular crecimiento sin estimaciones.
+                        @endif
+                        @if(data_get($data, 'measurement.since') && data_get($data, 'measurement.until'))
+                            Medición disponible: {{ data_get($data, 'measurement.since') }} al {{ data_get($data, 'measurement.until') }}.
+                        @endif
                     </div>
                 </td>
             </tr>
@@ -154,62 +173,71 @@
                 <td style="width: 48%; vertical-align: top; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px;">
                     <div class="seccion-titulo" style="font-size: 12px; margin-bottom: 10px;">Seguidores por Red Social</div>
                     <table class="tabla-datos">
+                        @foreach($data['platforms'] ?? [] as $platform)
                         <tr>
-                            <td>Facebook</td>
-                            <td style="text-align: right; font-weight: bold;">{{ $data['followers']['facebook_count'] ?? 0 }}</td>
+                            <td>{{ $platform['platform'] }}</td>
+                            <td style="text-align: right; font-weight: bold;">{{ $platform['current'] !== null ? number_format($platform['current'], 0, ',', '.') : 'N/D' }}</td>
                         </tr>
-                        <tr>
-                            <td>Instagram</td>
-                            <td style="text-align: right; font-weight: bold;">{{ $data['followers']['instagram_count'] ?? 0 }}</td>
-                        </tr>
+                        @endforeach
+                        @if(empty($data['platforms']))
+                        <tr><td style="color: #6b7280;">No hay cuentas de Meta conectadas.</td></tr>
+                        @endif
                     </table>
                 </td>
                 <td style="width: 4%;"></td>
                 <td style="width: 48%; vertical-align: top; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px;">
                     <div class="seccion-titulo" style="font-size: 12px; margin-bottom: 10px;">Balance de Adquisición</div>
                     <div style="margin-top: 10px;">
-                        <span style="font-size: 11px;">Facebook ({{ $data['followers']['facebook_percent'] ?? 0 }}%)</span>
+                        @foreach($data['platforms'] ?? [] as $platform)
+                        <span style="font-size: 11px;">{{ $platform['platform'] }} ({{ $platform['percentage'] !== null ? number_format($platform['percentage'], 1, ',', '.').'%' : 'N/D' }})</span>
                         <div class="progreso-contenedor" style="width: 100%; margin-bottom: 10px;">
-                            <div class="progreso-barra" style="width: {{ $data['followers']['facebook_percent'] ?? 0 }}%; background-color: #3b82f6;"></div>
+                            <div class="progreso-barra" style="width: {{ $platform['percentage'] ?? 0 }}%; background-color: {{ strtolower($platform['platform']) === 'facebook' ? '#3b82f6' : '#ec4899' }};"></div>
                         </div>
-                        <span style="font-size: 11px;">Instagram ({{ 100 - ($data['followers']['facebook_percent'] ?? 0) }}%)</span>
-                        <div class="progreso-contenedor" style="width: 100%;">
-                            <div class="progreso-barra" style="width: {{ 100 - ($data['followers']['facebook_percent'] ?? 0) }}%; background-color: #ec4899;"></div>
-                        </div>
+                        @endforeach
                     </div>
                 </td>
             </tr>
         </table>
 
         <div class="seccion-encabezado">
-            <div class="seccion-titulo">Publicaciones con Mayor Conversión de Seguidores</div>
+            <div class="seccion-titulo">Crecimiento Medido por Plataforma</div>
         </div>
 
         <table class="tabla-datos">
             <thead>
                 <tr>
                     <th>Plataforma</th>
-                    <th>Formato</th>
-                    <th>Fecha</th>
-                    <th style="text-align: right;">Seguidores Totales</th>
+                    <th style="text-align: right;">Inicio de serie</th>
+                    <th style="text-align: right;">Total actual</th>
+                    <th style="text-align: right;">Variación neta</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($data['growth_publications'] ?? [] as $post)
+                @foreach($data['platforms'] ?? [] as $platform)
                 <tr>
-                    <td>{{ $post['platform'] }}</td>
-                    <td>{{ $post['type'] }}</td>
-                    <td>{{ $post['date'] }}</td>
-                    <td style="text-align: right; color: #2563eb; font-weight: bold;">+{{ $post['new_followers'] }}</td>
+                    <td>{{ $platform['platform'] }}</td>
+                    <td style="text-align: right;">{{ $platform['initial'] !== null ? number_format($platform['initial'], 0, ',', '.') : 'N/D' }}</td>
+                    <td style="text-align: right;">{{ $platform['current'] !== null ? number_format($platform['current'], 0, ',', '.') : 'N/D' }}</td>
+                    <td style="text-align: right; color: #2563eb; font-weight: bold;">
+                        @if($platform['growth_available'])
+                            {{ $platform['change'] >= 0 ? '+' : '' }}{{ number_format($platform['change'], 0, ',', '.') }}
+                            @if($platform['growth_percent'] !== null) ({{ number_format($platform['growth_percent'], 2, ',', '.') }}%) @endif
+                        @else
+                            N/D
+                        @endif
+                    </td>
                 </tr>
                 @endforeach
+                @if(empty($data['platforms']))
+                <tr><td colspan="4" style="text-align: center; color: #6b7280;">No existen cuentas conectadas para este reporte.</td></tr>
+                @endif
             </tbody>
         </table>
 
     </div>
 
     <div class="pie-pagina">
-        Este reporte de crecimiento de audiencia ha sido diseñado para el análisis estratégico de PRODOVI.<br>
+        Fuente: {{ $data['data_source'] ?? 'Meta Insights' }}. Las publicaciones no se atribuyen a nuevos seguidores porque Meta no entrega esa relación.<br>
         &copy; {{ date('Y') }} Marketing de Crecimiento.
     </div>
 

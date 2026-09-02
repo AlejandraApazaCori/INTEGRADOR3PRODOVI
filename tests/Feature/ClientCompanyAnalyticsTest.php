@@ -8,6 +8,7 @@ use App\Models\Plan;
 use App\Models\SocialAccount;
 use App\Models\Suscripcion;
 use App\Models\User;
+use App\Services\MetaCampaignAnalyticsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Cache;
@@ -151,6 +152,129 @@ class ClientCompanyAnalyticsTest extends TestCase
             ->assertJsonPath('company.id', $companies[0]->id)
             ->assertJsonPath('period.days', 7)
             ->assertJsonPath('platforms.instagram.connected', true);
+    }
+
+    public function test_reach_report_uses_real_company_meta_analytics(): void
+    {
+        [$client, $companies] = $this->clientWithCompanies();
+        $company = $companies[1];
+        $analytics = [
+            'period' => ['days' => 30, 'since' => '2026-08-03', 'until' => '2026-09-01'],
+            'generated_at' => now()->toIso8601String(),
+            'platforms' => [
+                'facebook' => [
+                    'platform' => 'facebook', 'connected' => true,
+                    'totals' => ['reach' => 1200],
+                    'posts' => [[
+                        'platform' => 'facebook', 'type' => 'PHOTO', 'reach' => 700,
+                        'timestamp' => '2026-08-20T15:00:00-04:00', 'caption' => 'Publicación real',
+                    ]],
+                ],
+                'instagram' => [
+                    'platform' => 'instagram', 'connected' => true,
+                    'totals' => ['reach' => 800],
+                    'posts' => [[
+                        'platform' => 'instagram', 'type' => 'REELS', 'reach' => 600,
+                        'timestamp' => '2026-08-21T18:00:00-04:00', 'caption' => 'Reel real',
+                    ]],
+                ],
+            ],
+            'summary' => [
+                'totals' => ['reach' => 2000],
+                'audience' => ['cities' => [['name' => 'La Paz', 'value' => 450]], 'countries' => []],
+            ],
+        ];
+        $service = \Mockery::mock(MetaCampaignAnalyticsService::class);
+        $service->shouldReceive('forCompany')
+            ->once()
+            ->with(\Mockery::on(fn (Empresa $resolved) => $resolved->is($company)), 30)
+            ->andReturn($analytics);
+        $this->app->instance(MetaCampaignAnalyticsService::class, $service);
+
+        $this->actingAs($client)
+            ->get(route('clientes.analiticas.reporte-alcance', [
+                'view' => '30dias',
+                'empresa_id' => $company->id,
+            ]))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_followers_report_uses_real_company_meta_analytics(): void
+    {
+        [$client, $companies] = $this->clientWithCompanies();
+        $company = $companies[0];
+        $analytics = [
+            'period' => [
+                'days' => 30, 'since' => '2026-08-03', 'until' => '2026-09-01',
+                'insights_since' => '2026-08-03', 'insights_limited' => false,
+            ],
+            'generated_at' => now()->toIso8601String(),
+            'platforms' => [
+                'facebook' => [
+                    'platform' => 'facebook', 'connected' => true,
+                    'totals' => ['followers' => 125],
+                    'followers' => ['values' => [110, 115, 125]],
+                ],
+                'instagram' => [
+                    'platform' => 'instagram', 'connected' => true,
+                    'totals' => ['followers' => 310],
+                    'followers' => ['values' => [300, 305, 310]],
+                ],
+            ],
+            'summary' => ['totals' => ['followers' => 435]],
+        ];
+        $service = \Mockery::mock(MetaCampaignAnalyticsService::class);
+        $service->shouldReceive('forCompany')
+            ->once()
+            ->with(\Mockery::on(fn (Empresa $resolved) => $resolved->is($company)), 30)
+            ->andReturn($analytics);
+        $this->app->instance(MetaCampaignAnalyticsService::class, $service);
+
+        $this->actingAs($client)
+            ->get(route('clientes.analiticas.reporte-seguidores', [
+                'view' => '30dias',
+                'empresa_id' => $company->id,
+            ]))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_ctr_report_uses_real_company_meta_analytics(): void
+    {
+        [$client, $companies] = $this->clientWithCompanies();
+        $company = $companies[1];
+        $analytics = [
+            'period' => ['days' => 30, 'since' => '2026-08-03', 'until' => '2026-09-01'],
+            'generated_at' => now()->toIso8601String(),
+            'platforms' => [
+                'facebook' => [
+                    'platform' => 'facebook', 'connected' => true,
+                    'totals' => ['views' => 10000, 'clicks' => 250, 'reach' => 8000, 'engagement' => 500],
+                    'posts' => [],
+                ],
+                'instagram' => [
+                    'platform' => 'instagram', 'connected' => true,
+                    'totals' => ['views' => null, 'clicks' => null, 'reach' => 5000, 'engagement' => 300],
+                    'posts' => [],
+                ],
+            ],
+            'summary' => ['totals' => ['views' => 10000, 'clicks' => 250]],
+        ];
+        $service = \Mockery::mock(MetaCampaignAnalyticsService::class);
+        $service->shouldReceive('forCompany')
+            ->once()
+            ->with(\Mockery::on(fn (Empresa $resolved) => $resolved->is($company)), 30)
+            ->andReturn($analytics);
+        $this->app->instance(MetaCampaignAnalyticsService::class, $service);
+
+        $this->actingAs($client)
+            ->get(route('clientes.analiticas.reporte-ctr', [
+                'view' => '30dias',
+                'empresa_id' => $company->id,
+            ]))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
     }
 
     public function test_legacy_facebook_profile_with_page_credentials_can_supply_page_insights(): void
