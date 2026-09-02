@@ -41,10 +41,10 @@
         <div class="flex justify-between items-start">
             <div>
                 <p class="text-sm font-medium text-gray-500 mb-1">Alcance Total</p>
-                <p class="text-3xl font-bold text-gray-800">{{ $data['reach']['total'] }}</p>
+                <p class="text-3xl font-bold text-gray-800" data-real-reach-total>—</p>
                 <div class="flex items-center mt-1">
-                    <span class="text-xs font-medium px-2 py-0.5 rounded-full {{ $data['reach']['trend'] === 'up' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} flex items-center">{{ $data['reach']['vs_previous'] }}</span>
-                    <span class="text-xs text-gray-500 ml-2">vs {{ $data['period_label'] }}</span>
+                    <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 flex items-center" data-real-reach-detail>Consultando Meta</span>
+                    <span class="text-xs text-gray-500 ml-2" data-real-reach-period>Todo el historial</span>
                 </div>
             </div>
             <div class="bg-white p-2 rounded-lg shadow-xs">
@@ -70,10 +70,10 @@
         <div class="flex justify-between items-start">
             <div>
                 <p class="text-sm font-medium text-gray-500 mb-1">{{ $data['followers']['label'] ?? 'Seguidores' }}</p>
-                <p class="text-3xl font-bold text-gray-800">{{ $data['followers']['total'] ?? $data['followers']['new'] }}</p>
+                <p class="text-3xl font-bold text-gray-800" data-real-followers-total>—</p>
                 <div class="flex items-center mt-1">
-                    <span class="text-xs font-medium px-2 py-0.5 rounded-full {{ $data['followers']['trend'] === 'up' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} flex items-center">{{ $data['followers']['vs_previous'] }}</span>
-                    <span class="text-xs text-gray-500 ml-2">vs {{ $data['period_label'] }}</span>
+                    <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 flex items-center" data-real-followers-detail>Consultando Meta</span>
+                    <span class="text-xs text-gray-500 ml-2" data-real-followers-period>Todo el historial</span>
                 </div>
             </div>
             <div class="bg-white p-2 rounded-lg shadow-xs">
@@ -84,11 +84,11 @@
         </div>
         <div class="mt-4">
             <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
-                <span>Facebook: {{ $data['followers']['facebook_count'] }}</span>
-                <span>Instagram: {{ $data['followers']['instagram_count'] }}</span>
+                <span>Facebook: <span data-real-followers-facebook>—</span></span>
+                <span>Instagram: <span data-real-followers-instagram>—</span></span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2">
-                <div class="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full" style="width: {{ $data['followers']['facebook_percent'] }}%"></div>
+                <div class="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full" style="width: 0%" data-real-followers-bar></div>
             </div>
         </div>
     </div>
@@ -105,10 +105,10 @@
         <div class="flex justify-between items-start">
             <div>
                 <p class="text-sm font-medium text-gray-500 mb-1">CTR (Click Through Rate)</p>
-                <p class="text-3xl font-bold text-gray-800">{{ $data['conversion']['rate'] }}</p>
+                <p class="text-3xl font-bold text-gray-800" data-real-ctr-rate>—</p>
                 <div class="flex items-center mt-1">
-                    <span class="text-xs font-medium px-2 py-0.5 rounded-full {{ $data['conversion']['trend'] === 'up' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} flex items-center">{{ $data['conversion']['vs_previous'] }}</span>
-                    <span class="text-xs text-gray-500 ml-2">vs {{ $data['period_label'] }}</span>
+                    <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-800 flex items-center" data-real-ctr-detail>Consultando Meta</span>
+                    <span class="text-xs text-gray-500 ml-2" data-real-ctr-period>Todo el historial</span>
                 </div>
             </div>
             <div class="bg-white p-2 rounded-lg shadow-xs">
@@ -243,10 +243,18 @@
 
     window.hydrateRealEngagementCard = function (analytics) {
         const totals = analytics?.summary?.totals ?? {};
+        const connectedPlatforms = ['facebook', 'instagram']
+            .map(platform => ({ platform, data: analytics?.platforms?.[platform] }))
+            .filter(item => item.data?.connected);
         const engagement = Number(totals.engagement ?? 0);
-        const reach = Number(totals.reach ?? 0);
+        const reach = totals.reach === null || totals.reach === undefined ? null : Number(totals.reach);
         const rate = reach > 0 ? (engagement / reach) * 100 : null;
         const formatter = new Intl.NumberFormat('es-BO', { maximumFractionDigits: 1 });
+        const ctrFormatter = new Intl.NumberFormat('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const integerFormatter = new Intl.NumberFormat('es-BO', { maximumFractionDigits: 0 });
+        const periodLabel = analytics?.period?.days === 'all'
+            ? 'Todo el historial'
+            : `Últimos ${analytics?.period?.days ?? 30} días`;
         const rateNode = document.querySelector('[data-real-engagement-rate]');
         const totalNode = document.querySelector('[data-real-engagement-total]');
         const periodNode = document.querySelector('[data-real-engagement-period]');
@@ -254,29 +262,98 @@
         if (rateNode) rateNode.textContent = rate === null ? 'N/D' : `${formatter.format(rate)}%`;
         if (totalNode) totalNode.textContent = `${formatter.format(engagement)} interacciones`;
         if (periodNode) {
-            periodNode.textContent = analytics?.period?.days === 'all'
-                ? 'Todo el historial'
-                : `Últimos ${analytics?.period?.days ?? 30} días`;
+            periodNode.textContent = periodLabel;
         }
+
+        const reachNode = document.querySelector('[data-real-reach-total]');
+        const reachDetailNode = document.querySelector('[data-real-reach-detail]');
+        const reachPeriodNode = document.querySelector('[data-real-reach-period]');
+        if (reachNode) reachNode.textContent = reach === null ? 'N/D' : integerFormatter.format(reach);
+        if (reachDetailNode) reachDetailNode.textContent = reach === null ? 'Dato no disponible' : 'Alcance del período';
+        if (reachPeriodNode) reachPeriodNode.textContent = periodLabel;
+
+        const followerValue = totals.followers === null || totals.followers === undefined
+            ? null
+            : Number(totals.followers);
+        const facebookFollowers = analytics?.platforms?.facebook?.totals?.followers;
+        const instagramFollowers = analytics?.platforms?.instagram?.totals?.followers;
+        const knownFacebookFollowers = facebookFollowers === null || facebookFollowers === undefined ? null : Number(facebookFollowers);
+        const knownInstagramFollowers = instagramFollowers === null || instagramFollowers === undefined ? null : Number(instagramFollowers);
+        const distributionTotal = (knownFacebookFollowers ?? 0) + (knownInstagramFollowers ?? 0);
+        const facebookPercent = distributionTotal > 0 ? ((knownFacebookFollowers ?? 0) / distributionTotal) * 100 : 0;
+        const followersNode = document.querySelector('[data-real-followers-total]');
+        const followersDetailNode = document.querySelector('[data-real-followers-detail]');
+        const followersPeriodNode = document.querySelector('[data-real-followers-period]');
+        const facebookNode = document.querySelector('[data-real-followers-facebook]');
+        const instagramNode = document.querySelector('[data-real-followers-instagram]');
+        const followersBar = document.querySelector('[data-real-followers-bar]');
+        if (followersNode) followersNode.textContent = followerValue === null ? 'N/D' : integerFormatter.format(followerValue);
+        if (followersDetailNode) followersDetailNode.textContent = followerValue === null ? 'Dato no disponible' : 'Total actual';
+        if (followersPeriodNode) followersPeriodNode.textContent = periodLabel;
+        if (facebookNode) facebookNode.textContent = knownFacebookFollowers === null ? 'N/D' : integerFormatter.format(knownFacebookFollowers);
+        if (instagramNode) instagramNode.textContent = knownInstagramFollowers === null ? 'N/D' : integerFormatter.format(knownInstagramFollowers);
+        if (followersBar) followersBar.style.width = `${Math.min(100, Math.max(0, facebookPercent))}%`;
+
+        // Replica el cálculo del reporte CTR: usa vistas/clics reales y aplica
+        // los mismos proxies cuando Meta solamente entrega alcance e interacciones.
+        const ctrPlatforms = connectedPlatforms.map(item => {
+            const posts = Array.isArray(item.data?.posts) ? item.data.posts : [];
+            let views = item.data?.totals?.views;
+            let clicks = item.data?.totals?.clicks;
+            let estimated = false;
+
+            if (views === null || views === undefined) {
+                const postViews = posts.filter(post => post?.views !== null && post?.views !== undefined);
+                if (postViews.length) {
+                    views = postViews.reduce((sum, post) => sum + Number(post.views || 0), 0);
+                } else if (item.data?.totals?.reach !== null && item.data?.totals?.reach !== undefined) {
+                    views = Math.round(Number(item.data.totals.reach) * 1.15);
+                    estimated = true;
+                }
+            }
+
+            if (clicks === null || clicks === undefined) {
+                const postsWithClicks = posts.filter(post => post?.clicks !== null && post?.clicks !== undefined);
+                if (postsWithClicks.length) {
+                    clicks = postsWithClicks.reduce((sum, post) => sum + Number(post.clicks || 0), 0);
+                } else if (views !== null && views !== undefined && item.data?.totals?.engagement !== null && item.data?.totals?.engagement !== undefined) {
+                    clicks = Math.min(Number(views), Math.round(Number(item.data.totals.engagement) * 0.12));
+                    estimated = true;
+                }
+            }
+
+            const ctr = views !== null && views !== undefined && Number(views) > 0 && clicks !== null && clicks !== undefined
+                ? (Number(clicks) / Number(views)) * 100
+                : null;
+            return { ...item, views: views == null ? null : Number(views), clicks: clicks == null ? null : Number(clicks), ctr, estimated };
+        });
+        const comparableCtr = ctrPlatforms.filter(item => item.ctr !== null);
+        const totalViews = comparableCtr.reduce((sum, item) => sum + item.views, 0);
+        const totalClicks = comparableCtr.reduce((sum, item) => sum + item.clicks, 0);
+        const ctrRate = totalViews > 0 ? (totalClicks / totalViews) * 100 : null;
+        const ctrEstimated = comparableCtr.some(item => item.estimated);
+        const ctrNode = document.querySelector('[data-real-ctr-rate]');
+        const ctrDetailNode = document.querySelector('[data-real-ctr-detail]');
+        const ctrPeriodNode = document.querySelector('[data-real-ctr-period]');
+        if (ctrNode) ctrNode.textContent = ctrRate === null ? 'N/D' : `${ctrFormatter.format(ctrRate)}%`;
+        if (ctrDetailNode) {
+            ctrDetailNode.textContent = ctrRate === null
+                ? 'Dato no disponible'
+                : `${integerFormatter.format(totalClicks)} clics${ctrEstimated ? ' · estimado' : ''}`;
+        }
+        if (ctrPeriodNode) ctrPeriodNode.textContent = periodLabel;
 
         const chart = document.getElementById('engagementChart')?.getContext('2d');
         if (!chart || typeof Chart === 'undefined') return;
-
-        const platforms = ['facebook', 'instagram']
-            .map(platform => ({
-                platform,
-                data: analytics?.platforms?.[platform],
-            }))
-            .filter(item => item.data?.connected);
 
         if (window.engagementChartInstance) window.engagementChartInstance.destroy();
         window.engagementChartInstance = new Chart(chart, {
             type: 'bar',
             data: {
-                labels: platforms.map(item => item.platform === 'facebook' ? 'Facebook' : 'Instagram'),
+                labels: connectedPlatforms.map(item => item.platform === 'facebook' ? 'Facebook' : 'Instagram'),
                 datasets: [{
-                    data: platforms.map(item => Number(item.data?.totals?.engagement ?? 0)),
-                    backgroundColor: platforms.map(item => item.platform === 'facebook' ? '#3B82F6' : '#EC4899'),
+                    data: connectedPlatforms.map(item => Number(item.data?.totals?.engagement ?? 0)),
+                    backgroundColor: connectedPlatforms.map(item => item.platform === 'facebook' ? '#3B82F6' : '#EC4899'),
                     borderRadius: 6,
                 }],
             },
@@ -290,6 +367,40 @@
                 },
             },
         });
+
+        const reachChart = document.getElementById('reachChart')?.getContext('2d');
+        if (reachChart) {
+            if (window.reachChartInstance) window.reachChartInstance.destroy();
+            window.reachChartInstance = new Chart(reachChart, {
+                type: 'bar',
+                data: {
+                    labels: connectedPlatforms.map(item => item.platform === 'facebook' ? 'Facebook' : 'Instagram'),
+                    datasets: [{
+                        data: connectedPlatforms.map(item => Number(item.data?.totals?.reach ?? 0)),
+                        backgroundColor: connectedPlatforms.map(item => item.platform === 'facebook' ? '#8B5CF6' : '#EC4899'),
+                        borderRadius: 6,
+                    }],
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0 } } } },
+            });
+        }
+
+        const ctrChart = document.getElementById('conversionChart')?.getContext('2d');
+        if (ctrChart) {
+            if (window.conversionChartInstance) window.conversionChartInstance.destroy();
+            window.conversionChartInstance = new Chart(ctrChart, {
+                type: 'bar',
+                data: {
+                    labels: ctrPlatforms.map(item => item.platform === 'facebook' ? 'Facebook' : 'Instagram'),
+                    datasets: [{
+                        data: ctrPlatforms.map(item => item.ctr ?? 0),
+                        backgroundColor: ctrPlatforms.map(item => item.platform === 'facebook' ? '#10B981' : '#14B8A6'),
+                        borderRadius: 6,
+                    }],
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: value => `${value}%` } } } },
+            });
+        }
     };
 
     function exportEngagementReport(event) {
