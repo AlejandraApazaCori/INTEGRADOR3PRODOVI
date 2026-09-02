@@ -947,7 +947,7 @@
             buildAutomaticRecommendation();
             window.requestAnimationFrame(() => window.setTimeout(() => {
                 document.getElementById('analytics-loading-screen')?.classList.add('is-hidden');
-            }, 450));
+            }, 5000));
         });
     </script>
 @endsection
