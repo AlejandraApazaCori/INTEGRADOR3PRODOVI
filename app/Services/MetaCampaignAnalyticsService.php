@@ -782,10 +782,8 @@ class MetaCampaignAnalyticsService
                 'scope' => $scope,
                 'error' => $e->getMessage(),
             ];
-            $recordError
-                ? Log::warning('Meta Analytics request exception.', $context)
-                : Log::debug('Meta Analytics optional request unavailable.', $context);
             if ($recordError) {
+                Log::warning('Meta Analytics request exception.', $context);
                 $this->addError($platform, $scope, $e->getMessage());
             }
 
@@ -826,12 +824,12 @@ class MetaCampaignAnalyticsService
 
             return ['data' => $items];
         } catch (\Throwable $e) {
-            Log::warning('Meta Analytics paginated request exception.', [
-                'platform' => $platform,
-                'scope' => $scope,
-                'error' => $e->getMessage(),
-            ]);
             if ($recordError) {
+                Log::warning('Meta Analytics paginated request exception.', [
+                    'platform' => $platform,
+                    'scope' => $scope,
+                    'error' => $e->getMessage(),
+                ]);
                 $this->addError($platform, $scope, $e->getMessage());
             }
 
@@ -849,10 +847,8 @@ class MetaCampaignAnalyticsService
             'code' => $response->json('error.code'),
             'error' => $message,
         ];
-        $recordError
-            ? Log::warning('Meta Analytics API error.', $context)
-            : Log::debug('Meta Analytics optional API metric unavailable.', $context);
         if ($recordError) {
+            Log::warning('Meta Analytics API error.', $context);
             $this->addError($platform, $scope, $message);
         }
     }
