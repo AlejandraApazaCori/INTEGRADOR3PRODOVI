@@ -460,7 +460,7 @@
             <div style="margin:18px 24px 0;padding:12px 14px;border:1px solid {{ $usingFallback ? '#fde68a' : '#bbf7d0' }};border-radius:12px;background:{{ $usingFallback ? '#fffbeb' : '#f0fdf4' }};color:{{ $usingFallback ? '#92400e' : '#166534' }};font-size:.72rem;font-weight:700;">
                 @if ($usingFallback)
                     <i class="fas fa-triangle-exclamation"></i>
-                    Modo de respaldo demostrativo: no hay cuentas de Facebook o Instagram conectadas en el sistema. Conecta una cuenta desde el perfil del cliente para analizar su historial real. Las cifras ficticias anteriores se conservan temporalmente.
+                    Modo de respaldo demostrativo: no se encontraron cuentas de Facebook o Instagram asociadas a las campañas registradas. Revisa la empresa vinculada a cada campaña; las cifras ficticias anteriores se conservan temporalmente.
                 @else
                     <i class="fas fa-circle-check"></i>
                     Datos reales consolidados desde Meta Insights: {{ $dashboard['connectedCampaigns'] }} campaña(s) con cuenta conectada y {{ $dashboard['campaignsWithData'] }} con actividad en el periodo.

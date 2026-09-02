@@ -15,19 +15,27 @@ class AdminCampaignAnalyticsService
     public function build(Collection $campaigns, array $period): ?array
     {
         $payloads = $campaigns->map(function ($campaign) {
+            $connectedProviders = [];
             try {
+                $connectedProviders = $this->metaAnalytics->connectedProvidersForCampaign($campaign);
+
                 return [
                     'campaign' => $campaign,
                     'analytics' => $this->metaAnalytics->forCampaign($campaign, 'all'),
+                    'connected_providers' => $connectedProviders,
                 ];
             } catch (Throwable $exception) {
                 report($exception);
 
-                return ['campaign' => $campaign, 'analytics' => null];
+                return [
+                    'campaign' => $campaign,
+                    'analytics' => null,
+                    'connected_providers' => $connectedProviders,
+                ];
             }
         });
 
-        if (! $payloads->contains(fn (array $item) => $this->hasConnectedAccount($item['analytics']))) {
+        if (! $payloads->contains(fn (array $item) => $this->itemHasConnectedAccount($item))) {
             return null;
         }
 
@@ -47,7 +55,7 @@ class AdminCampaignAnalyticsService
             $reachValues = $posts->map(fn (array $post) => $this->number($post['reach'] ?? null))->filter(fn ($value) => $value !== null);
             $reach = $reachValues->isNotEmpty() ? (float) $reachValues->sum() : 0.0;
             $interactions = (float) $posts->sum(fn (array $post) => $this->postInteractions($post));
-            $hasConnection = $this->hasConnectedAccount($analytics);
+            $hasConnection = $this->itemHasConnectedAccount($item);
 
             return [
                 'id' => $campaign->id,
@@ -133,6 +141,12 @@ class AdminCampaignAnalyticsService
         return collect(data_get($analytics, 'platforms', []))->contains(
             fn (array $platform) => (bool) ($platform['connected'] ?? false)
         );
+    }
+
+    private function itemHasConnectedAccount(array $item): bool
+    {
+        return ! empty($item['connected_providers'] ?? [])
+            || $this->hasConnectedAccount($item['analytics'] ?? null);
     }
 
     private function uniquePosts(Collection $payloads, array $period): Collection

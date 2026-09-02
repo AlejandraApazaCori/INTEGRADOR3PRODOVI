@@ -170,7 +170,6 @@ class CampañasController extends Controller
             default => ['type' => 'all', 'since' => null, 'until' => now()->endOfDay(), 'label' => 'todo el historial'],
         };
         $campaigns = Campania::with(['cliente', 'communityManager'])
-            ->where('es_borrador', false)
             ->orderByDesc('fecha_inicio')
             ->get();
         $dashboard = $dashboardService->build($campaigns, $period);

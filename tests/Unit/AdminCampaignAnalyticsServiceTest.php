@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use App\Models\Campania;
+use App\Models\User;
 use App\Services\AdminCampaignAnalyticsService;
 use App\Services\MetaCampaignAnalyticsService;
 use Carbon\Carbon;
@@ -83,6 +85,33 @@ class AdminCampaignAnalyticsServiceTest extends TestCase
         $this->assertSame(16, $dashboard['totalInteractions']);
         $this->assertSame(16, collect($dashboard['dailyPerformance'])->sum());
         $this->assertSame('septiembre 2026', $dashboard['monthName']);
+    }
+
+    public function test_a_stored_connection_keeps_the_real_panel_active_when_optional_metrics_fail(): void
+    {
+        $meta = Mockery::mock(MetaCampaignAnalyticsService::class);
+        $campaign = new Campania();
+        $campaign->forceFill(['id' => 9, 'nombre' => 'Campaña conectada', 'estado' => 'activa']);
+        $campaign->setRelation('cliente', new User(['name' => 'Cliente conectado']));
+        $meta->shouldReceive('connectedProvidersForCampaign')->once()->with($campaign)->andReturn(['instagram']);
+        $meta->shouldReceive('forCampaign')->once()->with($campaign, 'all')->andReturn([
+            'platforms' => [
+                'facebook' => ['connected' => false, 'posts' => []],
+                'instagram' => ['connected' => false, 'posts' => []],
+            ],
+        ]);
+        $service = new AdminCampaignAnalyticsService($meta);
+
+        $dashboard = $service->build(new Collection([$campaign]), [
+            'type' => 'all',
+            'since' => null,
+            'until' => Carbon::parse('2026-09-30')->endOfDay(),
+            'label' => 'todo el historial',
+        ]);
+
+        $this->assertNotNull($dashboard);
+        $this->assertSame(1, $dashboard['connectedCampaigns']);
+        $this->assertSame(0, $dashboard['campaignsWithData']);
     }
 
     private function analyticsPayload(int $reach, int $reactions, int $comments, int $clicks, array $posts): array

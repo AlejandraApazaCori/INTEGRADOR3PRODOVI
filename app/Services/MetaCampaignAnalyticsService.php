@@ -73,6 +73,16 @@ class MetaCampaignAnalyticsService
         ])->filter()->values()->all();
     }
 
+    public function connectedProvidersForCampaign(Campania $campania): array
+    {
+        $accounts = $this->resolveAccounts($campania);
+
+        return collect([
+            $accounts->has('facebook_page') ? 'facebook' : null,
+            $accounts->has('instagram') ? 'instagram' : null,
+        ])->filter()->values()->all();
+    }
+
     private function collect(array $context, array $accounts, int|string $days): array
     {
         $this->errors = [];
@@ -662,12 +672,15 @@ class MetaCampaignAnalyticsService
         if ($accounts->isEmpty() && $campania->cliente) {
             $accounts = $campania->cliente->socialAccounts()
                 ->whereNull('empresa_id')
-                ->whereIn('provider', ['facebook_page', 'instagram'])
+                ->whereIn('provider', ['facebook', 'facebook_page', 'instagram'])
                 ->get()->keyBy('provider');
         }
 
+        $facebookPage = $accounts->get('facebook_page')
+            ?? $this->facebookPageFromProfile($accounts->get('facebook'));
+
         return collect([
-            'facebook_page' => $accounts->get('facebook_page'),
+            'facebook_page' => $facebookPage,
             'instagram' => $accounts->get('instagram'),
         ])->filter();
     }
@@ -742,11 +755,14 @@ class MetaCampaignAnalyticsService
 
             return $response->json();
         } catch (\Throwable $e) {
-            Log::warning('Meta Analytics request exception.', [
+            $context = [
                 'platform' => $platform,
                 'scope' => $scope,
                 'error' => $e->getMessage(),
-            ]);
+            ];
+            $recordError
+                ? Log::warning('Meta Analytics request exception.', $context)
+                : Log::debug('Meta Analytics optional request unavailable.', $context);
             if ($recordError) {
                 $this->addError($platform, $scope, $e->getMessage());
             }
