@@ -16,23 +16,15 @@
         </div>
     </header>
     <main class="analytics-content">
-    <section class="analytics-panel {{ $campaniaIniciada ? '' : 'is-waiting' }}">
-
-
-    @if($campaniaIniciada)
-        <div id="metricsContainer">
-            @include('clientes.analiticas.partials.analiticas')
-        </div>
-    @else
+    @if(!$campaniaIniciada)
+    <section class="analytics-panel is-waiting">
         <section class="analytics-wait" aria-labelledby="analytics-wait-title">
             <div class="analytics-wait-icon" aria-hidden="true"><i class="fas fa-chart-line"></i></div>
             <h2 id="analytics-wait-title">Aún no comenzó tu campaña</h2>
             <p>Cuando tu campaña esté activa, aquí verás sus analíticas de rendimiento.</p>
         </section>
-    @endif
     </section>
-
-    @if($campaniaIniciada)
+    @else
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         @include('clientes.analiticas.partials.insights-por-empresa', ['empresas' => $empresas])
     @endif

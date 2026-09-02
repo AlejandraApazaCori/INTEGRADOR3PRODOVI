@@ -17,6 +17,12 @@
     data-fallback-endpoint="{{ $analyticsFallbackEndpoint ?? '' }}"
     data-empty-message="{{ $analyticsEmptyMessage ?? 'No hay cuentas de Meta vinculadas a esta campaña' }}"
     data-empty-detail="{{ $analyticsEmptyDetail ?? 'El cliente debe vincular su página de Facebook o cuenta profesional de Instagram desde su panel.' }}">
+    @if(!empty($analyticsSummaryPartial))
+        <div id="metricsContainer" class="client-company-summary-cards">
+            @include($analyticsSummaryPartial)
+        </div>
+    @endif
+
     <header class="meta-analytics-head">
         <div>
             <h2>Analíticas por cuenta</h2>
