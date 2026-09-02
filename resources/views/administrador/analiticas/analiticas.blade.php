@@ -6,7 +6,14 @@
     @php
         $dashboard = $dashboard ?? null;
         $usingFallback = $usingFallback ?? ($dashboard === null);
-        $selectedDays = $selectedDays ?? 30;
+        $analyticsFilter = $analyticsFilter ?? [
+            'type' => 'all',
+            'start_date' => now()->startOfMonth()->toDateString(),
+            'end_date' => now()->toDateString(),
+            'month' => now()->format('Y-m'),
+            'year' => now()->year,
+        ];
+        $selectedPeriodLabel = $selectedPeriodLabel ?? 'todo el historial';
 
         if ($dashboard) {
             $monthName = $dashboard['monthName'];
@@ -29,7 +36,7 @@
             $averageEngagement = $dashboard['averageEngagement'];
             $recommendedCampaign = $dashboard['recommendedCampaign'];
         } else {
-        $monthName = now()->locale('es')->translatedFormat('F Y');
+        $monthName = $selectedPeriodLabel;
 
         $allCampaigns = \App\Models\Campania::with(['cliente', 'communityManager'])
             ->orderByDesc('fecha_inicio')
@@ -421,17 +428,27 @@
                             <p style="color: #bfdbfe; font-size: 0.9rem;">Vista consolidada de {{ $monthName }} con rendimiento, comparaciones estadísticas y recomendaciones basadas en evidencia.</p>
                         </div>
                         <nav class="analytics-hero-actions" aria-label="Acciones de analíticas">
-                            <form method="GET" action="{{ route('administrador.campañas.analiticas') }}" class="analytics-hero-action analytics-period">
+                            <form method="GET" action="{{ route('administrador.campañas.analiticas') }}" class="analytics-hero-action analytics-period" id="analytics-filter-form" style="flex-wrap:wrap;">
                                 <i class="fas fa-calendar-days"></i>
-                                <label for="analytics-days" class="sr-only">Periodo de análisis</label>
-                                <select id="analytics-days" name="days" onchange="this.form.submit()" style="border:0;background:transparent;color:inherit;font:inherit;font-weight:900;outline:0;cursor:pointer;">
-                                    <option value="7" @selected((string) $selectedDays === '7')>Últimos 7 días</option>
-                                    <option value="30" @selected((string) $selectedDays === '30')>Últimos 30 días</option>
-                                    <option value="90" @selected((string) $selectedDays === '90')>Últimos 90 días</option>
-                                    <option value="365" @selected((string) $selectedDays === '365')>Último año</option>
-                                    <option value="730" @selected((string) $selectedDays === '730')>Últimos 2 años</option>
-                                    <option value="all" @selected((string) $selectedDays === 'all')>Todo el historial</option>
+                                <label for="analytics-filter-type" class="sr-only">Tipo de periodo</label>
+                                <select id="analytics-filter-type" name="filter_type" style="border:0;background:transparent;color:inherit;font:inherit;font-weight:900;outline:0;cursor:pointer;">
+                                    <option style="color:#111827" value="all" @selected($analyticsFilter['type'] === 'all')>Todo el historial</option>
+                                    <option style="color:#111827" value="range" @selected($analyticsFilter['type'] === 'range')>Rango de fechas</option>
+                                    <option style="color:#111827" value="month" @selected($analyticsFilter['type'] === 'month')>Mes específico</option>
+                                    <option style="color:#111827" value="year" @selected($analyticsFilter['type'] === 'year')>Año específico</option>
                                 </select>
+                                <span data-filter-fields="range" style="display:none;align-items:center;gap:5px;">
+                                    <input type="date" name="start_date" value="{{ $analyticsFilter['start_date'] }}" aria-label="Fecha inicial" style="border:1px solid rgba(255,255,255,.35);border-radius:6px;background:rgba(255,255,255,.12);color:#fff;padding:4px 6px;">
+                                    <span>a</span>
+                                    <input type="date" name="end_date" value="{{ $analyticsFilter['end_date'] }}" aria-label="Fecha final" style="border:1px solid rgba(255,255,255,.35);border-radius:6px;background:rgba(255,255,255,.12);color:#fff;padding:4px 6px;">
+                                </span>
+                                <span data-filter-fields="month" style="display:none;align-items:center;">
+                                    <input type="month" name="month" value="{{ $analyticsFilter['month'] }}" aria-label="Mes" style="border:1px solid rgba(255,255,255,.35);border-radius:6px;background:rgba(255,255,255,.12);color:#fff;padding:4px 6px;">
+                                </span>
+                                <span data-filter-fields="year" style="display:none;align-items:center;">
+                                    <input type="number" name="year" value="{{ $analyticsFilter['year'] }}" min="2004" max="{{ now()->year }}" aria-label="Año" style="width:78px;border:1px solid rgba(255,255,255,.35);border-radius:6px;background:rgba(255,255,255,.12);color:#fff;padding:4px 6px;">
+                                </span>
+                                <button type="submit" style="border:1px solid rgba(255,255,255,.45);border-radius:6px;background:#fff;color:#4f46e5;padding:5px 9px;font-weight:900;cursor:pointer;">Aplicar</button>
                             </form>
                             <a href="{{ route('administrador.campañas.index') }}" class="analytics-hero-action is-primary"><i class="fas fa-bullhorn"></i>Campañas</a>
                             <a href="{{ route('administrador.dashboard') }}" class="analytics-hero-action"><i class="fas fa-arrow-left"></i>Volver al panel</a>
@@ -443,7 +460,7 @@
             <div style="margin:18px 24px 0;padding:12px 14px;border:1px solid {{ $usingFallback ? '#fde68a' : '#bbf7d0' }};border-radius:12px;background:{{ $usingFallback ? '#fffbeb' : '#f0fdf4' }};color:{{ $usingFallback ? '#92400e' : '#166534' }};font-size:.72rem;font-weight:700;">
                 @if ($usingFallback)
                     <i class="fas fa-triangle-exclamation"></i>
-                    Modo de respaldo demostrativo: ninguna campaña tiene datos de Meta disponibles. Se conservan temporalmente las cifras ficticias anteriores para mantener operativo el panel.
+                    Modo de respaldo demostrativo: no hay cuentas de Facebook o Instagram conectadas en el sistema. Conecta una cuenta desde el perfil del cliente para analizar su historial real. Las cifras ficticias anteriores se conservan temporalmente.
                 @else
                     <i class="fas fa-circle-check"></i>
                     Datos reales consolidados desde Meta Insights: {{ $dashboard['connectedCampaigns'] }} campaña(s) con cuenta conectada y {{ $dashboard['campaignsWithData'] }} con actividad en el periodo.
@@ -482,8 +499,8 @@
                 <article class="analytics-card rounded-2xl p-6 xl:col-span-7 shadow-sm border border-gray-100">
                     <div class="analytics-card-header flex items-start justify-between gap-4 mb-5">
                         <div>
-                            <h2 class="text-xl font-bold text-slate-900">Rendimiento diario del mes</h2>
-                            <p class="text-sm text-slate-500">Evolución de interacciones generales a lo largo del mes.</p>
+                            <h2 class="text-xl font-bold text-slate-900">Evolución del rendimiento</h2>
+                            <p class="text-sm text-slate-500">Interacciones reales agrupadas por día o mes según el periodo.</p>
                         </div>
                         <span class="analytics-card-badge rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 border border-blue-100">Tendencia diaria</span>
                     </div>
@@ -511,7 +528,7 @@
                     <div class="analytics-card-header flex items-start justify-between gap-4 mb-5">
                         <div>
                             <h2 class="text-xl font-bold text-slate-900">Campañas por usuario</h2>
-                            <p class="text-sm text-slate-500">Comparación mensual de actividad entre clientes.</p>
+                            <p class="text-sm text-slate-500">Comparación de actividad entre clientes durante el periodo.</p>
                         </div>
                         <span class="analytics-card-badge rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 border border-indigo-100">Carga por cliente</span>
                     </div>
@@ -537,7 +554,7 @@
             <section class="analytics-table-card analytics-card rounded-2xl p-6 mb-8 shadow-sm border border-gray-100">
                 <div class="analytics-card-header flex flex-col gap-2 mb-6">
                     <h2 class="text-xl font-bold text-slate-900">Rendimiento por usuario / cliente</h2>
-                    <p class="text-sm text-slate-500">Detalle comparativo de carga operativa, alcance e interacción mensual.</p>
+                    <p class="text-sm text-slate-500">Detalle comparativo de campañas, alcance e interacción en el periodo seleccionado.</p>
                 </div>
 
                 <div class="analytics-table-wrap overflow-x-auto">
@@ -670,7 +687,7 @@
                             </svg>
                         </div>
                         <div>
-                            <h2 class="text-xl font-bold text-slate-900">Recomendación automática del mes</h2>
+                            <h2 class="text-xl font-bold text-slate-900">Recomendación automática del periodo</h2>
                             <p class="text-sm text-slate-500">Sugerencia estadística con al menos dos publicaciones por franja.</p>
                         </div>
                     </div>
@@ -939,6 +956,14 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            const filterType = document.getElementById('analytics-filter-type');
+            const syncFilterFields = () => {
+                document.querySelectorAll('[data-filter-fields]').forEach((field) => {
+                    field.style.display = field.dataset.filterFields === filterType?.value ? 'inline-flex' : 'none';
+                });
+            };
+            filterType?.addEventListener('change', syncFilterFields);
+            syncFilterFields();
             initMonthlyCharts();
             buildAutomaticRecommendation();
         });

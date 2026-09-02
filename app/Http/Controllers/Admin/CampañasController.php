@@ -135,18 +135,56 @@ class CampañasController extends Controller
     public function analiticas(Request $request, AdminCampaignAnalyticsService $dashboardService)
     {
         $validated = $request->validate([
-            'days' => 'nullable|in:7,30,90,365,730,all',
+            'filter_type' => 'nullable|in:all,range,month,year',
+            'start_date' => 'nullable|required_if:filter_type,range|date',
+            'end_date' => 'nullable|required_if:filter_type,range|date|after_or_equal:start_date',
+            'month' => 'nullable|required_if:filter_type,month|date_format:Y-m',
+            'year' => 'nullable|required_if:filter_type,year|integer|min:2004|max:'.now()->year,
         ]);
-        $days = $validated['days'] ?? 30;
+        $filterType = $validated['filter_type'] ?? 'all';
+        $period = match ($filterType) {
+            'range' => filled($validated['start_date'] ?? null) && filled($validated['end_date'] ?? null)
+                ? [
+                    'type' => 'range',
+                    'since' => Carbon::parse($validated['start_date'])->startOfDay(),
+                    'until' => Carbon::parse($validated['end_date'])->endOfDay(),
+                    'label' => Carbon::parse($validated['start_date'])->format('d/m/Y').' al '.Carbon::parse($validated['end_date'])->format('d/m/Y'),
+                ]
+                : ['type' => 'all', 'since' => null, 'until' => now()->endOfDay(), 'label' => 'todo el historial'],
+            'month' => filled($validated['month'] ?? null)
+                ? [
+                    'type' => 'month',
+                    'since' => Carbon::createFromFormat('Y-m', $validated['month'])->startOfMonth(),
+                    'until' => Carbon::createFromFormat('Y-m', $validated['month'])->endOfMonth(),
+                    'label' => Carbon::createFromFormat('Y-m', $validated['month'])->locale('es')->translatedFormat('F Y'),
+                ]
+                : ['type' => 'all', 'since' => null, 'until' => now()->endOfDay(), 'label' => 'todo el historial'],
+            'year' => filled($validated['year'] ?? null)
+                ? [
+                    'type' => 'year',
+                    'since' => Carbon::create((int) $validated['year'])->startOfYear(),
+                    'until' => Carbon::create((int) $validated['year'])->endOfYear(),
+                    'label' => 'año '.$validated['year'],
+                ]
+                : ['type' => 'all', 'since' => null, 'until' => now()->endOfDay(), 'label' => 'todo el historial'],
+            default => ['type' => 'all', 'since' => null, 'until' => now()->endOfDay(), 'label' => 'todo el historial'],
+        };
         $campaigns = Campania::with(['cliente', 'communityManager'])
             ->where('es_borrador', false)
             ->orderByDesc('fecha_inicio')
             ->get();
-        $dashboard = $dashboardService->build($campaigns, $days);
+        $dashboard = $dashboardService->build($campaigns, $period);
 
         return view('administrador.campañas.analiticas', [
             'dashboard' => $dashboard,
-            'selectedDays' => $days,
+            'analyticsFilter' => [
+                'type' => $period['type'],
+                'start_date' => $validated['start_date'] ?? now()->startOfMonth()->toDateString(),
+                'end_date' => $validated['end_date'] ?? now()->toDateString(),
+                'month' => $validated['month'] ?? now()->format('Y-m'),
+                'year' => (int) ($validated['year'] ?? now()->year),
+            ],
+            'selectedPeriodLabel' => $period['label'],
             'usingFallback' => $dashboard === null,
         ]);
     }

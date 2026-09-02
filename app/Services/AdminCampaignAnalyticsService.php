@@ -12,13 +12,13 @@ class AdminCampaignAnalyticsService
     {
     }
 
-    public function build(Collection $campaigns, int|string $days = 30): ?array
+    public function build(Collection $campaigns, array $period): ?array
     {
-        $payloads = $campaigns->map(function ($campaign) use ($days) {
+        $payloads = $campaigns->map(function ($campaign) {
             try {
                 return [
                     'campaign' => $campaign,
-                    'analytics' => $this->metaAnalytics->forCampaign($campaign, $days),
+                    'analytics' => $this->metaAnalytics->forCampaign($campaign, 'all'),
                 ];
             } catch (Throwable $exception) {
                 report($exception);
@@ -31,21 +31,22 @@ class AdminCampaignAnalyticsService
             return null;
         }
 
-        return $this->aggregate($payloads, $days);
+        return $this->aggregate($payloads, $period);
     }
 
     /**
      * Consolida exactamente la estructura que entrega MetaCampaignAnalyticsService
      * a la pestaña #analiticas de cada campaña.
      */
-    public function aggregate(Collection $payloads, int|string $days = 30): array
+    public function aggregate(Collection $payloads, array $period): array
     {
-        $campaignMetrics = $payloads->map(function (array $item) {
+        $campaignMetrics = $payloads->map(function (array $item) use ($period) {
             $campaign = $item['campaign'];
             $analytics = $item['analytics'];
-            $summary = data_get($analytics, 'summary', []);
-            $reach = $this->number(data_get($summary, 'totals.reach'));
-            $interactions = $this->summaryInteractions($analytics);
+            $posts = $this->postsForAnalytics($analytics, $period);
+            $reachValues = $posts->map(fn (array $post) => $this->number($post['reach'] ?? null))->filter(fn ($value) => $value !== null);
+            $reach = $reachValues->isNotEmpty() ? (float) $reachValues->sum() : 0.0;
+            $interactions = (float) $posts->sum(fn (array $post) => $this->postInteractions($post));
             $hasConnection = $this->hasConnectedAccount($analytics);
 
             return [
@@ -57,7 +58,7 @@ class AdminCampaignAnalyticsService
                 'engagement' => $reach && $reach > 0 ? round(($interactions / $reach) * 100, 2) : 0.0,
                 'status' => $campaign->estado,
                 'connected' => $hasConnection,
-                'has_data' => $hasConnection && (($reach ?? 0) > 0 || $interactions > 0 || (int) data_get($summary, 'totals.posts', 0) > 0),
+                'has_data' => $hasConnection && $posts->isNotEmpty(),
             ];
         })->values();
 
@@ -74,8 +75,8 @@ class AdminCampaignAnalyticsService
             ];
         })->sortByDesc('reach')->take(5)->values()->all();
 
-        $posts = $this->uniquePosts($payloads);
-        [$dailyLabels, $dailyPerformance] = $this->dailySeries($posts, $payloads, $days);
+        $posts = $this->uniquePosts($payloads, $period);
+        [$dailyLabels, $dailyPerformance] = $this->dailySeries($posts, $period);
         [$topHorarios, $heatmapHours, $heatmapRows] = $this->postingTimes($posts);
         $totalReach = (int) $campaignMetrics->sum('reach');
         $totalInteractions = (int) $campaignMetrics->sum('interactions');
@@ -103,8 +104,7 @@ class AdminCampaignAnalyticsService
             ->first();
 
         return [
-            'monthName' => $this->periodLabel($days),
-            'periodDays' => $days,
+            'monthName' => $period['label'],
             'campaignMetrics' => $campaignMetrics,
             'campaignsByUser' => $campaignsByUser,
             'dailyLabels' => $dailyLabels,
@@ -135,42 +135,53 @@ class AdminCampaignAnalyticsService
         );
     }
 
-    private function summaryInteractions(?array $analytics): float
+    private function uniquePosts(Collection $payloads, array $period): Collection
     {
-        return collect(data_get($analytics, 'platforms', []))->sum(function (array $platform) {
-            $engagement = data_get($platform, 'engagement', []);
-
-            return collect(['reactions', 'comments', 'shares', 'saves', 'clicks'])
-                ->sum(fn (string $metric) => $this->number($engagement[$metric] ?? null) ?? 0);
-        });
-    }
-
-    private function uniquePosts(Collection $payloads): Collection
-    {
-        return $payloads->flatMap(function (array $item) {
-            return collect(data_get($item['analytics'], 'platforms', []))->flatMap(
-                fn (array $platform) => $platform['posts'] ?? []
-            );
-        })->filter(fn (array $post) => filled($post['id'] ?? null))
+        return $payloads->flatMap(fn (array $item) => $this->postsForAnalytics($item['analytics'], $period))
             ->unique(fn (array $post) => ($post['platform'] ?? 'social').':'.$post['id'])
             ->values();
     }
 
-    private function dailySeries(Collection $posts, Collection $payloads, int|string $days): array
+    private function postsForAnalytics(?array $analytics, array $period): Collection
     {
-        $labels = collect(data_get($payloads->first(fn (array $item) => is_array($item['analytics'] ?? null)), 'analytics.summary.followers.labels', []));
-        if ($labels->isEmpty()) {
-            $length = $days === 'all' ? 30 : min((int) $days, 90);
-            $labels = collect(range($length - 1, 0))->map(fn (int $offset) => now()->subDays($offset)->toDateString());
+        return collect(data_get($analytics, 'platforms', []))->flatMap(fn (array $platform) => $platform['posts'] ?? [])
+            ->filter(function (array $post) use ($period) {
+                if (! filled($post['id'] ?? null) || ! filled($post['timestamp'] ?? null)) {
+                    return false;
+                }
+                $publishedAt = Carbon::parse($post['timestamp'])->setTimezone(config('app.timezone'));
+
+                return (! $period['since'] || $publishedAt->greaterThanOrEqualTo($period['since']))
+                    && (! $period['until'] || $publishedAt->lessThanOrEqualTo($period['until']));
+            })->unique(fn (array $post) => ($post['platform'] ?? 'social').':'.$post['id'])->values();
+    }
+
+    private function dailySeries(Collection $posts, array $period): array
+    {
+        $since = $period['since']?->copy();
+        $until = ($period['until'] ?? now())->copy();
+        if (! $since) {
+            $firstTimestamp = $posts->pluck('timestamp')->filter()->min();
+            $since = $firstTimestamp ? Carbon::parse($firstTimestamp)->setTimezone(config('app.timezone'))->startOfMonth() : now()->startOfMonth();
+        }
+        $useMonths = $period['type'] === 'all' || $period['type'] === 'year' || $since->diffInDays($until) > 120;
+        $bucketFormat = $useMonths ? 'Y-m' : 'Y-m-d';
+        $labelFormat = $useMonths ? 'M Y' : 'd M';
+        $cursor = $useMonths ? $since->copy()->startOfMonth() : $since->copy()->startOfDay();
+        $limit = $useMonths ? $until->copy()->startOfMonth() : $until->copy()->startOfDay();
+        $buckets = collect();
+        while ($cursor->lessThanOrEqualTo($limit)) {
+            $buckets->push($cursor->copy());
+            $useMonths ? $cursor->addMonth() : $cursor->addDay();
         }
 
         $byDate = $posts->filter(fn (array $post) => filled($post['timestamp'] ?? null))
-            ->groupBy(fn (array $post) => Carbon::parse($post['timestamp'])->setTimezone(config('app.timezone'))->toDateString())
+            ->groupBy(fn (array $post) => Carbon::parse($post['timestamp'])->setTimezone(config('app.timezone'))->format($bucketFormat))
             ->map(fn (Collection $items) => (int) round($items->sum(fn (array $post) => $this->postInteractions($post))));
 
         return [
-            $labels->map(fn (string $date) => Carbon::parse($date)->locale('es')->translatedFormat('d M'))->values()->all(),
-            $labels->map(fn (string $date) => (int) ($byDate[$date] ?? 0))->values()->all(),
+            $buckets->map(fn (Carbon $date) => $date->locale('es')->translatedFormat($labelFormat))->values()->all(),
+            $buckets->map(fn (Carbon $date) => (int) ($byDate[$date->format($bucketFormat)] ?? 0))->values()->all(),
         ];
     }
 
@@ -235,15 +246,4 @@ class AdminCampaignAnalyticsService
         return is_numeric($value) ? (float) $value : null;
     }
 
-    private function periodLabel(int|string $days): string
-    {
-        return match ((string) $days) {
-            '7' => 'últimos 7 días',
-            '90' => 'últimos 90 días',
-            '365' => 'último año',
-            '730' => 'últimos 2 años',
-            'all' => 'todo el historial',
-            default => 'últimos 30 días',
-        };
-    }
 }
