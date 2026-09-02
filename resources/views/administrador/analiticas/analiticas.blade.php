@@ -425,7 +425,7 @@
                         <div class="analytics-hero-copy">
                             <span class="analytics-hero-eyebrow">Dashboard de campañas</span>
                             <h1 class="text-3xl font-bold text-white mb-1">Analíticas de campañas</h1>
-                            <p style="color: #bfdbfe; font-size: 0.9rem;">Vista consolidada de {{ $monthName }} con rendimiento, comparaciones estadísticas y recomendaciones basadas en evidencia.</p>
+                            <p style="color: #bfdbfe; font-size: 0.9rem;">Analíticas homogeneizadas de todas las empresas en {{ $monthName }}, con comparaciones estadísticas y recomendaciones basadas en evidencia.</p>
                         </div>
                         <nav class="analytics-hero-actions" aria-label="Acciones de analíticas">
                             <form method="GET" action="{{ route('administrador.campañas.analiticas') }}" class="analytics-hero-action analytics-period" id="analytics-filter-form" style="flex-wrap:wrap;">
@@ -460,10 +460,10 @@
             <div style="margin:18px 24px 0;padding:12px 14px;border:1px solid {{ $usingFallback ? '#fde68a' : '#bbf7d0' }};border-radius:12px;background:{{ $usingFallback ? '#fffbeb' : '#f0fdf4' }};color:{{ $usingFallback ? '#92400e' : '#166534' }};font-size:.72rem;font-weight:700;">
                 @if ($usingFallback)
                     <i class="fas fa-triangle-exclamation"></i>
-                    Modo de respaldo demostrativo: no se encontraron cuentas de Facebook o Instagram asociadas a las campañas registradas. Revisa la empresa vinculada a cada campaña; las cifras ficticias anteriores se conservan temporalmente.
+                    Modo de respaldo demostrativo: no se encontraron cuentas de Facebook o Instagram asociadas a las empresas registradas. Las cifras ficticias anteriores se conservan temporalmente.
                 @else
                     <i class="fas fa-circle-check"></i>
-                    Datos reales consolidados desde Meta Insights: {{ $dashboard['connectedCampaigns'] }} campaña(s) con cuenta conectada y {{ $dashboard['campaignsWithData'] }} con actividad en el periodo.
+                    Datos homogeneizados desde Meta Insights: {{ $dashboard['connectedCampaigns'] }} empresa(s) con cuentas conectadas y {{ $dashboard['campaignsWithData'] }} con publicaciones en el periodo.
                 @endif
             </div>
 
@@ -540,8 +540,8 @@
                 <article class="analytics-card rounded-2xl p-6 xl:col-span-7 shadow-sm border border-gray-100">
                     <div class="analytics-card-header flex items-start justify-between gap-4 mb-5">
                         <div>
-                            <h2 class="text-xl font-bold text-slate-900">Alcance por campaña</h2>
-                            <p class="text-sm text-slate-500">Campañas con mayor visibilidad total dentro del periodo.</p>
+                            <h2 class="text-xl font-bold text-slate-900">Alcance por empresa</h2>
+                            <p class="text-sm text-slate-500">Empresas con mayor visibilidad total dentro del periodo.</p>
                         </div>
                         <span class="analytics-card-badge rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-100">Comparativo</span>
                     </div>
@@ -702,8 +702,8 @@
                             </svg>
                         </div>
                         <div>
-                            <h2 class="text-xl font-bold text-slate-900">Campaña recomendada para análisis</h2>
-                            <p class="text-sm text-slate-500">La pieza con mejor engagement del periodo.</p>
+                            <h2 class="text-xl font-bold text-slate-900">Empresa recomendada para análisis</h2>
+                            <p class="text-sm text-slate-500">La empresa con mejor engagement homogeneizado del periodo.</p>
                         </div>
                     </div>
                     @if ($recommendedCampaign)

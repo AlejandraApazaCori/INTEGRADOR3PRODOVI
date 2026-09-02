@@ -172,7 +172,10 @@ class CampañasController extends Controller
         $campaigns = Campania::with(['cliente', 'communityManager'])
             ->orderByDesc('fecha_inicio')
             ->get();
-        $dashboard = $dashboardService->build($campaigns, $period);
+        $companies = Empresa::with(['usuario', 'campanias', 'suscripcion.campanias'])
+            ->orderBy('nombre_empresa')
+            ->get();
+        $dashboard = $dashboardService->build($companies, $campaigns, $period);
 
         return view('administrador.campañas.analiticas', [
             'dashboard' => $dashboard,

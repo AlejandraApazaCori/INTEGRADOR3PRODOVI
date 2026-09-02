@@ -428,11 +428,11 @@ class MetaCampaignAnalyticsService
                 })->all();
             });
 
-            $chunkResults = collect($responses)->map(function (Response $response, int|string $index) use ($chunk) {
+            $chunkResults = collect($responses)->map(function (Response $response, int|string $index) use ($chunk, $token) {
                 if (! $response->successful()) {
                     $this->recordApiError('instagram', 'media_insights:'.($chunk[(int) $index]['id'] ?? $index), $response, false);
 
-                    return [];
+                    return $this->instagramMediaInsightFallback($chunk[(int) $index] ?? [], $token);
                 }
 
                 return $this->metricMap($response->json('data', []));
@@ -441,6 +441,28 @@ class MetaCampaignAnalyticsService
         }
 
         return $results;
+    }
+
+    private function instagramMediaInsightFallback(array $media, string $token): array
+    {
+        $mediaId = $media['id'] ?? null;
+        if (! filled($mediaId)) {
+            return [];
+        }
+
+        $product = strtoupper((string) ($media['media_product_type'] ?? $media['media_type'] ?? ''));
+        $metrics = $product === 'STORY'
+            ? ['reach', 'views', 'shares', 'replies']
+            : ['reach', 'views', 'total_interactions', 'likes', 'comments', 'shares', 'saved'];
+
+        return collect($metrics)->reduce(function (array $available, string $metric) use ($mediaId, $token) {
+            $payload = $this->get("{$mediaId}/insights", [
+                'metric' => $metric,
+                'access_token' => $token,
+            ], 'instagram', "media_insight:{$mediaId}:{$metric}", false);
+
+            return array_merge($available, $this->metricMap($payload['data'] ?? []));
+        }, []);
     }
 
     private function instagramAudience(string $instagramId, string $token): array
@@ -820,13 +842,16 @@ class MetaCampaignAnalyticsService
     private function recordApiError(string $platform, string $scope, Response $response, bool $recordError): void
     {
         $message = $response->json('error.message') ?? 'Meta no devolvió datos para esta consulta.';
-        Log::warning('Meta Analytics API error.', [
+        $context = [
             'platform' => $platform,
             'scope' => $scope,
             'status' => $response->status(),
             'code' => $response->json('error.code'),
             'error' => $message,
-        ]);
+        ];
+        $recordError
+            ? Log::warning('Meta Analytics API error.', $context)
+            : Log::debug('Meta Analytics optional API metric unavailable.', $context);
         if ($recordError) {
             $this->addError($platform, $scope, $message);
         }

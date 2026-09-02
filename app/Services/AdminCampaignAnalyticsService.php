@@ -8,30 +8,20 @@ use Throwable;
 
 class AdminCampaignAnalyticsService
 {
-    public function __construct(private MetaCampaignAnalyticsService $metaAnalytics)
-    {
-    }
+    public function __construct(private MetaCampaignAnalyticsService $metaAnalytics) {}
 
-    public function build(Collection $campaigns, array $period): ?array
+    public function build(Collection $companies, Collection $campaigns, array $period): ?array
     {
-        $payloads = $campaigns->map(function ($campaign) {
+        $payloads = $companies->map(function ($company) {
             $connectedProviders = [];
             try {
-                $connectedProviders = $this->metaAnalytics->connectedProvidersForCampaign($campaign);
+                $connectedProviders = $this->metaAnalytics->connectedProvidersForCompany($company);
 
-                return [
-                    'campaign' => $campaign,
-                    'analytics' => $this->metaAnalytics->forCampaign($campaign, 'all'),
-                    'connected_providers' => $connectedProviders,
-                ];
+                return ['company' => $company, 'analytics' => $this->metaAnalytics->forCompany($company, 'all'), 'connected_providers' => $connectedProviders];
             } catch (Throwable $exception) {
                 report($exception);
 
-                return [
-                    'campaign' => $campaign,
-                    'analytics' => null,
-                    'connected_providers' => $connectedProviders,
-                ];
+                return ['company' => $company, 'analytics' => null, 'connected_providers' => $connectedProviders];
             }
         });
 
@@ -39,44 +29,40 @@ class AdminCampaignAnalyticsService
             return null;
         }
 
-        return $this->aggregate($payloads, $period);
+        return $this->aggregate($payloads, $period, $campaigns);
     }
 
-    /**
-     * Consolida exactamente la estructura que entrega MetaCampaignAnalyticsService
-     * a la pestaña #analiticas de cada campaña.
-     */
-    public function aggregate(Collection $payloads, array $period): array
+    /** Homogeneiza las analíticas de cada empresa antes de consolidarlas. */
+    public function aggregate(Collection $payloads, array $period, ?Collection $campaigns = null): array
     {
-        $campaignMetrics = $payloads->map(function (array $item) use ($period) {
-            $campaign = $item['campaign'];
-            $analytics = $item['analytics'];
-            $posts = $this->postsForAnalytics($analytics, $period);
+        $companyMetrics = $payloads->map(function (array $item) use ($period) {
+            $company = $item['company'];
+            $posts = $this->postsForAnalytics($item['analytics'], $period);
             $reachValues = $posts->map(fn (array $post) => $this->number($post['reach'] ?? null))->filter(fn ($value) => $value !== null);
             $reach = $reachValues->isNotEmpty() ? (float) $reachValues->sum() : 0.0;
             $interactions = (float) $posts->sum(fn (array $post) => $this->postInteractions($post));
             $hasConnection = $this->itemHasConnectedAccount($item);
 
             return [
-                'id' => $campaign->id,
-                'campaign' => $campaign->nombre,
-                'user' => $campaign->cliente->name ?? 'Cliente sin nombre',
-                'reach' => (int) round($reach ?? 0),
+                'id' => $company->id,
+                'campaign' => $company->nombre_empresa,
+                'user' => $company->usuario->name ?? 'Cliente sin nombre',
+                'campaigns' => $this->companyCampaigns($company)->count(),
+                'reach' => (int) round($reach),
                 'interactions' => (int) round($interactions),
-                'engagement' => $reach && $reach > 0 ? round(($interactions / $reach) * 100, 2) : 0.0,
-                'status' => $campaign->estado,
+                'engagement' => $reach > 0 ? round(($interactions / $reach) * 100, 2) : 0.0,
                 'connected' => $hasConnection,
                 'has_data' => $hasConnection && $posts->isNotEmpty(),
             ];
         })->values();
 
-        $campaignsByUser = $campaignMetrics->groupBy('user')->map(function (Collection $items, string $userName) {
+        $companiesByUser = $companyMetrics->groupBy('user')->map(function (Collection $items, string $userName) {
             $reach = (int) $items->sum('reach');
             $interactions = (int) $items->sum('interactions');
 
             return [
                 'user' => $userName,
-                'campaigns' => $items->count(),
+                'campaigns' => (int) $items->sum('campaigns'),
                 'reach' => $reach,
                 'interactions' => $interactions,
                 'engagement' => $reach > 0 ? round(($interactions / $reach) * 100, 2) : 0.0,
@@ -85,84 +71,70 @@ class AdminCampaignAnalyticsService
 
         $posts = $this->uniquePosts($payloads, $period);
         [$dailyLabels, $dailyPerformance] = $this->dailySeries($posts, $period);
-        [$topHorarios, $heatmapHours, $heatmapRows] = $this->postingTimes($posts);
-        $totalReach = (int) $campaignMetrics->sum('reach');
-        $totalInteractions = (int) $campaignMetrics->sum('interactions');
-        $campaignReach = $campaignMetrics->sortByDesc('reach')->take(6)->map(fn (array $item) => [
-            'campaign' => $item['campaign'],
-            'reach' => $item['reach'],
-            'engagement' => $item['engagement'],
+        [$topTimes, $heatmapHours, $heatmapRows] = $this->postingTimes($posts);
+        $totalReach = (int) $companyMetrics->sum('reach');
+        $totalInteractions = (int) $companyMetrics->sum('interactions');
+        $companyReach = $companyMetrics->sortByDesc('reach')->take(6)->map(fn (array $item) => [
+            'campaign' => $item['campaign'], 'reach' => $item['reach'], 'engagement' => $item['engagement'],
         ])->values()->all();
 
-        $statusLabels = [
-            'activa' => 'Activa',
-            'pausada' => 'Pausada',
-            'finalizada' => 'Finalizada',
-            'planificada' => 'Planificada',
-            'revision' => 'Revisión',
-            'borrador' => 'Borrador',
-        ];
-        $statusDistribution = $campaignMetrics->groupBy('status')->map->count()->mapWithKeys(
+        $campaigns = $campaigns ?? collect();
+        $statusLabels = ['activa' => 'Activa', 'pausada' => 'Pausada', 'finalizada' => 'Finalizada', 'planificada' => 'Planificada', 'revision' => 'Revisión', 'borrador' => 'Borrador'];
+        $statusDistribution = $campaigns->groupBy('estado')->map->count()->mapWithKeys(
             fn (int $count, string $status) => [$statusLabels[$status] ?? ucfirst($status) => $count]
         )->all();
-        $recommendedCampaign = $campaignMetrics
-            ->where('has_data', true)
-            ->where('reach', '>', 0)
-            ->sortByDesc('engagement')
-            ->first();
+        $recommendedCompany = $companyMetrics->where('has_data', true)->where('reach', '>', 0)->sortByDesc('engagement')->first();
 
         return [
             'monthName' => $period['label'],
-            'campaignMetrics' => $campaignMetrics,
-            'campaignsByUser' => $campaignsByUser,
+            'campaignMetrics' => $companyMetrics,
+            'campaignsByUser' => $companiesByUser,
             'dailyLabels' => $dailyLabels,
             'dailyPerformance' => $dailyPerformance,
-            'campaignReach' => $campaignReach,
+            'campaignReach' => $companyReach,
             'statusDistribution' => $statusDistribution,
             'heatmapHours' => $heatmapHours,
             'heatmapRows' => $heatmapRows,
-            'topHorarios' => $topHorarios,
-            'heatmapSummary' => $topHorarios->take(5)->map(fn (array $slot) => $slot['dia'].' '.$slot['hora'])->implode(', '),
+            'topHorarios' => $topTimes,
+            'heatmapSummary' => $topTimes->take(5)->map(fn (array $slot) => $slot['dia'].' '.$slot['hora'])->implode(', '),
             'heatmapModel' => 'Promedio bayesiano ponderado',
-            'scoreMin' => (float) ($topHorarios->min('engagement_score') ?? 0),
-            'scoreMax' => (float) ($topHorarios->max('engagement_score') ?? 0),
-            'totalCampaigns' => $campaignMetrics->count(),
+            'scoreMin' => (float) ($topTimes->min('engagement_score') ?? 0),
+            'scoreMax' => (float) ($topTimes->max('engagement_score') ?? 0),
+            'totalCampaigns' => $campaigns->count(),
             'totalReach' => $totalReach,
             'totalInteractions' => $totalInteractions,
             'averageEngagement' => $totalReach > 0 ? round(($totalInteractions / $totalReach) * 100, 2) : 0.0,
-            'recommendedCampaign' => $recommendedCampaign,
-            'connectedCampaigns' => $campaignMetrics->where('connected', true)->count(),
-            'campaignsWithData' => $campaignMetrics->where('has_data', true)->count(),
+            'recommendedCampaign' => $recommendedCompany,
+            'connectedCampaigns' => $companyMetrics->where('connected', true)->count(),
+            'campaignsWithData' => $companyMetrics->where('has_data', true)->count(),
+            'totalCompanies' => $companyMetrics->count(),
         ];
-    }
-
-    private function hasConnectedAccount(?array $analytics): bool
-    {
-        return collect(data_get($analytics, 'platforms', []))->contains(
-            fn (array $platform) => (bool) ($platform['connected'] ?? false)
-        );
     }
 
     private function itemHasConnectedAccount(array $item): bool
     {
         return ! empty($item['connected_providers'] ?? [])
-            || $this->hasConnectedAccount($item['analytics'] ?? null);
+            || collect(data_get($item, 'analytics.platforms', []))->contains(fn (array $platform) => (bool) ($platform['connected'] ?? false));
+    }
+
+    private function companyCampaigns(object $company): Collection
+    {
+        return collect(data_get($company, 'campanias', []))
+            ->concat(collect(data_get($company, 'suscripcion.campanias', [])))
+            ->unique('id')->values();
     }
 
     private function uniquePosts(Collection $payloads, array $period): Collection
     {
         return $payloads->flatMap(fn (array $item) => $this->postsForAnalytics($item['analytics'], $period))
-            ->unique(fn (array $post) => ($post['platform'] ?? 'social').':'.$post['id'])
-            ->values();
+            ->unique(fn (array $post) => ($post['platform'] ?? 'social').':'.$post['id'])->values();
     }
 
     private function postsForAnalytics(?array $analytics, array $period): Collection
     {
         return collect(data_get($analytics, 'platforms', []))->flatMap(fn (array $platform) => $platform['posts'] ?? [])
             ->filter(function (array $post) use ($period) {
-                if (! filled($post['id'] ?? null) || ! filled($post['timestamp'] ?? null)) {
-                    return false;
-                }
+                if (! filled($post['id'] ?? null) || ! filled($post['timestamp'] ?? null)) return false;
                 $publishedAt = Carbon::parse($post['timestamp'])->setTimezone(config('app.timezone'));
 
                 return (! $period['since'] || $publishedAt->greaterThanOrEqualTo($period['since']))
@@ -188,9 +160,7 @@ class AdminCampaignAnalyticsService
             $buckets->push($cursor->copy());
             $useMonths ? $cursor->addMonth() : $cursor->addDay();
         }
-
-        $byDate = $posts->filter(fn (array $post) => filled($post['timestamp'] ?? null))
-            ->groupBy(fn (array $post) => Carbon::parse($post['timestamp'])->setTimezone(config('app.timezone'))->format($bucketFormat))
+        $byDate = $posts->groupBy(fn (array $post) => Carbon::parse($post['timestamp'])->setTimezone(config('app.timezone'))->format($bucketFormat))
             ->map(fn (Collection $items) => (int) round($items->sum(fn (array $post) => $this->postInteractions($post))));
 
         return [
@@ -201,7 +171,7 @@ class AdminCampaignAnalyticsService
 
     private function postingTimes(Collection $posts): array
     {
-        $prepared = $posts->filter(fn (array $post) => filled($post['timestamp'] ?? null))->map(function (array $post) {
+        $prepared = $posts->map(function (array $post) {
             $date = Carbon::parse($post['timestamp'])->setTimezone(config('app.timezone'));
             $reach = $this->number($post['reach'] ?? $post['views'] ?? null);
             $weighted = ($this->number($post['likes'] ?? $post['reactions'] ?? null) ?? 0)
@@ -212,7 +182,6 @@ class AdminCampaignAnalyticsService
 
             return ['day' => $date->dayOfWeekIso, 'hour' => $date->hour, 'score' => $reach && $reach > 0 ? ($weighted / $reach) * 100 : $weighted];
         });
-
         $dayNames = [1 => 'Lunes', 2 => 'Martes', 3 => 'Miércoles', 4 => 'Jueves', 5 => 'Viernes', 6 => 'Sábado', 7 => 'Domingo'];
         $globalAverage = (float) ($prepared->avg('score') ?? 0);
         $slots = $prepared->groupBy(fn (array $item) => $item['day'].'-'.$item['hour'])->map(function (Collection $group) use ($dayNames, $globalAverage) {
@@ -220,15 +189,8 @@ class AdminCampaignAnalyticsService
             $samples = $group->count();
             $average = (float) $group->avg('score');
 
-            return [
-                'dia_semana' => $first['day'],
-                'dia' => $dayNames[$first['day']],
-                'hora' => str_pad((string) $first['hour'], 2, '0', STR_PAD_LEFT).':00',
-                'samples' => $samples,
-                'engagement_score' => round((($average * $samples) + ($globalAverage * 3)) / ($samples + 3), 2),
-            ];
+            return ['dia_semana' => $first['day'], 'dia' => $dayNames[$first['day']], 'hora' => str_pad((string) $first['hour'], 2, '0', STR_PAD_LEFT).':00', 'samples' => $samples, 'engagement_score' => round((($average * $samples) + ($globalAverage * 3)) / ($samples + 3), 2)];
         })->sortByDesc('engagement_score')->values();
-
         $hours = $slots->pluck('hora')->unique()->sort()->values()->all();
         $scoreMin = (float) ($slots->min('engagement_score') ?? 0);
         $scoreMax = (float) ($slots->max('engagement_score') ?? 0);
@@ -237,17 +199,11 @@ class AdminCampaignAnalyticsService
         foreach ($dayNames as $day) {
             $rows[$day] = collect($hours)->map(function (string $hour) use ($slots, $day, $scoreMin, $range) {
                 $slot = $slots->first(fn (array $item) => $item['dia'] === $day && $item['hora'] === $hour);
-                if (! $slot) {
-                    return ['score' => null, 'normalized' => null, 'hasData' => false];
-                }
-
-                return ['score' => $slot['engagement_score'], 'normalized' => ($slot['engagement_score'] - $scoreMin) / $range, 'hasData' => true];
+                return $slot ? ['score' => $slot['engagement_score'], 'normalized' => ($slot['engagement_score'] - $scoreMin) / $range, 'hasData' => true] : ['score' => null, 'normalized' => null, 'hasData' => false];
             })->all();
         }
 
-        $recommended = $slots->where('samples', '>=', 2)->values();
-
-        return [$recommended, $hours, $rows];
+        return [$slots->where('samples', '>=', 2)->values(), $hours, $rows];
     }
 
     private function postInteractions(array $post): float
@@ -259,5 +215,4 @@ class AdminCampaignAnalyticsService
     {
         return is_numeric($value) ? (float) $value : null;
     }
-
 }

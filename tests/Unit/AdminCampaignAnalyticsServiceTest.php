@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Models\Campania;
+use App\Models\Empresa;
 use App\Models\User;
 use App\Services\AdminCampaignAnalyticsService;
 use App\Services\MetaCampaignAnalyticsService;
@@ -23,8 +23,9 @@ class AdminCampaignAnalyticsServiceTest extends TestCase
     {
         $service = new AdminCampaignAnalyticsService(Mockery::mock(MetaCampaignAnalyticsService::class));
         $client = (object) ['name' => 'Cliente real'];
-        $campaignA = (object) ['id' => 1, 'nombre' => 'Campaña A', 'estado' => 'activa', 'cliente' => $client];
-        $campaignB = (object) ['id' => 2, 'nombre' => 'Campaña B', 'estado' => 'finalizada', 'cliente' => $client];
+        $companyA = (object) ['id' => 1, 'nombre_empresa' => 'Empresa A', 'usuario' => $client, 'campanias' => collect([(object) ['id' => 1]])];
+        $companyB = (object) ['id' => 2, 'nombre_empresa' => 'Empresa B', 'usuario' => $client, 'campanias' => collect([(object) ['id' => 2]])];
+        $campaigns = collect([(object) ['id' => 1, 'estado' => 'activa'], (object) ['id' => 2, 'estado' => 'finalizada']]);
         $post = [
             'id' => 'post-1', 'platform' => 'facebook', 'timestamp' => '2026-09-01T14:00:00-04:00',
             'likes' => 10, 'comments' => 2, 'shares' => 1, 'saves' => null, 'clicks' => 3,
@@ -34,14 +35,14 @@ class AdminCampaignAnalyticsServiceTest extends TestCase
         $analyticsB = $this->analyticsPayload(500, 8, 2, 0, [$post]);
 
         $dashboard = $service->aggregate(new Collection([
-            ['campaign' => $campaignA, 'analytics' => $analyticsA],
-            ['campaign' => $campaignB, 'analytics' => $analyticsB],
+            ['company' => $companyA, 'analytics' => $analyticsA],
+            ['company' => $companyB, 'analytics' => $analyticsB],
         ]), [
             'type' => 'all',
             'since' => null,
             'until' => Carbon::parse('2026-09-30')->endOfDay(),
             'label' => 'todo el historial',
-        ]);
+        ], $campaigns);
 
         $this->assertSame(2, $dashboard['totalCampaigns']);
         $this->assertSame(400, $dashboard['totalReach']);
@@ -56,11 +57,11 @@ class AdminCampaignAnalyticsServiceTest extends TestCase
     public function test_it_filters_the_complete_history_by_an_exact_month(): void
     {
         $service = new AdminCampaignAnalyticsService(Mockery::mock(MetaCampaignAnalyticsService::class));
-        $campaign = (object) [
+        $company = (object) [
             'id' => 1,
-            'nombre' => 'Campaña histórica',
-            'estado' => 'activa',
-            'cliente' => (object) ['name' => 'Cliente real'],
+            'nombre_empresa' => 'Empresa histórica',
+            'usuario' => (object) ['name' => 'Cliente real'],
+            'campanias' => collect(),
         ];
         $septemberPost = [
             'id' => 'sep', 'platform' => 'instagram', 'timestamp' => '2026-09-10T10:00:00-04:00',
@@ -72,7 +73,7 @@ class AdminCampaignAnalyticsServiceTest extends TestCase
         $augustPost['timestamp'] = '2026-08-10T10:00:00-04:00';
 
         $dashboard = $service->aggregate(new Collection([[
-            'campaign' => $campaign,
+            'company' => $company,
             'analytics' => $this->analyticsPayload(9999, 99, 99, 99, [$augustPost, $septemberPost]),
         ]]), [
             'type' => 'month',
@@ -90,11 +91,13 @@ class AdminCampaignAnalyticsServiceTest extends TestCase
     public function test_a_stored_connection_keeps_the_real_panel_active_when_optional_metrics_fail(): void
     {
         $meta = Mockery::mock(MetaCampaignAnalyticsService::class);
-        $campaign = new Campania();
-        $campaign->forceFill(['id' => 9, 'nombre' => 'Campaña conectada', 'estado' => 'activa']);
-        $campaign->setRelation('cliente', new User(['name' => 'Cliente conectado']));
-        $meta->shouldReceive('connectedProvidersForCampaign')->once()->with($campaign)->andReturn(['instagram']);
-        $meta->shouldReceive('forCampaign')->once()->with($campaign, 'all')->andReturn([
+        $company = new Empresa();
+        $company->forceFill(['id' => 9, 'nombre_empresa' => 'Empresa conectada']);
+        $company->setRelation('usuario', new User(['name' => 'Cliente conectado']));
+        $company->setRelation('campanias', collect());
+        $company->setRelation('suscripcion', null);
+        $meta->shouldReceive('connectedProvidersForCompany')->once()->with($company)->andReturn(['instagram']);
+        $meta->shouldReceive('forCompany')->once()->with($company, 'all')->andReturn([
             'platforms' => [
                 'facebook' => ['connected' => false, 'posts' => []],
                 'instagram' => ['connected' => false, 'posts' => []],
@@ -102,7 +105,7 @@ class AdminCampaignAnalyticsServiceTest extends TestCase
         ]);
         $service = new AdminCampaignAnalyticsService($meta);
 
-        $dashboard = $service->build(new Collection([$campaign]), [
+        $dashboard = $service->build(new Collection([$company]), collect(), [
             'type' => 'all',
             'since' => null,
             'until' => Carbon::parse('2026-09-30')->endOfDay(),
