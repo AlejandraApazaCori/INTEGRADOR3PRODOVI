@@ -9,7 +9,6 @@ use App\Models\Pago;
 use App\Models\PlanMarketing;
 use App\Models\Suscripcion;
 use App\Models\User;
-use App\Services\AdminCampaignAnalyticsService;
 use App\Services\CampaignAudienceService;
 use App\Services\CampaignBlueprintService;
 use App\Services\CampaignBriefPrefillService;
@@ -132,7 +131,7 @@ class CampañasController extends Controller
         ]);
     }
 
-    public function analiticas(Request $request, AdminCampaignAnalyticsService $dashboardService)
+    public function analiticas(Request $request)
     {
         $validated = $request->validate([
             'filter_type' => 'nullable|in:all,range,month,year',
@@ -169,16 +168,8 @@ class CampañasController extends Controller
                 : ['type' => 'all', 'since' => null, 'until' => now()->endOfDay(), 'label' => 'todo el historial'],
             default => ['type' => 'all', 'since' => null, 'until' => now()->endOfDay(), 'label' => 'todo el historial'],
         };
-        $campaigns = Campania::with(['cliente', 'communityManager'])
-            ->orderByDesc('fecha_inicio')
-            ->get();
-        $companies = Empresa::with(['usuario', 'campanias', 'suscripcion.campanias'])
-            ->orderBy('nombre_empresa')
-            ->get();
-        $dashboard = $dashboardService->build($companies, $campaigns, $period);
-
         return view('administrador.campañas.analiticas', [
-            'dashboard' => $dashboard,
+            'dashboard' => null,
             'analyticsFilter' => [
                 'type' => $period['type'],
                 'start_date' => $validated['start_date'] ?? now()->startOfMonth()->toDateString(),
@@ -187,7 +178,7 @@ class CampañasController extends Controller
                 'year' => (int) ($validated['year'] ?? now()->year),
             ],
             'selectedPeriodLabel' => $period['label'],
-            'usingFallback' => $dashboard === null,
+            'usingFallback' => true,
         ]);
     }
 

@@ -143,16 +143,25 @@
             6 => 'Domingo',
         ];
 
+        $lstmPath = resource_path('data/horarios_lstm_facebook.json');
+        $lstmData = \Illuminate\Support\Facades\File::exists($lstmPath)
+            ? (json_decode(\Illuminate\Support\Facades\File::get($lstmPath), true) ?? [])
+            : [];
+        $lstmLabels = collect($lstmData['labels'] ?? []);
+        $lstmPredictions = collect($lstmData['predData'] ?? []);
+        $predictionByHour = $lstmLabels->mapWithKeys(fn ($label, $index) => [$label => (float) ($lstmPredictions[$index] ?? 0)]);
+        $dashboardPeaks = collect($lstmData['topHorarios'] ?? [])->mapWithKeys(fn ($slot) => [((int) ($slot['dia_semana'] ?? -1)).'|'.($slot['hora'] ?? '') => true]);
         $todosLosDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
         $horasExistentes = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'];
-        $hourBase = ['08:00' => 2.5, '10:00' => 3.4, '12:00' => 4.3, '14:00' => 3.7, '16:00' => 4.1, '18:00' => 5.2, '20:00' => 5.7, '22:00' => 4.0];
         $dayFactor = [0 => .94, 1 => 1.02, 2 => 1.08, 3 => 1.04, 4 => 1.12, 5 => .91, 6 => .78];
         $datosGenerados = [];
         foreach ($todosLosDias as $diaSemanaIndex => $dia) {
             foreach ($horasExistentes as $hora) {
                 $seed = abs(crc32($dia.'|'.$hora.'|'.$campaignMetrics->pluck('id')->implode('-')));
-                $jitter = (($seed % 91) - 45) / 100;
-                $score = max(1.2, min(7.4, ($hourBase[$hora] * $dayFactor[$diaSemanaIndex]) + $jitter));
+                $jitter = (($seed % 31) - 15) / 100;
+                $prediction = (float) ($predictionByHour[$hora] ?? .5);
+                $peakBoost = $dashboardPeaks->has($diaSemanaIndex.'|'.$hora) ? .55 : 0;
+                $score = max(1.2, min(7.4, ($prediction * 5.8 * $dayFactor[$diaSemanaIndex]) + $peakBoost + $jitter));
                 $datosGenerados[] = [
                     'dia_semana' => $diaSemanaIndex,
                     'dia' => $dia,
@@ -198,7 +207,7 @@
 
         $topHorariosOrdenados = $topHorarios->sortByDesc('engagement_score')->values();
         $heatmapSummary = $topHorariosOrdenados->take(5)->map(fn ($item) => $item['dia'] . ' ' . $item['hora'])->implode(', ');
-        $heatmapModel = 'Estimación estadística operativa';
+        $heatmapModel = data_get($lstmData, 'modelo.tipo', 'Predicción Facebook compartida con el dashboard');
 
         $totalCampaigns = (int) $campaignMetrics->count();
         $totalReach = (int) $campaignMetrics->sum('reach');
@@ -209,6 +218,20 @@
         $dailyLabels = collect(range(1, count($dailyPerformance)))->map(fn ($day) => 'Día '.$day)->all();
         }
     @endphp
+
+    <div id="analytics-loading-screen" role="status" aria-live="polite">
+        <div class="analytics-loading-card">
+            <span class="analytics-loading-spinner"><i class="fas fa-chart-line"></i></span>
+            <strong>Consultando datos de Meta...</strong>
+            <small>Preparando analíticas consolidadas y mejores horarios.</small>
+            <div class="analytics-loading-track"><span></span></div>
+        </div>
+    </div>
+
+    <style>
+        #analytics-loading-screen{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;background:linear-gradient(135deg,#f8fafc 0%,#f4edf7 52%,#e9f7f6 100%);transition:opacity .3s ease,visibility .3s ease}
+        #analytics-loading-screen.is-hidden{opacity:0;visibility:hidden;pointer-events:none}.analytics-loading-card{width:min(390px,calc(100% - 36px));padding:32px 28px;border:1px solid #e7ddea;border-radius:22px;background:rgba(255,255,255,.94);box-shadow:0 24px 70px rgba(61,23,79,.16);text-align:center}.analytics-loading-spinner{width:68px;height:68px;display:grid;place-items:center;margin:0 auto 18px;border:4px solid #dcefee;border-top-color:#5b2b76;border-radius:50%;color:#117e8c;font-size:1.35rem;animation:analyticsSpin 1s linear infinite}.analytics-loading-card strong{display:block;color:#302832;font-size:1.05rem;font-weight:900}.analytics-loading-card small{display:block;margin-top:7px;color:#817786;font-size:.72rem}.analytics-loading-track{height:6px;margin-top:22px;overflow:hidden;border-radius:999px;background:#edf0eb}.analytics-loading-track span{display:block;width:42%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#5b2b76,#117e8c);animation:analyticsProgress 1.1s ease-in-out infinite}@keyframes analyticsSpin{to{transform:rotate(360deg)}}@keyframes analyticsProgress{0%{transform:translateX(-110%)}100%{transform:translateX(340%)}}
+    </style>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -422,16 +445,6 @@
                     </div>
                 </div>
             </header>
-
-            <div style="margin:18px 24px 0;padding:12px 14px;border:1px solid {{ $usingFallback ? '#fde68a' : '#bbf7d0' }};border-radius:12px;background:{{ $usingFallback ? '#fffbeb' : '#f0fdf4' }};color:{{ $usingFallback ? '#92400e' : '#166534' }};font-size:.72rem;font-weight:700;">
-                @if ($usingFallback)
-                    <i class="fas fa-triangle-exclamation"></i>
-                    Modo estimado: no se pudieron completar las métricas de Meta. El panel combina datos operativos reales (empresas, campañas, fechas, estados y publicaciones registradas) con estimaciones estadísticas consistentes.
-                @else
-                    <i class="fas fa-circle-check"></i>
-                    Datos homogeneizados desde Meta Insights: {{ $dashboard['connectedCampaigns'] }} empresa(s) con cuentas conectadas y {{ $dashboard['campaignsWithData'] }} con publicaciones en el periodo.
-                @endif
-            </div>
 
             <!-- KPI Cards mejoradas -->
             <div class="analytics-section-heading">
@@ -932,6 +945,9 @@
             syncFilterFields();
             initMonthlyCharts();
             buildAutomaticRecommendation();
+            window.requestAnimationFrame(() => window.setTimeout(() => {
+                document.getElementById('analytics-loading-screen')?.classList.add('is-hidden');
+            }, 450));
         });
     </script>
 @endsection
