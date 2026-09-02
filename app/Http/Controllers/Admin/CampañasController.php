@@ -9,6 +9,7 @@ use App\Models\Pago;
 use App\Models\PlanMarketing;
 use App\Models\Suscripcion;
 use App\Models\User;
+use App\Services\AdminCampaignAnalyticsService;
 use App\Services\CampaignAudienceService;
 use App\Services\CampaignBlueprintService;
 use App\Services\CampaignBriefPrefillService;
@@ -131,9 +132,23 @@ class CampañasController extends Controller
         ]);
     }
 
-    public function analiticas()
+    public function analiticas(Request $request, AdminCampaignAnalyticsService $dashboardService)
     {
-        return view('administrador.campañas.analiticas');
+        $validated = $request->validate([
+            'days' => 'nullable|in:7,30,90,365,730,all',
+        ]);
+        $days = $validated['days'] ?? 30;
+        $campaigns = Campania::with(['cliente', 'communityManager'])
+            ->where('es_borrador', false)
+            ->orderByDesc('fecha_inicio')
+            ->get();
+        $dashboard = $dashboardService->build($campaigns, $days);
+
+        return view('administrador.campañas.analiticas', [
+            'dashboard' => $dashboard,
+            'selectedDays' => $days,
+            'usingFallback' => $dashboard === null,
+        ]);
     }
 
     public function preparar(

@@ -1,9 +1,34 @@
 ﻿@extends('layouts.app')
 
-@section('title', 'Analíticas mensuales')
+@section('title', 'Analíticas de campañas')
 
 @section('content')
     @php
+        $dashboard = $dashboard ?? null;
+        $usingFallback = $usingFallback ?? ($dashboard === null);
+        $selectedDays = $selectedDays ?? 30;
+
+        if ($dashboard) {
+            $monthName = $dashboard['monthName'];
+            $campaignMetrics = $dashboard['campaignMetrics'];
+            $campaignsByUser = $dashboard['campaignsByUser'];
+            $dailyLabels = $dashboard['dailyLabels'];
+            $dailyPerformance = $dashboard['dailyPerformance'];
+            $campaignReach = $dashboard['campaignReach'];
+            $statusDistribution = $dashboard['statusDistribution'];
+            $heatmapHours = $dashboard['heatmapHours'];
+            $heatmapRows = $dashboard['heatmapRows'];
+            $topHorarios = $dashboard['topHorarios'];
+            $heatmapSummary = $dashboard['heatmapSummary'];
+            $heatmapModel = $dashboard['heatmapModel'];
+            $scoreMin = $dashboard['scoreMin'];
+            $scoreMax = $dashboard['scoreMax'];
+            $totalCampaigns = $dashboard['totalCampaigns'];
+            $totalReach = $dashboard['totalReach'];
+            $totalInteractions = $dashboard['totalInteractions'];
+            $averageEngagement = $dashboard['averageEngagement'];
+            $recommendedCampaign = $dashboard['recommendedCampaign'];
+        } else {
         $monthName = now()->locale('es')->translatedFormat('F Y');
 
         $allCampaigns = \App\Models\Campania::with(['cliente', 'communityManager'])
@@ -208,6 +233,8 @@
         $averageEngagement = round($campaignMetrics->avg('engagement'), 1);
 
         $recommendedCampaign = collect($campaignReach)->sortByDesc('engagement')->first();
+        $dailyLabels = collect(range(1, count($dailyPerformance)))->map(fn ($day) => 'Día '.$day)->all();
+        }
     @endphp
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -390,11 +417,22 @@
                     <div class="analytics-hero-layout">
                         <div class="analytics-hero-copy">
                             <span class="analytics-hero-eyebrow">Dashboard de campañas</span>
-                            <h1 class="text-3xl font-bold text-white mb-1">Analíticas mensuales de campañas</h1>
-                            <p style="color: #bfdbfe; font-size: 0.9rem;">Vista consolidada del mes de {{ ucfirst($monthName) }} con comportamiento de campañas, rendimiento diario y distribución operativa</p>
+                            <h1 class="text-3xl font-bold text-white mb-1">Analíticas de campañas</h1>
+                            <p style="color: #bfdbfe; font-size: 0.9rem;">Vista consolidada de {{ $monthName }} con rendimiento, comparaciones estadísticas y recomendaciones basadas en evidencia.</p>
                         </div>
                         <nav class="analytics-hero-actions" aria-label="Acciones de analíticas">
-                            <span class="analytics-hero-action analytics-period"><i class="fas fa-calendar-days"></i>{{ ucfirst($monthName) }}</span>
+                            <form method="GET" action="{{ route('administrador.campañas.analiticas') }}" class="analytics-hero-action analytics-period">
+                                <i class="fas fa-calendar-days"></i>
+                                <label for="analytics-days" class="sr-only">Periodo de análisis</label>
+                                <select id="analytics-days" name="days" onchange="this.form.submit()" style="border:0;background:transparent;color:inherit;font:inherit;font-weight:900;outline:0;cursor:pointer;">
+                                    <option value="7" @selected((string) $selectedDays === '7')>Últimos 7 días</option>
+                                    <option value="30" @selected((string) $selectedDays === '30')>Últimos 30 días</option>
+                                    <option value="90" @selected((string) $selectedDays === '90')>Últimos 90 días</option>
+                                    <option value="365" @selected((string) $selectedDays === '365')>Último año</option>
+                                    <option value="730" @selected((string) $selectedDays === '730')>Últimos 2 años</option>
+                                    <option value="all" @selected((string) $selectedDays === 'all')>Todo el historial</option>
+                                </select>
+                            </form>
                             <a href="{{ route('administrador.campañas.index') }}" class="analytics-hero-action is-primary"><i class="fas fa-bullhorn"></i>Campañas</a>
                             <a href="{{ route('administrador.dashboard') }}" class="analytics-hero-action"><i class="fas fa-arrow-left"></i>Volver al panel</a>
                         </nav>
@@ -402,10 +440,20 @@
                 </div>
             </header>
 
+            <div style="margin:18px 24px 0;padding:12px 14px;border:1px solid {{ $usingFallback ? '#fde68a' : '#bbf7d0' }};border-radius:12px;background:{{ $usingFallback ? '#fffbeb' : '#f0fdf4' }};color:{{ $usingFallback ? '#92400e' : '#166534' }};font-size:.72rem;font-weight:700;">
+                @if ($usingFallback)
+                    <i class="fas fa-triangle-exclamation"></i>
+                    Modo de respaldo demostrativo: ninguna campaña tiene datos de Meta disponibles. Se conservan temporalmente las cifras ficticias anteriores para mantener operativo el panel.
+                @else
+                    <i class="fas fa-circle-check"></i>
+                    Datos reales consolidados desde Meta Insights: {{ $dashboard['connectedCampaigns'] }} campaña(s) con cuenta conectada y {{ $dashboard['campaignsWithData'] }} con actividad en el periodo.
+                @endif
+            </div>
+
             <!-- KPI Cards mejoradas -->
             <div class="analytics-section-heading">
                 <div><span>Resumen ejecutivo</span><h2>Indicadores principales</h2></div>
-                <p>Lectura consolidada de {{ ucfirst($monthName) }}</p>
+                <p>Lectura consolidada de {{ $monthName }}</p>
             </div>
             <section class="analytics-kpi-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
                 <article class="analytics-kpi analytics-kpi-campaigns">
@@ -623,7 +671,7 @@
                         </div>
                         <div>
                             <h2 class="text-xl font-bold text-slate-900">Recomendación automática del mes</h2>
-                            <p class="text-sm text-slate-500">Sugerencia generada a partir del mapa de calor mensual.</p>
+                            <p class="text-sm text-slate-500">Sugerencia estadística con al menos dos publicaciones por franja.</p>
                         </div>
                     </div>
                     <p id="automaticRecommendation" class="text-base leading-7 text-slate-700"></p>
@@ -641,11 +689,15 @@
                             <p class="text-sm text-slate-500">La pieza con mejor engagement del periodo.</p>
                         </div>
                     </div>
-                    <p class="text-base leading-7 text-slate-700">
-                        <span class="font-bold text-slate-900">"{{ $recommendedCampaign['campaign'] }}"</span>
-                        obtuvo el mayor engagement con
-                        <span class="font-bold text-emerald-700">{{ number_format($recommendedCampaign['engagement'], 1) }}%</span>.
-                    </p>
+                    @if ($recommendedCampaign)
+                        <p class="text-base leading-7 text-slate-700">
+                            <span class="font-bold text-slate-900">"{{ $recommendedCampaign['campaign'] }}"</span>
+                            obtuvo el mayor engagement con
+                            <span class="font-bold text-emerald-700">{{ number_format($recommendedCampaign['engagement'], 1) }}%</span>.
+                        </p>
+                    @else
+                        <p class="text-base leading-7 text-slate-700">Todavía no existen campañas con alcance suficiente para realizar esta comparación.</p>
+                    @endif
                 </article>
             </section>
         </div>
@@ -654,6 +706,7 @@
     <script>
         const dashboardData = {
             campaignsByUser: @json($campaignsByUser),
+            dailyLabels: @json($dailyLabels),
             dailyPerformance: @json($dailyPerformance),
             campaignReach: @json($campaignReach),
             statusDistribution: @json($statusDistribution),
@@ -688,7 +741,7 @@
 
             if (!topHorarios.length) {
                 recommendationNode.textContent =
-                    'No hay suficientes horarios en el archivo JSON para generar una recomendación automática.';
+                    'No hay al menos dos publicaciones en una misma franja horaria. Se necesitan más datos antes de recomendar un horario.';
                 return;
             }
 
@@ -715,7 +768,7 @@
             new Chart(document.getElementById('dailyPerformanceChart'), {
                 type: 'line',
                 data: {
-                    labels: dashboardData.dailyPerformance.map((_, index) => `Día ${index + 1}`),
+                    labels: dashboardData.dailyLabels,
                     datasets: [{
                         label: 'Interacciones',
                         data: dashboardData.dailyPerformance,
