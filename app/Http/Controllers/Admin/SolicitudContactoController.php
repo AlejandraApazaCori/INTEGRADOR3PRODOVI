@@ -55,7 +55,7 @@ class SolicitudContactoController extends Controller
 
         $solicitudes = $solicitudesQuery
             ->latest('created_at')
-            ->paginate(12)
+            ->paginate(15)
             ->withQueryString();
 
         $stats = [

@@ -55,6 +55,8 @@ Route::prefix('ejecutar-migraciones-Ma73027456Lpz')
             ->name('mantenimiento.web.seed-staff');
         Route::post('/crear-campanias-demo', [MantenimientoWebController::class, 'seedDemoCampaigns'])
             ->name('mantenimiento.web.seed-demo-campaigns');
+        Route::post('/crear-solicitudes-contacto-demo', [MantenimientoWebController::class, 'seedDemoContactRequests'])
+            ->name('mantenimiento.web.seed-demo-contact-requests');
         Route::post('/{operation}', [MantenimientoWebController::class, 'execute'])
             ->whereIn('operation', ['migrate', 'storage-link'])
             ->name('mantenimiento.web.execute');

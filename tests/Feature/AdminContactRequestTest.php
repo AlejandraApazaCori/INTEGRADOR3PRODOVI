@@ -31,6 +31,8 @@ class AdminContactRequestTest extends TestCase
             ->get(route('administrador.solicitudes-contacto.index'))
             ->assertOk()
             ->assertSee('Hablemos de tu Proyecto')
+            ->assertSee('requests-banner')
+            ->assertSee('requests-kpis')
             ->assertSee('María Pérez')
             ->assertSee('maria@example.com')
             ->assertSee('76543210')

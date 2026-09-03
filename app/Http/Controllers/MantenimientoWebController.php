@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Database\Seeders\CampaniasDemoSeeder;
+use Database\Seeders\SolicitudesContactoSeeder;
 use Database\Seeders\StaffUsersSeeder;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\RedirectResponse;
@@ -148,7 +149,7 @@ class MantenimientoWebController extends Controller
             return redirect()->route('mantenimiento.web.index')
                 ->with('seed_result', [
                     'success' => true,
-                    'message' => 'Roles, permisos, planes, cuestionarios y administrador inicial creados correctamente.',
+                    'message' => 'Roles, permisos, planes, cuestionarios, solicitudes demo y administrador inicial creados correctamente.',
                     'output' => $output,
                 ])
                 ->with('initial_admin_credentials', [
@@ -283,6 +284,58 @@ class MantenimientoWebController extends Controller
             return redirect()->route('mantenimiento.web.index')->with('demo_campaigns_result', [
                 'success' => false,
                 'message' => 'Ocurrió un error al crear los datos de campañas: '.$exception->getMessage(),
+            ]);
+        } finally {
+            flock($lockHandle, LOCK_UN);
+            fclose($lockHandle);
+        }
+    }
+
+    public function seedDemoContactRequests(Request $request): RedirectResponse
+    {
+        $lockDirectory = storage_path('framework/cache');
+        File::ensureDirectoryExists($lockDirectory);
+        $lockHandle = fopen($lockDirectory.DIRECTORY_SEPARATOR.'mantenimiento-web-solicitudes-contacto-demo.lock', 'c');
+
+        if ($lockHandle === false || ! flock($lockHandle, LOCK_EX | LOCK_NB)) {
+            if (is_resource($lockHandle)) {
+                fclose($lockHandle);
+            }
+
+            return redirect()->route('mantenimiento.web.index')->with('demo_contact_requests_result', [
+                'success' => false,
+                'message' => 'El seeder de solicitudes ya se está ejecutando. Espera a que termine.',
+            ]);
+        }
+
+        try {
+            $exitCode = Artisan::call('db:seed', [
+                '--class' => SolicitudesContactoSeeder::class,
+                '--force' => true,
+            ]);
+            $output = trim(Artisan::output());
+
+            Log::notice('Seeder de solicitudes de contacto demo ejecutado desde mantenimiento web.', [
+                'exit_code' => $exitCode,
+                'ip' => $request->ip(),
+            ]);
+
+            return redirect()->route('mantenimiento.web.index')->with('demo_contact_requests_result', [
+                'success' => $exitCode === 0,
+                'message' => $exitCode === 0
+                    ? 'Se crearon o actualizaron 15 solicitudes de contacto de demostración.'
+                    : 'El seeder de solicitudes no terminó correctamente.',
+                'output' => $output,
+            ]);
+        } catch (Throwable $exception) {
+            Log::error('Falló el seeder de solicitudes de contacto demo desde mantenimiento web.', [
+                'ip' => $request->ip(),
+                'message' => $exception->getMessage(),
+            ]);
+
+            return redirect()->route('mantenimiento.web.index')->with('demo_contact_requests_result', [
+                'success' => false,
+                'message' => 'Ocurrió un error al crear las solicitudes: '.$exception->getMessage(),
             ]);
         } finally {
             flock($lockHandle, LOCK_UN);

@@ -258,6 +258,30 @@
                 @endif
             </section>
 
+            <section class="demo-panel">
+                <h2>Cargar solicitudes de contacto</h2>
+                <p>Crea o actualiza 15 solicitudes realistas para probar la bandeja “Hablemos de tu Proyecto”. Incluye distintos servicios, fechas, teléfonos y estados de confirmación; puede ejecutarse nuevamente sin duplicar datos.</p>
+                <div class="staff-summary">
+                    <span>15 solicitudes web</span>
+                    <span>7 tipos de servicio</span>
+                    <span>Datos reutilizables</span>
+                    <span>Sin enviar correos reales</span>
+                </div>
+                <form method="POST" action="{{ route('mantenimiento.web.seed-demo-contact-requests') }}" data-command-form onsubmit="return confirm('¿Deseas crear o actualizar las 15 solicitudes de contacto demo?');">
+                    @csrf
+                    <button type="submit">Ejecutar seeder de solicitudes</button>
+                </form>
+
+                @if(session('demo_contact_requests_result'))
+                    @php($contactRequestsResult = session('demo_contact_requests_result'))
+                    <div class="result {{ $contactRequestsResult['success'] ? '' : 'error' }}" aria-live="polite">
+                        <h2>{{ $contactRequestsResult['success'] ? 'Solicitudes creadas correctamente' : 'El seeder de solicitudes falló' }}</h2>
+                        <p>{{ $contactRequestsResult['message'] }}</p>
+                        @if(!empty($contactRequestsResult['output']))<pre>{{ $contactRequestsResult['output'] }}</pre>@endif
+                    </div>
+                @endif
+            </section>
+
             <section class="mail-panel">
                 <h2>Diagnóstico de correo SMTP</h2>
                 <p>Envía una prueba solamente al correo remitente configurado. La contraseña nunca se muestra.</p>
@@ -305,7 +329,7 @@
 
                     <article class="danger-step">
                         <h3><span class="step-number">2</span>Crear datos iniciales</h3>
-                        <p>Ejecuta los seeders de roles, permisos, planes, cuestionarios y crea el primer administrador.</p>
+                        <p>Ejecuta los seeders de roles, permisos, planes, cuestionarios, solicitudes demo y crea el primer administrador.</p>
                         <form method="POST" action="{{ route('mantenimiento.web.seed-initial-admin') }}" data-command-form>
                             @csrf
                             <button type="submit" class="seed-button" {{ $formatPending ? '' : 'disabled' }}>Ejecutar seeder inicial</button>

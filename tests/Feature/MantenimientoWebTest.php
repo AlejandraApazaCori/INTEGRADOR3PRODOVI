@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Database\Seeders\CampaniasDemoSeeder;
+use Database\Seeders\SolicitudesContactoSeeder;
 use Database\Seeders\StaffUsersSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
@@ -19,7 +20,8 @@ class MantenimientoWebTest extends TestCase
             ->assertSee('php artisan migrate')
             ->assertSee('php artisan storage:link')
             ->assertSee('Ejecutar seeder del equipo')
-            ->assertSee('Ejecutar seeder de campañas');
+            ->assertSee('Ejecutar seeder de campañas')
+            ->assertSee('Ejecutar seeder de solicitudes');
     }
 
     public function test_migrate_can_be_executed_and_its_output_is_returned(): void
@@ -96,5 +98,26 @@ class MantenimientoWebTest extends TestCase
         $response
             ->assertRedirect(route('mantenimiento.web.index'))
             ->assertSessionHas('demo_campaigns_result', fn (array $result): bool => $result['success'] === true);
+    }
+
+    public function test_the_demo_contact_requests_seeder_can_be_executed(): void
+    {
+        Artisan::shouldReceive('call')
+            ->once()
+            ->with('db:seed', [
+                '--class' => SolicitudesContactoSeeder::class,
+                '--force' => true,
+            ])
+            ->andReturn(0);
+
+        Artisan::shouldReceive('output')
+            ->once()
+            ->andReturn('15 solicitudes creadas correctamente.');
+
+        $response = $this->post(route('mantenimiento.web.seed-demo-contact-requests'));
+
+        $response
+            ->assertRedirect(route('mantenimiento.web.index'))
+            ->assertSessionHas('demo_contact_requests_result', fn (array $result): bool => $result['success'] === true);
     }
 }

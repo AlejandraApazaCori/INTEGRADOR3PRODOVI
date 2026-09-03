@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             TemasCuestionarioSeeder::class,
             PlanesSeeder::class,
+            SolicitudesContactoSeeder::class,
         ]);
     }
 }

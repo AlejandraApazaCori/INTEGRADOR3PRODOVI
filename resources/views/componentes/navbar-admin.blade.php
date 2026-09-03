@@ -38,20 +38,6 @@
                 </a>
             </div>
 
-            <!-- Solicitudes enviadas desde "Hablemos de tu Proyecto" -->
-            @if (auth()->user()->hasAnyRole(['Super Administrador', 'Administrador']))
-                <div class="menu-item menu-teal">
-                    <a href="{{ route('administrador.solicitudes-contacto.index') }}" class="menu-link {{ request()->routeIs('administrador.solicitudes-contacto.*') ? 'active' : '' }}">
-                        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
-                            <path d="M8 9h8"></path>
-                            <path d="M8 13h5"></path>
-                        </svg>
-                        <span class="menu-text">Solicitudes web</span>
-                    </a>
-                </div>
-            @endif
-
             <!-- Usuarios con submenú -->
             @php
                 $usuariosMenuOpen = request()->routeIs('administrador.usuarios.*') || request()->routeIs('administrador.roles.*') || request()->routeIs('administrador.permisos.*') || request()->routeIs('administrador.usuarios.eliminados');
@@ -85,6 +71,20 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Solicitudes enviadas desde "Hablemos de tu Proyecto" -->
+            @if (auth()->user()->hasAnyRole(['Super Administrador', 'Administrador']))
+                <div class="menu-item menu-teal">
+                    <a href="{{ route('administrador.solicitudes-contacto.index') }}" class="menu-link {{ request()->routeIs('administrador.solicitudes-contacto.*') ? 'active' : '' }}">
+                        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
+                            <path d="M8 9h8"></path>
+                            <path d="M8 13h5"></path>
+                        </svg>
+                        <span class="menu-text">Solicitudes web</span>
+                    </a>
+                </div>
+            @endif
 
             <!-- Pagos -->
             @php
