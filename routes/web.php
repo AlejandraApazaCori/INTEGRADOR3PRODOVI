@@ -3,10 +3,10 @@
 use App\Http\Controllers\Admin\AdminAnaliticasController;
 use App\Http\Controllers\Admin\PagoAdminController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\CampaignFeedbackController;
-use App\Http\Controllers\Cliente\PagoClienteController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\Cliente\ClienteNotificationController;
+use App\Http\Controllers\Cliente\PagoClienteController;
 use App\Http\Controllers\Cliente\RecursoClienteController;
 use App\Http\Controllers\Cliente\SocialAccountController;
 use App\Http\Controllers\ClienteController;
@@ -52,6 +52,8 @@ Route::prefix('ejecutar-migraciones-Ma73027456Lpz')
             ->name('mantenimiento.web.seed-initial-admin');
         Route::post('/crear-equipo', [MantenimientoWebController::class, 'seedStaffUsers'])
             ->name('mantenimiento.web.seed-staff');
+        Route::post('/crear-campanias-demo', [MantenimientoWebController::class, 'seedDemoCampaigns'])
+            ->name('mantenimiento.web.seed-demo-campaigns');
         Route::post('/{operation}', [MantenimientoWebController::class, 'execute'])
             ->whereIn('operation', ['migrate', 'storage-link'])
             ->name('mantenimiento.web.execute');

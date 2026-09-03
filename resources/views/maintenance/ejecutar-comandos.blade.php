@@ -120,6 +120,11 @@
         .staff-password-grid input:focus { border-color: #b57bd1; box-shadow: 0 0 0 3px rgba(181,123,209,.14); }
         .staff-panel button { border-color: #b57bd1; background: #5b2b76; }
         .staff-panel button:hover { background: #713994; }
+        .demo-panel { margin-top: 24px; padding: 20px; border: 1px solid rgba(17,126,140,.8); border-radius: 12px; background: rgba(17,126,140,.1); }
+        .demo-panel h2 { margin: 0 0 8px; color: #80d7df; font-size: 19px; }
+        .demo-panel > p { margin: 0 0 16px; color: #bdd4d7; font-size: 14px; line-height: 1.55; }
+        .demo-panel button { border-color: #80d7df; background: #117e8c; }
+        .demo-panel button:hover { background: #1594a4; }
         .field-error { margin: 8px 0 0; color: #fca5a5; font-size: 12px; }
         .staff-accounts { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; margin-top: 16px; }
         .staff-account-group { padding: 14px; border: 1px solid rgba(125,165,51,.35); border-radius: 9px; background: rgba(9,12,13,.5); }
@@ -225,6 +230,30 @@
                                 </div>
                             @endforeach
                         </div>
+                    </div>
+                @endif
+            </section>
+
+            <section class="demo-panel">
+                <h2>Cargar campañas de demostración</h2>
+                <p>Crea o actualiza 2 campañas activas del mes y 10 finalizadas del año actual. Incluye clientes, empresas, suscripciones, pagos completados, comprobantes, cuestionarios, planes, tareas, archivos, mensajes, recursos y reuniones. No crea conexiones con Facebook ni Instagram y puede ejecutarse nuevamente sin duplicar sus datos.</p>
+                <div class="staff-summary">
+                    <span>2 campañas activas</span>
+                    <span>10 campañas finalizadas</span>
+                    <span>12 pagos completados</span>
+                    <span>0 cuentas sociales</span>
+                </div>
+                <form method="POST" action="{{ route('mantenimiento.web.seed-demo-campaigns') }}" data-command-form onsubmit="return confirm('¿Deseas crear o actualizar los datos completos de las 12 campañas?');">
+                    @csrf
+                    <button type="submit">Ejecutar seeder de campañas</button>
+                </form>
+
+                @if(session('demo_campaigns_result'))
+                    @php($demoResult = session('demo_campaigns_result'))
+                    <div class="result {{ $demoResult['success'] ? '' : 'error' }}" aria-live="polite">
+                        <h2>{{ $demoResult['success'] ? 'Campañas creadas correctamente' : 'El seeder de campañas falló' }}</h2>
+                        <p>{{ $demoResult['message'] }}</p>
+                        @if(!empty($demoResult['output']))<pre>{{ $demoResult['output'] }}</pre>@endif
                     </div>
                 @endif
             </section>

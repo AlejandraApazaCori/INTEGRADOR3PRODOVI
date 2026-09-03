@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Database\Seeders\CampaniasDemoSeeder;
 use Database\Seeders\StaffUsersSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
@@ -17,7 +18,8 @@ class MantenimientoWebTest extends TestCase
             ->assertHeader('X-Robots-Tag', 'noindex, nofollow, noarchive')
             ->assertSee('php artisan migrate')
             ->assertSee('php artisan storage:link')
-            ->assertSee('Ejecutar seeder del equipo');
+            ->assertSee('Ejecutar seeder del equipo')
+            ->assertSee('Ejecutar seeder de campañas');
     }
 
     public function test_migrate_can_be_executed_and_its_output_is_returned(): void
@@ -73,5 +75,26 @@ class MantenimientoWebTest extends TestCase
             ->assertRedirect(route('mantenimiento.web.index'))
             ->assertSessionHas('staff_seed_result', fn (array $result): bool => $result['success'] === true)
             ->assertSessionHas('staff_credentials', fn (array $credentials): bool => $credentials['password'] === 'Temporal#Equipo2026');
+    }
+
+    public function test_the_demo_campaign_seeder_can_be_executed(): void
+    {
+        Artisan::shouldReceive('call')
+            ->once()
+            ->with('db:seed', [
+                '--class' => CampaniasDemoSeeder::class,
+                '--force' => true,
+            ])
+            ->andReturn(0);
+
+        Artisan::shouldReceive('output')
+            ->once()
+            ->andReturn('Datos demo creados correctamente.');
+
+        $response = $this->post(route('mantenimiento.web.seed-demo-campaigns'));
+
+        $response
+            ->assertRedirect(route('mantenimiento.web.index'))
+            ->assertSessionHas('demo_campaigns_result', fn (array $result): bool => $result['success'] === true);
     }
 }
