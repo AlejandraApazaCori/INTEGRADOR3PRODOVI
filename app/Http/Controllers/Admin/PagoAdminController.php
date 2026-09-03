@@ -230,20 +230,6 @@ class PagoAdminController extends Controller
         $subscriptionStatuses = ['activa', 'pendiente', 'finalizada', 'cancelada'];
         $methods = ['qr', 'fisico'];
 
-        $summaryPayments = $this->buildAnalyticsQuery([
-            'startDate' => Carbon::now()->startOfMonth()->toDateString(),
-            'endDate' => Carbon::now()->endOfMonth()->toDateString(),
-        ])->get();
-        $summaryPlanCounts = $summaryPayments
-            ->map(fn ($payment) => optional($payment->plan)->nombre ?? 'N/A')
-            ->countBy()
-            ->sortDesc();
-        $paymentSummary = [
-            'total_income' => number_format((float) $summaryPayments->where('estado', 'completado')->sum('monto'), 2, ',', '.').' '.(optional($summaryPayments->first())->moneda ?? 'BS'),
-            'most_hired_plan' => $summaryPlanCounts->keys()->first() ?? 'N/A',
-            'total_records' => $summaryPayments->count(),
-        ];
-
         $pagosQuery = Pago::with(['usuario', 'plan', 'suscripcion', 'comprobantePago', 'libelulaTransaction'])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($searchQuery) use ($search) {
@@ -270,6 +256,33 @@ class PagoAdminController extends Controller
             ->when($dateFrom, fn ($query) => $query->whereDate('fecha_pago', '>=', $dateFrom))
             ->when($dateTo, fn ($query) => $query->whereDate('fecha_pago', '<=', $dateTo))
             ->orderBy('id', $order === 'oldest' ? 'asc' : 'desc');
+
+        // Las cards representan todos los resultados de la misma consulta filtrada
+        // de la tabla, no únicamente los registros de la página visible.
+        $summaryQuery = (clone $pagosQuery)->reorder();
+        $incomeByCurrency = (clone $summaryQuery)
+            ->where('estado', 'completado')
+            ->selectRaw('moneda, SUM(monto) as total')
+            ->groupBy('moneda')
+            ->orderBy('moneda')
+            ->get();
+        $totalIncome = $incomeByCurrency->isEmpty()
+            ? '0,00 BS'
+            : $incomeByCurrency
+                ->map(fn ($row) => number_format((float) $row->total, 2, ',', '.').' '.$row->moneda)
+                ->implode(' · ');
+        $mostHiredPlanId = (clone $summaryQuery)
+            ->select('plan_id')
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy('plan_id')
+            ->orderByDesc('total')
+            ->orderBy('plan_id')
+            ->value('plan_id');
+        $paymentSummary = [
+            'total_income' => $totalIncome,
+            'most_hired_plan' => $mostHiredPlanId ? (Plan::find($mostHiredPlanId)?->nombre ?? 'N/A') : 'N/A',
+            'total_records' => (clone $summaryQuery)->count(),
+        ];
 
         $pagos = $pagosQuery
             ->paginate($perPage)

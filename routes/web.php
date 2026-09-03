@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminAnaliticasController;
 use App\Http\Controllers\Admin\PagoAdminController;
+use App\Http\Controllers\Admin\SolicitudContactoController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CampaignFeedbackController;
 use App\Http\Controllers\ChatbotController;
@@ -221,6 +222,8 @@ Route::post('/facebook/post', [FacebookPostController::class, 'postToPage'])->na
 // Rutas de administrador
 Route::prefix('administrador')->middleware('auth')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('administrador.dashboard');
+    Route::get('/solicitudes-contacto', [SolicitudContactoController::class, 'index'])
+        ->name('administrador.solicitudes-contacto.index');
     Route::post('/comandos/crear-storage-link', function () {
         $user = auth()->user();
         $storageLinkLockKey = 'administrador.storage_link.ejecutado';

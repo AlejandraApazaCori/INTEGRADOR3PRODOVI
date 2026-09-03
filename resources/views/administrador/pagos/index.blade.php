@@ -81,17 +81,17 @@
                 </div>
             </div>
 
-            <section class="payments-summary-grid" aria-label="Resumen mensual de pagos">
+            <section class="payments-summary-grid" aria-label="Resumen de pagos filtrados">
                 <article class="payments-summary-card payments-summary-income">
-                    <div><span>Total de Ingresos</span><strong>{{ $paymentSummary['total_income'] }}</strong><small>Pagos completados del mes actual</small></div>
+                    <div><span>Total de Ingresos</span><strong>{{ $paymentSummary['total_income'] }}</strong><small>Pagos completados según los filtros actuales</small></div>
                     <i class="fas fa-dollar-sign"></i>
                 </article>
                 <article class="payments-summary-card payments-summary-plan">
-                    <div><span>Plan Más Contratado</span><strong>{{ $paymentSummary['most_hired_plan'] }}</strong><small>Mayor cantidad de registros del mes</small></div>
+                    <div><span>Plan Más Contratado</span><strong>{{ $paymentSummary['most_hired_plan'] }}</strong><small>Mayor cantidad dentro del resultado filtrado</small></div>
                     <i class="fas fa-trophy"></i>
                 </article>
                 <article class="payments-summary-card payments-summary-records">
-                    <div><span>Total de Registros</span><strong>{{ $paymentSummary['total_records'] }}</strong><small>Pagos registrados durante el mes</small></div>
+                    <div><span>Total de Registros</span><strong>{{ $paymentSummary['total_records'] }}</strong><small>Pagos que coinciden con los filtros actuales</small></div>
                     <i class="fas fa-chart-bar"></i>
                 </article>
             </section>
