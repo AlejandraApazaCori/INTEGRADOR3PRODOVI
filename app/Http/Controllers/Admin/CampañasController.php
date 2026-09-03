@@ -168,6 +168,7 @@ class CampañasController extends Controller
                 : ['type' => 'all', 'since' => null, 'until' => now()->endOfDay(), 'label' => 'todo el historial'],
             default => ['type' => 'all', 'since' => null, 'until' => now()->endOfDay(), 'label' => 'todo el historial'],
         };
+
         return view('administrador.campañas.analiticas', [
             'dashboard' => null,
             'analyticsFilter' => [
@@ -287,8 +288,7 @@ class CampañasController extends Controller
         Request $request,
         CampaignAudienceService $audienceService,
         CampaignCreatedNotifier $campaignNotifier
-    )
-    {
+    ) {
         $audiences = $audienceService->normalize($request->input('publicos_objetivo', []));
         $request->merge([
             'publicos_objetivo' => $audiences,
@@ -636,8 +636,7 @@ class CampañasController extends Controller
         Campania $campania,
         CampaignAudienceService $audienceService,
         CampaignFeedbackService $feedbackService
-    )
-    {
+    ) {
         $campania->loadMissing([
             'suscripcion.empresa',
             'empresas',
@@ -662,11 +661,23 @@ class CampañasController extends Controller
         $recursosAdministracion = $empresa
             ? $empresa->recursos()->where('origen', 'administracion')->with('creador')->latest()->get()
             : collect();
+        $campaignSocialAccounts = $empresa
+            ? $empresa->socialAccounts()->get()->keyBy('provider')
+            : collect();
+        if ($empresa && (int) $campania->cliente?->empresas?->min('id') === (int) $empresa->id) {
+            $campaignSocialAccounts = $campaignSocialAccounts->union(
+                $campania->cliente->socialAccounts()
+                    ->whereNull('empresa_id')
+                    ->get()
+                    ->keyBy('provider')
+            );
+        }
         $publicosObjetivo = $audienceService->parse((string) $campania->publico_objetivo);
         $feedbackParticipants = $feedbackService->participants($campania);
 
         return view('administrador.campañas.show', compact(
-            'campania', 'empresa', 'recursosCliente', 'recursosAdministracion', 'publicosObjetivo', 'feedbackParticipants'
+            'campania', 'empresa', 'recursosCliente', 'recursosAdministracion', 'campaignSocialAccounts',
+            'publicosObjetivo', 'feedbackParticipants'
         ));
     }
 

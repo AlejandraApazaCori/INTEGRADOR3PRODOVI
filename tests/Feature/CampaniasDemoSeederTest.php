@@ -84,6 +84,14 @@ class CampaniasDemoSeederTest extends TestCase
         $this->get(route('administrador.campañas.show', $activeCampaign))
             ->assertOk()
             ->assertSee($activeCampaign->suscripcion->empresa->nombre_empresa)
-            ->assertSee('Centro de mensajes');
+            ->assertSee('Centro de mensajes')
+            ->assertSee('No conectado')
+            ->assertSee('Conectar con Facebook')
+            ->assertSee(route('clientes.social.redirect', [
+                'provider' => 'facebook',
+                'empresa_id' => $activeCampaign->suscripcion->empresa->id,
+                'return_to' => 'admin_campaign',
+                'campania_id' => $activeCampaign->id,
+            ]));
     }
 }

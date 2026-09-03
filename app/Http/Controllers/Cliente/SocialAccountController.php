@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Cliente;
 
 use App\Http\Controllers\Controller;
+use App\Models\Campania;
 use App\Models\Empresa;
 use App\Models\SocialAccount;
 use App\Models\User;
@@ -24,11 +25,18 @@ class SocialAccountController extends Controller
     {
         abort_unless(in_array($provider, self::SUPPORTED_PROVIDERS, true), 404);
 
-        $user = Auth::user();
+        $actor = Auth::user();
         $empresa = $request->filled('empresa_id')
-            ? $user->empresas()->findOrFail($request->integer('empresa_id'))
+            ? $this->companyForActor($actor, $request->integer('empresa_id'))
             : null;
-        if ($empresa && $request->input('return_to') === 'empresa') {
+        $user = $empresa?->usuario ?? $actor;
+
+        if ($empresa && $request->input('return_to') === 'admin_campaign') {
+            abort_unless($this->isAdministrator($actor), 403);
+            $campaign = Campania::query()->findOrFail($request->integer('campania_id'));
+            abort_unless($this->campaignBelongsToCompany($campaign, $empresa), 404);
+            $returnUrl = route('administrador.campañas.show', $campaign).'#analiticas';
+        } elseif ($empresa && $request->input('return_to') === 'empresa') {
             $returnUrl = route('empresas.show', $empresa->id);
         } elseif ($empresa && $request->input('return_to') === 'dashboard') {
             $returnUrl = route('clientes.dashboard', ['empresa' => $empresa->id]);
@@ -53,6 +61,7 @@ class SocialAccountController extends Controller
         session([
             'social_accounts.return_url' => $returnUrl,
             'social_accounts.empresa_id' => $empresa?->id,
+            'social_accounts.user_id' => $user->id,
         ]);
 
         return Socialite::driver('facebook')
@@ -81,6 +90,7 @@ class SocialAccountController extends Controller
 
         $returnUrl = session()->pull('social_accounts.return_url', route('clientes.home'));
         $empresaId = session()->pull('social_accounts.empresa_id');
+        $userId = session()->pull('social_accounts.user_id');
 
         if ($provider !== 'facebook') {
             return redirect($returnUrl)->with('social_accounts_error', 'Instagram se sincroniza mediante la página de Facebook vinculada.');
@@ -90,14 +100,23 @@ class SocialAccountController extends Controller
             return redirect($returnUrl)->with('social_accounts_error', 'La integración de redes sociales aún no está disponible en este entorno porque falta la tabla social_accounts. Ejecuta las migraciones del sistema.');
         }
 
+        $actor = Auth::user();
+        $user = $userId ? User::query()->find($userId) : $actor;
+        $empresa = $empresaId ? Empresa::query()->find($empresaId) : null;
+
+        if (! $user || ($empresaId && ! $empresa)) {
+            return redirect($returnUrl)->with('social_accounts_error', 'La empresa seleccionada ya no está disponible.');
+        }
+
+        abort_unless(! $empresa || (int) $empresa->usuario_id === (int) $user->id, 403);
+        abort_unless(
+            $this->isAdministrator($actor)
+                || (int) $actor->id === (int) $user->id,
+            403
+        );
+
         try {
             $socialUser = Socialite::driver('facebook')->user();
-            $user = Auth::user();
-            $empresa = $empresaId ? $user->empresas()->find($empresaId) : null;
-
-            if ($empresaId && ! $empresa) {
-                return redirect($returnUrl)->with('social_accounts_error', 'La empresa seleccionada ya no está disponible.');
-            }
 
             $facebookPages = $this->fetchFacebookPages($socialUser->token);
             $primaryPage = $facebookPages[0] ?? null;
@@ -350,6 +369,27 @@ class SocialAccountController extends Controller
         return filled($config['client_id'] ?? null)
             && filled($config['client_secret'] ?? null)
             && filled($config['redirect'] ?? null);
+    }
+
+    private function companyForActor(User $actor, int $companyId): Empresa
+    {
+        if ($this->isAdministrator($actor)) {
+            return Empresa::query()->with('usuario')->findOrFail($companyId);
+        }
+
+        return $actor->empresas()->with('usuario')->findOrFail($companyId);
+    }
+
+    private function isAdministrator(User $user): bool
+    {
+        return $user->hasAnyRole(['Super Administrador', 'Administrador']);
+    }
+
+    private function campaignBelongsToCompany(Campania $campaign, Empresa $company): bool
+    {
+        return ($campaign->suscripcion_id
+                && (int) $campaign->suscripcion_id === (int) $company->suscripcion_id)
+            || $campaign->empresas()->whereKey($company->id)->exists();
     }
 
     private function fetchFacebookPages(string $userAccessToken): array
