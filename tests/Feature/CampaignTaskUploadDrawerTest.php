@@ -9,6 +9,7 @@ use App\Models\Suscripcion;
 use App\Models\Tarea;
 use App\Models\TareaArchivo;
 use App\Models\User;
+use App\Notifications\TareaEntregadaNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -22,6 +23,7 @@ class CampaignTaskUploadDrawerTest extends TestCase
     {
         Storage::fake('public');
         [$admin, $campaign, $task] = $this->campaignWithTask();
+        $task->update(['estado' => 'en_curso']);
 
         $this->actingAs($admin)
             ->get(route('administrador.campañas.show', $campaign).'#tareas')
@@ -44,6 +46,22 @@ class CampaignTaskUploadDrawerTest extends TestCase
             'tarea_id' => $task->id,
             'nombre_original' => 'contenido.pdf',
             'descripcion' => 'Entregable desde el panel lateral',
+        ]);
+        $this->assertDatabaseHas('tareas', [
+            'id' => $task->id,
+            'estado' => 'entregado',
+        ]);
+        $this->assertDatabaseHas('notifications', [
+            'type' => TareaEntregadaNotification::class,
+            'notifiable_id' => $admin->id,
+        ]);
+        $this->assertDatabaseHas('notifications', [
+            'type' => TareaEntregadaNotification::class,
+            'notifiable_id' => $task->asignado_id,
+        ]);
+        $this->assertDatabaseMissing('notifications', [
+            'type' => TareaEntregadaNotification::class,
+            'notifiable_id' => $campaign->usuario_cliente_id,
         ]);
         $storedFile = $task->archivos()->firstOrFail();
         Storage::disk('public')->assertExists($storedFile->ruta_archivo);
@@ -95,6 +113,7 @@ class CampaignTaskUploadDrawerTest extends TestCase
             'tarea_id' => $task->id,
             'nombre_original' => 'revision.pdf',
         ]);
+        $this->assertSame('entregado', $task->refresh()->estado);
     }
 
     public function test_publish_action_is_prominent_on_a_card_with_approved_content(): void
@@ -133,10 +152,14 @@ class CampaignTaskUploadDrawerTest extends TestCase
             'estado' => 'aprobado',
         ]);
 
-        $this->actingAs($admin)
+        $response = $this->actingAs($admin)
             ->get(route('administrador.campañas.show', $campaign).'#tareas')
-            ->assertOk()
-            ->assertDontSee('Publicar contenido');
+            ->assertOk();
+
+        $this->assertStringNotContainsString(
+            '<a href="'.route('administrador.publicaciones.publicar', ['tarea_id' => $task->id]).'" class="task-card-publish"',
+            $response->getContent()
+        );
     }
 
     public function test_task_can_move_through_all_new_statuses(): void
@@ -151,6 +174,20 @@ class CampaignTaskUploadDrawerTest extends TestCase
         }
 
         $this->assertSame('publicado', $task->refresh()->estado);
+    }
+
+    public function test_task_can_move_freely_between_initial_workflow_statuses(): void
+    {
+        [$admin, $campaign, $task] = $this->campaignWithTask();
+
+        foreach (['pendiente', 'no_iniciado', 'en_curso', 'pendiente', 'en_curso', 'no_iniciado'] as $status) {
+            $this->actingAs($admin)
+                ->patchJson(route('administrador.tareas.update-estado', $task), ['estado' => $status])
+                ->assertOk()
+                ->assertJsonPath('estado', $status);
+        }
+
+        $this->assertSame('no_iniciado', $task->refresh()->estado);
     }
 
     public function test_review_upload_errors_reopen_its_drawer(): void

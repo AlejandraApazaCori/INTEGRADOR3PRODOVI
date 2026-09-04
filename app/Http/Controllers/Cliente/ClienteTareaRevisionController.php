@@ -28,6 +28,11 @@ class ClienteTareaRevisionController extends Controller
 
         if (filled($validated['estado'] ?? null)) {
             $archivo->update(['estado' => $validated['estado']]);
+            if ($validated['estado'] === 'aprobado') {
+                $tarea->update(['estado' => 'aprobado']);
+            } elseif ($validated['estado'] === 'rechazado') {
+                $tarea->update(['estado' => 'reformular']);
+            }
         }
 
         if (filled($validated['comentario'] ?? null)) {

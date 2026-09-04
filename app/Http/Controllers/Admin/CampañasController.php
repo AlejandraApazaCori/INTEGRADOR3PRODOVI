@@ -500,6 +500,7 @@ class CampañasController extends Controller
                             : ($tarea['tipo_contenido'] ?? null),
                         'fecha_inicio' => $tarea['fecha_inicio'],
                         'fecha_limite' => $tarea['fecha_limite'],
+                        'estado' => 'no_iniciado',
                         'prioridad' => $tarea['prioridad'],
                         'requiere_aprobacion' => (bool) ($tarea['requiere_aprobacion'] ?? false),
                         'visible_cliente' => (bool) ($tarea['visible_cliente'] ?? false),

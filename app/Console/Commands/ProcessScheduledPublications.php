@@ -50,7 +50,7 @@ class ProcessScheduledPublications extends Command
                 $published = $result['success'] || $result['partial'];
 
                 $tarea->forceFill([
-                    'estado' => $result['success'] ? 'publicado' : $tarea->estado,
+                    'estado' => $published ? 'publicado' : $tarea->estado,
                     'publication_status' => $result['success'] ? 'published' : ($result['partial'] ? 'partial' : 'failed'),
                     'published_at' => $published ? now() : null,
                     'facebook_post_id' => $result['facebook_post_id'] ?? null,

@@ -22,7 +22,17 @@
         <div title="{{ $nombresResponsables }}"><i class="fas fa-user-group"></i><span>{{ $nombresResponsables }}</span></div>
         <div class="{{ $diasRestantesTarjeta < 0 && ! in_array($tarea->estado, ['entregado', 'aprobado', 'publicado'], true) ? 'is-overdue' : '' }}"><i class="fas fa-clock"></i><span>{{ $tarea->fecha_limite->format('d/m/Y') }} · {{ $diasRestantesTarjeta >= 0 ? ($diasRestantesTarjeta === 0 ? 'Vence hoy' : 'Faltan '.$diasRestantesTarjeta.' días') : 'Vencida' }}</span></div>
     </div>
-    <label class="task-card-status-select"><i class="fas fa-arrows-left-right"></i><span>Mover a</span><select data-card-status aria-label="Cambiar estado de {{ $tarea->titulo }}">@foreach(['no_iniciado' => 'No iniciado', 'pendiente' => 'Pendiente', 'en_curso' => 'En curso', 'entregado' => 'Entregado', 'reformular' => 'Reformular', 'aprobado' => 'Aprobado', 'publicado' => 'Publicado'] as $valorEstado => $nombreEstado)<option value="{{ $valorEstado }}" @selected($estadoKanban === $valorEstado)>{{ $nombreEstado }}</option>@endforeach</select></label>
+    <div class="task-card-status-select" data-status-dropdown>
+        <i class="fas fa-arrows-left-right"></i><span>Mover a</span>
+        <div class="task-status-dropdown-control">
+            <button type="button" data-status-trigger aria-expanded="false" aria-label="Cambiar estado de {{ $tarea->titulo }}"><b data-status-label>{{ ['no_iniciado' => 'No iniciado', 'pendiente' => 'Pendiente', 'en_curso' => 'En curso', 'entregado' => 'Entregado', 'reformular' => 'Reformular', 'aprobado' => 'Aprobado', 'publicado' => 'Publicado'][$estadoKanban] ?? 'No iniciado' }}</b><i class="fas fa-chevron-down"></i></button>
+            <div class="task-status-dropdown-menu" data-status-menu hidden>
+                @foreach(['no_iniciado' => 'No iniciado', 'pendiente' => 'Pendiente', 'en_curso' => 'En curso', 'entregado' => 'Entregado', 'reformular' => 'Reformular', 'aprobado' => 'Aprobado', 'publicado' => 'Publicado'] as $valorEstado => $nombreEstado)
+                    <button type="button" data-status-option="{{ $valorEstado }}" class="{{ $estadoKanban === $valorEstado ? 'is-selected' : '' }}"><span>{{ $nombreEstado }}</span><i class="fas fa-check"></i></button>
+                @endforeach
+            </div>
+        </div>
+    </div>
     @if($puedePublicarse)
         <a href="{{ route('administrador.publicaciones.publicar', ['tarea_id' => $tarea->id]) }}" class="task-card-publish"><i class="fas fa-rocket"></i><span>Publicar contenido</span><i class="fas fa-arrow-right"></i></a>
     @endif

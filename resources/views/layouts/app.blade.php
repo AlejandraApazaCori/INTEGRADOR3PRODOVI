@@ -169,13 +169,13 @@
                                 @endforeach
 
                                 {{-- Tareas no vistas --}}
-                                @foreach($tareasNoVistas ?? [] as $archivo)
-                                    <a href="{{ route('administrador.tareas.show', $archivo->tarea_id) }}" class="notification-item font-semibold">
+                                @foreach($tareasNoVistas ?? [] as $notification)
+                                    <a href="{{ route('administrador.tareas.show', $notification->data['task_id']) }}" class="notification-item font-semibold">
                                         <div class="notification-item-icon bg-blue-100 text-blue-600">📎</div>
                                         <div class="notification-item-content">
-                                            <p class="text-xs font-semibold">{{ $archivo->user?->name ?? 'Usuario eliminado' }}</p>
-                                            <p class="text-[10px] text-gray-500">Subió un archivo a: {{ $archivo->tarea->nombre ?? '—' }}</p>
-                                            <p class="text-[10px] text-gray-400">{{ $archivo->created_at->diffForHumans() }}</p>
+                                            <p class="text-xs font-semibold">{{ $notification->data['title'] ?? 'Tarea entregada' }}</p>
+                                            <p class="text-[10px] text-gray-500">{{ $notification->data['message'] ?? 'Se adjuntaron archivos a una tarea.' }}</p>
+                                            <p class="text-[10px] text-gray-400">{{ $notification->created_at->diffForHumans() }}</p>
                                         </div>
                                     </a>
                                 @endforeach
@@ -222,12 +222,12 @@
                                     </a>
                                 @endforeach
 
-                                @foreach($tareasVistas ?? [] as $archivo)
-                                    <a href="{{ route('administrador.tareas.show', $archivo->tarea_id) }}" class="notification-item opacity-60">
+                                @foreach($tareasVistas ?? [] as $notification)
+                                    <a href="{{ route('administrador.tareas.show', $notification->data['task_id']) }}" class="notification-item opacity-60">
                                         <div class="notification-item-icon bg-gray-100 text-gray-400">📎</div>
                                         <div class="notification-item-content">
-                                            <p class="text-xs">{{ $archivo->user?->name ?? 'Usuario eliminado' }}</p>
-                                            <p class="text-[10px] text-gray-400">Archivo en: {{ $archivo->tarea->nombre ?? '—' }}</p>
+                                            <p class="text-xs">{{ $notification->data['title'] ?? 'Tarea entregada' }}</p>
+                                            <p class="text-[10px] text-gray-400">{{ $notification->data['message'] ?? 'Se adjuntaron archivos a una tarea.' }}</p>
                                         </div>
                                     </a>
                                 @endforeach

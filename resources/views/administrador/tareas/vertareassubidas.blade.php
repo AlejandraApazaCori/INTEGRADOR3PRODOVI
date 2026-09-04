@@ -8,7 +8,7 @@
     $totalArchivos = $archivos->count();
     $archivosPendientes = $archivos->where('estado', 'pendiente')->count();
     $archivosAprobados = $archivos->where('estado', 'aprobado')->count();
-    $archivosRechazados = $archivos->where('estado', 'rechazado')->count();
+    $archivosParaReformular = $archivos->where('estado', 'rechazado')->count();
     $estadoTareaClase = match($tarea->estado) {
         'entregado', 'aprobado', 'publicado' => 'is-complete',
         'en_curso' => 'is-progress',
@@ -58,7 +58,7 @@
                 <div><span>Entregables</span><strong>{{ $totalArchivos }}</strong></div>
                 <div><span>Pendientes</span><strong>{{ $archivosPendientes }}</strong></div>
                 <div><span>Aprobados</span><strong>{{ $archivosAprobados }}</strong></div>
-                <div><span>Rechazados</span><strong>{{ $archivosRechazados }}</strong></div>
+                <div><span>Reformular</span><strong>{{ $archivosParaReformular }}</strong></div>
             </section>
 
             <div class="review-grid">
@@ -66,7 +66,7 @@
                     <header class="review-card-header">
                         <div><h2>Archivos adjuntos</h2><p>Descarga y define el resultado de cada entregable.</p></div>
                         @if($tarea->estado === 'aprobado')
-                            <a href="{{ route('administrador.publicaciones.publicar', ['tarea_id' => $tarea->id]) }}" class="review-publish"><i class="fas fa-rocket"></i> Publicar</a>
+                            <a href="{{ route('administrador.publicaciones.publicar', ['tarea_id' => $tarea->id]) }}" class="review-publish"><i class="fas fa-rocket"></i> Publicar contenido</a>
                         @endif
                     </header>
 
@@ -104,7 +104,7 @@
                                     <div class="review-file-copy">
                                         <div class="review-file-title">
                                             <strong>{{ $archivo->nombre_original }}</strong>
-                                            <span class="review-file-status {{ $fileStatusClass }}">{{ ucfirst($archivo->estado) }}</span>
+                                            <span class="review-file-status {{ $fileStatusClass }}">{{ $archivo->estado === 'rechazado' ? 'Reformular' : ucfirst($archivo->estado) }}</span>
                                         </div>
                                         <small>{{ strtoupper($extension ?: 'Archivo') }} · {{ $fileSize }} · Subido por {{ $archivo->user?->name ?? 'Usuario eliminado' }}</small>
                                         @if($archivo->descripcion)<p>{{ $archivo->descripcion }}</p>@endif
@@ -122,7 +122,7 @@
                                         @method('PUT')
                                         <button type="submit" name="estado" value="pendiente" class="is-neutral {{ $archivo->estado === 'pendiente' ? 'is-current' : '' }}">Pendiente</button>
                                         <button type="submit" name="estado" value="aprobado" class="is-approve {{ $archivo->estado === 'aprobado' ? 'is-current' : '' }}"><i class="fas fa-check"></i> Aprobar</button>
-                                        <button type="submit" name="estado" value="rechazado" class="is-reject {{ $archivo->estado === 'rechazado' ? 'is-current' : '' }}"><i class="fas fa-xmark"></i> Rechazar</button>
+                                        <button type="submit" name="estado" value="rechazado" class="is-reject {{ $archivo->estado === 'rechazado' ? 'is-current' : '' }}"><i class="fas fa-rotate-left"></i> Reformular</button>
                                     </form>
                                 </div>
                             </article>

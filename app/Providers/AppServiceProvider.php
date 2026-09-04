@@ -28,43 +28,44 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('layouts.app', function ($view) {
             $user = \Illuminate\Support\Facades\Auth::user();
-            if ($user && $user->hasAnyRole(['Super Administrador', 'Administrador', 'Community Manager'])) {
-                $pagosNoVistos = \App\Models\Pago::with(['usuario', 'plan', 'codigoPago'])
+            if ($user && $user->hasAnyRole(['Super Administrador', 'Administrador', 'Community Manager', 'Disenador', 'Diseñador'])) {
+                $canSeeGlobalNotifications = $user->hasAnyRole(['Super Administrador', 'Administrador', 'Community Manager']);
+                $pagosNoVistos = $canSeeGlobalNotifications ? \App\Models\Pago::with(['usuario', 'plan', 'codigoPago'])
                     ->where('visto', false)
+                    ->orderBy('created_at', 'desc')
+                    ->take(5)
+                    ->get() : collect();
+
+                $campaniasNoVistas = $canSeeGlobalNotifications ? \App\Models\Campania::with(['creador', 'cliente'])
+                    ->where('visto', false)
+                    ->orderBy('created_at', 'desc')
+                    ->take(5)
+                    ->get() : collect();
+
+                $tareasNoVistas = $user->unreadNotifications()
+                    ->where('type', \App\Notifications\TareaEntregadaNotification::class)
                     ->orderBy('created_at', 'desc')
                     ->take(5)
                     ->get();
 
-                $campaniasNoVistas = \App\Models\Campania::with(['creador', 'cliente'])
-                    ->where('visto', false)
-                    ->orderBy('created_at', 'desc')
-                    ->take(5)
-                    ->get();
+                $notificationCount = ($canSeeGlobalNotifications ? \App\Models\Pago::where('visto', false)->count() : 0)
+                    + ($canSeeGlobalNotifications ? \App\Models\Campania::where('visto', false)->count() : 0)
+                    + $user->unreadNotifications()->where('type', \App\Notifications\TareaEntregadaNotification::class)->count();
 
-                $tareasNoVistas = \App\Models\TareaArchivo::with(['tarea', 'user'])
-                    ->where('visto', false)
-                    ->orderBy('created_at', 'desc')
-                    ->take(5)
-                    ->get();
-
-                $notificationCount = \App\Models\Pago::where('visto', false)->count()
-                    + \App\Models\Campania::where('visto', false)->count()
-                    + \App\Models\TareaArchivo::where('visto', false)->count();
-
-                $pagosVistos = \App\Models\Pago::with(['usuario', 'plan', 'codigoPago'])
+                $pagosVistos = $canSeeGlobalNotifications ? \App\Models\Pago::with(['usuario', 'plan', 'codigoPago'])
                     ->where('visto', true)
                     ->orderBy('created_at', 'desc')
                     ->take(3)
-                    ->get();
+                    ->get() : collect();
 
-                $campaniasVistas = \App\Models\Campania::with(['creador', 'cliente'])
+                $campaniasVistas = $canSeeGlobalNotifications ? \App\Models\Campania::with(['creador', 'cliente'])
                     ->where('visto', true)
                     ->orderBy('created_at', 'desc')
                     ->take(3)
-                    ->get();
+                    ->get() : collect();
 
-                $tareasVistas = \App\Models\TareaArchivo::with(['tarea', 'user'])
-                    ->where('visto', true)
+                $tareasVistas = $user->readNotifications()
+                    ->where('type', \App\Notifications\TareaEntregadaNotification::class)
                     ->orderBy('created_at', 'desc')
                     ->take(3)
                     ->get();
@@ -98,14 +99,14 @@ class AppServiceProvider extends ServiceProvider
                     ]);
                 }
 
-                foreach ($tareasNoVistas as $archivo) {
+                foreach ($tareasNoVistas as $notification) {
                     $dashboardNotifications->push([
                         'type' => 'task',
                         'icon' => 'fa-paperclip',
-                        'title' => $archivo->user->name ?? 'Usuario',
-                        'message' => 'Subió un archivo a '.($archivo->tarea->nombre ?? 'una tarea'),
-                        'date' => $archivo->created_at,
-                        'url' => route('administrador.tareas.show', $archivo->tarea_id),
+                        'title' => $notification->data['title'] ?? 'Tarea entregada',
+                        'message' => $notification->data['message'] ?? 'Se adjuntaron archivos a una tarea.',
+                        'date' => $notification->created_at,
+                        'url' => route('administrador.tareas.show', $notification->data['task_id']),
                     ]);
                 }
 

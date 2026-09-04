@@ -51,6 +51,7 @@ class TareaController extends Controller
             'descripcion' => $request->descripcion,
             'fecha_inicio' => $request->fecha_inicio,
             'fecha_limite' => $request->fecha_limite,
+            'estado' => 'no_iniciado',
             'prioridad' => $request->prioridad,
             'campania_id' => $campania->id,
             'creador_id' => Auth::id(),

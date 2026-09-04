@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Tarea;
 use App\Models\TareaArchivo;
+use App\Models\User;
+use App\Notifications\TareaEntregadaNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
 class TareaArchivoController extends Controller
@@ -45,6 +49,7 @@ class TareaArchivoController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
+        $archivosGuardados = 0;
         if ($request->hasFile('archivos')) {
             foreach ($request->file('archivos') as $archivo) {
                 $rutaArchivo = $archivo->store('tareas/archivos', 'public');
@@ -59,7 +64,13 @@ class TareaArchivoController extends Controller
                     'tamanio' => $archivo->getSize(),
                     'descripcion' => $request->descripcion,
                 ]);
+                $archivosGuardados++;
             }
+        }
+
+        if ($archivosGuardados > 0) {
+            $tarea->update(['estado' => 'entregado']);
+            $this->notifyInternalTeam($tarea, $archivosGuardados);
         }
 
         if ($fromCampaign) {
@@ -104,6 +115,12 @@ class TareaArchivoController extends Controller
 
         $archivo->update(['estado' => $request->estado]);
 
+        if ($request->estado === 'aprobado') {
+            $archivo->tarea()->update(['estado' => 'aprobado']);
+        } elseif ($request->estado === 'rechazado') {
+            $archivo->tarea()->update(['estado' => 'reformular']);
+        }
+
         return back()->with('success', 'Estado del archivo actualizado correctamente');
     }
     public function verSubidas(Tarea $tarea)
@@ -125,4 +142,39 @@ class TareaArchivoController extends Controller
 
     return view('administrador.tareas.vertareassubidas', compact('tarea'));
 }
+
+    private function notifyInternalTeam(Tarea $tarea, int $fileCount): void
+    {
+        if (! Schema::hasTable('notifications') || ! Auth::user()) {
+            return;
+        }
+
+        $tarea->loadMissing([
+            'asignado',
+            'responsables',
+            'campania.creador',
+            'campania.communityManager',
+            'campania.disenador',
+            'campania.disenadores',
+        ]);
+
+        $campaign = $tarea->campania;
+        $clientId = (int) ($campaign?->usuario_cliente_id ?? 0);
+        $recipients = collect([
+            $tarea->asignado,
+            $campaign?->creador,
+            $campaign?->communityManager,
+            $campaign?->disenador,
+        ])
+            ->merge($tarea->responsables)
+            ->merge($campaign?->disenadores ?? collect())
+            ->filter(fn ($recipient) => $recipient instanceof User)
+            ->reject(fn (User $recipient) => (int) $recipient->id === $clientId)
+            ->unique('id')
+            ->values();
+
+        if ($recipients->isNotEmpty()) {
+            Notification::send($recipients, new TareaEntregadaNotification($tarea, Auth::user(), $fileCount));
+        }
+    }
 }
