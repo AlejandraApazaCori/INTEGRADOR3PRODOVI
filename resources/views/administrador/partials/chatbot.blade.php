@@ -7,10 +7,10 @@
             completedCampaignsCount: {{ \App\Models\Campania::where('estado', 'finalizada')->count() }},
             totalCampaignsCount: {{ \App\Models\Campania::count() }},
             
-            pendingTasksCount: {{ \App\Models\Tarea::where('estado', 'pendiente')->count() }},
-            inProgressTasksCount: {{ \App\Models\Tarea::where('estado', 'en_progreso')->count() }},
-            completedTasksCount: {{ \App\Models\Tarea::where('estado', 'completada')->count() }},
-            rejectedTasksCount: {{ \App\Models\Tarea::where('estado', 'rechazada')->count() }},
+            pendingTasksCount: {{ \App\Models\Tarea::whereIn('estado', ['no_iniciado', 'pendiente'])->count() }},
+            inProgressTasksCount: {{ \App\Models\Tarea::where('estado', 'en_curso')->count() }},
+            completedTasksCount: {{ \App\Models\Tarea::whereIn('estado', ['entregado', 'aprobado', 'publicado'])->count() }},
+            rejectedTasksCount: {{ \App\Models\Tarea::where('estado', 'reformular')->count() }},
             
             activeSubscriptionsCount: {{ \App\Models\Suscripcion::where('estado', 'activa')->count() }},
             pendingSubscriptionsCount: {{ \App\Models\Suscripcion::where('estado', 'pendiente')->count() }},

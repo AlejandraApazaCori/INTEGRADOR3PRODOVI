@@ -14,7 +14,7 @@ return new class extends Migration
             $table->text('descripcion');
             $table->date('fecha_inicio');
             $table->date('fecha_limite');
-            $table->enum('estado', ['pendiente', 'en_progreso', 'completada', 'rechazada'])->default('pendiente');
+            $table->enum('estado', ['no_iniciado', 'pendiente', 'en_curso', 'entregado', 'reformular', 'aprobado', 'publicado'])->default('no_iniciado');
             $table->enum('prioridad', ['baja', 'media', 'alta', 'urgente'])->default('media');
 
             // Relación con la campaña

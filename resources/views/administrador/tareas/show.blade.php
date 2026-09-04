@@ -44,13 +44,16 @@
                     <div class="flex items-center gap-3">
                         @php
                             $estadoConfig = [
-                                'completada' => ['bg' => '#a7b838', 'icon' => 'fa-check-circle'],
-                                'en_progreso' => ['bg' => '#ea9f21', 'icon' => 'fa-spinner'],
-                                'rechazada' => ['bg' => '#ed0551', 'icon' => 'fa-times-circle'],
+                                'entregado' => ['bg' => '#397c91', 'icon' => 'fa-box'],
+                                'aprobado' => ['bg' => '#a7b838', 'icon' => 'fa-check-circle'],
+                                'publicado' => ['bg' => '#6b4ea0', 'icon' => 'fa-bullhorn'],
+                                'en_curso' => ['bg' => '#ea9f21', 'icon' => 'fa-spinner'],
+                                'reformular' => ['bg' => '#ed0551', 'icon' => 'fa-times-circle'],
+                                'no_iniciado' => ['bg' => '#475569', 'icon' => 'fa-circle'],
                                 'pendiente' => ['bg' => '#475569', 'icon' => 'fa-clock'],
                             ];
-                            $estado = $tarea->estado ?? 'pendiente';
-                            $config = $estadoConfig[$estado] ?? $estadoConfig['pendiente'];
+                            $estado = $tarea->estado ?? 'no_iniciado';
+                            $config = $estadoConfig[$estado] ?? $estadoConfig['no_iniciado'];
                         @endphp
                         <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white font-semibold shadow-sm" style="background: {{ $config['bg'] }};">
                             <i class="fas {{ $config['icon'] }}"></i>

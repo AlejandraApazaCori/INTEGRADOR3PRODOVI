@@ -100,6 +100,7 @@ class CampaignTaskUploadDrawerTest extends TestCase
     public function test_publish_action_is_prominent_on_a_card_with_approved_content(): void
     {
         [$admin, $campaign, $task] = $this->campaignWithTask();
+        $task->update(['estado' => 'aprobado']);
         TareaArchivo::create([
             'tarea_id' => $task->id,
             'user_id' => $admin->id,
@@ -116,6 +117,40 @@ class CampaignTaskUploadDrawerTest extends TestCase
             ->assertOk()
             ->assertSee('task-card-publish', false)
             ->assertSee('Publicar contenido');
+    }
+
+    public function test_publish_action_only_appears_when_the_task_is_approved(): void
+    {
+        [$admin, $campaign, $task] = $this->campaignWithTask();
+        TareaArchivo::create([
+            'tarea_id' => $task->id,
+            'user_id' => $admin->id,
+            'nombre_original' => 'pieza-aprobada.png',
+            'ruta_archivo' => 'tareas/archivos/pieza-aprobada.png',
+            'extension' => 'png',
+            'mime_type' => 'image/png',
+            'tamanio' => 1024,
+            'estado' => 'aprobado',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('administrador.campañas.show', $campaign).'#tareas')
+            ->assertOk()
+            ->assertDontSee('Publicar contenido');
+    }
+
+    public function test_task_can_move_through_all_new_statuses(): void
+    {
+        [$admin, $campaign, $task] = $this->campaignWithTask();
+
+        foreach (['no_iniciado', 'pendiente', 'en_curso', 'entregado', 'reformular', 'aprobado', 'publicado'] as $status) {
+            $this->actingAs($admin)
+                ->patchJson(route('administrador.tareas.update-estado', $task), ['estado' => $status])
+                ->assertOk()
+                ->assertJsonPath('estado', $status);
+        }
+
+        $this->assertSame('publicado', $task->refresh()->estado);
     }
 
     public function test_review_upload_errors_reopen_its_drawer(): void
@@ -251,7 +286,7 @@ class CampaignTaskUploadDrawerTest extends TestCase
             'fecha_inicio' => now()->toDateString(),
             'fecha_limite' => now()->addWeek()->toDateString(),
             'prioridad' => 'media',
-            'estado' => 'pendiente',
+            'estado' => 'no_iniciado',
             'campania_id' => $campaign->id,
             'creador_id' => $admin->id,
             'asignado_id' => $manager->id,

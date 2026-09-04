@@ -44,7 +44,7 @@ class DashboardController extends Controller
                     $query->whereDate('fecha_fin', '<=', $riskLimit)
                         ->orWhereHas('tareas', fn (Builder $tasks) => $tasks
                             ->whereDate('fecha_limite', '<', $today)
-                            ->where('estado', '!=', 'completada'));
+                            ->whereNotIn('estado', ['entregado', 'aprobado', 'publicado']));
                 });
         };
 
@@ -60,11 +60,11 @@ class DashboardController extends Controller
         $taskBase = Tarea::query();
         $tasksDueToday = (clone $taskBase)
             ->whereDate('fecha_limite', $today)
-            ->where('estado', '!=', 'completada')
+            ->whereNotIn('estado', ['entregado', 'aprobado', 'publicado'])
             ->count();
         $overdueTasks = (clone $taskBase)
             ->whereDate('fecha_limite', '<', $today)
-            ->where('estado', '!=', 'completada')
+            ->whereNotIn('estado', ['entregado', 'aprobado', 'publicado'])
             ->count();
 
         $pendingPayments = Pago::where('estado', 'pendiente')
@@ -85,10 +85,10 @@ class DashboardController extends Controller
         $monitoringQuery = Campania::with(['cliente', 'communityManager', 'suscripcion.empresa'])
             ->withCount([
                 'tareas',
-                'tareas as tareas_completadas_count' => fn (Builder $query) => $query->where('estado', 'completada'),
+                'tareas as tareas_completadas_count' => fn (Builder $query) => $query->whereIn('estado', ['entregado', 'aprobado', 'publicado']),
                 'tareas as tareas_vencidas_count' => fn (Builder $query) => $query
                     ->whereDate('fecha_limite', '<', $today)
-                    ->where('estado', '!=', 'completada'),
+                    ->whereNotIn('estado', ['entregado', 'aprobado', 'publicado']),
             ]);
         $campaigns = $monitoringQuery
             ->whereDate('fecha_fin', '>=', $today)
@@ -121,7 +121,7 @@ class DashboardController extends Controller
             ->get()
             ->groupBy('community_manager_id');
         $managerTaskStats = Tarea::whereIn('asignado_id', $managerIds)
-            ->where('estado', '!=', 'completada')
+            ->whereNotIn('estado', ['entregado', 'aprobado', 'publicado'])
             ->get()
             ->groupBy('asignado_id');
         $managerWorkload = $communityManagers
@@ -206,7 +206,7 @@ class DashboardController extends Controller
         };
 
         (clone $taskBase)->whereBetween('fecha_limite', [$heatmapStart, $heatmapEnd])
-            ->where('estado', '!=', 'completada')
+            ->whereNotIn('estado', ['entregado', 'aprobado', 'publicado'])
             ->get(['fecha_limite'])
             ->each(fn (Tarea $task) => $addHeatmapEvent($task->fecha_limite, 'tasks'));
         (clone $campaignBase)->whereBetween('fecha_fin', [$heatmapStart, $heatmapEnd])
@@ -250,7 +250,7 @@ class DashboardController extends Controller
             }
         }
         (clone $taskBase)->with('campania')->whereBetween('fecha_limite', [$today, $today->copy()->addDays(14)])
-            ->where('estado', '!=', 'completada')->get()->each(function (Tarea $task) use ($calendarItems) {
+            ->whereNotIn('estado', ['entregado', 'aprobado', 'publicado'])->get()->each(function (Tarea $task) use ($calendarItems) {
                 $calendarItems->push(['date' => $task->fecha_limite, 'type' => 'task', 'label' => 'Entrega de tarea', 'title' => $task->titulo, 'url' => route('administrador.tareas.show', $task)]);
             });
         Suscripcion::with('usuario')->where('estado', 'activa')->whereNotNull('vigencia_activada_at')
@@ -276,7 +276,7 @@ class DashboardController extends Controller
         $recentCampaignsQuery->latest()->take(4)->get()->each(function (Campania $campaign) use ($recentActivity) {
             $recentActivity->push(['date' => $campaign->created_at, 'icon' => 'fa-bullhorn', 'type' => 'campaign', 'title' => 'Campaña creada', 'message' => $campaign->nombre.' · '.($campaign->cliente?->name ?? 'Sin cliente'), 'url' => route('administrador.campañas.show', $campaign)]);
         });
-        (clone $taskBase)->with('campania')->where('estado', 'completada')->where('updated_at', '>=', $periodStart)->latest('updated_at')->take(4)->get()->each(function (Tarea $task) use ($recentActivity) {
+        (clone $taskBase)->with('campania')->whereIn('estado', ['entregado', 'aprobado', 'publicado'])->where('updated_at', '>=', $periodStart)->latest('updated_at')->take(4)->get()->each(function (Tarea $task) use ($recentActivity) {
             $recentActivity->push(['date' => $task->updated_at, 'icon' => 'fa-list-check', 'type' => 'task', 'title' => 'Tarea completada', 'message' => $task->titulo.' · '.($task->campania?->nombre ?? 'Sin campaña'), 'url' => route('administrador.tareas.show', $task)]);
         });
         $recentActivity = $recentActivity->sortByDesc('date')->take(5)->values();

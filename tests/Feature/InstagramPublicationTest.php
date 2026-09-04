@@ -75,6 +75,7 @@ class InstagramPublicationTest extends TestCase
 
         $this->assertDatabaseHas('tareas', [
             'id' => $task->id,
+            'estado' => 'publicado',
             'publication_status' => 'published',
             'instagram_media_id' => 'instagram-media-123',
         ]);
@@ -156,6 +157,7 @@ class InstagramPublicationTest extends TestCase
 
         $this->assertDatabaseHas('tareas', [
             'id' => $task->id,
+            'estado' => 'publicado',
             'publication_status' => 'published',
             'instagram_media_id' => 'scheduled-instagram-media',
         ]);
@@ -205,7 +207,7 @@ class InstagramPublicationTest extends TestCase
             'fecha_inicio' => now()->toDateString(),
             'fecha_limite' => now()->addWeek()->toDateString(),
             'prioridad' => 'media',
-            'estado' => 'pendiente',
+            'estado' => 'aprobado',
             'campania_id' => $campaign->id,
             'creador_id' => $admin->id,
             'asignado_id' => $manager->id,

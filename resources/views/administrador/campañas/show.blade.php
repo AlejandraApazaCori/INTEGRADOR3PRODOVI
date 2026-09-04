@@ -124,7 +124,7 @@
                         @if($publicosObjetivo !== [])
                             <section class="campaign-audiences" aria-labelledby="campaign-audiences-title">
                                 <header>
-                                    <h3 id="campaign-audiences-title" class="campaign-underlined-title">Públicos objetivo</h3>
+                                    <h3 id="campaign-audiences-title" class="campaign-underlined-title">Público objetivo</h3>
                                     <span>{{ count($publicosObjetivo) }} {{ count($publicosObjetivo) === 1 ? 'segmento' : 'segmentos' }}</span>
                                 </header>
                                 <div class="campaign-audience-list">

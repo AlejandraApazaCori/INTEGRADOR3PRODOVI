@@ -363,7 +363,7 @@ class CampaniasDemoSeeder extends Seeder
             }
 
             $isFinished = $definition['status'] === 'finalizada';
-            $state = $isFinished ? 'completada' : ['completada', 'en_progreso', 'pendiente', 'pendiente'][$taskIndex];
+            $state = $isFinished ? 'publicado' : ['aprobado', 'en_curso', 'pendiente', 'no_iniciado'][$taskIndex];
             $assignee = $team[$assigneeKey];
             $task = Tarea::withTrashed()->firstOrNew([
                 'campania_id' => $campaign->id,
@@ -428,7 +428,7 @@ class CampaniasDemoSeeder extends Seeder
             'mime_type' => 'text/plain',
             'tamanio' => strlen($contents),
             'descripcion' => 'Borrador y lineamientos del entregable de demostración.',
-            'estado' => $state === 'completada' ? 'aprobado' : 'pendiente',
+            'estado' => in_array($state, ['aprobado', 'publicado'], true) ? 'aprobado' : 'pendiente',
             'visto' => true,
         ]);
         $file->deleted_at = null;

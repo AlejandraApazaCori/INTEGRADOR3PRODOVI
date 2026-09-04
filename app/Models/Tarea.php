@@ -67,17 +67,17 @@ class Tarea extends Model
 
     public function scopePendientes($query)
     {
-        return $query->where('estado', 'pendiente');
+        return $query->whereIn('estado', ['no_iniciado', 'pendiente']);
     }
 
     public function scopeEnProgreso($query)
     {
-        return $query->where('estado', 'en_progreso');
+        return $query->where('estado', 'en_curso');
     }
 
     public function scopeCompletadas($query)
     {
-        return $query->where('estado', 'completada');
+        return $query->whereIn('estado', ['entregado', 'aprobado', 'publicado']);
     }
 
     public function archivos()

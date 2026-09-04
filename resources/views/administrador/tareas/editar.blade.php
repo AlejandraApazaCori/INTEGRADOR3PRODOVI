@@ -8,9 +8,9 @@
     $inicioCampania = \Carbon\Carbon::parse($campania->fecha_inicio);
     $finCampania = \Carbon\Carbon::parse($campania->fecha_fin);
     $estadoClase = match($tarea->estado) {
-        'completada' => 'is-complete',
-        'en_progreso' => 'is-progress',
-        'rechazada' => 'is-rejected',
+        'entregado', 'aprobado', 'publicado' => 'is-complete',
+        'en_curso' => 'is-progress',
+        'reformular' => 'is-rejected',
         default => 'is-pending',
     };
 @endphp

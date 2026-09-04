@@ -134,7 +134,7 @@
                                 @foreach($campaignDashboardSummary['upcoming_tasks'] as $task)
                                     @php
                                         $agendaDate = \Carbon\Carbon::parse($task->dashboard_date);
-                                        $taskStateLabel = match($task->estado) {'en_progreso' => 'En progreso', 'completada' => 'Completada', 'rechazada' => 'En ajustes', default => 'Pendiente'};
+                                        $taskStateLabel = match($task->estado) {'no_iniciado' => 'No iniciado', 'en_curso' => 'En curso', 'entregado' => 'Entregado', 'reformular' => 'Reformular', 'aprobado' => 'Aprobado', 'publicado' => 'Publicado', default => 'Pendiente'};
                                     @endphp
                                     <article>
                                         <time datetime="{{ $agendaDate->toDateString() }}"><strong>{{ $agendaDate->format('d') }}</strong><small>{{ strtoupper($agendaDate->translatedFormat('M')) }}</small></time>

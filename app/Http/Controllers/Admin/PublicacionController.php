@@ -88,6 +88,7 @@ class PublicacionController extends Controller
         $published = $result['success'] || $result['partial'];
 
         $tarea->forceFill([
+            'estado' => $result['success'] ? 'publicado' : $tarea->estado,
             'publication_status' => $result['success'] ? 'published' : ($result['partial'] ? 'partial' : 'failed'),
             'publication_scheduled_at' => null,
             'published_at' => $published ? now() : null,

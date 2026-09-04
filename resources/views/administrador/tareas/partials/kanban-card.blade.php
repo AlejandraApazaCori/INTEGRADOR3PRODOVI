@@ -3,11 +3,11 @@
     $nombresResponsables = $responsablesTarjeta->pluck('name')->implode(', ') ?: 'Sin asignar';
     $diasRestantesTarjeta = (int) now()->startOfDay()->diffInDays($tarea->fecha_limite->copy()->startOfDay(), false);
     $prioridadTarjeta = in_array($tarea->prioridad, ['media', 'alta', 'urgente'], true) ? 'is-'.$tarea->prioridad : '';
-    $estadoKanban = $estadoKanban ?? ($tarea->estado === 'rechazada' ? 'pendiente' : $tarea->estado);
-    $puedePublicarse = $tarea->archivos->contains('estado', 'aprobado');
+    $estadoKanban = $estadoKanban ?? $tarea->estado;
+    $puedePublicarse = $tarea->estado === 'aprobado';
 @endphp
 
-<article class="task-kanban-card" draggable="true" data-task-id="{{ $tarea->id }}" data-task-status="{{ $estadoKanban }}" data-status-url="{{ route('administrador.tareas.update-estado', $tarea->id) }}">
+<article class="task-kanban-card" draggable="true" data-task-id="{{ $tarea->id }}" data-task-status="{{ $estadoKanban }}" data-status-url="{{ route('administrador.tareas.update-estado', $tarea->id) }}" data-publish-url="{{ route('administrador.publicaciones.publicar', ['tarea_id' => $tarea->id]) }}">
     <span class="task-card-accent {{ $prioridadTarjeta }}"></span>
     <div class="task-card-top"><h4>{{ $tarea->titulo }}</h4><span class="task-card-priority {{ $prioridadTarjeta }}">{{ ucfirst($tarea->prioridad) }}</span></div>
     <span class="task-card-deliverable">{{ $tarea->entregable ? 'Entregable: '.$tarea->entregable : 'Tarea #'.$tarea->id }}</span>
@@ -20,9 +20,9 @@
     @endif
     <div class="task-card-info">
         <div title="{{ $nombresResponsables }}"><i class="fas fa-user-group"></i><span>{{ $nombresResponsables }}</span></div>
-        <div class="{{ $diasRestantesTarjeta < 0 && $tarea->estado !== 'completada' ? 'is-overdue' : '' }}"><i class="fas fa-clock"></i><span>{{ $tarea->fecha_limite->format('d/m/Y') }} · {{ $diasRestantesTarjeta >= 0 ? ($diasRestantesTarjeta === 0 ? 'Vence hoy' : 'Faltan '.$diasRestantesTarjeta.' días') : 'Vencida' }}</span></div>
+        <div class="{{ $diasRestantesTarjeta < 0 && ! in_array($tarea->estado, ['entregado', 'aprobado', 'publicado'], true) ? 'is-overdue' : '' }}"><i class="fas fa-clock"></i><span>{{ $tarea->fecha_limite->format('d/m/Y') }} · {{ $diasRestantesTarjeta >= 0 ? ($diasRestantesTarjeta === 0 ? 'Vence hoy' : 'Faltan '.$diasRestantesTarjeta.' días') : 'Vencida' }}</span></div>
     </div>
-    <label class="task-card-status-select"><i class="fas fa-arrows-left-right"></i><span>Mover a</span><select data-card-status aria-label="Cambiar estado de {{ $tarea->titulo }}"><option value="pendiente" @selected($estadoKanban === 'pendiente')>Por hacer</option><option value="en_progreso" @selected($estadoKanban === 'en_progreso')>Haciendo</option><option value="completada" @selected($estadoKanban === 'completada')>Hecho</option></select></label>
+    <label class="task-card-status-select"><i class="fas fa-arrows-left-right"></i><span>Mover a</span><select data-card-status aria-label="Cambiar estado de {{ $tarea->titulo }}">@foreach(['no_iniciado' => 'No iniciado', 'pendiente' => 'Pendiente', 'en_curso' => 'En curso', 'entregado' => 'Entregado', 'reformular' => 'Reformular', 'aprobado' => 'Aprobado', 'publicado' => 'Publicado'] as $valorEstado => $nombreEstado)<option value="{{ $valorEstado }}" @selected($estadoKanban === $valorEstado)>{{ $nombreEstado }}</option>@endforeach</select></label>
     @if($puedePublicarse)
         <a href="{{ route('administrador.publicaciones.publicar', ['tarea_id' => $tarea->id]) }}" class="task-card-publish"><i class="fas fa-rocket"></i><span>Publicar contenido</span><i class="fas fa-arrow-right"></i></a>
     @endif

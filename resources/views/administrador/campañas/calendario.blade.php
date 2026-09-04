@@ -7,8 +7,8 @@
     $inicioCampania = \Carbon\Carbon::parse($campania->fecha_inicio);
     $finCampania = \Carbon\Carbon::parse($campania->fecha_fin);
     $totalTareas = count($eventos);
-    $tareasCompletadas = collect($eventos)->where('extendedProps.estado', 'completada')->count();
-    $tareasEnProgreso = collect($eventos)->where('extendedProps.estado', 'en_progreso')->count();
+    $tareasCompletadas = collect($eventos)->whereIn('extendedProps.estado', ['entregado', 'aprobado', 'publicado'])->count();
+    $tareasEnProgreso = collect($eventos)->where('extendedProps.estado', 'en_curso')->count();
 @endphp
 
 <div class="planning-page">

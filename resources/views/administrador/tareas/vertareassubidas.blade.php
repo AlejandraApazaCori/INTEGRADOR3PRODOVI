@@ -10,9 +10,9 @@
     $archivosAprobados = $archivos->where('estado', 'aprobado')->count();
     $archivosRechazados = $archivos->where('estado', 'rechazado')->count();
     $estadoTareaClase = match($tarea->estado) {
-        'completada' => 'is-complete',
-        'en_progreso' => 'is-progress',
-        'rechazada' => 'is-rejected',
+        'entregado', 'aprobado', 'publicado' => 'is-complete',
+        'en_curso' => 'is-progress',
+        'reformular' => 'is-rejected',
         default => 'is-pending',
     };
     $prioridadClase = match($tarea->prioridad) {
@@ -65,7 +65,7 @@
                 <section class="review-card review-deliverables">
                     <header class="review-card-header">
                         <div><h2>Archivos adjuntos</h2><p>Descarga y define el resultado de cada entregable.</p></div>
-                        @if($archivosAprobados > 0)
+                        @if($tarea->estado === 'aprobado')
                             <a href="{{ route('administrador.publicaciones.publicar', ['tarea_id' => $tarea->id]) }}" class="review-publish"><i class="fas fa-rocket"></i> Publicar</a>
                         @endif
                     </header>

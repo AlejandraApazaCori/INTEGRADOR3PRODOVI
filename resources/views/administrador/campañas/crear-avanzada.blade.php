@@ -90,7 +90,7 @@
                 <label class="is-full"><span>Descripción operativa *</span><textarea name="descripcion" id="descripcion" required rows="5" placeholder="Explica el enfoque general de ejecución...">{{ old('descripcion', $isEditing ? $campania->descripcion : '') }}</textarea></label>
                 <label class="is-full"><span>Objetivo general</span><textarea name="objetivo_general" id="objetivo_general" rows="3" placeholder="¿Qué resultado debe alcanzar esta campaña?">{{ old('objetivo_general', $isEditing ? $campania->objetivo_general : '') }}</textarea></label>
                 <div class="wizard-audiences is-full">
-                    <div class="wizard-audiences-head"><div><span>Públicos objetivo</span><small>Separa cada segmento y conserva solamente la información esencial.</small></div><button type="button" id="add-audience"><i class="fas fa-plus"></i> Agregar público</button></div>
+                    <div class="wizard-audiences-head"><div><span>Público objetivo</span><small>Separa cada segmento y conserva solamente la información esencial.</small></div><button type="button" id="add-audience"><i class="fas fa-plus"></i> Agregar público</button></div>
                     <div id="audiences-container"></div>
                 </div>
                 <label><span>Mensaje principal</span><textarea name="mensaje_principal" id="mensaje_principal" rows="6" placeholder="Idea central que debe recordar la audiencia...">{{ old('mensaje_principal', $isEditing ? $campania->mensaje_principal : '') }}</textarea></label>
@@ -154,7 +154,7 @@
     <div class="wizard-confirm-card">
         <span class="wizard-confirm-icon"><i class="fas fa-triangle-exclamation"></i></span>
         <div><small>Cambio de modo</small><h2 id="mode-change-title">¿Estás seguro de cambiar de modo?</h2></div>
-        <p>Al continuar se borrará del formulario todo lo anterior previamente guardado: estrategia, públicos objetivo, canales, equipo y tareas. El reemplazo será definitivo cuando guardes los cambios.</p>
+        <p>Al continuar se borrará del formulario todo lo anterior previamente guardado: estrategia, público objetivo, canales, equipo y tareas. El reemplazo será definitivo cuando guardes los cambios.</p>
         <div class="wizard-confirm-actions"><button type="button" class="wizard-confirm-cancel" onclick="closeCampaignModeModal()">Cancelar</button><button type="button" class="wizard-confirm-accept" id="confirm-mode-change"><i class="fas fa-rotate"></i> Sí, cambiar de modo</button></div>
     </div>
 </div>

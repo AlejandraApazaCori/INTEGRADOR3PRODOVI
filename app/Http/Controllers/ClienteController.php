@@ -143,7 +143,7 @@ class ClienteController extends Controller
                 ->orderBy('fecha_limite')
                 ->get();
             $totalTasks = $visibleTasks->count();
-            $completedTasks = $visibleTasks->where('estado', 'completada')->count();
+            $completedTasks = $visibleTasks->whereIn('estado', ['entregado', 'aprobado', 'publicado'])->count();
             $pendingReviewFiles = $visibleTasks->flatMap(function ($task) {
                 return $task->requiere_aprobacion
                     ? $task->archivos->where('estado', 'pendiente')->map(fn ($file) => ['task' => $task, 'file' => $file])
