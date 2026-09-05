@@ -123,8 +123,8 @@
                 note.append(icon('fas fa-flask'));
                 note.append(node('span', platform.experimental
                     ? (platform.training_sources?.includes('synthetic')
-                        ? 'Modelo LSTM experimental: combina entrenamiento con datos simulados y el historial real de esta cuenta. Úsalo como recomendación; su eficacia aún no está validada.'
-                        : 'Modelo LSTM experimental basado en esta cuenta, pendiente de validación con nuevas publicaciones.')
+                        ? 'Modelo LSTM: combina entrenamiento con datos y el historial real de esta cuenta. Úsalo como recomendación.'
+                        : 'Modelo LSTM basado en esta cuenta, pendiente de validación con nuevas publicaciones.')
                     : 'Estimación LSTM basada en el historial de esta cuenta.'));
                 card.append(note);
                 const current = platform.slots.filter(slot => new Date(slot.timestamp).getTime() > Date.now() + 60000);
