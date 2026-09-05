@@ -1,0 +1,63 @@
+{
+  "model_version": "meta_lstm_hybrid_v4.0.0",
+  "platform": "instagram",
+  "window": 3,
+  "alpha": 0.7000000000000001,
+  "smoothing_strength": 3.0,
+  "timezone": "America/La_Paz",
+  "day_convention": "0=Monday,6=Sunday",
+  "history_features": [
+    "likes_log",
+    "comments_log",
+    "score_log",
+    "hour_sin",
+    "hour_cos",
+    "day_sin",
+    "day_cos",
+    "gap_log"
+  ],
+  "candidate_features": [
+    "hour_sin",
+    "hour_cos",
+    "day_sin",
+    "day_cos",
+    "gap_log",
+    "account_prior_log",
+    "slot_samples_log"
+  ],
+  "engagement_formula": "likes + 2 * comments; Facebook likes means reactions",
+  "output_unit": "weighted_interaction_score_not_percentage",
+  "inference_contract": "data_pipeline.make_inputs -> scalers -> model -> combine",
+  "personalized_by": "same-account causal history and same-account slot prior; no account embedding",
+  "dataset_rows": 1500,
+  "accounts": 3,
+  "sources": [
+    "synthetic"
+  ],
+  "measurement_protocols": [
+    "synthetic_fixed_48h"
+  ],
+  "verified_provenance": false,
+  "controlled_measurement": false,
+  "offline_lstm_beats_baselines": true,
+  "test_improvement_percent": 9.078828919546503,
+  "ready_for_production": false,
+  "requires_prospective_validation": true,
+  "status": "experimental_only",
+  "split": {
+    "strategy": "global_chronological_per_platform_with_label_availability",
+    "train_before": "2026-02-25 09:00:00+00:00",
+    "validation_before": "2026-05-29 02:00:00+00:00",
+    "train": 1031,
+    "validation": 219,
+    "test": 226
+  },
+  "limitations": [
+    "No demuestra que cambiar la hora cause más interacciones.",
+    "No incluye contenido, campañas pagadas ni tamaño de audiencia.",
+    "Legado sin fecha de medición usa disponibilidad aproximada: evaluación exploratoria.",
+    "Un identificador legacy no acredita pertenencia a una cuenta real.",
+    "MAE/RMSE evalúan publicaciones observadas; no validan horas sin publicaciones.",
+    "No activar Instagram con un modelo entrenado únicamente para Facebook."
+  ]
+}

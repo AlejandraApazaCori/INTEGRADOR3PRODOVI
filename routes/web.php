@@ -615,6 +615,9 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
     // Rutas para publicaciones
     Route::get('/publicaciones/publicar', [\App\Http\Controllers\Admin\PublicacionController::class, 'index'])
         ->name('administrador.publicaciones.publicar');
+    Route::get('/publicaciones/horarios', [\App\Http\Controllers\Admin\PublicacionController::class, 'horarios'])
+        ->middleware('throttle:20,1')
+        ->name('administrador.publicaciones.horarios');
     Route::post('/publicaciones/publicar', [\App\Http\Controllers\Admin\PublicacionController::class, 'store'])
         ->name('administrador.publicaciones.publicar.store');
     Route::post('/publicaciones/generar-copy', [\App\Http\Controllers\Admin\PublicacionController::class, 'generateCopy'])

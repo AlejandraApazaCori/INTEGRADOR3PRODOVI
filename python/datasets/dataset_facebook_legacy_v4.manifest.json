@@ -1,0 +1,14 @@
+{
+  "rows": 1200,
+  "platforms": [
+    "facebook"
+  ],
+  "source_sha256": "5dd73e8f31a0b3092fe599ada406aa73387688d7fce5c5cc7f9f5587dc56e257",
+  "dataset_sha256": "dbdd3e15785a3102f181d8624dab8ea0cb96e285b3c1cc97c08d32e8d60d6ca4",
+  "notes": [
+    "No se generaron publicaciones artificiales.",
+    "legacy_facebook_unknown es un agrupador provisional, no una cuenta verificada.",
+    "Objetivo V4: likes/reacciones + 2*comentarios; distinto del objetivo V3.",
+    "No usar errores del legado como evidencia de eficacia en cuentas reales."
+  ]
+}

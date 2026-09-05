@@ -1,0 +1,9 @@
+{
+  "python": "3.13.15",
+  "tensorflow": "2.20.0",
+  "keras": "3.13.2",
+  "numpy": "2.1.3",
+  "pandas": "2.2.3",
+  "seed": 623,
+  "dataset_sha256": "014ac13300574d7e61c50e38f44da49a516845ba89cdcd9174554e913c2d9c8b"
+}

@@ -308,8 +308,8 @@
                                             <div class="mt-2 text-xs" style="color: #1e40af;">
                                                 <p>Nuestro sistema analiza automáticamente:</p>
                                                 <ul class="list-disc pl-4 mt-1 space-y-0.5">
-                                                    <li>Horarios de mayor engagement</li>
-                                                    <li>Comportamiento de tu audiencia</li>
+                                                    <li>Rendimiento histórico de cada cuenta</li>
+                                                    <li>Horarios futuros estimados por la LSTM</li>
                                                 </ul>
                                             </div>
                                         </div>
@@ -320,11 +320,7 @@
                                             Optimizar tiempo de publicación
                                         </label>
                                     </div>
-                                    <div id="optimization-panel" class="hidden mt-4 pt-4" style="border-top: 1px solid rgba(79,70,229,0.12);">
-                                        <div class="flex flex-wrap gap-2 mb-4">
-                                            <button type="button" class="rp-optimization-time" data-optimized-time="12:00">12 pm</button>
-                                            <button type="button" class="rp-optimization-time" data-optimized-time="20:00">8 pm</button>
-                                        </div>
+                                    <div id="optimization-panel" data-endpoint="{{ route('administrador.publicaciones.horarios', ['tarea_id' => $tarea->id]) }}" class="hidden mt-4 pt-4" style="border-top: 1px solid rgba(79,70,229,0.12);">
                                         <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
                                             <div class="flex items-center gap-3 mb-4">
                                                 <div class="bg-gradient-to-br from-cyan-500 to-blue-600 p-2.5 rounded-xl">
@@ -332,12 +328,13 @@
                                                 </div>
                                                 <div>
                                                     <h3 class="text-lg font-bold text-gray-800">Predicción de Horarios de Publicación</h3>
-                                                    <p class="text-xs text-gray-500">Modelo LSTM – Engagement estimado para Instagram y Facebook</p>
+                                                    <p class="text-xs text-gray-500">Estimaciones por cuenta y red · próximos 7 días · America/La_Paz</p>
                                                 </div>
                                             </div>
-                                            <div style="position:relative; height:220px; width:100%;">
-                                                <canvas id="optimizationEngagementChart"></canvas>
-                                            </div>
+                                            <p class="text-xs text-gray-600 mb-3">Puntaje estimado: reacciones/me gusta + 2 × comentarios. La hora que apliques se usará para todas las redes seleccionadas en esta publicación.</p>
+                                            <p id="optimization-status" class="text-sm text-gray-600" role="status" aria-live="polite"></p>
+                                            <div id="optimization-results" class="space-y-4"></div>
+                                            <button type="button" id="optimization-refresh" class="rp-optimization-time mt-3">Actualizar estimaciones</button>
                                         </div>
                                     </div>
                                 </div>
@@ -1052,6 +1049,12 @@
         markActivePreset(fromPreset);
     }
 
+    function publicationLocalNow() {
+        const parts = new Intl.DateTimeFormat('sv-SE', {timeZone: 'America/La_Paz', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'}).formatToParts(new Date());
+        const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+        return new Date(`${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}:${values.second}`);
+    }
+
     function initializeSchedulePicker() {
         const hiddenInput = document.getElementById('schedule-datetime');
         const dateInput = document.getElementById('schedule-date-ui');
@@ -1061,7 +1064,7 @@
             return;
         }
 
-        const now = new Date();
+        const now = publicationLocalNow();
         const minDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
         hiddenInput.min = minDateTime;
         dateInput.min = minDateTime.slice(0, 10);
@@ -1073,7 +1076,7 @@
                 defaultDate.setMinutes(defaultDate.getMinutes() + 1);
             }
 
-            dateInput.value = defaultDate.toISOString().slice(0, 10);
+            dateInput.value = new Date(defaultDate.getTime() - defaultDate.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
             timeInput.value = defaultDate.toTimeString().slice(0, 5);
         }
 
@@ -1089,7 +1092,7 @@
             return;
         }
 
-        const base = new Date();
+        const base = publicationLocalNow();
         const presetDate = new Date(base);
 
         if (preset === 'tomorrow-0900') {
@@ -1111,7 +1114,7 @@
             }
         }
 
-        dateInput.value = presetDate.toISOString().slice(0, 10);
+        dateInput.value = new Date(presetDate.getTime() - presetDate.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
         timeInput.value = presetDate.toTimeString().slice(0, 5);
         syncCustomScheduleInputs(preset);
     }
@@ -1136,111 +1139,6 @@
         updatePreview(); });
     document.querySelectorAll('[data-schedule-preset]').forEach((button) => {
         button.addEventListener('click', () => { applySchedulePreset(button.dataset.schedulePreset); updatePreview(); });
-    });
-
-    let optimizationChart = null;
-
-    function ensureOptimizationChart() {
-        const canvas = document.getElementById('optimizationEngagementChart');
-        if (!canvas || typeof Chart === 'undefined' || optimizationChart) {
-            return;
-        }
-
-        optimizationChart = new Chart(canvas.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: ['8 am', '10 am', '12 pm', '2 pm', '5 pm', '8 pm'],
-                datasets: [
-                    {
-                        label: 'Instagram',
-                        data: [22, 38, 82, 56, 48, 91],
-                        backgroundColor: '#5b2b76',
-                        borderRadius: 6,
-                        borderSkipped: false,
-                        categoryPercentage: 0.72,
-                        barPercentage: 0.82
-                    },
-                    {
-                        label: 'Facebook',
-                        data: [18, 35, 76, 51, 44, 84],
-                        backgroundColor: '#117e8c',
-                        borderRadius: 6,
-                        borderSkipped: false,
-                        categoryPercentage: 0.72,
-                        barPercentage: 0.82
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            usePointStyle: true,
-                            pointStyle: 'rectRounded',
-                            padding: 18
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        grid: {
-                            color: 'rgba(148, 163, 184, 0.16)'
-                        },
-                        ticks: {
-                            callback: function(value) { return value + '%'; }
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    function applyOptimizedTime(timeValue) {
-        document.getElementById('schedule-later').checked = true;
-        document.getElementById('schedule-datetime-container').classList.remove('hidden');
-        initializeSchedulePicker();
-
-        const dateInput = document.getElementById('schedule-date-ui');
-        const timeInput = document.getElementById('schedule-time-ui');
-        const now = new Date();
-        const selectedDate = new Date(now);
-        const parts = timeValue.split(':');
-
-        selectedDate.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
-        if (selectedDate <= now) {
-            selectedDate.setDate(selectedDate.getDate() + 1);
-        }
-
-        dateInput.value = selectedDate.toISOString().slice(0, 10);
-        timeInput.value = timeValue;
-        syncCustomScheduleInputs();
-        updatePreview();
-
-        document.querySelectorAll('.rp-optimization-time').forEach((button) => {
-            button.classList.toggle('is-active', button.dataset.optimizedTime === timeValue);
-        });
-    }
-
-    document.getElementById('use-optimization')?.addEventListener('change', function() {
-        const panel = document.getElementById('optimization-panel');
-        panel.classList.toggle('hidden', !this.checked);
-        if (this.checked) {
-            ensureOptimizationChart();
-        }
-    });
-
-    document.querySelectorAll('.rp-optimization-time').forEach((button) => {
-        button.addEventListener('click', () => applyOptimizedTime(button.dataset.optimizedTime));
     });
 
     // Publicar contenido
@@ -1403,6 +1301,7 @@
         openMetaModal();
     });
 </script>
+<script src="{{ asset('js/publication-timing.js') }}"></script>
 @endsection
 
 

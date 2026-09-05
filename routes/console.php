@@ -11,3 +11,6 @@ Artisan::command('inspire', function () {
 Schedule::command('database-backups:run-due')
     ->everyMinute()
     ->withoutOverlapping();
+
+Schedule::command('meta:sync-training-history')->hourly()->withoutOverlapping();
+Schedule::command('publicaciones:procesar-programadas')->everyMinute()->withoutOverlapping();

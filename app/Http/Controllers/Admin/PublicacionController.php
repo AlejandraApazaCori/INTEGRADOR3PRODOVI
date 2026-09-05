@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SocialAccount;
 use App\Models\Tarea;
 use App\Services\GroqImageService;
+use App\Services\PublicationTimingService;
 use App\Services\SocialPublicationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -13,6 +14,7 @@ use Illuminate\Support\Carbon;
 class PublicacionController extends Controller
 {
     protected GroqImageService $groqImageService;
+
     protected SocialPublicationService $socialPublicationService;
 
     public function __construct(GroqImageService $groqImageService, SocialPublicationService $socialPublicationService)
@@ -36,6 +38,27 @@ class PublicacionController extends Controller
         $instagramAccount = $this->findSocialAccount($cliente, 'instagram', $empresaId);
 
         return view('administrador.publicacion.publicar', compact('tarea', 'cliente', 'facebookPage', 'instagramAccount'));
+    }
+
+    public function horarios(Request $request, PublicationTimingService $timing)
+    {
+        $validated = $request->validate(['tarea_id' => 'required|integer|exists:tareas,id']);
+        $tarea = $this->loadPublishingTask($validated['tarea_id']);
+        $user = $request->user();
+        abort_unless($user->hasAnyRole(['Super Administrador', 'Administrador'])
+            || in_array((int) $user->id, array_map('intval', array_filter([
+                $tarea->creador_id, $tarea->asignado_id,
+                $tarea->campania?->usuario_creador_id, $tarea->campania?->community_manager_id,
+            ])), true), 403);
+        set_time_limit(240);
+        $cliente = $tarea->campania?->cliente;
+        $empresaId = $tarea->campania?->suscripcion?->empresa?->id;
+        $accounts = [
+            'facebook' => $this->findSocialAccount($cliente, 'facebook_page', $empresaId),
+            'instagram' => $this->findSocialAccount($cliente, 'instagram', $empresaId),
+        ];
+
+        return response()->json($timing->forAccounts($accounts));
     }
 
     public function store(Request $request)
@@ -63,7 +86,7 @@ class PublicacionController extends Controller
             $account = $this->findSocialAccount($cliente, $providers[$platform], $empresaId);
 
             if (! $account || ! filled($account->provider_user_id) || ! filled($account->access_token)) {
-                return back()->withInput()->with('error', 'La cuenta de ' . ucfirst($platform) . ' no esta vinculada o no tiene un token valido.');
+                return back()->withInput()->with('error', 'La cuenta de '.ucfirst($platform).' no esta vinculada o no tiene un token valido.');
             }
         }
 
@@ -81,7 +104,7 @@ class PublicacionController extends Controller
                 'instagram_media_id' => null,
             ])->save();
 
-            return back()->with('success', 'La publicacion quedo programada para ' . $scheduledAt->format('Y-m-d H:i') . '. Se publicara automaticamente cuando llegue esa fecha y hora.');
+            return back()->with('success', 'La publicacion quedo programada para '.$scheduledAt->format('Y-m-d H:i').'. Se publicara automaticamente cuando llegue esa fecha y hora.');
         }
 
         $result = $this->socialPublicationService->publish($cliente, $tarea, $validated['message'], $validated['platforms']);
@@ -101,12 +124,13 @@ class PublicacionController extends Controller
 
         if (! $result['success']) {
             $prefix = $result['partial'] ? 'La publicacion fue parcial. ' : 'No se pudo publicar. ';
-            return back()->withInput()->with('error', $prefix . ($result['error'] ?? 'Error desconocido de Meta.'));
+
+            return back()->withInput()->with('error', $prefix.($result['error'] ?? 'Error desconocido de Meta.'));
         }
 
         $platformNames = collect($result['successful_platforms'])->map(fn ($platform) => ucfirst($platform))->implode(' e ');
 
-        return back()->with('success', 'Publicacion realizada correctamente en ' . $platformNames . '.');
+        return back()->with('success', 'Publicacion realizada correctamente en '.$platformNames.'.');
     }
 
     public function generateCopy(Request $request)
@@ -155,4 +179,3 @@ class PublicacionController extends Controller
         return $account;
     }
 }
-

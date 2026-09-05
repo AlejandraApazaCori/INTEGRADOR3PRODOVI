@@ -1,0 +1,56 @@
+{
+  "facebook": {
+    "status": "experimental_only",
+    "window": 3,
+    "alpha": 0.8,
+    "metrics": {
+      "lstm_hybrid": {
+        "MAE": 24.574443306088483,
+        "RMSE": 36.33394681592833,
+        "R2": 0.31602595910712017,
+        "Spearman": 0.6372372594223787
+      },
+      "slot_history": {
+        "MAE": 25.566390056717612,
+        "RMSE": 37.508385816590234,
+        "R2": 0.27109451895238446,
+        "Spearman": 0.6260578062566123
+      },
+      "account_mean_log": {
+        "MAE": 29.67420808740688,
+        "RMSE": 41.973116356066456,
+        "R2": 0.08723937452903108,
+        "Spearman": 0.30468098276079536
+      }
+    },
+    "test_improvement_percent": 3.8798858518099366,
+    "ready_for_production": false
+  },
+  "instagram": {
+    "status": "experimental_only",
+    "window": 3,
+    "alpha": 0.7000000000000001,
+    "metrics": {
+      "lstm_hybrid": {
+        "MAE": 28.833789972536195,
+        "RMSE": 43.14901005210929,
+        "R2": 0.37369645556151465,
+        "Spearman": 0.6929562144170307
+      },
+      "slot_history": {
+        "MAE": 31.712954892565136,
+        "RMSE": 45.85427358690788,
+        "R2": 0.2927013445612465,
+        "Spearman": 0.6343229054063554
+      },
+      "account_mean_log": {
+        "MAE": 37.68572438373866,
+        "RMSE": 52.97723825987359,
+        "R2": 0.055891678078771045,
+        "Spearman": 0.2614147933909066
+      }
+    },
+    "test_improvement_percent": 9.078828919546503,
+    "ready_for_production": false
+  }
+}

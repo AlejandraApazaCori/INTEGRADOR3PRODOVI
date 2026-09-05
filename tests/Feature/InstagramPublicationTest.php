@@ -215,4 +215,20 @@ class InstagramPublicationTest extends TestCase
 
         return [$admin, $client, $empresa, $task];
     }
+
+    public function test_timing_endpoint_resolves_the_task_account_and_rejects_unrelated_users(): void
+    {
+        [$admin, $client, $empresa, $task] = $this->publishingTask();
+        $account = $client->socialAccounts()->create([
+            'empresa_id' => $empresa->id, 'provider' => 'instagram',
+            'provider_user_id' => 'ig-this-company', 'access_token' => 'secret-token',
+        ]);
+        $this->mock(\App\Services\PublicationTimingService::class, function ($mock) use ($account) {
+            $mock->shouldReceive('forAccounts')->once()->withArgs(fn ($accounts) => $accounts['facebook'] === null && $accounts['instagram']->id === $account->id
+            )->andReturn(['platforms' => ['instagram' => ['status' => 'ok']]]);
+        });
+        $url = route('administrador.publicaciones.horarios', ['tarea_id' => $task->id]);
+        $this->actingAs(User::factory()->create())->getJson($url)->assertForbidden();
+        $this->actingAs($admin)->getJson($url)->assertOk()->assertJsonPath('platforms.instagram.status', 'ok');
+    }
 }

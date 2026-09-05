@@ -34,7 +34,7 @@ class MetaCampaignAnalyticsService
         $accountStamp = $accounts->map(fn (?SocialAccount $account) => $account?->updated_at?->timestamp ?? 0)->implode('-');
 
         return Cache::remember(
-            "meta-campaign-analytics:v4:{$campania->id}:{$days}:{$accountStamp}",
+            "meta-campaign-analytics:v5:{$campania->id}:{$days}:{$accountStamp}",
             now()->addMinutes(15),
             fn () => $this->collect([
                 'campaign' => ['id' => $campania->id, 'name' => $campania->nombre],
@@ -51,7 +51,7 @@ class MetaCampaignAnalyticsService
             ->implode('-');
 
         return Cache::remember(
-            "meta-company-analytics:v4:{$empresa->id}:{$days}:{$accountStamp}",
+            "meta-company-analytics:v5:{$empresa->id}:{$days}:{$accountStamp}",
             now()->addMinutes(15),
             fn () => $this->collect([
                 'company' => [
@@ -83,6 +83,15 @@ class MetaCampaignAnalyticsService
         ])->filter()->values()->all();
     }
 
+    public function forPublishingAccounts(array $accounts, int $days = 365): array
+    {
+        $map = collect($accounts)->filter()->keyBy('provider')->all();
+        $stamp = collect($map)->map(fn ($account) => [$account->id, $account->provider_user_id, $account->updated_at?->timestamp])->all();
+        $key = 'meta-publishing:v1:'.hash('sha256', json_encode([$stamp, $days]));
+
+        return Cache::remember($key, now()->addMinutes(15), fn () => $this->collect([], $map, $this->normalizePeriod($days)));
+    }
+
     private function collect(array $context, array $accounts, int|string $days): array
     {
         $this->errors = [];
@@ -107,7 +116,7 @@ class MetaCampaignAnalyticsService
             ? $this->instagram($accounts['instagram'], $since, $until, $labels, $insightsSince)
             : $this->emptyPlatform('instagram');
 
-        return [
+        $result = [
             ...$context,
             'period' => [
                 'days' => $days,
@@ -123,6 +132,9 @@ class MetaCampaignAnalyticsService
             'summary' => $this->summary($facebook, $instagram, $labels),
             'errors' => $this->errors,
         ];
+        app(MetaPostHistoryService::class)->capture($accounts, $result);
+
+        return $result;
     }
 
     private function normalizePeriod(int|string $period): int|string
@@ -208,6 +220,8 @@ class MetaCampaignAnalyticsService
                 'thumbnail' => $post['full_picture'] ?? null,
                 'type' => strtoupper((string) (data_get($post, 'attachments.data.0.media_type') ?: data_get($post, 'attachments.data.0.type') ?: 'POST')),
                 'reactions' => $reactions,
+                'prediction_metrics_available' => is_numeric(data_get($post, 'reactions.summary.total_count'))
+                    && is_numeric(data_get($post, 'comments.summary.total_count')),
                 'likes' => $reactions,
                 'comments' => $comments,
                 'shares' => $shares,
@@ -382,6 +396,8 @@ class MetaCampaignAnalyticsService
                 'type' => strtoupper((string) ($item['media_product_type'] ?? $item['media_type'] ?? 'POST')),
                 'reactions' => null,
                 'likes' => $likes,
+                'prediction_metrics_available' => is_numeric($metrics['likes'] ?? $item['like_count'] ?? null)
+                    && is_numeric($metrics['comments'] ?? $item['comments_count'] ?? null),
                 'comments' => $comments,
                 'shares' => $shares,
                 'saves' => $saves,

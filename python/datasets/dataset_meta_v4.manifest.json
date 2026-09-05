@@ -1,0 +1,22 @@
+{
+  "source": "synthetic",
+  "seed": 20260905,
+  "rows": 3000,
+  "rows_per_platform": {
+    "facebook": 1500,
+    "instagram": 1500
+  },
+  "accounts_per_platform": 3,
+  "posts_per_account": 500,
+  "dataset_sha256": "014ac13300574d7e61c50e38f44da49a516845ba89cdcd9174554e913c2d9c8b",
+  "generator": "lstm_v4/generate_demo_dataset.py",
+  "measurement": "simulated_at_48h",
+  "real_meta_data": false,
+  "permitted_use": "software_and_training_pipeline_experiment",
+  "limitations": [
+    "Patrones día/hora y dependencia temporal fueron introducidos por el generador.",
+    "Un buen resultado aprende la simulación, no demuestra eficacia en cuentas Meta.",
+    "No utilizar este modelo para recomendaciones reales sin datos y validación reales.",
+    "No deriva Instagram mediante renombrar filas de Facebook."
+  ]
+}
