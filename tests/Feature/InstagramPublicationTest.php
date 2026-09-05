@@ -87,6 +87,61 @@ class InstagramPublicationTest extends TestCase
             && $request['creation_id'] === 'instagram-container-123');
     }
 
+    public function test_publish_now_ignores_a_stale_scheduled_date(): void
+    {
+        Storage::fake('public');
+        config(['app.url' => 'https://prodovi.test']);
+        [$admin, $client, $empresa, $task] = $this->publishingTask();
+
+        $client->socialAccounts()->create([
+            'empresa_id' => $empresa->id,
+            'provider' => 'instagram',
+            'provider_user_id' => '17841458503920416',
+            'username' => 'cuenta_prodovi',
+            'access_token' => 'page-access-token',
+        ]);
+
+        Storage::disk('public')->put('tareas/pieza.jpg', 'jpeg-content');
+        TareaArchivo::create([
+            'tarea_id' => $task->id,
+            'user_id' => $admin->id,
+            'nombre_original' => 'pieza.jpg',
+            'ruta_archivo' => 'tareas/pieza.jpg',
+            'extension' => 'jpg',
+            'mime_type' => 'image/jpeg',
+            'tamanio' => 12,
+            'estado' => 'aprobado',
+        ]);
+
+        Http::fake(function ($request) {
+            if ($request->method() === 'GET') {
+                return Http::response(['status_code' => 'FINISHED']);
+            }
+
+            return str_ends_with($request->url(), '/media_publish')
+                ? Http::response(['id' => 'instagram-media-now'])
+                : Http::response(['id' => 'instagram-container-now']);
+        });
+
+        $this->actingAs($admin)
+            ->post(route('administrador.publicaciones.publicar.store'), [
+                'tarea_id' => $task->id,
+                'message' => 'Publicar inmediatamente',
+                'platforms' => ['instagram'],
+                'schedule_type' => 'now',
+                'scheduled_at' => now()->subHour()->format('Y-m-d H:i:s'),
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('tareas', [
+            'id' => $task->id,
+            'publication_status' => 'published',
+            'publication_scheduled_at' => null,
+            'instagram_media_id' => 'instagram-media-now',
+        ]);
+    }
+
     public function test_scheduled_publication_remembers_instagram_selection(): void
     {
         [$admin, $client, $empresa, $task] = $this->publishingTask();

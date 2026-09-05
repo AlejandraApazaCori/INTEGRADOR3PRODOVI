@@ -69,7 +69,7 @@ class PublicacionController extends Controller
             'platforms' => 'required|array|min:1',
             'platforms.*' => 'string|in:facebook,instagram',
             'schedule_type' => 'required|string|in:now,later',
-            'scheduled_at' => 'nullable|required_if:schedule_type,later|date|after:now',
+            'scheduled_at' => 'exclude_unless:schedule_type,later|required|date|after:now',
         ]);
 
         $tarea = $this->loadPublishingTask($validated['tarea_id']);
