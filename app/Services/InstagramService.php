@@ -11,6 +11,14 @@ use Illuminate\Support\Facades\Storage;
 
 class InstagramService
 {
+    private const FEED_MIN_ASPECT_RATIO = 0.8;
+
+    private const FEED_MAX_ASPECT_RATIO = 1.91;
+
+    private const FEED_MIN_WIDTH = 320;
+
+    private const FEED_MAX_WIDTH = 1440;
+
     protected string $apiVersion;
 
     public function __construct()
@@ -27,17 +35,15 @@ class InstagramService
             return $error;
         }
 
+        $format = strtolower((string) $tarea->tipo_contenido);
+        $isStory = str_contains($format, 'historia') || str_contains($format, 'story');
         $media = $tarea->archivos
             ->filter(fn ($archivo) => $archivo->estado === 'aprobado')
-            ->map(function ($archivo) {
+            ->map(function ($archivo) use ($isStory) {
                 $extension = strtolower((string) $archivo->extension);
 
-                if (in_array($extension, ['jpg', 'jpeg'], true)) {
-                    return ['type' => 'image', 'url' => $this->publicMediaUrl($archivo->ruta_archivo)];
-                }
-
-                if (in_array($extension, ['png', 'gif'], true)) {
-                    $jpegPath = $this->convertToJpeg($archivo->ruta_archivo, $extension);
+                if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif'], true)) {
+                    $jpegPath = $this->prepareImage($archivo->ruta_archivo, $extension, ! $isStory);
 
                     return ['type' => 'image', 'url' => $jpegPath ? $this->publicMediaUrl($jpegPath) : null];
                 }
@@ -60,9 +66,7 @@ class InstagramService
         }
 
         try {
-            $format = strtolower((string) $tarea->tipo_contenido);
-
-            if (str_contains($format, 'historia') || str_contains($format, 'story')) {
+            if ($isStory) {
                 return $this->publishStory($instagramId, $accessToken, $media->first());
             }
 
@@ -271,7 +275,7 @@ class InstagramService
         $storageUrl = Storage::disk('public')->url($relativePath);
         $url = filter_var($storageUrl, FILTER_VALIDATE_URL)
             ? $storageUrl
-            : rtrim((string) config('app.url'), '/') . '/' . ltrim($storageUrl, '/');
+            : rtrim((string) config('app.url'), '/').'/'.ltrim($storageUrl, '/');
         $host = strtolower((string) parse_url($url, PHP_URL_HOST));
         $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
 
@@ -282,12 +286,8 @@ class InstagramService
         return $url;
     }
 
-    private function convertToJpeg(string $relativePath, string $extension): ?string
+    private function prepareImage(string $relativePath, string $extension, bool $normalizeForFeed): ?string
     {
-        if (! extension_loaded('gd')) {
-            return null;
-        }
-
         $disk = Storage::disk('public');
         $absolutePath = $disk->path($relativePath);
 
@@ -295,18 +295,77 @@ class InstagramService
             return null;
         }
 
-        $source = $extension === 'png' ? @imagecreatefrompng($absolutePath) : @imagecreatefromgif($absolutePath);
+        $dimensions = @getimagesize($absolutePath);
+
+        if (! $dimensions) {
+            return in_array($extension, ['jpg', 'jpeg'], true) ? $relativePath : null;
+        }
+
+        [$sourceWidth, $sourceHeight] = $dimensions;
+        $sourceRatio = $sourceWidth / $sourceHeight;
+        $widthIsSupported = $sourceWidth >= self::FEED_MIN_WIDTH && $sourceWidth <= self::FEED_MAX_WIDTH;
+        $ratioIsSupported = $sourceRatio >= self::FEED_MIN_ASPECT_RATIO && $sourceRatio <= self::FEED_MAX_ASPECT_RATIO;
+        $isJpeg = in_array($extension, ['jpg', 'jpeg'], true);
+
+        if ($isJpeg && (! $normalizeForFeed || ($widthIsSupported && $ratioIsSupported))) {
+            return $relativePath;
+        }
+
+        if (! extension_loaded('gd')) {
+            return null;
+        }
+
+        $source = match ($extension) {
+            'jpg', 'jpeg' => @imagecreatefromjpeg($absolutePath),
+            'png' => @imagecreatefrompng($absolutePath),
+            'gif' => @imagecreatefromgif($absolutePath),
+            default => false,
+        };
 
         if (! $source) {
             return null;
         }
 
-        $canvas = imagecreatetruecolor(imagesx($source), imagesy($source));
+        $canvasWidth = $sourceWidth;
+        $canvasHeight = $sourceHeight;
+
+        if ($normalizeForFeed && $sourceRatio > self::FEED_MAX_ASPECT_RATIO) {
+            $canvasHeight = (int) ceil($sourceWidth / self::FEED_MAX_ASPECT_RATIO);
+        } elseif ($normalizeForFeed && $sourceRatio < self::FEED_MIN_ASPECT_RATIO) {
+            $canvasWidth = (int) ceil($sourceHeight * self::FEED_MIN_ASPECT_RATIO);
+        }
+
+        $scale = 1.0;
+        if ($normalizeForFeed && $canvasWidth < self::FEED_MIN_WIDTH) {
+            $scale = self::FEED_MIN_WIDTH / $canvasWidth;
+        } elseif ($normalizeForFeed && $canvasWidth > self::FEED_MAX_WIDTH) {
+            $scale = self::FEED_MAX_WIDTH / $canvasWidth;
+        }
+
+        $targetWidth = (int) round($canvasWidth * $scale);
+        $targetHeight = (int) round($canvasHeight * $scale);
+        $renderedWidth = (int) round($sourceWidth * $scale);
+        $renderedHeight = (int) round($sourceHeight * $scale);
+        $offsetX = (int) floor(($targetWidth - $renderedWidth) / 2);
+        $offsetY = (int) floor(($targetHeight - $renderedHeight) / 2);
+
+        $canvas = imagecreatetruecolor($targetWidth, $targetHeight);
         $white = imagecolorallocate($canvas, 255, 255, 255);
         imagefill($canvas, 0, 0, $white);
-        imagecopy($canvas, $source, 0, 0, 0, 0, imagesx($source), imagesy($source));
+        imagecopyresampled(
+            $canvas,
+            $source,
+            $offsetX,
+            $offsetY,
+            0,
+            0,
+            $renderedWidth,
+            $renderedHeight,
+            $sourceWidth,
+            $sourceHeight,
+        );
 
-        $targetPath = 'instagram/' . sha1($relativePath . '|' . filemtime($absolutePath)) . '.jpg';
+        $targetPath = 'instagram/'.sha1($relativePath.'|'.filemtime($absolutePath).'|feed-v1').'.jpg';
         $temporaryPath = tempnam(sys_get_temp_dir(), 'prodovi-instagram-');
         $converted = $temporaryPath && imagejpeg($canvas, $temporaryPath, 92);
 
@@ -317,6 +376,7 @@ class InstagramService
             if ($temporaryPath) {
                 @unlink($temporaryPath);
             }
+
             return null;
         }
 

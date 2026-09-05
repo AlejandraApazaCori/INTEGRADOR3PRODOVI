@@ -142,6 +142,70 @@ class InstagramPublicationTest extends TestCase
         ]);
     }
 
+    public function test_wide_instagram_image_is_padded_to_a_supported_aspect_ratio(): void
+    {
+        if (! extension_loaded('gd')) {
+            $this->markTestSkipped('GD is required to normalize images.');
+        }
+
+        Storage::fake('public');
+        config(['app.url' => 'https://prodovi.test']);
+        [$admin, $client, $empresa, $task] = $this->publishingTask();
+        $client->socialAccounts()->create([
+            'empresa_id' => $empresa->id,
+            'provider' => 'instagram',
+            'provider_user_id' => '17841458503920416',
+            'username' => 'cuenta_prodovi',
+            'access_token' => 'page-access-token',
+        ]);
+
+        $image = imagecreatetruecolor(851, 315);
+        imagefill($image, 0, 0, imagecolorallocate($image, 20, 120, 180));
+        ob_start();
+        imagepng($image);
+        $png = ob_get_clean();
+        imagedestroy($image);
+        Storage::disk('public')->put('tareas/panoramica.png', $png);
+        TareaArchivo::create([
+            'tarea_id' => $task->id,
+            'user_id' => $admin->id,
+            'nombre_original' => 'panoramica.png',
+            'ruta_archivo' => 'tareas/panoramica.png',
+            'extension' => 'png',
+            'mime_type' => 'image/png',
+            'tamanio' => strlen($png),
+            'estado' => 'aprobado',
+        ]);
+
+        Http::fake(function ($request) {
+            if ($request->method() === 'GET') {
+                return Http::response(['status_code' => 'FINISHED']);
+            }
+
+            return str_ends_with($request->url(), '/media_publish')
+                ? Http::response(['id' => 'instagram-wide-image'])
+                : Http::response(['id' => 'instagram-wide-container']);
+        });
+
+        $this->actingAs($admin)->post(route('administrador.publicaciones.publicar.store'), [
+            'tarea_id' => $task->id,
+            'message' => 'Imagen panoramica',
+            'platforms' => ['instagram'],
+            'schedule_type' => 'now',
+        ])->assertSessionHasNoErrors()->assertSessionHas('success');
+
+        $mediaRequest = collect(Http::recorded())
+            ->map(fn ($entry) => $entry[0])
+            ->first(fn ($request) => str_ends_with($request->url(), '/17841458503920416/media'));
+        $generatedPath = parse_url($mediaRequest['image_url'], PHP_URL_PATH);
+        $generatedPath = ltrim(str_replace('/storage/', '', $generatedPath), '/');
+        $dimensions = getimagesize(Storage::disk('public')->path($generatedPath));
+
+        $this->assertSame(851, $dimensions[0]);
+        $this->assertSame(446, $dimensions[1]);
+        $this->assertLessThanOrEqual(1.91, $dimensions[0] / $dimensions[1]);
+    }
+
     public function test_scheduled_publication_remembers_instagram_selection(): void
     {
         [$admin, $client, $empresa, $task] = $this->publishingTask();
