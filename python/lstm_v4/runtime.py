@@ -8,6 +8,7 @@ import argparse
 import io
 import json
 import sys
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
@@ -17,6 +18,7 @@ import tensorflow as tf
 from data_pipeline import VERSION, HISTORY_FEATURES, CANDIDATE_FEATURES, read_dataset, make_inputs, transform, invert, combine
 
 
+@lru_cache(maxsize=4)
 def load_artifact(root, network):
     folder = root / network
     metadata = json.loads((folder / 'metadata.json').read_text(encoding='utf-8'))

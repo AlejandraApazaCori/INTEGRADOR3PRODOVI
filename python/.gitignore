@@ -1,2 +1,3 @@
 .venv-lstm/
 __pycache__/
+.demo/

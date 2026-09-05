@@ -1,5 +1,9 @@
 # LSTM integrada con publicaciones y Meta
 
+**Hosting sin Python:** ya está disponible el modo API HTTPS. Sigue [DEMO_API.md](DEMO_API.md) para
+ejecutar los modelos en tu computadora y conectar el hosting mediante un túnel de demostración.
+El resto de este documento describe el modo de ejecución local en el servidor.
+
 ## Estado del modelo instalado
 
 Se instaló el ZIP `lstm_horarios_meta_v4_20260905T155010882979Z.zip` en

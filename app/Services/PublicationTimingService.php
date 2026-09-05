@@ -50,7 +50,9 @@ class PublicationTimingService
         }
         if ($inputs !== []) {
             $payload = ['accounts' => $inputs, 'candidates' => $candidates];
-            $fingerprint = @file_get_contents(config('lstm.models').'/archive_sha256.txt') ?: 'missing';
+            $fingerprint = config('lstm.driver') === 'http'
+                ? [config('lstm.api_url'), config('lstm.model_revision')]
+                : (@file_get_contents(config('lstm.models').'/archive_sha256.txt') ?: 'missing');
             $key = 'publication-lstm:v1:'.hash('sha256', json_encode([$payload, $fingerprint]));
             try {
                 $prediction = Cache::remember($key, now()->addMinutes(15), fn () => $this->inference->predict($payload));
