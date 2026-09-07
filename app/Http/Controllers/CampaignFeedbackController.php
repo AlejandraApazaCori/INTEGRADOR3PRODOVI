@@ -60,6 +60,14 @@ class CampaignFeedbackController extends Controller
             'url' => $campaignId
                 ? route('administrador.campañas.show', $campaignId).'#feedback'
                 : route('administrador.campañas.index'),
+            'messages' => $summary['messages']->map(fn ($message) => [
+                'id' => $message->id,
+                'sender' => $message->remitente_nombre ?? 'Usuario',
+                'campaign' => $message->campania_nombre,
+                'preview' => \Illuminate\Support\Str::limit(strip_tags((string) $message->contenido), 90),
+                'date' => \Carbon\Carbon::parse($message->created_at)->diffForHumans(),
+                'url' => route('administrador.campañas.show', $message->campania_id).'#feedback',
+            ])->values(),
         ]);
     }
 

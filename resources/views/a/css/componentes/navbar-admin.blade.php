@@ -774,6 +774,16 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
+        .admin-message-dropdown { width: 360px; max-height: 470px; overflow-y: auto; }
+        .admin-message-item { display:grid; grid-template-columns:36px minmax(0,1fr); gap:10px; padding:12px 14px; border-bottom:1px solid #edf0f2; color:#374151; text-decoration:none; }
+        .admin-message-item:hover { background:#f8fafc; }
+        .admin-message-item-icon { width:36px; height:36px; display:grid; place-items:center; border-radius:8px; background:#e8f5f6; color:#117e8c; }
+        .admin-message-item>span:last-child>* { display:block; }
+        .admin-message-item strong { color:#202326; font-size:.76rem; }
+        .admin-message-item small { margin-top:1px; color:#117e8c; font-size:.66rem; font-weight:700; }
+        .admin-message-item em { margin-top:4px; overflow:hidden; color:#667085; font-size:.68rem; font-style:normal; line-height:1.35; }
+        .admin-message-item time { margin-top:4px; color:#98a2b3; font-size:.6rem; }
+
         .topbar-user {
             display: flex;
             align-items: center;

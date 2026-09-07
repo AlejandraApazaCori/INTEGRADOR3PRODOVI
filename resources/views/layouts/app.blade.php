@@ -245,14 +245,28 @@
                 </div>
             </div>
 
-            <a href="{{ route('administrador.campañas.index') }}" class="topbar-notification-btn" title="Mensajes de campañas" aria-label="Mensajes de campañas" data-admin-message-button data-unread-url="{{ route('administrador.mensajes.no-leidos') }}">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
-                    <path d="M8 9h8"/>
-                    <path d="M8 13h5"/>
-                </svg>
-                <span class="topbar-notification-badge" data-admin-message-badge style="display:none">0</span>
-            </a>
+            <div class="topbar-notifications-container">
+                <button type="button" class="topbar-notification-btn" title="Mensajes de campañas" aria-label="Mensajes de campañas" aria-expanded="false" data-admin-message-button data-unread-url="{{ route('administrador.mensajes.no-leidos') }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
+                        <path d="M8 9h8"/>
+                        <path d="M8 13h5"/>
+                    </svg>
+                    <span class="topbar-notification-badge" data-admin-message-badge style="display:none">0</span>
+                </button>
+                <div class="notification-dropdown admin-message-dropdown" data-admin-message-dropdown>
+                    <div class="notification-dropdown-header">
+                        <h3 class="text-sm font-bold">Mensajes nuevos</h3>
+                        <span class="text-xs text-gray-500" data-admin-message-count>0 sin leer</span>
+                    </div>
+                    <div class="notification-dropdown-body" data-admin-message-list>
+                        <div class="p-4 text-center text-sm text-gray-400">Cargando mensajes...</div>
+                    </div>
+                    <div class="notification-dropdown-footer border-t border-gray-100 pt-2">
+                        <a href="{{ route('administrador.campañas.index') }}" class="block text-center text-xs text-indigo-600 hover:text-indigo-800 font-medium py-1">Ver campañas</a>
+                    </div>
+                </div>
+            </div>
 
             <div class="topbar-profile-container">
                 <button type="button" class="topbar-user" id="topbarProfileBtn" onclick="toggleTopbarProfile(event)" aria-haspopup="true" aria-expanded="false">
@@ -337,6 +351,8 @@
             if (userMenu) userMenu.classList.remove('show');
             const profileMenu = document.getElementById('topbarProfileDropdown');
             if (profileMenu) profileMenu.classList.remove('show');
+            document.querySelector('[data-admin-message-dropdown]')?.classList.remove('show');
+            document.querySelector('[data-admin-message-button]')?.setAttribute('aria-expanded', 'false');
 
             if (isOpening) {
                 marcarNotificacionesVistas();
@@ -351,6 +367,8 @@
             button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
             document.getElementById('notificationDropdown')?.classList.remove('show');
             document.getElementById('userDropdownMenu')?.classList.remove('show');
+            document.querySelector('[data-admin-message-dropdown]')?.classList.remove('show');
+            document.querySelector('[data-admin-message-button]')?.setAttribute('aria-expanded', 'false');
         }
 
         function marcarNotificacionesVistas() {
@@ -405,6 +423,8 @@
         async function verificarMensajesNoLeidos() {
             const button = document.querySelector('[data-admin-message-button]');
             const badge = document.querySelector('[data-admin-message-badge]');
+            const countLabel = document.querySelector('[data-admin-message-count]');
+            const list = document.querySelector('[data-admin-message-list]');
             if (!button || !badge || document.visibilityState !== 'visible') return;
 
             try {
@@ -417,12 +437,53 @@
                 const count = Number(data.count) || 0;
                 badge.textContent = count > 99 ? '99+' : String(count);
                 badge.style.display = count > 0 ? '' : 'none';
+                if (countLabel) countLabel.textContent = `${count} sin leer`;
                 button.setAttribute('aria-label', count > 0
                     ? `Mensajes de campañas: ${count} sin leer`
                     : 'Mensajes de campañas');
-                if (data.url) button.href = data.url;
+                if (list) {
+                    list.replaceChildren();
+                    if (!data.messages?.length) {
+                        const empty = document.createElement('div');
+                        empty.className = 'p-4 text-center text-sm text-gray-400';
+                        empty.textContent = 'No tienes mensajes nuevos.';
+                        list.append(empty);
+                    } else {
+                        data.messages.forEach(message => {
+                            const link = document.createElement('a');
+                            link.href = message.url;
+                            link.className = 'admin-message-item';
+                            const icon = document.createElement('span');
+                            icon.className = 'admin-message-item-icon';
+                            icon.innerHTML = '<i class="fas fa-comment-dots"></i>';
+                            const copy = document.createElement('span');
+                            const sender = document.createElement('strong');
+                            sender.textContent = message.sender;
+                            const campaign = document.createElement('small');
+                            campaign.textContent = message.campaign;
+                            const preview = document.createElement('em');
+                            preview.textContent = message.preview || 'Imagen adjunta';
+                            const date = document.createElement('time');
+                            date.textContent = message.date;
+                            copy.append(sender, campaign, preview, date);
+                            link.append(icon, copy);
+                            list.append(link);
+                        });
+                    }
+                }
             } catch (error) {}
         }
+
+        const adminMessageButton = document.querySelector('[data-admin-message-button]');
+        const adminMessageDropdown = document.querySelector('[data-admin-message-dropdown]');
+        adminMessageButton?.addEventListener('click', function (event) {
+            event.stopPropagation();
+            const isOpen = adminMessageDropdown?.classList.toggle('show') ?? false;
+            adminMessageButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            document.getElementById('notificationDropdown')?.classList.remove('show');
+            document.getElementById('topbarProfileDropdown')?.classList.remove('show');
+            if (isOpen) verificarMensajesNoLeidos();
+        });
 
         verificarMensajesNoLeidos();
         setInterval(verificarMensajesNoLeidos, 10000);
@@ -443,6 +504,11 @@
             const btn = document.getElementById('notificationBtn');
             if (dropdown && !dropdown.contains(event.target) && !btn.contains(event.target)) {
                 dropdown.classList.remove('show');
+            }
+
+            if (adminMessageDropdown && adminMessageButton && !adminMessageDropdown.contains(event.target) && !adminMessageButton.contains(event.target)) {
+                adminMessageDropdown.classList.remove('show');
+                adminMessageButton.setAttribute('aria-expanded', 'false');
             }
 
             const profileDropdown = document.getElementById('topbarProfileDropdown');

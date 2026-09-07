@@ -57,6 +57,18 @@ class CampaignFeedbackService
         return [
             'count' => (clone $query)->count(),
             'campaign_id' => (clone $query)->orderByDesc('mensajes.id')->value('mensajes.campania_id'),
+            'messages' => (clone $query)
+                ->leftJoin('users as remitentes', 'remitentes.id', '=', 'mensajes.remitente_id')
+                ->orderByDesc('mensajes.id')
+                ->limit(8)
+                ->get([
+                    'mensajes.id',
+                    'mensajes.campania_id',
+                    'mensajes.contenido',
+                    'mensajes.created_at',
+                    'campanias.nombre as campania_nombre',
+                    'remitentes.name as remitente_nombre',
+                ]),
         ];
     }
 
