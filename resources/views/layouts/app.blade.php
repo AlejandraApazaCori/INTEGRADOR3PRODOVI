@@ -245,13 +245,14 @@
                 </div>
             </div>
 
-            <button type="button" class="topbar-notification-btn" title="Chat" aria-label="Abrir chat">
+            <a href="{{ route('administrador.campañas.index') }}" class="topbar-notification-btn" title="Mensajes de campañas" aria-label="Mensajes de campañas" data-admin-message-button data-unread-url="{{ route('administrador.mensajes.no-leidos') }}">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
                     <path d="M8 9h8"/>
                     <path d="M8 13h5"/>
                 </svg>
-            </button>
+                <span class="topbar-notification-badge" data-admin-message-badge style="display:none">0</span>
+            </a>
 
             <div class="topbar-profile-container">
                 <button type="button" class="topbar-user" id="topbarProfileBtn" onclick="toggleTopbarProfile(event)" aria-haspopup="true" aria-expanded="false">
@@ -400,6 +401,31 @@
         }
 
         setInterval(verificarNotificaciones, 30000);
+
+        async function verificarMensajesNoLeidos() {
+            const button = document.querySelector('[data-admin-message-button]');
+            const badge = document.querySelector('[data-admin-message-badge]');
+            if (!button || !badge || document.visibilityState !== 'visible') return;
+
+            try {
+                const response = await fetch(button.dataset.unreadUrl, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!response.ok) return;
+
+                const data = await response.json();
+                const count = Number(data.count) || 0;
+                badge.textContent = count > 99 ? '99+' : String(count);
+                badge.style.display = count > 0 ? '' : 'none';
+                button.setAttribute('aria-label', count > 0
+                    ? `Mensajes de campañas: ${count} sin leer`
+                    : 'Mensajes de campañas');
+                if (data.url) button.href = data.url;
+            } catch (error) {}
+        }
+
+        verificarMensajesNoLeidos();
+        setInterval(verificarMensajesNoLeidos, 10000);
 
         document.querySelectorAll('[data-dashboard-notification]').forEach((toast, index) => {
             const closeToast = () => {

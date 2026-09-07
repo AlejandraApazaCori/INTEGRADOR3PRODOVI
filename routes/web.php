@@ -224,6 +224,8 @@ Route::post('/facebook/post', [FacebookPostController::class, 'postToPage'])->na
 // Rutas de administrador
 Route::prefix('administrador')->middleware('auth')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('administrador.dashboard');
+    Route::get('/mensajes/no-leidos', [CampaignFeedbackController::class, 'staffUnreadCount'])
+        ->name('administrador.mensajes.no-leidos');
     Route::get('/solicitudes-contacto', [SolicitudContactoController::class, 'index'])
         ->name('administrador.solicitudes-contacto.index');
     Route::post('/comandos/crear-storage-link', function () {

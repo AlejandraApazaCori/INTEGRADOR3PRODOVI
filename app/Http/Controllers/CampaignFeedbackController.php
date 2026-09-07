@@ -48,6 +48,21 @@ class CampaignFeedbackController extends Controller
         ]);
     }
 
+    public function staffUnreadCount(): JsonResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $summary = $this->feedbackService->staffUnreadSummary($user);
+        $campaignId = $summary['campaign_id'];
+
+        return response()->json([
+            'count' => $summary['count'],
+            'url' => $campaignId
+                ? route('administrador.campañas.show', $campaignId).'#feedback'
+                : route('administrador.campañas.index'),
+        ]);
+    }
+
     public function index(Request $request, Campania $campania): JsonResponse
     {
         /** @var User $user */

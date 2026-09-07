@@ -41,6 +41,25 @@ class CampaignFeedbackService
             ->count();
     }
 
+    public function staffUnreadSummary(User $user): array
+    {
+        $query = DB::table('campania_mensaje_destinatarios as destinatarios')
+            ->join('campania_mensajes as mensajes', 'mensajes.id', '=', 'destinatarios.mensaje_id')
+            ->join('campanias', 'campanias.id', '=', 'mensajes.campania_id')
+            ->where('destinatarios.user_id', $user->id)
+            ->where(function ($campaigns) use ($user) {
+                $campaigns->whereNull('campanias.usuario_cliente_id')
+                    ->orWhere('campanias.usuario_cliente_id', '<>', $user->id);
+            })
+            ->whereNull('destinatarios.leido_at')
+            ->whereNull('mensajes.deleted_at');
+
+        return [
+            'count' => (clone $query)->count(),
+            'campaign_id' => (clone $query)->orderByDesc('mensajes.id')->value('mensajes.campania_id'),
+        ];
+    }
+
     public function authorize(Campania $campania, User $user): void
     {
         abort_unless($this->isClient($campania, $user) || $this->isInternalMember($campania, $user), 403);

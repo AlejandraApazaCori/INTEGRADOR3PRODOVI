@@ -741,6 +741,7 @@
             border-radius: 8px;
             cursor: pointer;
             color: #555b60;
+            text-decoration: none;
             transition: all 0.2s ease;
         }
 

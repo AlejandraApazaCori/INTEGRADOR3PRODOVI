@@ -326,6 +326,29 @@ class CampaignFeedbackTest extends TestCase
             ->assertJsonPath('count', 0);
     }
 
+    public function test_admin_navbar_reports_and_links_to_unread_campaign_messages(): void
+    {
+        [$admin, $client, , , , $campaign] = $this->campaignContext();
+
+        $this->actingAs($client)->postJson(route('campanias.mensajes.store', $campaign), [
+            'audiencia' => 'cliente_equipo',
+            'contenido' => 'Mensaje nuevo para el administrador.',
+        ])->assertCreated();
+
+        $this->actingAs($admin)
+            ->getJson(route('administrador.mensajes.no-leidos'))
+            ->assertOk()
+            ->assertJsonPath('count', 1)
+            ->assertJsonPath('url', route('administrador.campañas.show', $campaign).'#feedback');
+
+        $this->actingAs($admin)
+            ->get(route('administrador.campañas.show', $campaign))
+            ->assertOk()
+            ->assertSee('data-admin-message-button', false)
+            ->assertSee('data-admin-message-badge', false)
+            ->assertSee(route('administrador.mensajes.no-leidos'), false);
+    }
+
     private function campaignContext(): array
     {
         $admin = User::factory()->create(['name' => 'Administrador']);
