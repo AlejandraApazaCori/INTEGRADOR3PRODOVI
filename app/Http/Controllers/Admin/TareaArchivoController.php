@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Notifications\TareaEntregadaNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
@@ -109,19 +110,22 @@ class TareaArchivoController extends Controller
 
     public function updateEstado(Request $request, TareaArchivo $archivo)
     {
-        $request->validate([
+        $validated = $request->validate([
             'estado' => 'required|in:pendiente,aprobado,rechazado'
         ]);
 
-        $archivo->update(['estado' => $request->estado]);
+        $taskStatus = match ($validated['estado']) {
+            'aprobado' => 'aprobado',
+            'rechazado' => 'reformular',
+            default => 'pendiente',
+        };
 
-        if ($request->estado === 'aprobado') {
-            $archivo->tarea()->update(['estado' => 'aprobado']);
-        } elseif ($request->estado === 'rechazado') {
-            $archivo->tarea()->update(['estado' => 'reformular']);
-        }
+        DB::transaction(function () use ($archivo, $validated, $taskStatus) {
+            $archivo->update(['estado' => $validated['estado']]);
+            $archivo->tarea()->update(['estado' => $taskStatus]);
+        });
 
-        return back()->with('success', 'Estado del archivo actualizado correctamente');
+        return back()->with('success', 'Estado del archivo y de la tarea actualizado correctamente');
     }
     public function verSubidas(Tarea $tarea)
 {
