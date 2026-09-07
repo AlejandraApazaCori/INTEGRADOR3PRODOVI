@@ -67,8 +67,24 @@ class CampaignFeedbackController extends Controller
                 'preview' => \Illuminate\Support\Str::limit(strip_tags((string) $message->contenido), 90),
                 'date' => \Carbon\Carbon::parse($message->created_at)->diffForHumans(),
                 'url' => route('administrador.campañas.show', $message->campania_id).'#feedback',
+                'read_url' => route('administrador.mensajes.marcar-leidos', $message->campania_id),
             ])->values(),
         ]);
+    }
+
+    public function markStaffCampaignRead(Campania $campania): JsonResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $this->feedbackService->authorize($campania, $user);
+
+        DB::table('campania_mensaje_destinatarios')
+            ->where('user_id', $user->id)
+            ->whereNull('leido_at')
+            ->whereIn('mensaje_id', $campania->mensajes()->select('id'))
+            ->update(['leido_at' => now(), 'updated_at' => now()]);
+
+        return response()->json(['ok' => true]);
     }
 
     public function index(Request $request, Campania $campania): JsonResponse

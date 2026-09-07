@@ -452,6 +452,7 @@
                         data.messages.forEach(message => {
                             const link = document.createElement('a');
                             link.href = message.url;
+                            link.dataset.readUrl = message.read_url;
                             link.className = 'admin-message-item';
                             const icon = document.createElement('span');
                             icon.className = 'admin-message-item-icon';
@@ -483,6 +484,22 @@
             document.getElementById('notificationDropdown')?.classList.remove('show');
             document.getElementById('topbarProfileDropdown')?.classList.remove('show');
             if (isOpen) verificarMensajesNoLeidos();
+        });
+        adminMessageDropdown?.addEventListener('click', async function (event) {
+            const link = event.target.closest('[data-read-url]');
+            if (!link) return;
+            event.preventDefault();
+            const destination = link.href;
+            try {
+                await fetch(link.dataset.readUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': CSRF,
+                        'Accept': 'application/json'
+                    }
+                });
+            } catch (error) {}
+            window.location.href = destination;
         });
 
         verificarMensajesNoLeidos();

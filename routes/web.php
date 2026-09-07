@@ -226,6 +226,8 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('administrador.dashboard');
     Route::get('/mensajes/no-leidos', [CampaignFeedbackController::class, 'staffUnreadCount'])
         ->name('administrador.mensajes.no-leidos');
+    Route::post('/mensajes/{campania}/marcar-leidos', [CampaignFeedbackController::class, 'markStaffCampaignRead'])
+        ->name('administrador.mensajes.marcar-leidos');
     Route::get('/solicitudes-contacto', [SolicitudContactoController::class, 'index'])
         ->name('administrador.solicitudes-contacto.index');
     Route::post('/comandos/crear-storage-link', function () {
