@@ -37,6 +37,8 @@ class CampaignFeedbackTest extends TestCase
         $this->actingAs($client)
             ->get(route('clientes.campanias.feedback', $campaign))
             ->assertOk()
+            ->assertSee('<meta name="csrf-token" content="', false)
+            ->assertSee('name="_token"', false)
             ->assertSee('Mensajes con tu')
             ->assertSee($campaign->nombre);
 

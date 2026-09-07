@@ -60,6 +60,7 @@
                 <div><small>Nuevo mensaje</small><strong>Escribir al equipo</strong></div>
             </div>
             <form data-feedback-form>
+                @csrf
                 <label class="feedback-field">
                     <span>Enviar a</span>
                     <div class="feedback-dropdown" data-feedback-dropdown>
