@@ -244,6 +244,7 @@
 
         <div class="campaign-analytics campaign-tab-panel" id="campaign-panel-analytics" data-campaign-panel="analytics" role="tabpanel" aria-labelledby="campaign-tab-analytics" hidden>
             @include('administrador.campañas.partials.conexion-redes')
+            @include('administrador.campañas.partials.reportes-analiticas')
             @include('administrador.analiticas.analiticasporcuentas', [
                 'campania' => $campania,
                 'defaultAnalyticsDays' => 'all',

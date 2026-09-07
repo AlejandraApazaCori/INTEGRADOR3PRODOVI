@@ -99,13 +99,7 @@ class ClienteAnaliticasController extends Controller
             'view' => 'nullable|in:7dias,30dias,anual,historial',
             'empresa_id' => 'nullable|integer',
         ]);
-        $empresa = Empresa::where('usuario_id', Auth::id())
-            ->when(
-                filled($validated['empresa_id'] ?? null),
-                fn ($query) => $query->whereKey($validated['empresa_id'])
-            )
-            ->orderBy('id')
-            ->firstOrFail();
+        $empresa = $this->resolveReportCompany($validated['empresa_id'] ?? null);
         $days = match ($validated['view'] ?? 'historial') {
             '7dias' => 7,
             '30dias' => 30,
@@ -195,13 +189,7 @@ class ClienteAnaliticasController extends Controller
             'view' => 'nullable|in:7dias,30dias,anual,historial',
             'empresa_id' => 'nullable|integer',
         ]);
-        $empresa = Empresa::where('usuario_id', Auth::id())
-            ->when(
-                filled($validated['empresa_id'] ?? null),
-                fn ($query) => $query->whereKey($validated['empresa_id'])
-            )
-            ->orderBy('id')
-            ->firstOrFail();
+        $empresa = $this->resolveReportCompany($validated['empresa_id'] ?? null);
         $days = match ($validated['view'] ?? 'historial') {
             '7dias' => 7,
             '30dias' => 30,
@@ -298,13 +286,7 @@ class ClienteAnaliticasController extends Controller
             'view' => 'nullable|in:7dias,30dias,anual,historial',
             'empresa_id' => 'nullable|integer',
         ]);
-        $empresa = Empresa::where('usuario_id', Auth::id())
-            ->when(
-                filled($validated['empresa_id'] ?? null),
-                fn ($query) => $query->whereKey($validated['empresa_id'])
-            )
-            ->orderBy('id')
-            ->firstOrFail();
+        $empresa = $this->resolveReportCompany($validated['empresa_id'] ?? null);
         $days = match ($validated['view'] ?? 'historial') {
             '7dias' => 7,
             '30dias' => 30,
@@ -400,13 +382,7 @@ class ClienteAnaliticasController extends Controller
             'view' => 'nullable|in:7dias,30dias,anual,historial',
             'empresa_id' => 'nullable|integer',
         ]);
-        $empresa = Empresa::where('usuario_id', Auth::id())
-            ->when(
-                filled($validated['empresa_id'] ?? null),
-                fn ($query) => $query->whereKey($validated['empresa_id'])
-            )
-            ->orderBy('id')
-            ->firstOrFail();
+        $empresa = $this->resolveReportCompany($validated['empresa_id'] ?? null);
         $days = match ($validated['view'] ?? 'historial') {
             '7dias' => 7,
             '30dias' => 30,
@@ -496,6 +472,24 @@ class ClienteAnaliticasController extends Controller
             'data_source' => 'Meta Insights',
             'generated_at' => $analytics['generated_at'] ?? now()->toIso8601String(),
         ];
+    }
+
+    private function resolveReportCompany(?int $companyId): Empresa
+    {
+        $user = Auth::user();
+        $isInternal = $user?->hasAnyRole([
+            'Super Administrador',
+            'Administrador',
+            'Community Manager',
+            'Disenador',
+            'Diseñador',
+        ]);
+
+        return Empresa::query()
+            ->unless($isInternal, fn ($query) => $query->where('usuario_id', $user?->id))
+            ->when($companyId, fn ($query) => $query->whereKey($companyId))
+            ->orderBy('id')
+            ->firstOrFail();
     }
 
     private function resolvePeriodKey(string $view): string
