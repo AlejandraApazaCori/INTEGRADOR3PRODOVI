@@ -38,7 +38,7 @@ class LstmInferenceService
         $parts = parse_url($url);
         if (! $parts || ($parts['scheme'] ?? '') !== 'https' || empty($parts['host'])
             || isset($parts['user']) || isset($parts['pass']) || isset($parts['query']) || isset($parts['fragment'])) {
-            throw new RuntimeException('Configura LSTM_API_URL con la dirección HTTPS del túnel.');
+            throw new RuntimeException('Configura LSTM_API_URL con la dirección HTTPS de la API LSTM.');
         }
         $token = (string) config('lstm.api_token');
         if (strlen($token) < 32) {
@@ -50,7 +50,7 @@ class LstmInferenceService
                 ->withOptions(['verify' => config('lstm.ca_bundle') ?: true])
                 ->withoutRedirecting()->post($url.'/v1/predict', $payload);
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            throw new RuntimeException('No se pudo contactar la API LSTM. Comprueba que la computadora, el servicio y el túnel estén encendidos.');
+            throw new RuntimeException('No se pudo contactar la API LSTM. Comprueba que el servicio esté encendido y que LSTM_API_URL sea la dirección vigente.');
         } catch (\GuzzleHttp\Exception\RequestException $e) {
             if (($e->getHandlerContext()['errno'] ?? null) === 60) {
                 throw new RuntimeException('PHP no puede verificar el certificado HTTPS de la API. Actualiza los certificados CA del servidor o configura LSTM_CA_BUNDLE.');
@@ -62,7 +62,7 @@ class LstmInferenceService
                 401, 403 => 'La clave de acceso LSTM no coincide.',
                 413, 422 => 'La API LSTM rechazó el formato o tamaño del histórico.',
                 429, 503 => 'La API LSTM está ocupada. Vuelve a intentarlo.',
-                404, 502, 530 => 'La dirección del túnel no está disponible. Revisa LSTM_API_URL.',
+                404, 502, 530 => 'La API LSTM no está disponible en esa dirección. Revisa LSTM_API_URL.',
                 default => 'La API LSTM no pudo completar el cálculo.',
             };
             // Nunca incluir el cuerpo remoto, headers o credenciales en el log.

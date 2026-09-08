@@ -2,13 +2,15 @@
 
 ## Iniciar
 
-Desde la raíz del proyecto, en PowerShell:
+Ejecuta este comando **en la computadora Windows que tiene Python y los modelos**, no en el hosting:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File python/start_demo.ps1
 ```
 
-El script arranca la API en `127.0.0.1:8765`, carga y verifica los dos modelos y abre un túnel HTTPS.
+Un hosting Laravel/PHP convencional no puede ejecutar este comando PowerShell. El script arranca la API
+en `127.0.0.1:8765`, carga y verifica los dos modelos, abre un túnel HTTPS y comprueba que también responda
+desde la dirección pública.
 Los procesos quedan en segundo plano, sin ventanas adicionales. La clave permanece en
 `python/.demo/api-token.txt`, fuera de Git. El túnel permite acceder únicamente a la API de inferencia,
 no al proyecto Laravel ni al sistema de archivos.
@@ -18,6 +20,10 @@ Al terminar verás la URL pública y estas rutas:
 - `python/.demo/production.env`: variables y clave para copiar al hosting.
 - `python/.demo/lstm-hosting-update.zip`: tres archivos PHP actualizados, sin secretos.
 - `python/.demo/tunnel-url.txt`: dirección pública actual.
+
+El iniciador actualiza automáticamente las variables LSTM del `.env` **de esta computadora**. No puede
+editar el `.env` privado de un servidor remoto: cada vez que cambie la URL hay que copiar las cinco líneas
+de `production.env` al hosting y limpiar su caché de configuración.
 
 En otro equipo instala primero Python 3.13, crea `python/.venv-lstm` e instala
 `python/lstm_v4/requirements-api.txt`. Los modelos deben estar en `python/modelos/meta_v4_20260905`.

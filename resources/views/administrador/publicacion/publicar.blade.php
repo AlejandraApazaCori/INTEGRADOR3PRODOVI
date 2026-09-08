@@ -233,8 +233,8 @@
                                 Configuración de Publicación
                             </label>
                             
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div class="p-4 rounded-xl border" style="background: #ffffff; border-color: #e2e8f0;">
+                            <div class="grid grid-cols-1 gap-4">
+                                <div class="w-full p-4 rounded-xl border" style="background: #ffffff; border-color: #e2e8f0;">
                                     <div class="flex items-center mb-3 rp-radio-option">
                                         <input id="publish-now" name="schedule_type" type="radio" value="now" {{ old('schedule_type', 'now') === 'now' ? 'checked' : '' }} class="h-4 w-4 focus:ring-2" style="accent-color: #4f46e5; border-color: #d1d5db;">
                                         <label for="publish-now" class="ml-2 block text-sm text-gray-700 font-medium">
@@ -298,7 +298,7 @@
                                     </div>
                                 </div>
                                 
-                                <div class="p-4 rounded-xl border" style="background: linear-gradient(135deg, #eff6ff, #f5f3ff); border-color: #bfdbfe;">
+                                <div class="w-full p-4 rounded-xl border" style="background: linear-gradient(135deg, #eff6ff, #f5f3ff); border-color: #bfdbfe;">
                                     <div class="flex items-start gap-3">
                                         <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background: rgba(79,70,229,0.12);">
                                             <i class="fas fa-lightbulb text-sm" style="color: #4f46e5;"></i>

@@ -1,8 +1,12 @@
 <?php
 
+$apiUrl = trim((string) env('LSTM_API_URL', ''));
+$driver = trim((string) env('LSTM_DRIVER', ''));
+
 return [
-    'driver' => env('LSTM_DRIVER', 'local'),
-    'api_url' => env('LSTM_API_URL'),
+    // Una URL configurada implica HTTP aunque el proveedor conserve una variable vacía.
+    'driver' => $driver !== '' ? $driver : ($apiUrl !== '' ? 'http' : 'local'),
+    'api_url' => $apiUrl,
     'api_token' => env('LSTM_API_TOKEN'),
     'ca_bundle' => env('LSTM_CA_BUNDLE'),
     'model_revision' => env('LSTM_MODEL_REVISION', 'meta_v4_20260905'),

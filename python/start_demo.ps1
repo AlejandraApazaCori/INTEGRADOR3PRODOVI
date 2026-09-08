@@ -14,9 +14,9 @@ if (Test-Path -LiteralPath $statePath) {
 }
 $token = (Get-Content -LiteralPath (Join-Path $demoRoot 'api-token.txt') -Raw).Trim()
 $headers = @{Authorization = "Bearer $token"}
-function Test-ApiReady {
+function Test-ApiReady([string]$BaseUrl = 'http://127.0.0.1:8765') {
     try {
-        $response = Invoke-RestMethod 'http://127.0.0.1:8765/health' -Headers $headers -TimeoutSec 3
+        $response = Invoke-RestMethod "$BaseUrl/health" -Headers $headers -TimeoutSec 5
         return ($response.platforms.facebook.verified_load -and $response.platforms.instagram.verified_load)
     } catch { return $false }
 }
@@ -40,9 +40,9 @@ if ($LocalOnly) { exit 0 }
 if (Test-Path -LiteralPath (Join-Path $demoRoot 'tunnel-url.txt')) {
     $oldUrl = (Get-Content -LiteralPath (Join-Path $demoRoot 'tunnel-url.txt') -Raw).Trim()
     try {
-        $remote = Invoke-RestMethod "$oldUrl/health" -Headers $headers -TimeoutSec 8
-        if ($remote.platforms.instagram.verified_load) {
-            & $pythonExe (Join-Path $sourceDir 'export_demo_config.py') $oldUrl
+        if (Test-ApiReady $oldUrl) {
+            & $pythonExe (Join-Path $sourceDir 'export_demo_config.py') $oldUrl --sync-env
+            Write-Host 'IMPORTANTE: copia python/.demo/production.env al .env del hosting y limpia la caché de Laravel.' -ForegroundColor Yellow
             exit $LASTEXITCODE
         }
     } catch { }
@@ -70,6 +70,14 @@ for ($attempt = 0; $attempt -lt 45; $attempt++) {
     Start-Sleep -Seconds 1
 }
 if (-not $url) { throw "No se obtuvo la URL. Revisa $tunnelLog." }
-& $pythonExe (Join-Path $sourceDir 'export_demo_config.py') $url
+$remoteReady = $false
+for ($attempt = 0; $attempt -lt 15; $attempt++) {
+    if (Test-ApiReady $url) { $remoteReady = $true; break }
+    if ($tunnelProcess.HasExited) { throw "El túnel se cerró. Revisa $tunnelLog." }
+    Start-Sleep -Seconds 1
+}
+if (-not $remoteReady) { throw "El túnel inició pero la API no responde por HTTPS. Revisa $tunnelLog." }
+& $pythonExe (Join-Path $sourceDir 'export_demo_config.py') $url --sync-env
 if ($LASTEXITCODE -ne 0) { throw 'No se pudo exportar la configuración del hosting.' }
+Write-Host 'IMPORTANTE: copia python/.demo/production.env al .env del hosting y limpia la caché de Laravel.' -ForegroundColor Yellow
 Write-Host 'La API y el túnel quedan en segundo plano. Para detenerlos: powershell -File python/stop_demo.ps1'
