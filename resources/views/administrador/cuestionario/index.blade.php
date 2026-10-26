@@ -456,6 +456,7 @@
     });
 </script>
 
+@push('styles')
 <style>
     /* Banner geométrico - Mismo estilo que las otras vistas */
     .rp-banner {
@@ -977,4 +978,5 @@
         #questionnaire-index .page-actions .new-topic-button { width: 100%; justify-content: center; }
     }
 </style>
+@endpush
 @endsection

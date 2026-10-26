@@ -34,9 +34,20 @@ class CuestionarioController extends Controller
      */
     public function store(Request $request, $empresaId)
     {
+        return $this->saveAnswers($request, $empresaId, false);
+    }
+
+    public function draft(Request $request, $empresaId)
+    {
+        return $this->saveAnswers($request, $empresaId, true);
+    }
+
+    private function saveAnswers(Request $request, $empresaId, bool $draft)
+    {
         $empresa = Empresa::where('usuario_id', Auth::id())->findOrFail($empresaId);
 
         if ($empresa->suscripcion()->whereNotNull('vigencia_activada_at')->exists()) {
+            abort_if($draft, 403);
             return redirect()->route('empresas.cuestionario', $empresa->id)
                 ->with('error', 'El cuestionario ya no puede editarse porque la campaña comenzó.');
         }
@@ -49,18 +60,24 @@ class CuestionarioController extends Controller
 
         foreach ($preguntas as $pregunta) {
             if ($pregunta->tipo_respuesta === 'checkbox') {
-                $rules["respuesta_{$pregunta->id}"] = $pregunta->requerido ? 'required|array|min:1' : 'nullable|array';
+                $rules["respuesta_{$pregunta->id}"] = ! $draft && $pregunta->requerido ? 'required|array|min:1' : 'nullable|array';
                 $rules["respuesta_{$pregunta->id}.*"] = 'string|max:255';
             } else {
-                $rules["respuesta_{$pregunta->id}"] = ($pregunta->requerido ? 'required' : 'nullable').'|string';
+                $rules["respuesta_{$pregunta->id}"] = (! $draft && $pregunta->requerido ? 'required' : 'nullable').'|string';
             }
             $rules["respuesta_{$pregunta->id}_otro"] = 'nullable|string|max:500';
         }
 
         $request->validate($rules);
 
-        DB::transaction(function () use ($request, $empresa, $preguntas) {
+        DB::transaction(function () use ($request, $empresa, $preguntas, $draft) {
+            $empresa = Empresa::whereKey($empresa->id)->lockForUpdate()->firstOrFail();
+            // Un autoguardado tardío nunca debe sobrescribir un envío definitivo.
+            abort_if($draft && $empresa->cuestionario_completado, 409);
             foreach ($preguntas as $pregunta) {
+                if ($draft && ! $request->exists("respuesta_{$pregunta->id}")) {
+                    continue;
+                }
                 $respuestaTexto = $this->formatAnswer(
                     $request->input("respuesta_{$pregunta->id}"),
                     $request->input("respuesta_{$pregunta->id}_otro")
@@ -86,9 +103,15 @@ class CuestionarioController extends Controller
                 }
             }
 
-            $empresa->cuestionario_completado = true;
-            $empresa->save();
+            if (! $draft) {
+                $empresa->cuestionario_completado = true;
+                $empresa->save();
+            }
         });
+
+        if ($draft) {
+            return response()->json(['saved' => true]);
+        }
 
         if ($request->boolean('from_dashboard')) {
             return redirect()->route('clientes.dashboard')

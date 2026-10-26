@@ -4,7 +4,6 @@
 
 @section('content')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
     <div class="payments-analytics-page">
         <div class="payments-analytics-shell">
@@ -697,7 +696,7 @@
                 const hasData = datasets.some(dataset => Array.isArray(dataset.data) && dataset.data.some(value => Number(value) > 0));
 
                 if (!labels.length || !hasData) {
-                    renderEmptyChartState(canvas, 'Sin datos para este gr?fico con los filtros actuales');
+                    renderEmptyChartState(canvas, 'Sin datos para este gráfico con los filtros actuales');
                     return;
                 }
 
@@ -905,6 +904,9 @@
         });
     </script>
 
+@endsection
+
+@push('styles')
     <style>
         /* Banner geométrico - Mismo estilo que las otras vistas */
         .rp-banner {
@@ -1151,4 +1153,4 @@
         @media(max-width:1150px){.analytics-filters form>.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.analytics-hero .relative.z-10>div{padding-right:0}.analytics-tabs{position:static;order:2;justify-content:center;margin:14px 24px 0}.analytics-tabs .btn-action{border-color:#dce4f3;background:#f4f7fd;color:#4f46e5}.analytics-tabs .btn-action:nth-child(2){background:#4f46e5;color:#fff}.analytics-filters{margin-top:18px!important}}
         @media(max-width:700px){.payments-analytics-page{padding-top:20px}.analytics-hero{min-height:210px}.analytics-hero .relative.z-10{min-height:210px;padding:28px 20px}.analytics-hero .h-14.w-14{display:none}.analytics-tabs{display:grid;grid-template-columns:1fr;margin-right:12px;margin-left:12px}.analytics-filters,.analytics-results{margin-right:12px!important;margin-left:12px!important}.analytics-filters form>.grid{grid-template-columns:1fr}.analytics-filters form>.flex{flex-direction:column}.analytics-filters form>.flex button{width:100%}.analytics-calendar,[data-analytics-calendar="endDate"] .analytics-calendar{right:auto;left:0;width:min(290px,calc(100vw - 66px))}.chart-card__canvas,.chart-card__canvas--wide{height:260px}}
 </style>
-@endsection
+@endpush

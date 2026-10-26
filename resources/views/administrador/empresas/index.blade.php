@@ -306,6 +306,7 @@
     </div>
 </div>
 
+@push('styles')
 <style>
     /* Banner geométrico - Mismo estilo que las otras vistas */
     .rp-banner {
@@ -519,6 +520,7 @@
         }
     }
 </style>
+@endpush
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

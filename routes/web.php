@@ -642,6 +642,7 @@ Route::prefix('empresas')->middleware('auth')->name('empresas.')->group(function
     // Rutas para cuestionario
     Route::get('/{id}/cuestionario', [CuestionarioController::class, 'show'])->name('cuestionario');
     Route::post('/{id}/cuestionario', [CuestionarioController::class, 'store'])->name('cuestionario.store');
+    Route::post('/{id}/cuestionario/borrador', [CuestionarioController::class, 'draft'])->name('cuestionario.draft');
 });
 
 // Rutas para clientes (historial de pagos)

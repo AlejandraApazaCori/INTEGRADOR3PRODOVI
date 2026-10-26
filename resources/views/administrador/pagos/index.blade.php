@@ -3,7 +3,6 @@
 @section('title', 'Gestión de Pagos')
 
 @section('content')
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
     <div class="payments-page">
         <div class="payments-shell">
@@ -825,7 +824,9 @@
             }
         });
     </script>
+@endsection
 
+@push('styles')
     <style>
         /* Banner geométrico - Mismo estilo que las otras vistas */
         .rp-banner {
@@ -1032,4 +1033,4 @@
         @media(max-width:980px) { .payments-hero .relative.z-10 > div { padding-right:0; }.payments-tabs { position:static; order:2; justify-content:center; margin:14px 24px 0; }.payments-tabs .btn-action { border-color:#dce4f3; background:#f4f7fd; color:#4f46e5; }.payments-tabs .btn-action:first-child { background:#4f46e5;color:#fff; }.payments-alert { order:3; }.payments-users-content{margin-top:18px} }
         @media(max-width:640px){.payments-page{padding-top:20px}.payments-hero{min-height:205px}.payments-hero .relative.z-10{min-height:205px;padding:28px 20px}.payments-tabs{display:grid;grid-template-columns:1fr;margin-right:12px;margin-left:12px}.payments-summary-grid,.payments-users-content,.payments-users-table-area{grid-template-columns:1fr;margin-right:12px;margin-left:12px}.payments-users-filter-grid{grid-template-columns:1fr}.payments-users-filter-grid>*,.payments-users-search{grid-column:1}.payments-users-table-toolbar{align-items:flex-start;flex-direction:column}.payments-alert{width:calc(100% - 24px)}.payments-report-card{align-items:stretch;flex-direction:column}.payments-report-card p{max-width:none}.payments-report-actions{width:100%;grid-template-columns:repeat(3,1fr)}.payment-drive-alert{align-items:flex-start;flex-direction:column}#comprobanteModal{padding:12px}#comprobanteModalDialog{width:calc(100vw - 24px);max-height:calc(100vh - 24px);border-radius:18px!important}#comprobanteModalBody{padding:10px}}
     </style>
-@endsection
+@endpush

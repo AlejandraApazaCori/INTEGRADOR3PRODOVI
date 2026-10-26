@@ -75,6 +75,7 @@
         @keyframes adminNotificationIn { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
         @media (max-width: 640px) { .dashboard-notification-stack { top: 68px; right: 16px; } }
     </style>
+    @include('a.css.componentes.navbar-admin', ['stylesOnly' => true])
     @stack('styles')
 </head>
 <body class="bg-gray-100">

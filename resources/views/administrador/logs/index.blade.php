@@ -392,6 +392,7 @@
     </div>
 </div>
 
+@push('styles')
 <style>
     /* Banner geomÃ©trico - Mismo estilo que las otras vistas */
     .rp-banner {
@@ -443,6 +444,7 @@
     @media(max-width:900px){.logs-filters form{grid-template-columns:repeat(2,minmax(0,1fr))!important}.logs-filters form>div{grid-column:span 1!important}.logs-tabs{overflow-x:auto!important}.logs-tabs nav{min-width:max-content}}
     @media(max-width:640px){.logs-hero,.logs-hero>.relative{min-height:205px}.logs-hero>.relative{padding:28px 20px!important}.logs-filters,.logs-tabs,.logs-panel{margin-right:12px!important;margin-left:12px!important}.logs-filters form{grid-template-columns:1fr!important}.logs-filters form>div{grid-column:1!important}.logs-filters form>div:last-child{grid-template-columns:1fr}.logs-panel-head{align-items:flex-start!important;flex-direction:column;gap:12px}.logs-panel-head>button{width:100%}.logs-export-grid,.logs-export-buttons{grid-template-columns:1fr}.logs-export-dialog{max-height:calc(100vh - 24px);overflow-y:auto;padding:20px}}
 </style>
+@endpush
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

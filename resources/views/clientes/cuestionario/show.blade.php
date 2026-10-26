@@ -885,6 +885,7 @@
 {{-- =============================================================
     JAVASCRIPT
 ============================================================== --}}
+<script src="{{ asset('js/questionnaire-draft.js') }}"></script>
 <script>
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -926,7 +927,12 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('submit-form');
 
 
-    let currentStep = 0;
+    const draft = window.initQuestionnaireDraft(form, {
+        user: @json(auth()->id()), company: @json($empresa->id),
+        url: @json(route('empresas.cuestionario.draft', $empresa->id)),
+        enabled: @json(!$cuestionarioBloqueado && !$empresa->cuestionario_completado), view: 'form'
+    });
+    let currentStep = Math.max(0, Math.min(draft.step, steps.length - 1));
 
 
 
@@ -1105,6 +1111,7 @@ document.addEventListener('DOMContentLoaded', function () {
     ========================================================== */
 
     function updateStepUI() {
+        draft.setStep(currentStep);
 
         if (!steps.length) {
             return;

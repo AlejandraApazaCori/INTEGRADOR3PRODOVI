@@ -1,3 +1,4 @@
+@once
     <style>
         * {
             margin: 0;
@@ -980,6 +981,9 @@
         }
 
     </style>
+@endonce
+
+@unless($stylesOnly ?? false)
 
      <script>
         function toggleSubmenu(element) {
@@ -1055,3 +1059,4 @@
 
 
     </script>
+@endunless

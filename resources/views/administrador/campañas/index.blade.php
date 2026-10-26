@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'Gestión de Campañas')
 
@@ -1041,6 +1041,7 @@
 </script>
 
 <!-- Estilos adicionales para mejorar la experiencia -->
+@push('styles')
 <style>
     /* Banner geométrico */
     .rp-banner {
@@ -1317,6 +1318,7 @@
     @media(max-width:980px) { .campaigns-hero-content>div { padding-right:0; } .campaigns-top-actions { position:static; order:2; justify-content:center; margin:14px 24px 0; } .campaign-top-action { border-color:#dce4f3; background:#f4f7fd; color:#4f46e5; } .campaign-top-action.is-active { background:#4f46e5; color:#fff; } .campaign-alert{order:3}.campaign-kpis{order:4;grid-template-columns:repeat(2,minmax(0,1fr))}.campaign-section{order:5} }
     @media(max-width:640px) { .campaigns-hero{min-height:205px}.campaigns-hero-content{min-height:205px;padding:28px 20px}.campaigns-hero-content .flex.items-center.gap-4{align-items:center}.campaigns-top-actions{display:grid;grid-template-columns:1fr;margin-right:12px;margin-left:12px}.campaign-top-action{border-color:#dce4f3;background:#f4f7fd;color:#4f46e5}.campaign-top-action.is-active{background:#4f46e5;color:#fff}.campaign-alert{width:calc(100% - 24px)}.campaign-kpis{grid-template-columns:1fr;margin-right:12px;margin-left:12px}.campaign-section{margin-right:12px!important;margin-left:12px!important}.campaign-section>.flex.items-center.mb-6{padding:18px 16px}.campaign-filter-bar{margin-right:12px!important;margin-left:12px!important;padding:10px}.campaign-filter-grid{grid-template-columns:1fr!important}.campaign-filter-bar:not(.campaign-filter-grid)::before{top:26px;left:27px}.campaign-table-wrap{margin-right:12px;margin-left:12px}.campaign-section>[id^='paginacion-']{margin-right:12px!important;margin-left:12px!important}.campaign-table tr[data-form-for]>td{padding:10px!important}.campaign-create-header{padding:16px}.campaign-create-heading{align-items:flex-start}.campaign-create-heading p{display:none}.campaign-create-form{padding:16px}.campaign-create-context,.campaign-create-fields{grid-template-columns:1fr}.campaign-create-field-full{grid-column:1}.campaign-create-field>label{align-items:flex-start;flex-direction:column;gap:2px}.campaign-create-field>label small{text-align:left}.campaign-assignee-picker{grid-template-columns:1fr}.campaign-recommend-button{width:100%}.campaign-create-footer{align-items:stretch;flex-direction:column}.campaign-create-footer>div{display:grid;grid-template-columns:1fr 1fr}.campaign-create-cancel,.campaign-create-submit{width:100%} }
 </style>
+@endpush
 @endsection
 
 

@@ -120,6 +120,7 @@
     @media(max-width:640px){.mq-modal{padding:8px}.mq-dialog{max-height:calc(100vh - 16px)}.mq-header,.mq-slide,.mq-footer{padding-left:18px;padding-right:18px}.mq-slides,.mq-slide{min-height:390px}.mq-cover-content{padding:28px 6px}.mq-side-art{display:none}.mq-question{padding-top:35px}.mq-checkboxes{grid-template-columns:1fr}.mq-footer{gap:8px}.mq-button{flex:1;padding-inline:10px}.mq-footer>span{font-size:.7rem;text-align:center}}
 </style>
 
+<script src="{{ asset('js/questionnaire-draft.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
     const modal=document.getElementById('mandatory-questionnaire');
@@ -132,7 +133,22 @@ document.addEventListener('DOMContentLoaded',()=>{
     const prev=document.getElementById('mq-prev');
     const next=document.getElementById('mq-next');
     const progress=document.getElementById('mq-progress');
-    let step=0;
+    const draft = window.initQuestionnaireDraft(form, {
+        user: @json(auth()->id()), company: @json($empresaCuestionario->id),
+        url: @json(route('empresas.cuestionario.draft', $empresaCuestionario->id)),
+        enabled: @json(!$empresaCuestionario->cuestionario_completado), view: 'popup'
+    });
+    let step=Math.max(0,Math.min(draft.step,slides.length-1));
+    modal.querySelectorAll('[data-mq-select]').forEach(select=>{
+        const value=select.querySelector('input').value;
+        select.querySelector('.mq-select-trigger span').textContent=value||'Selecciona una opción';
+        select.querySelectorAll('.mq-select-option').forEach(option=>option.classList.toggle('is-selected',option.dataset.value===value));
+    });
+    form.querySelectorAll('[data-mq-other-for]').forEach(other=>{
+        const name=other.dataset.mqOtherFor;
+        const selected=Array.from(form.elements).some(field=>(field.name===name&&field.value==='Otro')||(field.name===name+'[]'&&field.value==='Otro'&&field.checked));
+        other.classList.toggle('hidden',!selected);
+    });
 
     const autosize=field=>{field.style.height='auto';field.style.height=`${field.scrollHeight}px`;};
     modal.querySelectorAll('.mq-auto-grow').forEach(field=>{field.addEventListener('input',()=>autosize(field));autosize(field);});
@@ -149,6 +165,7 @@ document.addEventListener('DOMContentLoaded',()=>{
             const other=form.querySelector(`[data-mq-other-for="${input.name}"]`);
             other?.classList.toggle('hidden',option.dataset.value!=='Otro');
             input.closest('.mq-question-content').classList.remove('has-error');close();
+            input.dispatchEvent(new Event('change',{bubbles:true}));
         }));
     });
 
@@ -175,6 +192,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
 
     function render(){
+        draft.setStep(step);
         slides.forEach((slide,index)=>slide.classList.toggle('is-active',index===step));
         const current=slides[step];
         const questionIndex=current?.dataset.mqQuestion==null?-1:Number(current.dataset.mqQuestion);
@@ -188,7 +206,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     next.addEventListener('click',()=>{
         if(!validateCurrent())return;
         if(step<slides.length-1){step++;render();return;}
-        next.disabled=true;next.innerHTML='<i class="fas fa-spinner fa-spin"></i> Guardando...';form.submit();
+        next.disabled=true;next.innerHTML='<i class="fas fa-spinner fa-spin"></i> Guardando...';draft.stop();form.submit();
     });
     form.addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.tagName!=='TEXTAREA'){event.preventDefault();next.click();}});
     render();
