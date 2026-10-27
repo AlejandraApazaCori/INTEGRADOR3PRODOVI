@@ -19,12 +19,20 @@
                             <p style="color: #bfdbfe; font-size: 0.9rem;">Gestiona todas las empresas registradas en el sistema</p>
                         </div>
                     </div>
-                    <a href="{{ route('administrador.dashboard') }}" 
-                       class="inline-flex items-center px-4 py-2.5 rounded-xl font-semibold text-white transition-all hover:-translate-y-0.5 flex-shrink-0" 
-                       style="background: linear-gradient(to right, #3b82f6, #2563eb); box-shadow: 0 4px 14px rgba(59,130,246,0.35);">
-                        <i class="fas fa-arrow-left mr-2 text-sm"></i>
-                        Volver al Panel
-                    </a>
+                    <div class="flex flex-wrap items-center justify-center gap-3 flex-shrink-0">
+                        <a href="{{ route('administrador.empresas.previsualizar-registro') }}"
+                           class="inline-flex items-center px-4 py-2.5 rounded-xl font-semibold text-white transition-all hover:-translate-y-0.5"
+                           style="background: linear-gradient(to right, #f47b20, #df6410); box-shadow: 0 4px 14px rgba(244,123,32,0.35);">
+                            <i class="fas fa-eye mr-2 text-sm"></i>
+                            Previsualizar registro de empresa
+                        </a>
+                        <a href="{{ route('administrador.dashboard') }}"
+                           class="inline-flex items-center px-4 py-2.5 rounded-xl font-semibold text-white transition-all hover:-translate-y-0.5"
+                           style="background: linear-gradient(to right, #3b82f6, #2563eb); box-shadow: 0 4px 14px rgba(59,130,246,0.35);">
+                            <i class="fas fa-arrow-left mr-2 text-sm"></i>
+                            Volver al Panel
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

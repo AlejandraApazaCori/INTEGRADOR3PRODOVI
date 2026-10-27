@@ -7,7 +7,7 @@
     <title>Configura tu cuenta | PRODOVI</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rowdies:wght@400;600;700&family=Varela+Round&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Candal&family=Lalezar&family=Varela+Round&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root { --purple:#7130a7; --purple-dark:#431760; --orange:#f47b20; --green:#72bf44; --turquoise:#19b9b2; --ink:#17131d; --muted:#716978; --soft:#f7f4f8; color-scheme:light; }
@@ -23,22 +23,22 @@
         .shape-two { width:120px; height:120px; bottom:-55px; left:7%; background:var(--green); transform:rotate(45deg); }
         .topbar { width:min(1240px,calc(100% - 40px)); min-height:86px; margin:auto; display:flex; align-items:center; justify-content:space-between; position:relative; z-index:3; }
         .brand { display:inline-flex; align-items:center; gap:12px; color:#fff; text-decoration:none; }
-        .brand-mark { width:42px; height:42px; display:grid; place-items:center; border-radius:13px; background:var(--purple); color:#fff; font-family:'Rowdies',sans-serif; font-size:1.25rem; box-shadow:0 10px 30px rgba(113,48,167,.35); }
-        .brand-name { font-family:'Rowdies',sans-serif; font-size:1.25rem; letter-spacing:.03em; }
+        .brand-mark { width:42px; height:42px; display:grid; place-items:center; border-radius:13px; background:var(--purple); color:#fff; font-family:'Lalezar',sans-serif; font-size:1.25rem; box-shadow:0 10px 30px rgba(113,48,167,.35); }
+        .brand-name { font-family:'Lalezar',sans-serif; font-size:1.25rem; letter-spacing:.03em; }
         .user-chip { display:flex; align-items:center; gap:9px; color:#d8d1dc; font-size:.87rem; }
         .user-avatar { width:34px; height:34px; display:grid; place-items:center; border-radius:50%; background:rgba(255,255,255,.1); color:var(--turquoise); }
         .shell { width:min(1240px,calc(100% - 40px)); min-height:calc(100vh - 112px); margin:0 auto 26px; display:grid; grid-template-columns:290px minmax(0,1fr); border:1px solid rgba(255,255,255,.1); border-radius:30px; overflow:hidden; position:relative; z-index:2; background:rgba(255,255,255,.04); box-shadow:0 32px 90px rgba(0,0,0,.3); backdrop-filter:blur(15px); }
         .sidebar { padding:38px 28px; color:#fff; background:rgba(0,0,0,.2); border-right:1px solid rgba(255,255,255,.08); }
         .sidebar-kicker { margin:0 0 8px; color:var(--turquoise); font-size:.72rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
-        .sidebar-title { margin:0; font-family:'Rowdies',sans-serif; font-size:1.62rem; font-weight:400; line-height:1.15; }
+        .sidebar-title { margin:0; font-family:'Lalezar',sans-serif; font-size:1.62rem; font-weight:400; line-height:1.15; }
         .steps { display:grid; gap:11px; margin-top:34px; }
         .step-indicator { display:grid; grid-template-columns:42px 1fr; gap:12px; align-items:center; width:100%; padding:12px; border:0; border-radius:14px; background:transparent; color:#aaa2af; text-align:left; cursor:default; transition:.25s ease; }
         .step-indicator.is-active { color:#fff; background:rgba(255,255,255,.09); transform:translateX(4px); }
         .step-indicator.is-complete { color:#e4dfe7; }
         .step-indicator.is-active,.step-indicator.is-complete { cursor:pointer; }
-        .step-number { width:38px; height:38px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.16); border-radius:12px; font-family:'Rowdies',sans-serif; }
+        .step-number { width:38px; height:38px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.16); border-radius:12px; font-family:'Lalezar',sans-serif; }
         .is-active .step-number { border-color:var(--orange); background:var(--orange); color:#fff; box-shadow:0 8px 20px rgba(244,123,32,.25); }
-        .is-complete .step-number { border-color:var(--green); background:rgba(114,191,68,.15); color:var(--green); }
+        .is-complete .step-number { border-color:#bcb9b3; background:#bcb9b3; color:#fff; }
         .step-indicator strong { display:block; font-size:.88rem; }
         .step-indicator small { display:block; margin-top:3px; font-size:.72rem; opacity:.7; }
         .sidebar-note { margin-top:34px; padding:16px; border-radius:15px; background:rgba(25,185,178,.1); color:#bde8e5; font-size:.78rem; line-height:1.55; }
@@ -53,7 +53,7 @@
         .content { width:min(760px,100%); margin:auto; }
         .eyebrow { display:inline-flex; align-items:center; gap:9px; margin-bottom:16px; color:var(--purple); font-size:.75rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
         .eyebrow::before { content:''; width:30px; height:4px; border-radius:5px; background:var(--turquoise); }
-        h1, h2 { margin:0; color:var(--ink); font-family:'Rowdies',sans-serif; font-weight:600; letter-spacing:-.035em; }
+        h1, h2 { margin:0; color:var(--ink); font-family:'Lalezar',sans-serif; font-weight:600; letter-spacing:-.035em; }
         h1 { max-width:760px; font-size:clamp(2.65rem,5.6vw,5.3rem); line-height:.98; }
         h2 { font-size:clamp(2.2rem,4vw,3.7rem); line-height:1.03; }
         h1 span, h2 span { color:var(--purple); }
@@ -67,7 +67,7 @@
         .btn[disabled] { opacity:.45; cursor:not-allowed; transform:none; box-shadow:none; }
         .promise-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:13px; margin-top:34px; }
         .promise { padding:17px; border:1px solid #e7dfea; border-radius:16px; background:#fff; }
-        .promise i { color:var(--turquoise); font-size:1.15rem; }
+        .promise i { color:var(--purple); font-size:1.15rem; }
         .promise strong { display:block; margin-top:12px; font-size:.88rem; }
         .promise small { display:block; margin-top:5px; color:var(--muted); line-height:1.45; }
         .notice { margin:20px 0 0; padding:13px 16px; border-radius:12px; font-size:.87rem; line-height:1.5; }
@@ -84,18 +84,16 @@
         .instagram { background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045); }
         .badge { padding:6px 9px; border-radius:999px; background:#f0ebf2; color:var(--muted); font-size:.68rem; font-weight:700; text-transform:uppercase; }
         .is-linked .badge { background:rgba(114,191,68,.14); color:#4e8a29; }
-        .social-card h3 { margin:22px 0 6px; font-family:'Rowdies',sans-serif; font-size:1.3rem; }
+        .social-card h3 { margin:22px 0 6px; font-family:'Lalezar',sans-serif; font-size:1.3rem; }
+        .social-card h3 .social-lock { display:inline-grid; width:25px; height:25px; margin-left:5px; place-items:center; vertical-align:middle; border-radius:8px; background:#f0ebf2; color:#8b8191; font-size:.7rem; }
         .social-card p { margin:0; color:var(--muted); font-size:.83rem; line-height:1.5; }
         .social-action { margin-top:auto; padding-top:15px; color:var(--purple); font-size:.82rem; font-weight:700; }
         .is-linked .social-action { color:#4e8a29; }
         .no-social-option { margin-top:16px; }
-        .no-social-button { width:100%; display:flex; align-items:center; gap:14px; padding:16px 18px; border:2px dashed #d5cadb; border-radius:16px; background:#fff; color:var(--ink); text-align:left; cursor:pointer; transition:border-color .22s,background .22s,transform .22s; }
-        .no-social-button:hover { transform:translateY(-2px); border-color:var(--turquoise); background:#f3fbfa; }
-        .no-social-icon { width:42px; height:42px; flex:0 0 auto; display:grid; place-items:center; border-radius:12px; background:rgba(25,185,178,.12); color:var(--turquoise); font-size:1.1rem; }
-        .no-social-copy { flex:1; }
+        .no-social-button { width:100%; display:block; padding:16px 18px; border:1px solid #d5d5d5; border-radius:16px; background:#f3f3f3; color:#555; text-align:left; cursor:pointer; transition:border-color .22s,background .22s; }
+        .no-social-button:hover { border-color:#bcbcbc; background:#eaeaea; }
         .no-social-copy strong { display:block; margin-bottom:3px; }
-        .no-social-copy small { color:var(--muted); line-height:1.4; }
-        .no-social-button > .fa-arrow-right { color:var(--purple); }
+        .no-social-copy small { color:#777; line-height:1.4; }
         .form-card { margin-top:25px; overflow:hidden; border:1px solid #e5dfe8; border-radius:21px; background:#fff; box-shadow:0 18px 45px rgba(67,23,96,.07); }
         .form-head { display:flex; align-items:center; gap:13px; padding:19px 22px; background:linear-gradient(90deg,rgba(113,48,167,.08),rgba(25,185,178,.08)); }
         .form-head-icon { width:42px; height:42px; display:grid; place-items:center; border-radius:12px; background:var(--purple); color:#fff; }
@@ -113,7 +111,7 @@
         .existing-company { display:flex; align-items:center; gap:18px; margin-top:27px; padding:23px; border:2px solid rgba(114,191,68,.5); border-radius:19px; background:#fff; }
         .company-logo { width:62px; height:62px; flex:0 0 auto; display:grid; place-items:center; overflow:hidden; border-radius:16px; background:rgba(113,48,167,.1); color:var(--purple); font-size:1.4rem; }
         .company-logo img { width:100%; height:100%; object-fit:cover; }
-        .existing-company h3 { margin:0 0 5px; font-family:'Rowdies',sans-serif; }
+        .existing-company h3 { margin:0 0 5px; font-family:'Lalezar',sans-serif; }
         .existing-company p { margin:0; color:var(--muted); font-size:.83rem; }
         .company-edit-button { width:40px; height:40px; display:grid; place-items:center; flex:0 0 auto; margin-left:auto; border:1px solid #d9cedd; border-radius:10px; background:#fff; color:var(--purple); text-decoration:none; transition:.2s ease; }
         .company-edit-button:hover { border-color:var(--orange); background:var(--orange); color:#fff; transform:translateY(-2px); }
@@ -124,6 +122,7 @@
         .summary { display:flex; justify-content:center; flex-wrap:wrap; gap:9px; margin-top:25px; }
         .summary span { padding:8px 12px; border-radius:999px; background:#fff; color:#5e5663; font-size:.78rem; }
         .summary i { margin-right:6px; color:var(--green); }
+        .summary .fa-clock { color:#8b818f; }
         @media (max-width:900px) {
             .shell { grid-template-columns:1fr; }
             .sidebar { padding:22px; border-right:0; border-bottom:1px solid rgba(255,255,255,.08); }
@@ -165,7 +164,7 @@
         .step-indicator { display:flex; width:auto; flex:1; padding:0; background:transparent!important; transform:none!important; }
         .step-number { width:100%; height:5px; overflow:hidden; border:0; border-radius:99px; background:#e7e1e9; color:transparent; font-size:0; box-shadow:none!important; }
         .step-indicator.is-active .step-number { background:var(--orange); }
-        .step-indicator.is-complete .step-number { background:var(--green); color:transparent; }
+        .step-indicator.is-complete .step-number { background:#bcb9b3; color:transparent; }
         .stage { min-height:100vh; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); background:#fff; }
         .progress { display:none; }
         .slides { min-height:100vh; grid-column:1; }
@@ -182,9 +181,8 @@
         .form-card { margin-top:18px; }
         .setup-title { font-size:clamp(1.4rem,2.3vw,2.45rem); }
         .form-card { border:0; border-radius:24px; box-shadow:0 22px 55px rgba(67,23,96,.13); }
-        .form-head { position:relative; padding:18px 20px; overflow:hidden; background:linear-gradient(110deg,var(--purple),#9251c8); color:#fff; }
-        .form-head::after { content:''; position:absolute; width:110px; height:110px; right:-35px; top:-50px; border:22px solid rgba(255,255,255,.12); border-radius:50%; }
-        .form-head-icon { position:relative; z-index:1; background:var(--orange); box-shadow:0 9px 20px rgba(52,15,75,.25); }
+        .form-head { position:relative; padding:18px 20px; overflow:hidden; background:linear-gradient(110deg,#55515e,#34313b); color:#fff; }
+        .form-head-icon { position:relative; z-index:1; background:var(--purple); box-shadow:0 9px 20px rgba(52,15,75,.25); }
         .form-head strong,.form-head small { position:relative; z-index:1; color:#fff; }
         .form-head small { display:block; margin-top:3px; opacity:.78; }
         .form-body { padding:22px; background:linear-gradient(180deg,#fff,#fdfbfe); }
@@ -209,8 +207,10 @@
         .select-option i { width:20px; color:var(--orange); text-align:center; }
         .logo-drop { position:relative; min-height:46px; display:flex; align-items:center; gap:11px; padding:9px 12px; border:1px dashed #bbaec2; border-radius:11px; background:#fbfafc; color:#776d7c; cursor:pointer; transition:.2s; }
         .logo-drop:hover { border-color:var(--turquoise); background:#f2fbfa; }
+        .logo-drop.is-dragging,.logo-drop:focus-within { border-color:var(--purple); background:#f3eaf9; box-shadow:0 0 0 3px rgba(113,48,167,.1); }
+        .logo-drop.is-invalid { border-color:#c32626; background:#fff6f6; }
         .logo-drop input { position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; }
-        .logo-preview { width:30px; height:30px; display:grid; place-items:center; flex:0 0 auto; overflow:hidden; border-radius:8px; background:rgba(25,185,178,.12); color:var(--turquoise); }
+        .logo-preview { width:30px; height:30px; display:grid; place-items:center; flex:0 0 auto; overflow:hidden; border-radius:8px; background:rgba(113,48,167,.12); color:var(--purple); }
         .logo-preview img { width:100%; height:100%; object-fit:cover; }
         .logo-copy { min-width:0; font-size:.76rem; }
         .logo-copy strong { display:block; overflow:hidden; color:#514858; text-overflow:ellipsis; white-space:nowrap; }
@@ -219,42 +219,97 @@
         .actions { margin-top:22px; }
 
         .visual-panel { position:fixed; z-index:10; inset:0 0 0 50%; overflow:hidden; color:#fff; background:linear-gradient(145deg,var(--purple) 0%,var(--purple-dark) 58%,#26102f 100%); transition:background .5s ease; }
+        .visual-panel.is-intro, .visual-panel.is-social, .visual-panel.is-brand, .visual-panel.is-finish { background:linear-gradient(145deg,#383443 0%,#292633 58%,#1c1a25 100%); }
         .visual-panel::before,.visual-panel::after { content:''; position:absolute; border-radius:50%; pointer-events:none; }
         .visual-panel::before { width:560px; height:560px; right:-170px; bottom:-190px; background:var(--orange); opacity:.88; }
+        .visual-panel.is-intro::before { display:none; }
         .visual-panel::after { width:360px; height:360px; right:10%; bottom:-170px; border:75px solid rgba(25,185,178,.8); }
+        .visual-panel.is-intro::after { display:none; }
         .visual-scene { position:absolute; inset:0; display:flex; flex-direction:column; padding:clamp(48px,6vw,92px); opacity:0; visibility:hidden; transform:translateX(35px); transition:opacity .5s ease,transform .5s ease,visibility .5s; }
         .visual-scene.is-active { opacity:1; visibility:visible; transform:translateX(0); }
-        .visual-copy { position:relative; z-index:4; max-width:650px; margin:0; color:#fff; font-family:'Rowdies',sans-serif; font-size:clamp(2.3rem,4vw,4.25rem); font-weight:600; letter-spacing:-.035em; line-height:1.08; }
+        .visual-copy { position:relative; z-index:4; max-width:650px; margin:0; color:#fff; font-family:'Lalezar',sans-serif; font-size:clamp(2.3rem,4vw,4.25rem); font-weight:600; letter-spacing:-.035em; line-height:1.08; }
         .visual-copy span { color:#ffd24c; }
         .hero-person { position:absolute; z-index:3; right:-2%; bottom:-3%; width:min(76%,700px); max-height:72%; object-fit:contain; object-position:right bottom; filter:drop-shadow(-18px 20px 25px rgba(0,0,0,.22)); animation:personFloat 5s ease-in-out infinite; }
         @keyframes personFloat { 50% { transform:translateY(-10px); } }
         .floating-ui { position:absolute; z-index:5; padding:15px 18px; border-radius:16px; background:rgba(255,255,255,.96); color:var(--ink); box-shadow:0 18px 45px rgba(31,10,42,.3); animation:uiFloat 3.8s ease-in-out infinite; }
         @keyframes uiFloat { 50% { transform:translateY(-12px) rotate(1deg); } }
-        .float-like { left:12%; bottom:24%; font-family:'Rowdies',sans-serif; font-size:1.25rem; }
+        .float-like { left:12%; bottom:24%; font-family:'Lalezar',sans-serif; font-size:1.25rem; }
         .float-like i { margin-right:9px; color:#e8324a; }
         .float-growth { right:9%; top:38%; animation-delay:.7s; }
         .float-growth strong { display:block; color:var(--green); font-size:1.5rem; }
         .float-post { left:11%; bottom:8%; width:210px; padding:10px; animation-delay:1.1s; }
         .float-post img { display:block; width:100%; height:105px; object-fit:cover; border-radius:10px; }
         .float-post span { display:block; padding:9px 4px 2px; color:#635a68; font-size:.75rem; }
-        .network-orbit { position:absolute; inset:auto auto 11% 10%; z-index:4; width:320px; height:320px; border:2px solid rgba(255,255,255,.23); border-radius:50%; animation:orbit 18s linear infinite; }
-        @keyframes orbit { to { transform:rotate(360deg); } }
-        .orbit-icon { position:absolute; width:62px; height:62px; display:grid; place-items:center; border-radius:18px; background:#fff; font-size:1.8rem; box-shadow:0 15px 35px rgba(0,0,0,.2); }
-        .orbit-icon.facebook { top:-30px; left:125px; color:#1877f2; }
-        .orbit-icon.instagram { bottom:20px; right:-13px; color:#d62976; }
-        .orbit-center { position:absolute; inset:50% auto auto 50%; width:116px; height:116px; display:grid; place-items:center; border-radius:32px; transform:translate(-50%,-50%); background:var(--orange); color:#fff; font-family:'Rowdies',sans-serif; font-size:2.5rem; box-shadow:0 20px 45px rgba(0,0,0,.25); }
-        .brand-board { position:absolute; z-index:4; left:10%; bottom:11%; width:min(78%,530px); padding:25px; border-radius:22px; background:#fff; color:var(--ink); box-shadow:0 25px 60px rgba(0,0,0,.28); transform:rotate(-2deg); }
-        .board-row { display:flex; align-items:center; gap:13px; }
-        .board-logo { width:56px; height:56px; display:grid; place-items:center; border-radius:15px; background:var(--purple); color:#fff; font-size:1.3rem; }
+        .visual-panel.is-social::before, .visual-panel.is-brand::before, .visual-panel.is-finish::before { width:460px; height:460px; right:-190px; top:-200px; bottom:auto; background:radial-gradient(circle,rgba(113,48,167,.5),transparent 70%); opacity:1; }
+        .visual-panel.is-social::after, .visual-panel.is-brand::after, .visual-panel.is-finish::after { width:440px; height:440px; left:-180px; right:auto; bottom:-210px; border:0; background:radial-gradient(circle,rgba(25,185,178,.3),transparent 70%); }
+        .visual-scene[data-visual="2"] { align-items:center; justify-content:center; padding:36px; }
+        .social-illustration { position:relative; width:min(100%,540px); aspect-ratio:1; isolation:isolate; }
+        .social-illustration::before { content:''; position:absolute; inset:9%; border:1px solid rgba(255,255,255,.1); border-radius:50%; box-shadow:0 0 0 52px rgba(255,255,255,.025),inset 0 0 80px rgba(113,48,167,.14); }
+        .social-illustration::after { content:''; position:absolute; inset:0; z-index:-1; border-radius:50%; background:radial-gradient(circle,rgba(244,123,32,.13),transparent 60%); }
+        .social-links { position:absolute; inset:0; width:100%; height:100%; overflow:visible; fill:none; stroke:rgba(255,255,255,.48); stroke-width:2; stroke-linecap:round; stroke-dasharray:5 9; }
+        .social-links circle { fill:#fff; stroke:none; filter:drop-shadow(0 0 7px rgba(255,255,255,.8)); }
+        .social-hub { position:absolute; z-index:3; top:50%; left:50%; width:29%; aspect-ratio:1; display:grid; place-items:center; border:1px solid rgba(255,255,255,.32); border-radius:30%; transform:translate(-50%,-50%) rotate(-8deg); background:linear-gradient(145deg,#9a55cd,#7130a7 65%,#4b1e72); box-shadow:0 24px 70px rgba(8,4,15,.42),inset 0 2px 2px rgba(255,255,255,.35); }
+        .social-hub i { transform:rotate(8deg); color:#fff; font-size:clamp(2.4rem,5vw,4.2rem); filter:drop-shadow(0 5px 6px rgba(0,0,0,.18)); }
+        .social-node { position:absolute; z-index:4; width:19%; aspect-ratio:1; display:grid; place-items:center; border:1px solid rgba(255,255,255,.55); border-radius:27%; background:#fff; box-shadow:0 18px 42px rgba(10,5,20,.38),inset 0 1px 0 #fff; }
+        .social-node i { font-size:clamp(2rem,4.2vw,3.3rem); }
+        .social-node-facebook { top:20%; left:9%; transform:rotate(-10deg); color:#1877f2; }
+        .social-node-instagram { right:9%; bottom:19%; transform:rotate(9deg); color:#dc3982; }
+        .social-signal { position:absolute; z-index:2; top:13%; right:12%; width:16%; aspect-ratio:1; display:grid; place-items:center; border:1px solid rgba(255,255,255,.35); border-radius:50%; background:rgba(255,255,255,.12); color:#ffd24c; font-size:clamp(1.5rem,3vw,2.2rem); box-shadow:0 15px 35px rgba(0,0,0,.15); backdrop-filter:blur(10px); }
+        .social-spark { position:absolute; width:9px; height:9px; border-radius:50%; background:#ffd24c; box-shadow:0 0 17px #ffd24c; }
+        .social-spark-one { top:10%; left:34%; }.social-spark-two { right:8%; top:50%; }.social-spark-three { left:20%; bottom:17%; }
+        @media (prefers-reduced-motion:no-preference) { .social-hub { animation:hubFloat 5s ease-in-out infinite; }.social-node-facebook { animation:facebookFloat 5s ease-in-out infinite; }.social-node-instagram { animation:instagramFloat 5s ease-in-out infinite 1s; } }
+        @keyframes hubFloat { 50% { transform:translate(-50%,-54%) rotate(-6deg); } }
+        @keyframes facebookFloat { 50% { transform:translateY(-9px) rotate(-7deg); } }
+        @keyframes instagramFloat { 50% { transform:translateY(-10px) rotate(6deg); } }
+        .visual-scene[data-visual="3"] { align-items:center; justify-content:center; padding:36px; }
+        .brand-illustration { position:relative; width:min(100%,560px); aspect-ratio:1; isolation:isolate; }
+        .brand-illustration::before { content:''; position:absolute; inset:5%; z-index:-1; border:1px solid rgba(255,255,255,.2); border-radius:50%; box-shadow:0 0 0 50px rgba(255,255,255,.035); }
+        .brand-board { position:absolute; inset:14% 13% 18% 13%; overflow:hidden; padding:5%; border:1px solid rgba(255,255,255,.8); border-radius:6%; background:#fff; box-shadow:0 34px 75px rgba(27,8,42,.4); transform:rotate(-6deg); }
+        .board-row { display:flex; align-items:center; gap:4%; height:19%; }
+        .board-logo { height:100%; aspect-ratio:1; display:grid; place-items:center; border-radius:25%; background:var(--purple); color:#fff; font-size:clamp(1.2rem,2.6vw,2.1rem); }
         .board-lines { flex:1; }
-        .board-lines i { display:block; height:9px; margin:7px 0; border-radius:8px; background:#e8e2eb; }
-        .board-lines i:first-child { width:68%; background:var(--turquoise); }
-        .color-dots { display:flex; gap:8px; margin-top:20px; }
-        .color-dots i { width:32px; height:32px; border-radius:9px; background:var(--purple); }
-        .color-dots i:nth-child(2) { background:var(--orange); }.color-dots i:nth-child(3) { background:var(--green); }.color-dots i:nth-child(4) { background:var(--turquoise); }
-        .success-ring { position:absolute; z-index:4; left:50%; top:57%; width:230px; height:230px; display:grid; place-items:center; border:4px solid rgba(255,255,255,.3); border-radius:50%; transform:translate(-50%,-50%); }
-        .success-ring::before { content:'✓'; width:150px; height:150px; display:grid; place-items:center; border-radius:45px; background:var(--green); color:#fff; font-size:5rem; box-shadow:0 25px 55px rgba(0,0,0,.25); animation:successPulse 2s ease-in-out infinite; }
-        @keyframes successPulse { 50% { transform:scale(1.07) rotate(-3deg); } }
+        .board-lines i { display:block; width:55%; height:8px; margin:8px 0; border-radius:8px; background:#e8e2eb; }
+        .board-lines i:first-child { width:70%; background:#b7a0c8; }
+        .board-artwork { position:relative; height:58%; margin-top:5%; overflow:hidden; border-radius:5%; background:linear-gradient(135deg,#7130a7 0%,#9551c5 52%,#efb143 100%); }
+        .board-artwork::before { content:''; position:absolute; width:78%; aspect-ratio:1; right:-21%; top:-34%; border:clamp(18px,5vw,54px) solid rgba(255,255,255,.2); border-radius:50%; }
+        .board-artwork::after { content:''; position:absolute; width:55%; aspect-ratio:1; left:-16%; bottom:-45%; border-radius:32%; background:#19b9b2; transform:rotate(25deg); box-shadow:0 -12px 35px rgba(29,11,50,.15); }
+        .board-artwork i { position:absolute; z-index:1; top:50%; left:50%; color:#fff; font-size:clamp(3rem,7vw,6rem); transform:translate(-50%,-50%) rotate(6deg); filter:drop-shadow(0 8px 12px rgba(36,10,56,.3)); }
+        .board-footer { display:flex; gap:3%; margin-top:6%; }
+        .board-footer i { height:8px; width:30%; border-radius:8px; background:#ebe6ee; }
+        .board-footer i:last-child { width:18%; }
+        .brand-palette { position:absolute; z-index:4; right:1%; bottom:12%; display:flex; gap:clamp(5px,1vw,10px); padding:clamp(10px,2vw,18px); border:1px solid #fff; border-radius:20px; background:#fff; box-shadow:0 18px 38px rgba(27,8,42,.3); transform:rotate(7deg); }
+        .brand-palette i { width:clamp(23px,4vw,38px); aspect-ratio:1; border-radius:35%; background:var(--purple); }
+        .brand-palette i:nth-child(2) { background:var(--orange); }.brand-palette i:nth-child(3) { background:var(--turquoise); }.brand-palette i:nth-child(4) { background:var(--green); }
+        .brand-sparkle { position:absolute; z-index:5; top:8%; right:4%; display:grid; place-items:center; width:15%; aspect-ratio:1; border-radius:26%; background:#ffd24c; color:#7130a7; font-size:clamp(1.4rem,3vw,2.4rem); box-shadow:0 16px 35px rgba(27,8,42,.25); transform:rotate(12deg); }
+        @media (prefers-reduced-motion:no-preference) { .brand-palette { animation:paletteFloat 5s ease-in-out infinite; }.brand-sparkle { animation:sparkleFloat 4s ease-in-out infinite 1s; } }
+        @keyframes paletteFloat { 50% { transform:translateY(-8px) rotate(5deg); } }
+        @keyframes sparkleFloat { 50% { transform:translateY(-7px) rotate(18deg); } }
+        .visual-scene[data-visual="4"] { align-items:center; justify-content:center; padding:36px; }
+        .completion-illustration { position:relative; width:min(100%,540px); aspect-ratio:1; isolation:isolate; }
+        .completion-illustration::before { content:''; position:absolute; inset:8%; z-index:-1; border:1px solid rgba(255,255,255,.18); border-radius:50%; box-shadow:0 0 0 46px rgba(255,255,255,.025),inset 0 0 70px rgba(114,191,68,.06); }
+        .completion-illustration::after { content:''; position:absolute; inset:0; z-index:-1; border-radius:50%; background:radial-gradient(circle,rgba(114,191,68,.18),transparent 62%); }
+        .completion-card { position:absolute; top:50%; left:50%; width:48%; aspect-ratio:1; display:grid; place-items:center; border:1px solid rgba(255,255,255,.8); border-radius:20%; transform:translate(-50%,-50%) rotate(-7deg); background:linear-gradient(145deg,#fff,#f1ebf5); box-shadow:0 30px 70px rgba(13,7,22,.38); }
+        .completion-card::before { content:''; position:absolute; inset:11%; border:2px solid #e6dced; border-radius:17%; }
+        .completion-card > i { position:relative; color:var(--purple); font-size:clamp(4rem,9vw,7rem); }
+        .completion-check { position:absolute; z-index:2; right:-10%; bottom:-7%; width:37%; aspect-ratio:1; display:grid; place-items:center; border:6px solid #292633; border-radius:50%; background:var(--green); color:#fff; font-size:clamp(2rem,4vw,3.2rem); box-shadow:0 12px 26px rgba(0,0,0,.25); }
+        .completion-node { position:absolute; display:grid; place-items:center; width:17%; aspect-ratio:1; border:1px solid rgba(255,255,255,.55); border-radius:27%; background:#fff; font-size:clamp(1.8rem,3.5vw,2.8rem); box-shadow:0 15px 35px rgba(10,5,20,.28); }
+        .completion-node-rocket { top:15%; right:10%; color:var(--orange); transform:rotate(10deg); }
+        .completion-node-social { bottom:14%; left:9%; color:var(--turquoise); transform:rotate(-10deg); }
+        .completion-star { position:absolute; color:#ffd24c; font-size:clamp(1rem,2vw,1.5rem); }
+        .completion-star-one { top:16%; left:18%; }.completion-star-two { right:14%; bottom:18%; }.completion-star-three { right:4%; top:48%; }
+        @media (prefers-reduced-motion:no-preference) { .completion-card { animation:completionFloat 5s ease-in-out infinite; }.completion-node-rocket { animation:rocketFloat 4s ease-in-out infinite; }.completion-node-social { animation:socialFloat 4.5s ease-in-out infinite 1s; } }
+        @keyframes completionFloat { 50% { transform:translate(-50%,-53%) rotate(-5deg); } }
+        @keyframes rocketFloat { 50% { transform:translateY(-9px) rotate(14deg); } }
+        @keyframes socialFloat { 50% { transform:translateY(-8px) rotate(-6deg); } }
+
+        .visual-scene[data-visual="1"] { align-items:center; justify-content:center; padding:0; }
+        .intro-backdrop { position:absolute; width:min(82%,680px); aspect-ratio:1; border:1px solid rgba(255,255,255,.15); border-radius:50%; background:radial-gradient(circle at 35% 28%,#625d6a 0%,#403c49 50%,#25232e 100%); box-shadow:0 35px 90px rgba(0,0,0,.28),inset 0 2px 12px rgba(255,255,255,.08); }
+        .intro-backdrop::before { content:''; position:absolute; inset:-8%; border:1px dashed rgba(255,255,255,.22); border-radius:50%; }
+        .intro-backdrop::after { content:''; position:absolute; inset:-8%; border-radius:50%; background:radial-gradient(circle at 50% 0,var(--turquoise) 0 7px,transparent 8px); filter:drop-shadow(0 0 8px rgba(25,185,178,.8)); }
+        .visual-panel-image { position:relative; z-index:1; display:block; width:100%; height:100%; object-fit:contain; }
+        @media (prefers-reduced-motion:no-preference) { .intro-backdrop { animation:introPulse 7s ease-in-out infinite; }.intro-backdrop::before, .intro-backdrop::after { animation:introOrbit 20s linear infinite; } }
+        @keyframes introPulse { 50% { transform:scale(1.055); box-shadow:0 42px 100px rgba(0,0,0,.34),inset 0 2px 18px rgba(255,255,255,.12); } }
+        @keyframes introOrbit { to { transform:rotate(360deg); } }
 
         @media (max-width:980px) {
             .topbar { width:100%; background:#fff; }
@@ -274,9 +329,19 @@
             .slide { min-height:calc(100vh - 96px); padding:62px 22px 35px; }
             .promise-grid { grid-template-columns:1fr; }
         }
+        .admin-preview-bar { position:fixed; z-index:50; right:20px; bottom:20px; display:flex; align-items:center; gap:14px; padding:12px 15px; border-radius:13px; background:#17131d; color:#fff; box-shadow:0 16px 40px rgba(0,0,0,.3); font-size:.8rem; }
+        .admin-preview-bar a { padding:9px 12px; border-radius:9px; background:var(--orange); color:#fff; font-weight:700; text-decoration:none; white-space:nowrap; }
+        @media (max-width:640px) { .admin-preview-bar { right:10px; bottom:10px; left:10px; justify-content:space-between; } }
+        .brand-mark, .brand-name, .sidebar-title, .step-number, h1, h2, .social-card h3, .existing-company h3, .visual-copy, .float-like { letter-spacing:.025em; }
     </style>
 </head>
 <body>
+@if($isAdminPreview ?? false)
+    <aside class="admin-preview-bar" aria-label="Previsualización de administrador">
+        <span><i class="fa-solid fa-eye"></i> Vista previa del registro de empresa</span>
+        <a href="{{ route('administrador.empresas.index') }}">Volver a empresas</a>
+    </aside>
+@endif
 <main class="onboarding">
     <div class="shape shape-one"></div><div class="shape shape-two"></div>
     <header class="topbar">
@@ -301,33 +366,25 @@
             <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
             <div class="slides">
                 <article class="slide" data-step="1"><div class="content">
-                    @if($isReturningSetup)
-                        <span class="eyebrow">Gracias por seguir confiando en PRODOVI</span>
-                        <h1>Gracias por confiar nuevamente en <span>nuestros servicios.</span></h1>
-                        <p class="lead">Tu nuevo plan ya está listo. Configuremos el espacio de tu nueva empresa para comenzar esta siguiente etapa juntos.</p>
-                    @else
-                        <span class="eyebrow">Bienvenido a PRODOVI</span>
-                        <h1>Nos encargaremos del manejo de <span>tus redes.</span></h1>
-                        <p class="lead">Configuremos tu cuenta para conocer tu negocio, conectar con tu comunidad y convertir tus objetivos en una estrategia digital clara.</p>
-                    @endif
+                    <h1>Impulsamos tu marca en <span>redes sociales.</span></h1>
                     <div class="promise-grid">
-                        <div class="promise"><i class="fa-solid fa-wand-magic-sparkles"></i><strong>Contenido con propósito</strong><small>Publicaciones alineadas con la identidad de tu marca.</small></div>
-                        <div class="promise"><i class="fa-solid fa-chart-line"></i><strong>Decisiones con datos</strong><small>Seguimiento sencillo del rendimiento de tus redes.</small></div>
-                        <div class="promise"><i class="fa-solid fa-comments"></i><strong>Todo conectado</strong><small>Tu empresa y sus canales desde un solo lugar.</small></div>
+                        <div class="promise"><i class="fa-solid fa-wand-magic-sparkles"></i><strong>Contenido para tu marca</strong><small>Publicaciones que reflejan tu identidad.</small></div>
+                        <div class="promise"><i class="fa-solid fa-chart-line"></i><strong>Resultados claros</strong><small>Medimos el rendimiento de tus redes.</small></div>
+                        <div class="promise"><i class="fa-solid fa-comments"></i><strong>Todo en un lugar</strong><small>Gestiona tus redes desde un solo sitio.</small></div>
                     </div>
                     <div class="actions"><button type="button" class="btn btn-primary" data-next="2">Configura tu cuenta <i class="fa-solid fa-arrow-right"></i></button></div>
                 </div></article>
 
                 <article class="slide" data-step="2"><div class="content">
-                    <span class="eyebrow">Conecta tu comunidad</span><h2 class="setup-title">Vincula alguna de <span>tus cuentas.</span></h2>
-                    <p class="lead">Así podremos identificar la página de tu negocio y preparar la gestión de contenido. Necesitas vincular al menos una para continuar.</p>
+                    <h2 class="setup-title">Conecta <span>tus redes</span></h2>
+                    <p class="lead">Vincula al menos una cuenta para comenzar.</p>
                     @if(session('social_accounts_success'))<div class="notice notice-success"><i class="fa-solid fa-circle-check"></i> {{ session('social_accounts_success') }}</div>@endif
                     @if(session('social_accounts_error'))<div class="notice notice-error"><i class="fa-solid fa-circle-exclamation"></i> {{ session('social_accounts_error') }}</div>@endif
                     @if(session('onboarding_error'))<div class="notice notice-error"><i class="fa-solid fa-circle-exclamation"></i> {{ session('onboarding_error') }}</div>@endif
                     <div class="social-grid">
-                        <a href="{{ route('clientes.social.redirect', 'facebook') }}" class="social-card {{ $facebookLinked ? 'is-linked' : '' }}">
+                        <a href="{{ ($isAdminPreview ?? false) ? '#' : route('clientes.social.redirect', 'facebook') }}" class="social-card {{ $facebookLinked ? 'is-linked' : '' }}">
                             <div class="social-top"><span class="social-icon facebook"><i class="fa-brands fa-facebook-f"></i></span><span class="badge">{{ $facebookLinked ? 'Vinculado' : 'Disponible' }}</span></div>
-                            <h3>Facebook</h3><p>Autoriza tu página principal y permite que PRODOVI la reconozca.</p><span class="social-action">{{ $facebookLinked ? 'Vinculado · Volver a conectar →' : 'Conectar con Facebook →' }}</span>
+                            <h3>Facebook</h3><p>Conecta la página de tu negocio.</p><span class="social-action">{{ $facebookLinked ? 'Vinculado · Volver a conectar →' : 'Conectar con Facebook →' }}</span>
                         </a>
                         @if($instagramLinked)
                             <a href="#" onclick="return false" class="social-card is-linked">
@@ -337,25 +394,23 @@
                             <div class="social-card is-disabled">
                         @endif
                             <div class="social-top"><span class="social-icon instagram"><i class="fa-brands fa-instagram"></i></span><span class="badge">{{ $instagramLinked ? 'Vinculado' : ($facebookLinked ? 'Disponible' : 'Bloqueado') }}</span></div>
-                            <h3>Instagram</h3><p>{{ $facebookLinked ? 'Conecta el perfil de Instagram asociado a tu negocio.' : 'Primero vincula Facebook para habilitar esta opción.' }}</p><span class="social-action">{{ $instagramLinked ? 'Cuenta conectada ✓' : ($facebookLinked ? 'Conectar Instagram →' : 'Esperando Facebook') }}</span>
+                            <h3>Instagram @unless($facebookLinked || $instagramLinked)<span class="social-lock" aria-label="Bloqueado"><i class="fa-solid fa-lock" aria-hidden="true"></i></span>@endunless</h3><p>{{ $facebookLinked ? 'Conecta el perfil de Instagram asociado a tu negocio.' : 'Conecta Facebook primero.' }}</p><span class="social-action">{{ $instagramLinked ? 'Cuenta conectada ✓' : ($facebookLinked ? 'Conectar Instagram →' : 'Esperando Facebook') }}</span>
                         @if($instagramLinked || $facebookLinked)</a>@else</div>@endif
                     </div>
                     @unless($anyAccountLinked)
-                        <form class="no-social-option" action="{{ route('clientes.onboarding.skip-social') }}" method="POST">
+                        <form class="no-social-option" action="{{ ($isAdminPreview ?? false) ? '#' : route('clientes.onboarding.skip-social') }}" method="POST">
                             @csrf
                             <button type="submit" class="no-social-button">
-                                <span class="no-social-icon"><i class="fa-solid fa-user-clock"></i></span>
-                                <span class="no-social-copy"><strong>Aún no tengo redes sociales</strong><small>Podrás conectarlas más adelante desde tu cuenta.</small></span>
-                                <i class="fa-solid fa-arrow-right"></i>
+                                <span class="no-social-copy"><strong>Aún no tengo redes sociales</strong><small>Puedes vincularlas después.</small></span>
                             </button>
                         </form>
                     @endunless
-                    <div class="actions"><button type="button" class="btn btn-secondary" data-next="1"><i class="fa-solid fa-arrow-left"></i> Atrás</button><button type="button" class="btn btn-primary" data-next="3" {{ $canContinueSocialSetup ? '' : 'disabled' }}>Continuar <i class="fa-solid fa-arrow-right"></i></button></div>
+                    <div class="actions"><button type="button" class="btn btn-secondary" data-next="1"><i class="fa-solid fa-arrow-left"></i> Atrás</button><button type="button" class="btn btn-primary" data-next="3" {{ ($canContinueSocialSetup || ($isAdminPreview ?? false)) ? '' : 'disabled' }}>Continuar <i class="fa-solid fa-arrow-right"></i></button></div>
                 </div></article>
 
                 <article class="slide" data-step="3"><div class="content">
-                    <span class="eyebrow">La identidad de tu marca</span><h2 class="setup-title">Crea <span>tu empresa.</span></h2>
-                    <p class="lead">Usaremos esta información para reconocer la marca que publica y adaptar cada propuesta a su personalidad.</p>
+                   <h2 class="setup-title">Registra <span>tu empresa</span></h2>
+                    <p class="lead">Completa los datos de tu negocio para personalizar tu contenido.</p>
                     @if(session('onboarding_success'))<div class="notice notice-success"><i class="fa-solid fa-circle-check"></i> {{ session('onboarding_success') }}</div>@endif
                     @if($empresa)
                         <div id="existing-company-summary" class="{{ $errors->any() ? 'hidden' : '' }}">
@@ -393,7 +448,8 @@
                                 </div>
                                 <div>
                                     <label for="logo">Logo de la empresa</label>
-                                    <div class="logo-drop"><input id="logo" name="logo" type="file" accept="image/jpeg,image/png,image/gif"><span class="logo-preview" id="company-logo-preview">@if($empresa->logo)<img src="{{ asset('storage/'.$empresa->logo) }}" alt="">@else<i class="fa-solid fa-cloud-arrow-up"></i>@endif</span><span class="logo-copy"><strong id="company-logo-name">Cambiar logo</strong><small>PNG, JPG o GIF · Máx. 2 MB</small></span></div>
+                                    <div class="logo-drop"><input id="logo" name="logo" type="file" accept="image/jpeg,image/png,image/gif" aria-describedby="logo-help"><span class="logo-preview" id="company-logo-preview">@if($empresa->logo)<img src="{{ asset('storage/'.$empresa->logo) }}" alt="">@else<i class="fa-solid fa-cloud-arrow-up"></i>@endif</span><span class="logo-copy"><strong id="company-logo-name">Haz clic o arrastra otro logo</strong><small id="logo-help">PNG, JPG o GIF · Máx. 2 MB</small></span></div>
+                                    <p class="field-error" id="logo-client-error" role="alert" hidden></p>
                                     @error('logo')<p class="field-error">{{ $message }}</p>@enderror
                                 </div>
                                 <div class="field-full">
@@ -403,15 +459,15 @@
                                 </div>
                                 <div class="field-full">
                                     <label for="descripcion">Descripción</label>
-                                    <div class="field-shell"><i class="field-icon textarea-icon fa-solid fa-align-left"></i><textarea id="descripcion" name="descripcion" placeholder="Cuéntanos qué hace tu empresa...">{{ old('descripcion', $empresa->descripcion) }}</textarea></div>
+                                    <div class="field-shell"><i class="field-icon textarea-icon fa-solid fa-align-left"></i><textarea id="descripcion" name="descripcion" placeholder="Cuéntanos brevemente sobre tu negocio.">{{ old('descripcion', $empresa->descripcion) }}</textarea></div>
                                     @error('descripcion')<p class="field-error">{{ $message }}</p>@enderror
                                 </div>
                             </div><div class="actions"><button type="button" id="cancel-company-edit" class="btn btn-secondary">Cancelar</button><button type="submit" class="btn btn-primary">Guardar cambios <i class="fa-solid fa-check"></i></button></div></div>
                         </form>
                     @else
-                        <form class="form-card" action="{{ route('clientes.onboarding.empresa') }}" method="POST" enctype="multipart/form-data">
+                        <form class="form-card" action="{{ ($isAdminPreview ?? false) ? '#' : route('clientes.onboarding.empresa') }}" method="POST" enctype="multipart/form-data">
                             @csrf
-                            <div class="form-head"><span class="form-head-icon"><i class="fa-solid fa-building"></i></span><span><strong>Datos de la empresa</strong><small>Los campos con * son obligatorios</small></span></div>
+                            <div class="form-head"><span class="form-head-icon"><i class="fa-solid fa-building"></i></span><span><strong>Datos de la empresa</strong><small>Los campos con * son obligatorios.</small></span></div>
                             <div class="form-body"><div class="form-grid">
                                 <div class="field-full">
                                     <label for="nombre_empresa">Nombre de la empresa *</label>
@@ -424,7 +480,7 @@
                                         <i class="field-icon fa-solid fa-briefcase"></i>
                                         <input id="tipo_empresa" name="tipo_empresa" type="hidden" value="{{ old('tipo_empresa') }}" required>
                                         <button class="select-trigger {{ old('tipo_empresa') ? 'has-value' : '' }}" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="tipo_empresa_label company-type-value">
-                                            <span id="company-type-value">{{ old('tipo_empresa', 'Selecciona una categoría') }}</span><i class="fa-solid fa-chevron-down"></i>
+                                            <span id="company-type-value">{{ old('tipo_empresa', 'Selecciona una categoría.') }}</span><i class="fa-solid fa-chevron-down"></i>
                                         </button>
                                         <div class="select-menu" role="listbox">
                                             @foreach([
@@ -441,10 +497,11 @@
                                 <div>
                                     <label for="logo">Logo de la empresa</label>
                                     <div class="logo-drop">
-                                        <input id="logo" name="logo" type="file" accept="image/jpeg,image/png,image/gif">
+                                        <input id="logo" name="logo" type="file" accept="image/jpeg,image/png,image/gif" aria-describedby="logo-help">
                                         <span class="logo-preview" id="company-logo-preview"><i class="fa-solid fa-cloud-arrow-up"></i></span>
-                                        <span class="logo-copy"><strong id="company-logo-name">Sube tu logo</strong><small>PNG, JPG o GIF · Máx. 2 MB</small></span>
+                                        <span class="logo-copy"><strong id="company-logo-name">Haz clic o arrastra tu logo</strong><small id="logo-help">PNG, JPG o GIF · Máx. 2 MB</small></span>
                                     </div>
+                                    <p class="field-error" id="logo-client-error" role="alert" hidden></p>
                                     @error('logo')<p class="field-error">{{ $message }}</p>@enderror
                                 </div>
                                 <div class="field-full">
@@ -454,7 +511,7 @@
                                 </div>
                                 <div class="field-full">
                                     <label for="descripcion">Descripción</label>
-                                    <div class="field-shell"><i class="field-icon textarea-icon fa-solid fa-align-left"></i><textarea id="descripcion" name="descripcion" placeholder="Cuéntanos qué hace tu empresa, sus servicios y sus objetivos...">{{ old('descripcion') }}</textarea></div>
+                                    <div class="field-shell"><i class="field-icon textarea-icon fa-solid fa-align-left"></i><textarea id="descripcion" name="descripcion" placeholder="Cuéntanos brevemente sobre tu negocio.">{{ old('descripcion') }}</textarea></div>
                                     @error('descripcion')<p class="field-error">{{ $message }}</p>@enderror
                                 </div>
                             </div><div class="actions"><button type="button" class="btn btn-secondary" data-next="2"><i class="fa-solid fa-arrow-left"></i> Atrás</button><button type="submit" class="btn btn-primary">Crear y continuar <i class="fa-solid fa-arrow-right"></i></button></div></div>
@@ -463,45 +520,52 @@
                 </div></article>
 
                 <article class="slide" data-step="4"><div class="content finish">
-                    <div class="finish-mark"><i class="fa-solid fa-check"></i></div><span class="eyebrow">Configuración completada</span>
-                    <h2>Gracias por configurar <span>tu cuenta.</span></h2><p class="lead">Ya conocemos tu empresa y tenemos el canal necesario para comenzar a construir su presencia digital.</p>
-                    <div class="summary"><span><i class="fa-solid fa-check"></i> {{ $anyAccountLinked ? 'Red social vinculada' : 'Redes para más adelante' }}</span><span><i class="fa-solid fa-check"></i> Empresa registrada</span><span><i class="fa-solid fa-check"></i> Espacio preparado</span></div>
-                    <form class="actions" action="{{ route('clientes.onboarding.complete') }}" method="POST">@csrf<button type="submit" class="btn btn-green">Empezar<i class="fa-solid fa-arrow-right"></i></button></form>
+                    <div class="finish-mark"><i class="fa-solid fa-check"></i></div>
+                    <h2>¡Tu empresa está <span>registrada!</span></h2><p class="lead">Tu negocio ya está listo para comenzar. Conecta tus redes cuando quieras y prepara tu contenido digital.</p>
+                    <div class="summary"><span><i class="fa-solid {{ $anyAccountLinked ? 'fa-check' : 'fa-clock' }}"></i> {{ $anyAccountLinked ? 'Redes conectadas' : 'Redes pendientes' }}</span><span><i class="fa-solid fa-check"></i> Empresa registrada</span><span><i class="fa-solid fa-check"></i> Todo listo</span></div>
+                    <form class="actions" action="{{ ($isAdminPreview ?? false) ? '#' : route('clientes.onboarding.complete') }}" method="POST">@csrf<button type="submit" class="btn btn-green">Empezar<i class="fa-solid fa-arrow-right"></i></button></form>
                 </div></article>
             </div>
 
             <aside class="visual-panel" aria-hidden="true">
                 <section class="visual-scene" data-visual="1">
-                    <h3 class="visual-copy">{{ $isReturningSetup ? 'Una nueva etapa para tu marca,' : 'Tu estrategia social,' }} <span>{{ $isReturningSetup ? 'gracias por elegirnos.' : 'en buenas manos.' }}</span></h3>
-                    <img class="hero-person" src="{{ asset('imagenes/hombre-color.png') }}" alt="">
-                    <div class="floating-ui float-like"><i class="fa-solid fa-heart"></i> 2.3K</div>
-                    <div class="floating-ui float-growth"><small>Crecimiento mensual</small><strong>+34%</strong></div>
-                    <div class="floating-ui float-post"><img src="{{ asset('imagenes/landing/clientes/guille-barber-shop.jpg') }}" alt=""><span><i class="fa-regular fa-heart"></i> Contenido que conecta</span></div>
+                    <span class="intro-backdrop"></span>
+                    <img class="visual-panel-image" src="{{ asset('imagenes/configuracion/celular.png') }}" alt="">
                 </section>
 
                 <section class="visual-scene" data-visual="2">
-                    <h3 class="visual-copy">Conecta tus canales. <span>Amplifica tu voz.</span></h3>
-                    <div class="network-orbit">
-                        <span class="orbit-icon facebook"><i class="fa-brands fa-facebook-f"></i></span>
-                        <span class="orbit-icon instagram"><i class="fa-brands fa-instagram"></i></span>
-                        <span class="orbit-center">P</span>
+                    <div class="social-illustration">
+                        <svg class="social-links" viewBox="0 0 500 500" aria-hidden="true">
+                            <path d="M250 250 C205 215 160 180 90 150 M250 250 C300 270 350 320 410 350 M250 250 C305 205 345 160 400 105" />
+                            <circle cx="90" cy="150" r="5" /><circle cx="410" cy="350" r="5" /><circle cx="400" cy="105" r="5" />
+                        </svg>
+                        <span class="social-hub"><i class="fa-solid fa-bullhorn"></i></span>
+                        <span class="social-node social-node-facebook"><i class="fa-brands fa-facebook-f"></i></span>
+                        <span class="social-node social-node-instagram"><i class="fa-brands fa-instagram"></i></span>
+                        <span class="social-signal"><i class="fa-solid fa-wifi"></i></span>
+                        <span class="social-spark social-spark-one"></span><span class="social-spark social-spark-two"></span><span class="social-spark social-spark-three"></span>
                     </div>
-                    <div class="floating-ui float-growth"><small>Canales centralizados</small><strong>Todo en uno</strong></div>
                 </section>
 
                 <section class="visual-scene" data-visual="3">
-                    <h3 class="visual-copy">Una identidad clara para una marca <span>inolvidable.</span></h3>
-                    <div class="brand-board">
-                        <div class="board-row"><span class="board-logo"><i class="fa-solid fa-building"></i></span><span class="board-lines"><i></i><i></i><i></i></span></div>
-                        <div class="color-dots"><i></i><i></i><i></i><i></i></div>
+                    <div class="brand-illustration">
+                        <div class="brand-board">
+                            <div class="board-row"><span class="board-logo"><i class="fa-solid fa-store"></i></span><span class="board-lines"><i></i><i></i></span></div>
+                            <div class="board-artwork"><i class="fa-solid fa-gem"></i></div>
+                            <div class="board-footer"><i></i><i></i><i></i></div>
+                        </div>
+                        <div class="brand-palette"><i></i><i></i><i></i><i></i></div>
+                        <span class="brand-sparkle"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
                     </div>
-                    <div class="floating-ui float-growth"><small>Perfil de marca</small><strong>Listo para crecer</strong></div>
                 </section>
 
                 <section class="visual-scene" data-visual="4">
-                    <h3 class="visual-copy">Todo preparado. Es momento de <span>hacer crecer tu marca.</span></h3>
-                    <div class="success-ring"></div>
-                    <div class="floating-ui float-like"><i class="fa-solid fa-rocket"></i> ¡Comencemos!</div>
+                    <div class="completion-illustration">
+                        <div class="completion-card"><i class="fa-solid fa-building"></i><span class="completion-check"><i class="fa-solid fa-check"></i></span></div>
+                        <span class="completion-node completion-node-rocket"><i class="fa-solid fa-rocket"></i></span>
+                        <span class="completion-node completion-node-social"><i class="fa-solid fa-share-nodes"></i></span>
+                        <i class="completion-star completion-star-one fa-solid fa-star"></i><i class="completion-star completion-star-two fa-solid fa-star"></i><i class="completion-star completion-star-three fa-solid fa-star"></i>
+                    </div>
                 </section>
             </aside>
         </div>
@@ -515,12 +579,21 @@ document.addEventListener('DOMContentLoaded',function(){
         window.history.replaceState({},'',canonicalUrl);
     @endif
     const slides=Array.from(document.querySelectorAll('[data-step]'));
-    const indicators=Array.from(document.querySelectorAll('[data-indicator]'));
+    const visualPanel=document.querySelector('.visual-panel');
     const visualScenes=Array.from(document.querySelectorAll('[data-visual]'));
+    const indicators=Array.from(document.querySelectorAll('[data-indicator]'));
     const progressBar=document.getElementById('progress-bar');
-    const maximumStep={{ $canContinueSocialSetup ? ($empresa ? 4 : 3) : 2 }};
+    const maximumStep={{ ($isAdminPreview ?? false) ? 4 : ($canContinueSocialSetup ? ($empresa ? 4 : 3) : 2) }};
     let currentStep=Math.min({{ $initialStep }},maximumStep);
-    let furthestStep=currentStep;
+    let furthestStep={{ ($isAdminPreview ?? false) ? 4 : $initialStep }};
+    @if($isAdminPreview ?? false)
+        document.querySelectorAll('form').forEach(form=>form.addEventListener('submit',event=>{
+            event.preventDefault();
+            if(form.closest('[data-step="2"]'))showStep(3);
+            if(form.closest('[data-step="3"]'))showStep(4);
+        }));
+        document.querySelectorAll('.social-card[href]').forEach(link=>link.addEventListener('click',event=>event.preventDefault()));
+    @endif
 
     const customSelect=document.getElementById('company-type-select');
     if(customSelect){
@@ -546,14 +619,45 @@ document.addEventListener('DOMContentLoaded',function(){
     const logoInput=document.getElementById('logo');
     const logoPreview=document.getElementById('company-logo-preview');
     const logoName=document.getElementById('company-logo-name');
+    const logoDrop=logoInput?.closest('.logo-drop');
+    const logoError=document.getElementById('logo-client-error');
+    const acceptedLogoTypes=['image/jpeg','image/png','image/gif'];
+    const showLogoError=message=>{
+        logoError.textContent=message;
+        logoError.hidden=!message;
+        logoDrop.classList.toggle('is-invalid',Boolean(message));
+    };
     logoInput?.addEventListener('change',()=>{
         const file=logoInput.files?.[0];
         if(!file)return;
+        if(!acceptedLogoTypes.includes(file.type)||file.size>2*1024*1024){
+            showLogoError(!acceptedLogoTypes.includes(file.type)?'Selecciona una imagen PNG, JPG o GIF.':'La imagen debe pesar como máximo 2 MB.');
+            logoInput.value='';
+            return;
+        }
+        showLogoError('');
         logoName.textContent=file.name;
         const reader=new FileReader();
         reader.onload=event=>{logoPreview.innerHTML=`<img src="${event.target.result}" alt="Vista previa del logo">`;};
         reader.readAsDataURL(file);
     });
+    if(logoDrop){
+        let dragDepth=0;
+        logoDrop.addEventListener('dragenter',event=>{event.preventDefault();dragDepth++;logoDrop.classList.add('is-dragging');});
+        logoDrop.addEventListener('dragover',event=>{event.preventDefault();event.dataTransfer.dropEffect='copy';});
+        logoDrop.addEventListener('dragleave',event=>{event.preventDefault();dragDepth=Math.max(0,dragDepth-1);if(!dragDepth)logoDrop.classList.remove('is-dragging');});
+        logoDrop.addEventListener('drop',event=>{
+            event.preventDefault();
+            dragDepth=0;
+            logoDrop.classList.remove('is-dragging');
+            const file=event.dataTransfer?.files?.[0];
+            if(!file)return;
+            const transfer=new DataTransfer();
+            transfer.items.add(file);
+            logoInput.files=transfer.files;
+            logoInput.dispatchEvent(new Event('change',{bubbles:true}));
+        });
+    }
     const companySummary=document.getElementById('existing-company-summary');
     const companyEditForm=document.getElementById('existing-company-edit-form');
     document.getElementById('edit-existing-company')?.addEventListener('click',()=>{
@@ -568,6 +672,10 @@ document.addEventListener('DOMContentLoaded',function(){
         currentStep=Math.max(1,Math.min(Number(step),maximumStep));
         furthestStep=Math.max(furthestStep,currentStep);
         slides.forEach(slide=>slide.classList.toggle('is-active',Number(slide.dataset.step)===currentStep));
+        visualPanel.classList.toggle('is-intro',currentStep===1);
+        visualPanel.classList.toggle('is-social',currentStep===2);
+        visualPanel.classList.toggle('is-brand',currentStep===3);
+        visualPanel.classList.toggle('is-finish',currentStep===4);
         visualScenes.forEach(scene=>scene.classList.toggle('is-active',Number(scene.dataset.visual)===currentStep));
         indicators.forEach(indicator=>{const stepNumber=Number(indicator.dataset.indicator);const complete=stepNumber<=furthestStep&&stepNumber!==currentStep;indicator.classList.toggle('is-active',stepNumber===currentStep);indicator.classList.toggle('is-complete',complete);indicator.setAttribute('aria-disabled',stepNumber>furthestStep?'true':'false');indicator.querySelector('.step-number').textContent=complete?'✓':stepNumber;});
         progressBar.style.width=(currentStep*25)+'%';

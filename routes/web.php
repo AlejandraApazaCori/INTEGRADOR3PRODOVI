@@ -573,6 +573,7 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
     Route::prefix('empresas')->name('administrador.empresas.')->group(function () {
         // Rutas para mostrar y gestionar la empresa
         Route::get('/', [App\Http\Controllers\Admin\EmpresaAdminController::class, 'index'])->name('index');
+        Route::get('/previsualizar-registro', \App\Http\Controllers\Admin\EmpresaRegistrationPreviewController::class)->name('previsualizar-registro');
         Route::get('/crear-para-usuario/{usuario_id}', [App\Http\Controllers\Admin\EmpresaAdminController::class, 'crearParaUsuario'])->name('crear-con-cuestionario');
         Route::post('/guardar-para-usuario', [App\Http\Controllers\Admin\EmpresaAdminController::class, 'guardarParaUsuario'])->name('guardar-con-cuestionario');
         Route::get('/{id}', [App\Http\Controllers\Admin\EmpresaAdminController::class, 'show'])->name('show');
