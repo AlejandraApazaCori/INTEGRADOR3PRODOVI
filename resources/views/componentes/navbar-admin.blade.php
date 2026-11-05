@@ -1,5 +1,6 @@
 @php
     $sidebarLogoData = 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('imagenes/logonegro.png')));
+    $sidebarDarkLogoData = 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('imagenes/logoblanco.png')));
 @endphp
 @include('a.css.componentes.navbar-admin')
 </head>
@@ -16,7 +17,8 @@
         <div class="sidebar-header">
             <a href="{{ route('administrador.dashboard') }}" class="logo">
                 <div class="logo-icon">
-                    <img src="{{ $sidebarLogoData }}" alt="PRODOVI Logo" class="logo-img" width="495" height="110" decoding="sync">
+                    <img src="{{ $sidebarLogoData }}" alt="PRODOVI Logo" class="logo-img logo-img-light" width="495" height="110" decoding="sync">
+                    <img src="{{ $sidebarDarkLogoData }}" alt="" class="logo-img logo-img-dark" width="495" height="110" decoding="sync" aria-hidden="true">
                 </div>
             </a>
         </div>

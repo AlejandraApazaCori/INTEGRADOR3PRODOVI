@@ -440,7 +440,7 @@ class PagoAdminController extends Controller
 
     public function estadoPagoQrManual(LibelulaTransaction $transaction, LibelulaPaymentReconciler $reconciler)
     {
-        if (in_array($transaction->status, ['pending', 'expired'], true)) {
+        if (in_array($transaction->status, ['pending', 'expired', 'paid'], true)) {
             try {
                 $reconciler->reconcile($transaction);
             } catch (Throwable $exception) {
@@ -567,6 +567,16 @@ class PagoAdminController extends Controller
             DB::commit();
 
             $emailSent = $paymentNotifier->send($pago->fresh());
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'email_sent' => $emailSent,
+                    'message' => $emailSent
+                        ? 'Pago manual registrado y correo de confirmación enviado correctamente.'
+                        : 'Pago manual registrado, pero no se pudo enviar el correo de confirmación. Puedes reenviarlo desde la lista de pagos.',
+                ]);
+            }
+
             $redirect = redirect()->route('administrador.pagos.index')
                 ->with('success', $emailSent
                     ? 'Pago manual registrado y correo de confirmación enviado correctamente.'
@@ -580,6 +590,9 @@ class PagoAdminController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Error al registrar pago manual: ' . $e->getMessage());
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Error al registrar el pago.'], 500);
+            }
             return back()->with('error', 'Error al registrar el pago: ' . $e->getMessage())->withInput();
         }
     }

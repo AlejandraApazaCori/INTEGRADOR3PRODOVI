@@ -10,6 +10,9 @@
             if (localStorage.getItem('admin_sidebar_collapsed') === '1') {
                 document.documentElement.classList.add('admin-sidebar-collapsed');
             }
+            if (localStorage.getItem('admin_dark_nav') === '1') {
+                document.documentElement.classList.add('admin-dark-nav');
+            }
         } catch (error) {}
     </script>
     <link rel="icon" type="image/svg+xml" href="{{ asset('imagenes/favicon-prodovi.svg') }}?v=3">
@@ -269,6 +272,16 @@
                 </div>
             </div>
 
+            <button type="button" class="topbar-notification-btn admin-theme-toggle" id="adminThemeToggle" aria-label="Activar modo oscuro" title="Activar modo oscuro" aria-pressed="false">
+                <svg class="admin-theme-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20.985 12.486A9 9 0 0 1 11.514 3.015a9 9 0 1 0 9.47 9.47Z"/>
+                </svg>
+                <svg class="admin-theme-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4"/>
+                    <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>
+                </svg>
+            </button>
+
             <div class="topbar-profile-container">
                 <button type="button" class="topbar-user" id="topbarProfileBtn" onclick="toggleTopbarProfile(event)" aria-haspopup="true" aria-expanded="false">
                     <div class="topbar-user-avatar">
@@ -341,6 +354,20 @@
 
     <script>
         const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        const adminThemeToggle = document.getElementById('adminThemeToggle');
+        function syncAdminThemeToggle() {
+            const dark = document.documentElement.classList.contains('admin-dark-nav');
+            adminThemeToggle.setAttribute('aria-pressed', String(dark));
+            adminThemeToggle.setAttribute('aria-label', dark ? 'Activar modo claro' : 'Activar modo oscuro');
+            adminThemeToggle.title = dark ? 'Activar modo claro' : 'Activar modo oscuro';
+        }
+        adminThemeToggle.addEventListener('click', () => {
+            const dark = document.documentElement.classList.toggle('admin-dark-nav');
+            try { localStorage.setItem('admin_dark_nav', dark ? '1' : '0'); } catch (error) {}
+            syncAdminThemeToggle();
+        });
+        syncAdminThemeToggle();
 
         function toggleNotificationDropdown(event) {
             event.stopPropagation();

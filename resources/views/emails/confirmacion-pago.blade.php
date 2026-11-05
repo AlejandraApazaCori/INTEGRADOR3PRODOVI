@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light only">
     <meta name="supported-color-schemes" content="light">
-    <title>Pago confirmado en PRODOVI</title>
+    <title>{{ $pago->metodo === 'qr' ? 'Pago QR confirmado en PRODOVI' : 'Pago confirmado en PRODOVI' }}</title>
     <style>
         :root { color-scheme:light only; supported-color-schemes:light; }
         body,.email-background { background-color:#f1f4f4!important; }
@@ -45,7 +45,11 @@
 
                 <div style="margin:0 0 27px;padding:18px 20px;border:1px solid #eadfc2;border-radius:14px;background:#fffaf0;">
                     <p style="margin:0 0 7px;color:#5b2b76;font-size:14px;font-weight:800;">Tu comprobante está adjunto</p>
-                    <p style="margin:0;color:#4b5b62;font-size:14px;line-height:1.65;">Incluimos el comprobante en formato PDF para que puedas guardarlo o consultarlo cuando lo necesites.</p>
+                    @if ($pago->metodo === 'qr')
+                        <p style="margin:0;color:#4b5b62;font-size:14px;line-height:1.65;">Adjuntamos el comprobante de PRODOVI en PDF como respaldo de tu pago QR. La factura emitida por Libélula se envía por separado; este comprobante no la reemplaza.</p>
+                    @else
+                        <p style="margin:0;color:#4b5b62;font-size:14px;line-height:1.65;">Incluimos el comprobante en formato PDF para que puedas guardarlo o consultarlo cuando lo necesites.</p>
+                    @endif
                 </div>
 
                 <div style="margin:0 0 28px;text-align:center;">

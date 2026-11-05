@@ -1211,55 +1211,49 @@ document.addEventListener('DOMContentLoaded', function () {
       const response = await fetch(this.action, {
         method: 'POST',
         body: formData,
-        redirect: 'follow',
+        headers: { 'Accept': 'application/json' },
       });
-
-      const finalUrl = response.url || '';
-      const isSuccess = finalUrl.length > 0 &&
-                        finalUrl.includes('/administrador/pagos') &&
-                        !finalUrl.includes('manual');
-
-      if (isSuccess) {
-        showSuccess();
-      } else {
-        const html = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const errItems = doc.querySelectorAll('.text-red-600 li, ul.list-disc.list-inside.text-sm.text-red-600 li');
-
-        if (errItems.length > 0) {
-          const list = document.getElementById('ajaxErrorList');
-          list.innerHTML = '';
-          errItems.forEach(li => {
-            const el = document.createElement('li');
-            el.textContent = li.textContent.trim();
-            list.appendChild(el);
-          });
-          document.getElementById('ajaxErrors').classList.remove('pwiz-hidden');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-          /* Fallback: assume success if response was OK */
-          if (response.ok) { showSuccess(); return; }
-        }
-
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check-circle"></i> <span id="submitBtnText">Confirmar registro</span>';
+      const data = await response.json();
+      if (response.ok && data.success) {
+        showSuccess(data.message, data.email_sent);
+        return;
       }
+
+      const errors = data.errors ? Object.values(data.errors).flat() : [data.message || 'No se pudo registrar el pago.'];
+      const list = document.getElementById('ajaxErrorList');
+      list.replaceChildren(...errors.map(message => {
+        const item = document.createElement('li');
+        item.textContent = message;
+        return item;
+      }));
+      document.getElementById('ajaxErrors').classList.remove('pwiz-hidden');
+      document.getElementById('ajaxErrors').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-check-circle"></i> <span id="submitBtnText">Confirmar registro</span>';
     } catch (err) {
-      /* Network issue — submit normally */
-      this.submit();
+      const list = document.getElementById('ajaxErrorList');
+      list.replaceChildren();
+      const item = document.createElement('li');
+      item.textContent = 'No se pudo confirmar el resultado. Revisa la lista de pagos antes de volver a registrar este pago.';
+      list.appendChild(item);
+      document.getElementById('ajaxErrors').classList.remove('pwiz-hidden');
+      document.getElementById('ajaxErrors').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-check-circle"></i> <span id="submitBtnText">Confirmar registro</span>';
     }
   });
 
-  function showSuccess() {
+  function showSuccess(message, emailSent = true) {
     const overlay = document.getElementById('successOverlay');
+    if (message) overlay.querySelector('p').textContent = message;
+    if (!emailSent) overlay.querySelector('h2').textContent = 'Pago registrado; correo pendiente';
     overlay.classList.remove('pwiz-hidden');
     setTimeout(() => {
       document.getElementById('progressFill').style.width = '100%';
     }, 60);
     setTimeout(() => {
       window.location.href = '{{ route("administrador.pagos.index") }}';
-    }, 2800);
+    }, emailSent ? 2800 : 6500);
   }
 
   /* ── Init: returning from validation error ──────────────────── */

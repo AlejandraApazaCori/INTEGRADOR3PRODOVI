@@ -448,6 +448,7 @@
         .user-avatar {
             width: 40px;
             height: 40px;
+            flex: 0 0 40px;
             background: #dfe2e0;
             color: #555b58;
             border-radius: 50%;
@@ -508,6 +509,7 @@
         .dropdown-avatar {
             width: 50px;
             height: 50px;
+            flex: 0 0 50px;
             background: #dfe2e0;
             color: #555b58;
             border-radius: 50%;
@@ -520,6 +522,7 @@
         .dropdown-user-info {
             display: flex;
             flex-direction: column;
+            min-width: 0;
         }
 
         .dropdown-user-name {
@@ -531,6 +534,7 @@
         .dropdown-user-email {
             font-size: 13px;
             opacity: 0.8;
+            overflow-wrap: anywhere;
         }
 
         .dropdown-divider {
@@ -979,6 +983,58 @@
         .sidebar::-webkit-scrollbar-thumb:hover {
             background: #aeb3af;
         }
+
+        .admin-theme-toggle { flex: 0 0 40px; }
+        .admin-theme-toggle .admin-theme-sun { display: none; }
+        html.admin-dark-nav .admin-theme-toggle .admin-theme-moon { display: none; }
+        html.admin-dark-nav .admin-theme-toggle .admin-theme-sun { display: block; color: #fbbf24; }
+
+        html.admin-dark-nav .sidebar,
+        html.admin-dark-nav .sidebar-header { background: #181c27; border-color: #343b4c; }
+        html.admin-dark-nav .sidebar { scrollbar-color: #566074 #181c27; }
+        .sidebar .logo-img.logo-img-dark { display: none; }
+        html.admin-dark-nav .sidebar .logo-img.logo-img-light { display: none; }
+        html.admin-dark-nav .sidebar .logo-img.logo-img-dark { display: block; }
+        html.admin-dark-nav .menu-label { color: #9ca8bb; }
+        html.admin-dark-nav .menu-link { color: #d5dce8; }
+        html.admin-dark-nav .menu-link:hover { background: color-mix(in srgb, var(--menu-color) 30%, #252c3a); color: #fff; }
+        html.admin-dark-nav .menu-link.active { color: #fff; }
+        html.admin-dark-nav .submenu-link { color: #c1cbd9; }
+        html.admin-dark-nav .submenu-link:hover { background: #30394b; color: #fff; }
+        html.admin-dark-nav .submenu-link.active { color: #fff; }
+        html.admin-dark-nav .submenu-link::before { background: #181c27; }
+        html.admin-dark-nav .submenu-link.active::before { background: var(--menu-color); box-shadow: 0 0 0 3px #181c27; }
+        html.admin-dark-nav .user-section { background: #202634; border-color: #343b4c; }
+        html.admin-dark-nav .user-button { background: #2b3444; border-color: #3c475a; color: #f1f5f9; }
+        html.admin-dark-nav .user-button:hover { background: #394459; }
+        html.admin-dark-nav .user-avatar,
+        html.admin-dark-nav .topbar-user-avatar { background: #3c475a; color: #e2e8f0; }
+        html.admin-dark-nav .dropdown-content { background: #252d3c; border: 1px solid #3c475a; color: #f1f5f9; }
+        html.admin-dark-nav .dropdown-header { background: #30394b; color: #f1f5f9; }
+        html.admin-dark-nav .dropdown-avatar { background: #455268; color: #f1f5f9; }
+        html.admin-dark-nav .dropdown-divider { background: #3c475a; }
+        html.admin-dark-nav .dropdown-item { color: #e2e8f0; }
+        html.admin-dark-nav .dropdown-item:hover { background: #394459; color: #fff; }
+        html.admin-dark-nav .dropdown-item svg { color: #c1cbd9; }
+        html.admin-dark-nav .topbar { background: #202634; border-color: #343b4c; box-shadow: 0 2px 10px rgba(0,0,0,.18); }
+        html.admin-dark-nav .topbar-toggle-btn,
+        html.admin-dark-nav .topbar-notification-btn,
+        html.admin-dark-nav .topbar-user-name,
+        html.admin-dark-nav .topbar-user-chevron { color: #e2e8f0; }
+        html.admin-dark-nav .topbar-toggle-btn:hover,
+        html.admin-dark-nav .topbar-notification-btn:hover,
+        html.admin-dark-nav .topbar-user:hover { background: #394459; color: #fff; }
+        html.admin-dark-nav .notification-dropdown { background: #252d3c; border-color: #3c475a; color: #e2e8f0; }
+        html.admin-dark-nav .notification-dropdown-header,
+        html.admin-dark-nav .notification-dropdown-footer { background: #30394b; border-color: #3c475a; }
+        html.admin-dark-nav .notification-item,
+        html.admin-dark-nav .admin-message-item { color: #e2e8f0; border-color: #3c475a; }
+        html.admin-dark-nav .notification-item:hover,
+        html.admin-dark-nav .admin-message-item:hover { background: #394459; }
+        html.admin-dark-nav .admin-message-item strong { color: #f1f5f9; }
+        html.admin-dark-nav .admin-message-item em { color: #c1cbd9; }
+        html.admin-dark-nav .sidebar::-webkit-scrollbar-track { background: #181c27; }
+        html.admin-dark-nav .sidebar::-webkit-scrollbar-thumb { background: #566074; }
 
     </style>
 @endonce

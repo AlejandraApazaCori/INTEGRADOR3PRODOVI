@@ -279,7 +279,7 @@ class PagoClienteController extends Controller
     {
         abort_unless((int) $transaction->usuario_id === (int) $request->user()->id, 403);
 
-        if (in_array($transaction->status, ['pending', 'expired'], true)) {
+        if (in_array($transaction->status, ['pending', 'expired', 'paid'], true)) {
             try {
                 $reconciler->reconcile($transaction);
             } catch (Throwable $exception) {
@@ -322,6 +322,14 @@ class PagoClienteController extends Controller
         }
 
         if ($transaction->status === 'paid') {
+            try {
+                $reconciler->reconcile($transaction);
+            } catch (Throwable $exception) {
+                Log::warning('No se pudo reintentar la confirmacion por correo de Libelula.', [
+                    'transaction_id' => $transaction->id,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
             $event->update(['processing_status' => 'duplicate', 'processed_at' => now()]);
             return response()->json(['received' => true]);
         }

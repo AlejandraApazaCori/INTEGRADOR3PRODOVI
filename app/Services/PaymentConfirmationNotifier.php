@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Mail\ConfirmacionPago;
+use App\Mail\ConfirmacionPagoQr;
 use App\Models\Pago;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -36,7 +37,11 @@ class PaymentConfirmationNotifier
                 throw new \RuntimeException('El usuario no tiene un correo válido para recibir la confirmación.');
             }
 
-            Mail::to($pago->usuario->email)->send(new ConfirmacionPago($pago));
+            $confirmation = $pago->metodo === 'qr'
+                ? new ConfirmacionPagoQr($pago)
+                : new ConfirmacionPago($pago);
+
+            Mail::to($pago->usuario->email)->send($confirmation);
 
             return true;
         } catch (Throwable $exception) {
