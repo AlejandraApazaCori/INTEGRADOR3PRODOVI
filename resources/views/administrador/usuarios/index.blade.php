@@ -4,7 +4,7 @@
 @include('a.css.admin.index-usuarios')
 
 @section('content')
-    <div class="min-h-screen" style="background: #ffffff;">
+    <div class="users-index-page min-h-screen">
         <div class="w-full pb-8">
             <!-- Header Section -->
           
@@ -129,13 +129,13 @@
             </div>
 
             @if(session('drive_success'))
-                <div class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl px-5 py-4" style="background: #ecf8ee; border: 1px solid #bfe3c5; color: #276738;">
+                <div class="users-drive-success mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl px-5 py-4" style="background: #ecf8ee; border: 1px solid #bfe3c5; color: #276738;">
                     <span><i class="fas fa-circle-check mr-2"></i>{{ session('drive_success.message') }}</span>
                     <a href="{{ session('drive_success.url') }}" target="_blank" rel="noopener noreferrer" class="font-bold underline">Abrir en Google Sheets</a>
                 </div>
             @endif
             @if(session('drive_error'))
-                <div class="mb-6 rounded-xl px-5 py-4" style="background: #fff0f0; border: 1px solid #f3c4c4; color: #a72d2d;">
+                <div class="users-drive-error mb-6 rounded-xl px-5 py-4" style="background: #fff0f0; border: 1px solid #f3c4c4; color: #a72d2d;">
                     <i class="fas fa-circle-exclamation mr-2"></i>{{ session('drive_error') }}
                 </div>
             @endif
@@ -282,6 +282,91 @@
                 .report-pdf-button { border: 1px solid #dc2626; background: #dc2626; }
                 .report-card-actions a:hover,.report-card-actions button:not(:disabled):hover { transform: translateY(-1px); filter: brightness(.96); }
                 .report-card-actions i { display: inline-block; min-width: 16px; font-size: .88rem; }
+                .users-index-page { background: #fff; }
+                html.admin-dark-nav .users-index-page { background: #141414; color: #e5e5e5; }
+                html.admin-dark-nav .users-index-page .users-kpi-card { background: linear-gradient(135deg,#202020 35%,#292929 100%); border-color: #353535; box-shadow: inset 0 4px 0 var(--kpi-accent),0 10px 24px rgba(0,0,0,.18); }
+                html.admin-dark-nav .users-index-page .users-kpi-card span,
+                html.admin-dark-nav .users-index-page .users-kpi-card small { color: #cccccc; }
+                html.admin-dark-nav .users-index-page .users-kpi-card strong { color: #fafafa; }
+                html.admin-dark-nav .users-index-page .users-filter-panel,
+                html.admin-dark-nav .users-index-page .users-table-toolbar { background: #202020; border-color: #353535; box-shadow: 0 9px 22px rgba(0,0,0,.15); }
+                html.admin-dark-nav .users-index-page #users-filter-form .users-search-filter input,
+                html.admin-dark-nav .users-index-page #users-filter-form .custom-filter-trigger,
+                html.admin-dark-nav .users-index-page #users-filter-form .custom-date-trigger,
+                html.admin-dark-nav .users-index-page #users-filter-form .without-plan-filter,
+                html.admin-dark-nav .users-index-page #per_page { background: #141414; border-color: #4a4a4a !important; color: #f5f5f5; box-shadow: none !important; }
+                html.admin-dark-nav .users-index-page #users-filter-form .users-search-filter input::placeholder { color: #9c9c9c; }
+                html.admin-dark-nav .users-index-page #users-filter-form .custom-filter-leading,
+                html.admin-dark-nav .users-index-page #users-filter-form .custom-filter-chevron,
+                html.admin-dark-nav .users-index-page #users-filter-form .users-search-filter svg,
+                html.admin-dark-nav .users-index-page #users-filter-form .custom-date-trigger > i { color: #9c9c9c; }
+                html.admin-dark-nav .users-index-page #users-filter-form .date-filter-control > label,
+                html.admin-dark-nav .users-index-page #users-filter-form .without-plan-filter strong,
+                html.admin-dark-nav .users-index-page .users-table-toolbar strong,
+                html.admin-dark-nav .users-index-page #per-page-form { color: #f5f5f5; }
+                html.admin-dark-nav .users-index-page #users-filter-form .without-plan-filter small,
+                html.admin-dark-nav .users-index-page .users-table-toolbar small { color: #cccccc; }
+                html.admin-dark-nav .users-index-page #users-filter-form .without-plan-filter > i:first-of-type { background: #353535; color: #a3e635; }
+                html.admin-dark-nav .users-index-page #users-filter-form .without-plan-filter.is-active { background: #243b35; border-color: #7da533 !important; }
+                html.admin-dark-nav .users-index-page #users-filter-form .custom-filter-menu,
+                html.admin-dark-nav .users-index-page #users-filter-form .custom-calendar { background: #202020; border-color: #4a4a4a; }
+                html.admin-dark-nav .users-index-page #users-filter-form .custom-filter-menu button,
+                html.admin-dark-nav .users-index-page #users-filter-form .custom-calendar-header strong,
+                html.admin-dark-nav .users-index-page #users-filter-form .custom-calendar-days button { color: #e5e5e5; }
+                html.admin-dark-nav .users-index-page #users-filter-form .custom-filter-menu button:hover,
+                html.admin-dark-nav .users-index-page #users-filter-form .custom-filter-menu button.is-selected,
+                html.admin-dark-nav .users-index-page #users-filter-form .custom-calendar-days button:hover,
+                html.admin-dark-nav .users-index-page #users-filter-form .custom-calendar-header button,
+                html.admin-dark-nav .users-index-page #users-filter-form .custom-calendar-clear { background: #353535; color: #f5f5f5; }
+                html.admin-dark-nav .users-index-page #users-filter-form .custom-calendar-days button.is-selected { background: #7da533; color: #fff; }
+                html.admin-dark-nav .users-index-page #users-filter-form .clear-user-filters { background: #353535; border-color: #4a4a4a; color: #e5e5e5; }
+                html.admin-dark-nav .users-index-page .users-reports-heading,
+                html.admin-dark-nav .users-index-page .report-card-actions { border-color: #4a4a4a; }
+                html.admin-dark-nav .users-index-page .users-reports-eyebrow { color: #cccccc; }
+                html.admin-dark-nav .users-index-page .users-drive-success { background: #173c30 !important; border-color: #2f7656 !important; color: #bbf7d0 !important; }
+                html.admin-dark-nav .users-index-page .users-drive-error { background: #451a25 !important; border-color: #9f3344 !important; color: #fecaca !important; }
+                html.admin-dark-nav .users-index-page .report-card { background: #202020; border-color: #353535; box-shadow: 0 5px 14px rgba(0,0,0,.16); }
+                html.admin-dark-nav .users-index-page .report-card-body h3 { color: #fafafa; }
+                html.admin-dark-nav .users-index-page .report-card-body p { color: #cccccc; }
+                html.admin-dark-nav .users-index-page .drive-report-btn { background: #303030; border-color: #777777 !important; color: #e5e5e5 !important; }
+                html.admin-dark-nav .users-index-page .users-table-toolbar > div > i { background: #353535; color: #a3e635; }
+                html.admin-dark-nav .users-index-page .users-green-table { background: #202020 !important; border-color: #4a4a4a !important; box-shadow: 0 9px 24px rgba(0,0,0,.2) !important; }
+                html.admin-dark-nav .users-index-page .users-green-table > div,
+                html.admin-dark-nav .users-index-page .users-green-table tbody { background: #202020 !important; }
+                html.admin-dark-nav .users-index-page .users-green-table tbody tr:nth-child(odd) { background: #202020 !important; }
+                html.admin-dark-nav .users-index-page .users-green-table tbody tr:nth-child(even) { background: #292929 !important; }
+                html.admin-dark-nav .users-index-page .users-green-table tbody tr:hover { background: #353535 !important; }
+                html.admin-dark-nav .users-index-page .users-green-table tbody td { border-color: #4a4a4a !important; }
+                html.admin-dark-nav .users-index-page .users-green-table tbody td:first-child { color: #a3e635 !important; }
+                html.admin-dark-nav .users-index-page .users-green-table .text-gray-900 { color: #fafafa !important; }
+                html.admin-dark-nav .users-index-page .users-green-table .text-gray-600 { color: #cccccc !important; }
+                html.admin-dark-nav .users-index-page .users-green-table .users-role-badge { background: #294331 !important; border-color: #52754a !important; color: #d9f99d !important; }
+                html.admin-dark-nav .users-index-page .users-green-table .user-action-view { background: #294331 !important; color: #d9f99d !important; }
+                html.admin-dark-nav .users-index-page .users-green-table .user-action-edit { background: #303030 !important; color: #e5e5e5 !important; }
+                html.admin-dark-nav .users-index-page .users-green-table .bg-gray-100 { background: #4a4a4a !important; border-color: #606060 !important; color: #f5f5f5 !important; }
+                html.admin-dark-nav .users-index-page .users-green-table .bg-purple-100 { background: #3b2b59 !important; border-color: #69489e !important; color: #e9d5ff !important; }
+                html.admin-dark-nav .users-index-page .users-green-table .bg-green-100 { background: #173c30 !important; border-color: #2f7656 !important; color: #bbf7d0 !important; }
+                html.admin-dark-nav .users-index-page .users-green-table .bg-yellow-100 { background: #4b381d !important; border-color: #8d6b30 !important; color: #fde68a !important; }
+                html.admin-dark-nav .users-index-page .users-green-table .bg-red-50 { background: #4c1d28 !important; color: #fecaca !important; }
+                html.admin-dark-nav .users-index-page nav[aria-label="Paginación de usuarios"] p { color: #cccccc; }
+                html.admin-dark-nav .users-index-page nav[aria-label="Paginación de usuarios"] a:not([rel]),
+                html.admin-dark-nav .users-index-page nav[aria-label="Paginación de usuarios"] span.bg-gray-100 { background: #202020; color: #e5e5e5; }
+                html.admin-dark-nav .users-index-page nav[aria-label="Paginación de usuarios"] a[rel] { background: #294331 !important; color: #d9f99d !important; }
+                html.admin-dark-nav .users-index-page #drive-folder-modal > div { background: #202020; color: #e5e5e5; }
+                html.admin-dark-nav .users-index-page #drive-folder-modal h3,
+                html.admin-dark-nav .users-index-page #drive-folder-modal label,
+                html.admin-dark-nav .users-index-page #drive-folder-modal #drive-current-folder { color: #fafafa; }
+                html.admin-dark-nav .users-index-page #drive-folder-modal p,
+                html.admin-dark-nav .users-index-page #drive-folder-modal small { color: #cccccc; }
+                html.admin-dark-nav .users-index-page #drive-folder-modal #drive-location-editor,
+                html.admin-dark-nav .users-index-page #drive-folder-modal #drive-current-folder-container { background: #292929 !important; border-color: #4a4a4a !important; }
+                html.admin-dark-nav .users-index-page #drive-folder-modal #drive-folder-trigger,
+                html.admin-dark-nav .users-index-page #drive-folder-modal #drive-new-folder,
+                html.admin-dark-nav .users-index-page #drive-folder-modal #drive-folder-menu { background: #141414; border-color: #4a4a4a !important; color: #f5f5f5; }
+                html.admin-dark-nav .users-index-page #drive-folder-modal #drive-folder-menu button { color: #e5e5e5; }
+                html.admin-dark-nav .users-index-page #drive-folder-modal #drive-folder-menu button:hover { background: #353535; }
+                html.admin-dark-nav .users-index-page #drive-folder-modal #cancel-drive-modal,
+                html.admin-dark-nav .users-index-page #drive-folder-modal #close-drive-modal { background: #353535 !important; color: #f5f5f5; }
                 @media(max-width:1100px) { .users-filter-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.users-filter-grid > *,.users-search-filter,.users-filter-grid > .custom-filter-dropdown,.users-filter-grid > .without-plan-filter,.users-filter-grid > .date-filter-control,.users-filter-grid > .clear-user-filters { grid-column: span 1; }.users-search-filter { grid-column: 1 / -1; } }
                 @media(max-width:640px) { .users-page-content { margin-right: 12px; margin-left: 12px; }.users-filter-panel { padding: 14px; }.users-filter-grid { grid-template-columns: 1fr; }.users-filter-grid > *,.users-search-filter { grid-column: 1; }.users-table-toolbar { align-items: flex-start; flex-direction: column; } }
             </style>
@@ -301,7 +386,7 @@
                         <div id="drive-report-filters"></div>
                         <div class="mb-4">
                             <label class="block text-sm font-bold text-gray-700 mb-2">Ubicación actual</label>
-                            <div class="flex items-center justify-between gap-3 rounded-xl px-4 py-3" style="border:1px solid #dce7cc;background:#f7faF2;">
+                            <div id="drive-current-folder-container" class="flex items-center justify-between gap-3 rounded-xl px-4 py-3" style="border:1px solid #dce7cc;background:#f7faF2;">
                                 <div class="flex min-w-0 items-center gap-3">
                                     <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl" style="background:#e4efd4;color:#638524;"><i class="fas fa-folder-open"></i></span>
                                     <span class="min-w-0"><strong id="drive-current-folder" class="block truncate text-sm text-gray-800">Consultando...</strong><small id="drive-current-detail" class="block text-xs text-gray-500">Buscando el reporte en Drive</small></span>

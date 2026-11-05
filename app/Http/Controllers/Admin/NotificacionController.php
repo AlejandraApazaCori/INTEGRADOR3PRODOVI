@@ -7,6 +7,7 @@ use App\Models\Pago;
 use App\Models\TareaArchivo;
 use App\Models\Campania;
 use App\Notifications\TareaEntregadaNotification;
+use App\Notifications\ReunionAgendadaNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -62,8 +63,22 @@ class NotificacionController extends Controller
                 'visto'   => $notification->read_at !== null,
                 'url'     => route('administrador.tareas.show', $notification->data['task_id']),
             ]);
+        $reuniones = $user->notifications()
+            ->where('type', ReunionAgendadaNotification::class)
+            ->orderBy('created_at', 'desc')
+            ->take(50)
+            ->get()
+            ->map(fn ($notification) => [
+                'tipo' => 'reunion',
+                'icono' => '📅',
+                'titulo' => $notification->data['title'] ?? 'Nueva reunión agendada',
+                'detalle' => $notification->data['message'] ?? 'Hay una reunión de campaña agendada.',
+                'fecha' => $notification->created_at,
+                'visto' => $notification->read_at !== null,
+                'url' => route('administrador.campañas.show', $notification->data['campaign_id']).'#reuniones',
+            ]);
 
-        $notificaciones = $pagos->concat($campanias)->concat($tareas)
+        $notificaciones = $pagos->concat($campanias)->concat($tareas)->concat($reuniones)
             ->sortByDesc('fecha')
             ->values();
 
@@ -82,7 +97,7 @@ class NotificacionController extends Controller
             Campania::where('visto', false)->update(['visto' => true]);
             TareaArchivo::where('visto', false)->update(['visto' => true]);
         }
-        $user->unreadNotifications()->where('type', TareaEntregadaNotification::class)->update(['read_at' => now()]);
+        $user->unreadNotifications()->whereIn('type', [TareaEntregadaNotification::class, ReunionAgendadaNotification::class])->update(['read_at' => now()]);
 
         return response()->json(['ok' => true]);
     }
@@ -97,7 +112,7 @@ class NotificacionController extends Controller
         $canSeeGlobalNotifications = $user->hasAnyRole(['Super Administrador', 'Administrador', 'Community Manager']);
         $count = ($canSeeGlobalNotifications ? Pago::where('visto', false)->count() : 0)
             + ($canSeeGlobalNotifications ? Campania::where('visto', false)->count() : 0)
-            + $user->unreadNotifications()->where('type', TareaEntregadaNotification::class)->count();
+            + $user->unreadNotifications()->whereIn('type', [TareaEntregadaNotification::class, ReunionAgendadaNotification::class])->count();
 
         return response()->json(['count' => $count]);
     }

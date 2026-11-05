@@ -12,6 +12,9 @@
     $navbarUnreadMessages = $navbarMessageCampaign
         ? $navbarFeedbackService->unreadCount($navbarMessageCampaign, auth()->user())
         : 0;
+    $navbarMeetingCount = $navbarMessageCampaign
+        ? $navbarMessageCampaign->reuniones()->where('estado', 'agendada')->where('fecha_fin', '>=', now())->count()
+        : 0;
     $navbarUnreadUrl = route('clientes.mensajes.no-leidos', array_filter([
         'empresa' => $navbarCompanyId,
         'campania' => $navbarMessageCampaign?->id,
@@ -61,6 +64,10 @@
                 <a href="{{ route('clientes.campanias.feedback', $navbarMessageCampaign) }}" class="client-message-button" data-client-message-button data-unread-url="{{ $navbarUnreadUrl }}" aria-label="Mensajes con el equipo{{ $navbarUnreadMessages ? ': '.$navbarUnreadMessages.' sin leer' : '' }}" title="Mensajes con el equipo">
                     <i class="fas fa-comment-dots"></i>
                     <span class="client-message-badge" data-client-message-badge {{ $navbarUnreadMessages > 0 ? '' : 'hidden' }}>{{ $navbarUnreadMessages }}</span>
+                </a>
+                <a href="{{ route('clientes.campanias.reuniones.index', $navbarMessageCampaign) }}" class="client-meeting-button" aria-label="Reuniones de campaña{{ $navbarMeetingCount ? ': '.$navbarMeetingCount.' agendadas' : '' }}" title="Agendar reunión y ver reuniones">
+                    <i class="fas fa-calendar-days"></i>
+                    @if($navbarMeetingCount)<span class="client-meeting-badge">{{ $navbarMeetingCount > 99 ? '99+' : $navbarMeetingCount }}</span>@endif
                 </a>
             @endif
             <div class="client-notifications">
@@ -152,6 +159,7 @@
     @media(max-width:900px){.client-navbar-inner{flex-wrap:wrap;gap:10px;padding:12px 16px}.client-mobile-toggle{display:grid;place-items:center}.client-nav-links{order:3;width:100%;display:none;flex-direction:column;align-items:stretch;padding-top:8px}.client-navbar.is-mobile-open .client-nav-links{display:flex}.client-nav-link{min-height:44px;padding:0 12px}.client-nav-link.is-active::after{top:8px;right:auto;bottom:8px;left:0;width:3px;height:auto}.client-nav-dropdown{display:block}.client-nav-dropdown .client-nav-link{width:100%}.client-nav-menu{position:static;margin:4px 0 0 14px;box-shadow:none}.client-navbar-actions{margin-left:auto}.client-user-chip{min-width:0}.client-user-copy{display:none}.client-user-menu,.notification-menu{position:fixed;top:76px;right:12px}.client-brand img{width:120px}}
     @media(max-width:520px){.client-navbar-inner{padding-inline:11px}.client-navbar-actions{gap:6px}.client-user-chip{padding:4px}.client-user-chevron{display:none}.notification-menu,.client-user-menu{right:8px;left:8px;width:auto}}
     .client-message-button{position:relative;width:42px;height:42px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.16);border-radius:3px;background:rgba(255,255,255,.07);color:#fff;text-decoration:none;transition:.2s}.client-message-button:hover,.client-message-button:focus{border-color:var(--client-turquoise);background:var(--client-turquoise);color:#fff}.client-message-badge{position:absolute;top:-6px;right:-6px;min-width:19px;height:19px;display:grid;place-items:center;padding:0 5px;border:2px solid #242426;border-radius:999px;background:#ef4444;color:#fff;font-size:.58rem;font-weight:900;line-height:1}.client-message-badge[hidden]{display:none!important}
+    .client-meeting-button{position:relative;width:42px;height:42px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.16);border-radius:3px;background:rgba(255,255,255,.07);color:#fff;text-decoration:none;transition:.2s}.client-meeting-button:hover,.client-meeting-button:focus{border-color:var(--client-turquoise);background:var(--client-turquoise);color:#fff}.client-meeting-badge{position:absolute;top:-6px;right:-6px;min-width:19px;height:19px;display:grid;place-items:center;padding:0 5px;border:2px solid #242426;border-radius:999px;background:#ef4444;color:#fff;font-size:.58rem;font-weight:900;line-height:1}
 </style>
 
 <script>

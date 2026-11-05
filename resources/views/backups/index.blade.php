@@ -84,7 +84,7 @@
     .status-completed { color: #166534; background: #dcfce7; }
     .status-processing { color: #92400e; background: #fef3c7; }
     .status-failed { color: #991b1b; background: #fee2e2; }
-    .history-download { width: 34px; height: 34px; border-radius: 9px; display: inline-grid; place-items: center; color: #1d4ed8; background: #eff6ff; text-decoration: none; }
+    .history-download { min-width: 58px; height: 34px; padding: 0 9px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: #1d4ed8; background: #eff6ff; text-decoration: none; font-weight: 800; }
     .history-download:hover { background: #dbeafe; }
     .history-error { display: block; max-width: 210px; margin-top: 4px; color: #b91c1c; font-size: .67rem; line-height: 1.35; }
     .history-empty { padding: 46px 20px; text-align: center; color: #94a3b8; }
@@ -109,12 +109,15 @@
                     <div class="backups-heading-icon"><i class="fas fa-database"></i></div>
                     <div>
                         <h1>Respaldos de base de datos</h1>
-                        <p>Protege la información del sistema y descarga copias en formato SQL.</p>
+                        <p>Protege la información del sistema y descarga copias en formato SQL o Excel.</p>
                     </div>
                 </div>
                 <div class="backups-actions">
                     <a href="{{ $latestBackup ? route('administrador.backups.download-latest') : '#' }}" class="backup-btn backup-btn-ghost {{ $latestBackup ? '' : 'backup-btn-disabled' }}" @if(!$latestBackup) aria-disabled="true" @endif>
                         <i class="fas fa-download"></i> Descargar último SQL
+                    </a>
+                    <a href="{{ $latestBackup ? route('administrador.backups.download-latest-excel') : '#' }}" class="backup-btn backup-btn-ghost {{ $latestBackup ? '' : 'backup-btn-disabled' }}" @if(!$latestBackup) aria-disabled="true" @endif>
+                        <i class="fas fa-file-excel"></i> Descargar último Excel
                     </a>
                     <form method="POST" action="{{ route('administrador.backups.store') }}" onsubmit="return confirm('¿Deseas crear un respaldo completo de la base de datos ahora?');">
                         @csrf
@@ -260,9 +263,11 @@
                                     </td>
                                     <td>
                                         @if($backup->status === 'completed')
-                                            <a href="{{ route('administrador.backups.download', $backup) }}" class="history-download" title="Descargar SQL"><i class="fas fa-download"></i></a>
+                                            <a href="{{ route('administrador.backups.download', $backup) }}" class="history-download" title="Descargar SQL"><i class="fas fa-file-code"></i> SQL</a>
+                                            <a href="{{ route('administrador.backups.download-excel', $backup) }}" class="history-download" title="Descargar Excel"><i class="fas fa-file-excel"></i> Excel</a>
                                         @else
-                                            <span class="history-download backup-btn-disabled"><i class="fas fa-download"></i></span>
+                                            <span class="history-download backup-btn-disabled"><i class="fas fa-file-code"></i> SQL</span>
+                                            <span class="history-download backup-btn-disabled"><i class="fas fa-file-excel"></i> Excel</span>
                                         @endif
                                     </td>
                                 </tr>

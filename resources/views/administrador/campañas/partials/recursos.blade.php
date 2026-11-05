@@ -5,6 +5,15 @@
     $renameResource = session('rename_resource_id')
         ? $todosLosRecursos->firstWhere('id', (int) session('rename_resource_id'))
         : null;
+    $maxImageBytes = min(10 * 1024 * 1024, \Symfony\Component\HttpFoundation\File\UploadedFile::getMaxFilesize());
+    $maxImageMb = rtrim(rtrim(number_format($maxImageBytes / 1048576, 1, '.', ''), '0'), '.');
+    $postMaxSetting = trim((string) ini_get('post_max_size'));
+    $postMaxBytes = (int) $postMaxSetting * match (strtoupper(substr($postMaxSetting, -1))) {
+        'G' => 1024 * 1024 * 1024,
+        'M' => 1024 * 1024,
+        'K' => 1024,
+        default => 1,
+    };
 @endphp
 
 <section class="resource-library" id="campaign-resource-library" data-open-upload="{{ $uploadErrors->any() ? 'true' : 'false' }}" data-open-rename="{{ $renameErrors->any() ? 'true' : 'false' }}">
@@ -115,19 +124,20 @@
             <button type="button" data-close-resource-upload aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
         </header>
 
-        <form action="{{ route('administrador.campañas.recursos.store', $campania) }}#recursos" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('administrador.campañas.recursos.store', $campania) }}#recursos" method="POST" enctype="multipart/form-data" data-max-image-bytes="{{ $maxImageBytes }}" data-max-request-bytes="{{ max(0, $postMaxBytes - 262144) }}">
             @csrf
             <div class="resource-upload-body">
                 @if($uploadErrors->any())
                     <div class="resource-upload-errors"><i class="fas fa-circle-exclamation"></i><div>@foreach($uploadErrors->all() as $error)<p>{{ $error }}</p>@endforeach</div></div>
                 @endif
+                <div class="resource-upload-errors" id="campaign-resource-client-error" role="alert" hidden></div>
 
                 <div class="resource-upload-field-label"><i class="fas fa-images"></i> Seleccionar imágenes <span>*</span></div>
                 <label class="resource-upload-dropzone" for="campaign-resource-images">
                     <input id="campaign-resource-images" type="file" name="imagenes[]" accept="image/jpeg,image/png,image/gif,image/webp" multiple>
                     <span><i class="fas fa-cloud-arrow-up"></i></span>
                     <strong>Haz clic o arrastra tus imágenes aquí</strong>
-                    <small id="campaign-resource-file-label">JPG, PNG, GIF o WEBP · Máximo 10 MB</small>
+                    <small id="campaign-resource-file-label">JPG, PNG, GIF o WEBP · Máximo {{ $maxImageMb }} MB por imagen</small>
                 </label>
 
                 <div class="resource-selected-files" id="campaign-resource-selected-files" hidden></div>
@@ -200,6 +210,7 @@
 .resource-rename-dialog{border-radius:16px}.resource-rename-dialog>header{padding:22px 24px}.resource-rename-body{padding:26px}.resource-rename-body>label{font-size:.68rem}.resource-rename-body input{height:48px;font-size:.72rem}.resource-rename-dialog footer{justify-content:space-between;padding:17px 24px;background:#fff}.resource-rename-dialog footer button{min-height:44px;padding:0 18px;border-radius:10px;font-size:.65rem}
 .resource-upload-modal{display:flex;align-items:stretch;justify-content:flex-end;padding:0}.resource-upload-dialog{width:min(560px,100%);height:100%;max-height:none;display:flex;flex-direction:column;overflow:hidden;border-radius:0;box-shadow:-24px 0 65px #18111c;animation:resourceDrawerIn .24s ease both}@keyframes resourceDrawerIn{from{transform:translateX(100%)}to{transform:translateX(0)}}.resource-upload-dialog>header{flex:0 0 auto}.resource-upload-dialog>form{min-height:0;display:flex;flex:1;flex-direction:column}.resource-upload-body{min-height:0;flex:1;overflow-y:auto;padding:24px}.resource-upload-dialog footer{flex:0 0 auto;padding:17px 24px}.resource-upload-dropzone{min-height:190px}
 @media(max-width:760px){.resource-library-bar{align-items:stretch;flex-direction:column;padding:10px}.resource-library-tabs{overflow-x:auto}.resource-library-tabs button{flex:1;justify-content:center;white-space:nowrap}.resource-library-actions{justify-content:space-between}.resource-library-content{padding:12px}.resource-library-content.is-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.resource-library-content.is-list .resource-item{grid-template-columns:52px minmax(0,1fr)}.resource-library-content.is-list .resource-item-preview{width:52px;height:52px}.resource-library-content.is-list .resource-item-actions{grid-column:1/-1}.resource-library-content.is-grid{grid-template-columns:1fr}.resource-upload-dialog{width:100%;max-height:none}.resource-upload-body{padding:17px}.resource-upload-dialog footer{padding:14px 17px}.resource-upload-dialog footer button{flex:1}}
+.resource-upload-errors[hidden],.resource-selected-files[hidden]{display:none!important}
 </style>
 
 <script>
@@ -252,9 +263,27 @@
     const input = document.getElementById('campaign-resource-images');
     const fileLabel = document.getElementById('campaign-resource-file-label');
     const selectedFiles = document.getElementById('campaign-resource-selected-files');
+    const uploadForm = modal?.querySelector('form');
+    const clientError = document.getElementById('campaign-resource-client-error');
+    const defaultFileLabel = fileLabel?.textContent;
+    const maxImageBytes = Number(uploadForm?.dataset.maxImageBytes || 0);
+    const maxRequestBytes = Number(uploadForm?.dataset.maxRequestBytes || 0);
+    const imageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const validateFiles = () => {
+        const files = Array.from(input?.files || []);
+        const maxMb = (maxImageBytes / 1048576).toLocaleString('es-BO', { maximumFractionDigits: 1 });
+        let message = '';
+        if (files.length > 20) message = 'Puedes subir hasta 20 imágenes a la vez.';
+        else if (files.some(file => !imageTypes.includes(file.type))) message = 'Selecciona solo imágenes JPG, PNG, GIF o WEBP.';
+        else if (files.some(file => file.size > maxImageBytes)) message = `Cada imagen puede pesar como máximo ${maxMb} MB. Reduce el tamaño de las imágenes más grandes.`;
+        else if (maxRequestBytes && files.reduce((sum, file) => sum + file.size, 0) > maxRequestBytes) message = 'Las imágenes seleccionadas superan el tamaño máximo de esta carga. Súbelas en grupos más pequeños.';
+        if (clientError) { clientError.textContent = message; clientError.hidden = !message; }
+        return !message;
+    };
     input?.addEventListener('change', function () {
         const files = Array.from(this.files || []);
         if (fileLabel) fileLabel.textContent = files.length ? `${files.length} imagen${files.length === 1 ? '' : 'es'} seleccionada${files.length === 1 ? '' : 's'}` : 'JPG, PNG, GIF o WEBP · Máximo 10 MB';
+        if (!files.length && fileLabel) fileLabel.textContent = defaultFileLabel;
         if (selectedFiles) {
             selectedFiles.replaceChildren(...files.map(file => {
                 const tag = document.createElement('span');
@@ -263,6 +292,13 @@
                 return tag;
             }));
             selectedFiles.hidden = files.length === 0;
+        }
+        validateFiles();
+    });
+    uploadForm?.addEventListener('submit', event => {
+        if (!validateFiles()) {
+            event.preventDefault();
+            clientError?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     });
 

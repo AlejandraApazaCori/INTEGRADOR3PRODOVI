@@ -17,12 +17,22 @@ class RecursoCampaniaController extends Controller
         $empresa = $this->empresaDeCampania($campania);
         abort_unless($empresa, 404, 'La campaña no tiene una empresa asociada.');
 
+        $maxImagenKb = min(10240, (int) floor(\Symfony\Component\HttpFoundation\File\UploadedFile::getMaxFilesize() / 1024));
+        $maxImagenMb = number_format($maxImagenKb / 1024, 0, ',', '.');
+
         $validator = Validator::make($request->all(), [
             'imagenes' => ['nullable', 'array', 'max:20'],
-            'imagenes.*' => ['image', 'mimes:jpg,jpeg,png,gif,webp', 'max:10240'],
+            'imagenes.*' => ['image', 'mimes:jpg,jpeg,png,gif,webp', "max:{$maxImagenKb}"],
             'enlaces' => ['nullable', 'array', 'max:20'],
             'enlaces.*' => ['nullable', 'string', 'max:2048'],
             'visible_cliente' => ['nullable', 'boolean'],
+        ], [
+            'imagenes.array' => 'Selecciona imágenes válidas.',
+            'imagenes.max' => 'Puedes subir hasta 20 imágenes a la vez.',
+            'imagenes.*.uploaded' => "No se pudo subir una imagen. Comprueba que no supere {$maxImagenMb} MB y vuelve a intentarlo.",
+            'imagenes.*.image' => 'Uno de los archivos seleccionados no es una imagen válida.',
+            'imagenes.*.mimes' => 'Las imágenes deben ser JPG, PNG, GIF o WEBP.',
+            'imagenes.*.max' => "Cada imagen puede pesar como máximo {$maxImagenMb} MB.",
         ]);
 
         $enlaces = collect($request->input('enlaces', []))
@@ -37,7 +47,7 @@ class RecursoCampaniaController extends Controller
                 }
             }
 
-            if (! $request->hasFile('imagenes') && $enlaces->isEmpty()) {
+            if (empty($request->file('imagenes', [])) && $enlaces->isEmpty()) {
                 $validator->errors()->add('recursos', 'Selecciona al menos una imagen o agrega un enlace.');
             }
         });

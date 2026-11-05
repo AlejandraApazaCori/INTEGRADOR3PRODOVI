@@ -456,6 +456,12 @@ class ClienteController extends Controller
     public function miCuenta()
     {
         $user = Auth::user();
+        $campaniaReuniones = $user->campaniasCliente()->latest('id')->first();
+        $proximaReunion = $campaniaReuniones?->reuniones()
+            ->where('estado', 'agendada')
+            ->where('fecha_fin', '>=', now())
+            ->orderBy('fecha_inicio')
+            ->first();
 
         // Obtener la suscripción activa si existe
         $suscripcionActiva = Suscripcion::with('plan')
@@ -492,7 +498,9 @@ class ClienteController extends Controller
             'diasRestantes',
             'porcentajeRestante',
             'empresas',
-            'globalSocialAccounts'
+            'globalSocialAccounts',
+            'campaniaReuniones',
+            'proximaReunion'
         ));
     }
 

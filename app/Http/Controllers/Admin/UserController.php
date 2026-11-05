@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Mail\CuentaCreadaAdministrador;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
@@ -17,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
@@ -481,7 +483,7 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'phone' => 'nullable|string|max:20',
+            'phone' => 'nullable|string|max:20|regex:/^[0-9]+$/',
             'password' => 'required|string|min:8|confirmed',
             'roles' => 'required|array|min:1',
             'roles.*' => 'exists:roles,id',
@@ -490,6 +492,7 @@ class UserController extends Controller
             'email.required' => 'El correo electrónico es obligatorio',
             'email.email' => 'Debe ingresar un correo electrónico válido',
             'email.unique' => 'Este correo electrónico ya está en uso',
+            'phone.regex' => 'El celular solo debe contener números',
             'password.required' => 'La contraseña es obligatoria',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres',
             'password.confirmed' => 'Las contraseñas no coinciden',
@@ -504,25 +507,38 @@ class UserController extends Controller
         }
 
         try {
-            // Crear el usuario
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'password' => Hash::make($request->password),
-            ]);
+            $user = DB::transaction(function () use ($request) {
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'password' => Hash::make($request->password),
+                ]);
 
-            // Asignar roles al usuario
-            $user->roles()->attach($request->roles);
+                $user->roles()->attach($request->roles);
 
-            return redirect()->route('administrador.usuarios.index')
-                ->with('success', 'Usuario creado correctamente');
-                
+                return $user;
+            });
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Error al crear el usuario: ' . $e->getMessage())
                 ->withInput();
         }
+
+        try {
+            Mail::to($user->email)->send(new CuentaCreadaAdministrador($user, $request->password));
+        } catch (\Throwable $e) {
+            Log::error('No se pudo enviar el correo de cuenta creada.', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('administrador.usuarios.index')
+                ->with('error', 'Usuario creado, pero no se pudo enviar el correo con sus credenciales.');
+        }
+
+        return redirect()->route('administrador.usuarios.index')
+            ->with('success', 'Usuario creado correctamente. Se envió un correo con sus credenciales.');
     }
 
     public function edit($id)

@@ -46,6 +46,7 @@
         .dashboard-notification-toast.is-payment-complete { border-left-color: #16a34a; }
         .dashboard-notification-toast.is-campaign { border-left-color: #7c3aed; }
         .dashboard-notification-toast.is-task { border-left-color: #2563eb; }
+        .dashboard-notification-toast.is-meeting { border-left-color: #117e8c; }
         .dashboard-toast-icon {
             width: 40px;
             height: 40px;
@@ -123,7 +124,8 @@
                         @php
                             $hayNoVistas = (($pagosNoVistos ?? collect())->count()
                                 + ($campaniasNoVistas ?? collect())->count()
-                                + ($tareasNoVistas ?? collect())->count()) > 0;
+                                + ($tareasNoVistas ?? collect())->count()
+                                + ($reunionesNoVistas ?? collect())->count()) > 0;
                         @endphp
 
                         @if($hayNoVistas)
@@ -183,6 +185,16 @@
                                         </div>
                                     </a>
                                 @endforeach
+                                @foreach($reunionesNoVistas ?? [] as $notification)
+                                    <a href="{{ route('administrador.campañas.show', $notification->data['campaign_id']).'#reuniones' }}" class="notification-item font-semibold">
+                                        <div class="notification-item-icon bg-green-100 text-green-700"><i class="fas fa-calendar-check"></i></div>
+                                        <div class="notification-item-content">
+                                            <p class="text-xs font-semibold">{{ $notification->data['title'] ?? 'Nueva reunión agendada' }}</p>
+                                            <p class="text-[10px] text-gray-500">{{ $notification->data['message'] ?? '' }}</p>
+                                            <p class="text-[10px] text-gray-400">{{ $notification->created_at->diffForHumans() }}</p>
+                                        </div>
+                                    </a>
+                                @endforeach
                             </div>
                         @else
                             <div class="p-4 text-center" id="sinPendientes">
@@ -194,7 +206,8 @@
                         @php
                             $hayVistas = (($pagosVistos ?? collect())->count()
                                 + ($campaniasVistas ?? collect())->count()
-                                + ($tareasVistas ?? collect())->count()) > 0;
+                                + ($tareasVistas ?? collect())->count()
+                                + ($reunionesVistas ?? collect())->count()) > 0;
                         @endphp
 
                         @if($hayVistas)
@@ -232,6 +245,15 @@
                                         <div class="notification-item-content">
                                             <p class="text-xs">{{ $notification->data['title'] ?? 'Tarea entregada' }}</p>
                                             <p class="text-[10px] text-gray-400">{{ $notification->data['message'] ?? 'Se adjuntaron archivos a una tarea.' }}</p>
+                                        </div>
+                                    </a>
+                                @endforeach
+                                @foreach($reunionesVistas ?? [] as $notification)
+                                    <a href="{{ route('administrador.campañas.show', $notification->data['campaign_id']).'#reuniones' }}" class="notification-item opacity-60">
+                                        <div class="notification-item-icon bg-gray-100 text-gray-400"><i class="fas fa-calendar-check"></i></div>
+                                        <div class="notification-item-content">
+                                            <p class="text-xs">{{ $notification->data['title'] ?? 'Nueva reunión agendada' }}</p>
+                                            <p class="text-[10px] text-gray-400">{{ $notification->data['message'] ?? '' }}</p>
                                         </div>
                                     </a>
                                 @endforeach

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DatabaseBackup;
 use App\Models\DatabaseBackupSetting;
 use App\Services\DatabaseBackupService;
+use App\Services\DatabaseBackupExcelService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
@@ -106,6 +107,31 @@ class DatabaseBackupController extends Controller
             ->firstOrFail();
 
         return $this->download($backup);
+    }
+
+    public function downloadExcel(DatabaseBackup $backup, DatabaseBackupExcelService $excelService)
+    {
+        $this->ensureAdministrator();
+
+        abort_unless($backup->status === 'completed' && $backup->disk === 'local', 404);
+        abort_unless($backup->path && str_starts_with($backup->path, 'database-backups/'), 404);
+        abort_unless(Storage::disk('local')->exists($backup->path), 404, 'El archivo de respaldo ya no existe.');
+
+        $path = $excelService->export($backup);
+
+        return Storage::disk('local')->download($path, preg_replace('/\.sql$/i', '.xlsx', $backup->filename));
+    }
+
+    public function downloadLatestExcel(DatabaseBackupExcelService $excelService)
+    {
+        $this->ensureAdministrator();
+
+        $backup = DatabaseBackup::query()
+            ->where('status', 'completed')
+            ->latest('completed_at')
+            ->firstOrFail();
+
+        return $this->downloadExcel($backup, $excelService);
     }
 
     private function ensureAdministrator(): void

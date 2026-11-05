@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Campania;
+use App\Models\User;
+use App\Notifications\ReunionAgendadaNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 
 class ReunionController extends Controller
@@ -69,6 +72,11 @@ class ReunionController extends Controller
             'origen' => 'administrador',
         ]);
         $reunion->participantes()->sync($validated['participantes_ids']);
+        $destinatarios = collect($validated['participantes_ids'])
+            ->push(Auth::id())
+            ->push($campania->usuario_cliente_id)
+            ->filter()->unique();
+        Notification::send(User::whereIn('id', $destinatarios)->get(), new ReunionAgendadaNotification($reunion));
 
         return redirect()
             ->route('administrador.campañas.show', $campania)

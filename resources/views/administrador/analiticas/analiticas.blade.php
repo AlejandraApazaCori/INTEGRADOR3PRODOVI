@@ -403,6 +403,54 @@
         .analytics-card{border:1px solid #eee8f0!important;border-radius:1rem!important;background:linear-gradient(135deg,#fff 0%,#fbf8fc 58%,#f2fbfa 100%)!important;box-shadow:0 9px 22px rgba(61,23,79,.07)!important}.analytics-card-header h2,.analytics-heatmap-head h2,.analytics-recommendation h2{color:#302832!important;font-size:1rem!important}.analytics-card-header h2:after,.analytics-heatmap-head h2:after,.analytics-recommendation h2:after{width:44px;height:3px;background:#117e8c}.analytics-card-header p,.analytics-heatmap-head p,.analytics-recommendation p{color:#817786!important}.analytics-card-badge{background:#e4f3f4!important;color:#117e8c!important}.analytics-table-wrap{border-color:#eee8f0}.analytics-table thead{background:#f9fafb}.analytics-table th{color:#6b7280!important}.analytics-recommendation:last-child h2:after{background:#e37225}
         @media(max-width:1000px){.analytics-hero{min-height:205px}.analytics-hero-layout{justify-content:center;flex-direction:column;text-align:center}.analytics-hero-actions{justify-content:center}.analytics-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.analytics-chart-grid>.analytics-card,.analytics-chart-grid--reverse>.analytics-card{grid-column:span 12!important}.heatmap-top-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
         @media(max-width:640px){.analytics-shell{padding-bottom:28px}.analytics-workspace{width:100%}.analytics-workspace>.analytics-section-heading{margin-right:12px;margin-left:12px}.analytics-workspace>.analytics-kpi-grid,.analytics-workspace>.analytics-chart-grid,.analytics-workspace>.analytics-table-card,.analytics-workspace>.analytics-heatmap,.analytics-workspace>.analytics-recommendations{margin-right:12px!important;margin-left:12px!important}.analytics-hero-body{padding:24px 20px!important}.analytics-hero-layout{align-items:center}.analytics-hero-actions{width:100%}.analytics-hero-action{flex:1;justify-content:center}.analytics-period{flex-basis:100%}.analytics-kpi-grid{grid-template-columns:1fr!important}.analytics-chart-grid{display:block!important}.analytics-chart-grid>.analytics-card{margin-bottom:12px}.analytics-card-header{flex-direction:column}.chart-box,.chart-box--small{height:255px!important}.analytics-table-card,.analytics-heatmap{padding:15px!important}.analytics-heatmap-head{align-items:flex-start;flex-direction:column}.heatmap-top-grid{grid-template-columns:1fr}.analytics-heatmap-notes{grid-template-columns:1fr!important}.analytics-recommendations{grid-template-columns:1fr!important}.analytics-section-heading{align-items:flex-start;flex-direction:column;gap:5px}}
+        /* Modo oscuro del administrador; el banner conserva sus colores. */
+        html.admin-dark-nav .analytics-shell { background:#141414; color:#f5f5f5; }
+        html.admin-dark-nav #analytics-loading-screen { background:#141414; }
+        html.admin-dark-nav .analytics-loading-card { background:#202020; border-color:#3a3a3a; }
+        html.admin-dark-nav .analytics-loading-card strong { color:#f5f5f5; }
+        html.admin-dark-nav .analytics-loading-card small { color:#b8b8b8; }
+        html.admin-dark-nav .analytics-loading-track { background:#3a3a3a; }
+        html.admin-dark-nav .analytics-top-action { background:#292929; border-color:#4a4a4a; color:#e5e5e5; }
+        html.admin-dark-nav .analytics-top-action:hover,
+        html.admin-dark-nav .analytics-top-action.is-active { background:#383838; color:#fff; }
+        html.admin-dark-nav .analytics-section-heading h2 { color:#f5f5f5; }
+        html.admin-dark-nav .analytics-section-heading p { color:#b8b8b8; }
+        html.admin-dark-nav .analytics-kpi { background:#202020 !important; border-color:#353535 !important; color:#f5f5f5 !important; box-shadow:inset 0 4px 0 var(--accent),0 10px 24px rgba(0,0,0,.2) !important; }
+        html.admin-dark-nav .analytics-kpi-top span,
+        html.admin-dark-nav .analytics-kpi-copy small { color:#b8b8b8; }
+        html.admin-dark-nav .analytics-kpi-copy strong { color:#f5f5f5; }
+        html.admin-dark-nav .analytics-kpi-top>i { background:#303030; }
+        html.admin-dark-nav .analytics-card { background:#202020 !important; border-color:#353535 !important; box-shadow:0 9px 22px rgba(0,0,0,.18) !important; }
+        html.admin-dark-nav .analytics-card-header h2,
+        html.admin-dark-nav .analytics-heatmap-head h2,
+        html.admin-dark-nav .analytics-recommendation h2 { color:#f5f5f5 !important; }
+        html.admin-dark-nav .analytics-card-header p,
+        html.admin-dark-nav .analytics-heatmap-head p,
+        html.admin-dark-nav .analytics-recommendation p { color:#b8b8b8 !important; }
+        html.admin-dark-nav .analytics-card-badge { background:#303030 !important; border-color:#4a4a4a !important; color:#e5e5e5 !important; }
+        html.admin-dark-nav .analytics-table-wrap { border-color:#3a3a3a; }
+        html.admin-dark-nav .analytics-table thead { background:#292929; }
+        html.admin-dark-nav .analytics-table th { color:#c7c7c7 !important; }
+        html.admin-dark-nav .analytics-table td,
+        html.admin-dark-nav .analytics-client-cell { color:#e5e5e5 !important; }
+        html.admin-dark-nav .analytics-table tbody tr { border-color:#3a3a3a; }
+        html.admin-dark-nav .analytics-table tbody tr:hover { background:#303030; }
+        html.admin-dark-nav .analytics-client-avatar { background:#383838; color:#e5e5e5; }
+        html.admin-dark-nav .analytics-engagement-pill { background:#244332; border-color:#42684a; color:#c1efc8; }
+        html.admin-dark-nav .heatmap-top-card { background:#292929 !important; }
+        html.admin-dark-nav .heatmap-top-card .text-slate-900,
+        html.admin-dark-nav .heatmap-grid .text-slate-700 { color:#f5f5f5; }
+        html.admin-dark-nav .heatmap-top-card .text-slate-500,
+        html.admin-dark-nav .heatmap-grid .text-slate-500,
+        html.admin-dark-nav .analytics-heatmap .text-slate-500 { color:#b8b8b8; }
+        html.admin-dark-nav .heatmap-pill--empty { background:#292929; color:#b8b8b8; }
+        html.admin-dark-nav .heatmap-pill { border-color:#4a4a4a; color:#f5f5f5; }
+        html.admin-dark-nav .analytics-heatmap-note { background:#292929; border-color:#4a4a4a; color:#e5e5e5; }
+        html.admin-dark-nav .analytics-heatmap-note .text-slate-800 { color:#f5f5f5; }
+        html.admin-dark-nav .analytics-recommendation .bg-cyan-100,
+        html.admin-dark-nav .analytics-recommendation .bg-amber-100 { background:#383838; }
+        html.admin-dark-nav .analytics-recommendation .text-slate-900 { color:#f5f5f5; }
+        html.admin-dark-nav .analytics-recommendation .text-slate-700 { color:#e5e5e5; }
     </style>
 
     <div class="analytics-shell">
@@ -412,9 +460,7 @@
                 <div class="analytics-hero-body relative z-10 px-8 py-8">
                     <div class="analytics-hero-layout">
                         <div class="analytics-hero-copy">
-                            <span class="analytics-hero-eyebrow">Dashboard de campañas</span>
                             <h1 class="text-3xl font-bold text-white mb-1">Analíticas de campañas</h1>
-                            <p style="color: #bfdbfe; font-size: 0.9rem;">Analíticas homogeneizadas de todas las empresas en {{ $monthName }}, con comparaciones estadísticas y recomendaciones basadas en evidencia.</p>
                         </div>
                         <nav class="analytics-hero-actions" aria-label="Acciones de analíticas">
                             <form method="GET" action="{{ route('administrador.campañas.analiticas') }}" class="analytics-hero-action analytics-period" id="analytics-filter-form" style="flex-wrap:wrap;">
@@ -752,7 +798,8 @@
         }
 
         function initMonthlyCharts() {
-            Chart.defaults.color = '#747d71';
+            const chartText = document.documentElement.classList.contains('admin-dark-nav') ? '#d1d1d1' : '#64748b';
+            Chart.defaults.color = chartText;
             Chart.defaults.font.family = "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
             Chart.defaults.font.size = 10;
 
@@ -795,7 +842,7 @@
                                 color: 'rgba(148, 163, 184, 0.15)'
                             },
                             ticks: {
-                                color: '#64748b'
+                                color: chartText
                             }
                         },
                         x: {
@@ -803,7 +850,7 @@
                                 display: false
                             },
                             ticks: {
-                                color: '#64748b',
+                                color: chartText,
                                 maxRotation: 0,
                                 autoSkip: true,
                                 maxTicksLimit: 10,
@@ -834,7 +881,7 @@
                             labels: {
                                 usePointStyle: true,
                                 padding: 18,
-                                color: '#334155'
+                                color: chartText
                             }
                         }
                     }
@@ -868,14 +915,14 @@
                                 display: false
                             },
                             ticks: {
-                                color: '#334155'
+                                color: chartText
                             }
                         },
                         x: {
                             beginAtZero: true,
                             ticks: {
                                 stepSize: 1,
-                                color: '#64748b'
+                                color: chartText
                             },
                             grid: {
                                 color: 'rgba(148, 163, 184, 0.15)'
@@ -914,7 +961,7 @@
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                color: '#64748b',
+                                color: chartText,
                                 callback: (value) => value.toLocaleString()
                             },
                             grid: {
@@ -923,7 +970,7 @@
                         },
                         x: {
                             ticks: {
-                                color: '#334155'
+                                color: chartText
                             },
                             grid: {
                                 display: false
@@ -944,6 +991,7 @@
             filterType?.addEventListener('change', syncFilterFields);
             syncFilterFields();
             initMonthlyCharts();
+            new MutationObserver(() => initMonthlyCharts()).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
             buildAutomaticRecommendation();
             window.requestAnimationFrame(() => window.setTimeout(() => {
                 document.getElementById('analytics-loading-screen')?.classList.add('is-hidden');

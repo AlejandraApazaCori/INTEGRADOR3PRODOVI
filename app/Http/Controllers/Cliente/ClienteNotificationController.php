@@ -13,6 +13,15 @@ class ClienteNotificationController extends Controller
         $item = Auth::user()->notifications()->findOrFail($notification);
         $item->markAsRead();
 
+        if ($item->type === \App\Notifications\ReunionAgendadaNotification::class && ! empty($item->data['campaign_id'])) {
+            $campania = \App\Models\Campania::query()
+                ->where('usuario_cliente_id', Auth::id())
+                ->find($item->data['campaign_id']);
+            if ($campania) {
+                return redirect()->route('clientes.campanias.reuniones.index', $campania);
+            }
+        }
+
         return redirect()->route('clientes.dashboard');
     }
 }

@@ -127,12 +127,25 @@
     const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[char]));
     const number = value => value === null || value === undefined ? 'Datos no disponibles' : new Intl.NumberFormat('es-BO', {maximumFractionDigits:1}).format(value);
     const hasValues = values => Array.isArray(values) && values.some(value => value !== null && value !== undefined);
+    const themeChart = instance => {
+        const dark = document.documentElement.classList.contains('admin-dark-nav');
+        instance.options.color = dark ? '#cccccc' : '#666666';
+        if (instance.options.plugins?.legend?.labels) instance.options.plugins.legend.labels.color = dark ? '#e5e5e5' : '#666666';
+        Object.values(instance.options.scales || {}).forEach(scale => {
+            if (scale.ticks) scale.ticks.color = dark ? '#bbbbbb' : '#666666';
+            if (scale.grid) scale.grid.color = dark ? 'rgba(255,255,255,.1)' : 'rgba(0,0,0,.1)';
+        });
+        instance.update('none');
+    };
     const chart = (key, elementId, config) => {
         charts[key]?.destroy();
         const canvas = document.getElementById(elementId);
         if (!canvas || typeof Chart === 'undefined') return;
         charts[key] = new Chart(canvas, config);
+        themeChart(charts[key]);
     };
+    new MutationObserver(() => Object.values(charts).forEach(themeChart))
+        .observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     const setEmpty = (name, empty) => {
         const node = root.querySelector(`[data-empty="${name}"]`);
         if (node) node.hidden = !empty;

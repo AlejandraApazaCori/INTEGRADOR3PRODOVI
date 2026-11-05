@@ -1032,5 +1032,95 @@
         @media(max-width:1100px){.payments-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.payments-users-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.payments-users-filter-grid>*,.payments-users-search,.payments-custom-dropdown,.payments-users-date,.payments-clear-filters{grid-column:span 1}.payments-users-search{grid-column:1/-1}.payments-reports-grid{grid-template-columns:1fr}}
         @media(max-width:980px) { .payments-hero .relative.z-10 > div { padding-right:0; }.payments-tabs { position:static; order:2; justify-content:center; margin:14px 24px 0; }.payments-tabs .btn-action { border-color:#dce4f3; background:#f4f7fd; color:#4f46e5; }.payments-tabs .btn-action:first-child { background:#4f46e5;color:#fff; }.payments-alert { order:3; }.payments-users-content{margin-top:18px} }
         @media(max-width:640px){.payments-page{padding-top:20px}.payments-hero{min-height:205px}.payments-hero .relative.z-10{min-height:205px;padding:28px 20px}.payments-tabs{display:grid;grid-template-columns:1fr;margin-right:12px;margin-left:12px}.payments-summary-grid,.payments-users-content,.payments-users-table-area{grid-template-columns:1fr;margin-right:12px;margin-left:12px}.payments-users-filter-grid{grid-template-columns:1fr}.payments-users-filter-grid>*,.payments-users-search{grid-column:1}.payments-users-table-toolbar{align-items:flex-start;flex-direction:column}.payments-alert{width:calc(100% - 24px)}.payments-report-card{align-items:stretch;flex-direction:column}.payments-report-card p{max-width:none}.payments-report-actions{width:100%;grid-template-columns:repeat(3,1fr)}.payment-drive-alert{align-items:flex-start;flex-direction:column}#comprobanteModal{padding:12px}#comprobanteModalDialog{width:calc(100vw - 24px);max-height:calc(100vh - 24px);border-radius:18px!important}#comprobanteModalBody{padding:10px}}
+
+        /* Modo oscuro del administrador; el banner conserva sus colores. */
+        html.admin-dark-nav .payments-page { background:#141414; color:#f5f5f5; }
+        html.admin-dark-nav .payments-users-content,
+        html.admin-dark-nav .payments-summary-card,
+        html.admin-dark-nav .payments-report-card,
+        html.admin-dark-nav .payments-users-table-toolbar,
+        html.admin-dark-nav .payments-users-green-table { background:#202020; border-color:#353535; box-shadow:0 9px 24px rgba(0,0,0,.16); }
+        html.admin-dark-nav .payments-summary-card { box-shadow:inset 0 4px 0 var(--sum-accent),0 9px 24px rgba(0,0,0,.16); }
+        html.admin-dark-nav .payments-summary-card span,
+        html.admin-dark-nav .payments-report-card p,
+        html.admin-dark-nav .payments-users-table-toolbar small,
+        html.admin-dark-nav .payments-reports-eyebrow,
+        html.admin-dark-nav .payments-users-date>span { color:#b8b8b8; }
+        html.admin-dark-nav .payments-summary-card strong,
+        html.admin-dark-nav .payments-report-card h3,
+        html.admin-dark-nav .payments-users-table-toolbar strong,
+        html.admin-dark-nav .payments-user-cell strong { color:#f5f5f5; }
+        html.admin-dark-nav .payments-users-search input,
+        html.admin-dark-nav .payments-custom-trigger,
+        html.admin-dark-nav .payments-custom-menu,
+        html.admin-dark-nav .payments-users-date>div,
+        html.admin-dark-nav .payments-clear-filters,
+        html.admin-dark-nav #payments-per-page-form #per_page { background:#292929; border-color:#4a4a4a; color:#f5f5f5; }
+        html.admin-dark-nav .payments-users-search input::placeholder { color:#999; }
+        html.admin-dark-nav .payments-custom-menu button,
+        html.admin-dark-nav .payments-users-date input,
+        html.admin-dark-nav #payments-per-page-form { color:#e5e5e5; }
+        html.admin-dark-nav .payments-custom-menu button:hover,
+        html.admin-dark-nav .payments-custom-menu button.is-selected,
+        html.admin-dark-nav .payments-clear-filters:hover { background:#383838; color:#fff; }
+        html.admin-dark-nav .payments-reports-heading { border-color:#3a3a3a; }
+        html.admin-dark-nav .payment-drive-report-btn { background:#292929; border-color:#4a4a4a; color:#e5e5e5; }
+        html.admin-dark-nav .payments-users-table-toolbar>div>i { background:#333; }
+        html.admin-dark-nav .payments-users-green-table .payments-table td { border-color:#3a3a3a !important; color:#e5e5e5; }
+        html.admin-dark-nav .payments-users-green-table .payments-table tbody tr:nth-child(odd) td { background:#202020 !important; }
+        html.admin-dark-nav .payments-users-green-table .payments-table tbody tr:nth-child(even) td { background:#292929 !important; }
+        html.admin-dark-nav .payments-users-green-table .payments-table tbody tr:hover td { background:#363636 !important; }
+        html.admin-dark-nav .payments-users-green-table .payments-table td .text-gray-700,
+        html.admin-dark-nav .payments-users-green-table .payments-table td .text-gray-600,
+        html.admin-dark-nav .payments-users-green-table .payments-table td .text-gray-900 { color:#e5e5e5; }
+        html.admin-dark-nav .payment-transaction-id,
+        html.admin-dark-nav .payment-not-applicable { background:#383838; color:#e5e5e5; }
+        html.admin-dark-nav .payment-receipt-primary,
+        html.admin-dark-nav .payment-receipt-shortcut { background:#3b3029; border-color:#765139; color:#ffcfaa; }
+        html.admin-dark-nav .payments-users-green-table .payments-table td .bg-indigo-50 { background:#303044; color:#d6d4ff; }
+        html.admin-dark-nav .payments-users-green-table .payments-table td .bg-orange-50 { background:#423126; color:#ffd1af; }
+        html.admin-dark-nav .payments-users-green-table .payments-table td .bg-green-100 { background:#244332; border-color:#42684a; color:#c1efc8; }
+        html.admin-dark-nav .payments-users-green-table .payments-table td .bg-yellow-100 { background:#473b20; border-color:#776638; color:#ffe3a3; }
+        html.admin-dark-nav .payments-users-green-table .payments-table td .bg-red-100 { background:#492929; border-color:#754343; color:#fecaca; }
+        html.admin-dark-nav .payments-users-green-table .payments-table td .bg-gray-100 { background:#383838; border-color:#555; color:#e5e5e5; }
+        html.admin-dark-nav .payments-users-pagination .text-gray-600,
+        html.admin-dark-nav .payments-users-pagination .text-gray-400 { color:#c7c7c7; }
+        html.admin-dark-nav .payments-users-pagination .bg-gray-100,
+        html.admin-dark-nav .payments-users-pagination a:hover { background:#292929; }
+        html.admin-dark-nav .payments-users-pagination a[style] { background:#303b27 !important; color:#d9efc1 !important; }
+        html.admin-dark-nav .payments-alert-success,
+        html.admin-dark-nav .payment-drive-success { background:#233528; border-color:#42684a; color:#c1efc8; }
+        html.admin-dark-nav .payments-alert-error,
+        html.admin-dark-nav .payment-drive-error { background:#382525; border-color:#704040; color:#fecaca; }
+        html.admin-dark-nav #payment-drive-modal>div,
+        html.admin-dark-nav #reenvioCorreoDialog,
+        html.admin-dark-nav #reporteMensualModal>div,
+        html.admin-dark-nav #comprobanteModalDialog { background:#202020; border-color:#3a3a3a; color:#f5f5f5; }
+        html.admin-dark-nav #payment-drive-modal .text-gray-900,
+        html.admin-dark-nav #payment-drive-modal .text-gray-800,
+        html.admin-dark-nav #reenvioCorreoDialog .text-slate-800,
+        html.admin-dark-nav #reporteMensualModal .text-gray-900,
+        html.admin-dark-nav #comprobanteModalDialog .text-slate-900 { color:#f5f5f5; }
+        html.admin-dark-nav #payment-drive-modal .text-gray-700,
+        html.admin-dark-nav #payment-drive-modal .text-gray-500,
+        html.admin-dark-nav #reenvioCorreoDialog .text-slate-600,
+        html.admin-dark-nav #reporteMensualModal .text-gray-500,
+        html.admin-dark-nav #comprobanteModalDialog .text-slate-500 { color:#b8b8b8; }
+        html.admin-dark-nav #payment-drive-modal [style*="background:#f7faf2"],
+        html.admin-dark-nav #payment-drive-location-editor,
+        html.admin-dark-nav #reenvioCorreoDialog .bg-indigo-50\/70,
+        html.admin-dark-nav #comprobanteModalDialog .bg-slate-50,
+        html.admin-dark-nav #comprobanteModalDialog>div:last-child,
+        html.admin-dark-nav #comprobanteModalBody { background:#292929 !important; border-color:#4a4a4a !important; }
+        html.admin-dark-nav #comprobanteModalBody>.bg-white { background:#fff; color:#111827; }
+        html.admin-dark-nav #reenvioCorreoDialog .bg-white { background:#383838; color:#f5f5f5; }
+        html.admin-dark-nav #reporteMensualModal .bg-purple-100 { background:#383044; }
+        html.admin-dark-nav #payment-drive-new-folder,
+        html.admin-dark-nav #payment-drive-folder-trigger,
+        html.admin-dark-nav #payment-drive-folder-menu { background:#303030; border-color:#4a4a4a !important; color:#f5f5f5; }
+        html.admin-dark-nav #payment-drive-cancel,
+        html.admin-dark-nav #cerrarModalReporte,
+        html.admin-dark-nav #reenvioCorreoDialog form button:first-child,
+        html.admin-dark-nav #comprobanteModalDialog button { background:#383838 !important; border-color:#555; color:#f5f5f5; }
     </style>
 @endpush

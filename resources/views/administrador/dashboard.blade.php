@@ -73,104 +73,104 @@
     .updates-grid{gap:18px;align-items:stretch}.updates-card{overflow:hidden!important;border:1px solid #eee8f0!important;border-top:1px solid #eee8f0!important;border-radius:1rem!important;background:linear-gradient(135deg,#fff 0%,#fbf8fc 58%,#f2fbfa 100%)!important;box-shadow:0 9px 22px rgba(61,23,79,.07)!important}.updates-card .panel-head{padding:20px 22px 14px;border-bottom:1px solid #ece7ee;background:transparent}.updates-card .panel-head h3{color:#302832;font-size:1.02rem}.updates-card .panel-head h3:after{content:'';display:block;width:44px;height:3px;margin-top:7px;border-radius:999px;background:var(--ad-turquoise)}.updates-card .panel-head span{color:#817786}.updates-card .panel-body{padding:10px 22px 18px}.updates-card .timeline-item{min-height:58px;padding:9px 5px;border-radius:.65rem;color:#4b424f}.updates-card .timeline-item:hover{background:rgba(255,255,255,.75)}.updates-card .timeline-item:not(:last-child):after{top:42px;bottom:-10px;left:80px;width:2px;background:linear-gradient(var(--ad-turquoise),#dcebea)}.updates-card .timeline-date strong{color:var(--ad-purple)}.updates-card .timeline-icon{border-radius:50%;background:#e4f3f4;color:var(--ad-turquoise);box-shadow:0 0 0 4px #fff}.updates-card .timeline-item.deadline .timeline-icon{background:#fff0e7;color:var(--ad-orange)}.updates-card .timeline-item.task .timeline-icon{background:#f0e8f4;color:var(--ad-purple)}.updates-card .timeline-item.subscription .timeline-icon{background:#edf4e4;color:var(--ad-green)}.updates-card .timeline-item.publication .timeline-icon{background:#e4f3f4;color:var(--ad-turquoise)}.updates-card .activity-list{display:grid;gap:0}.updates-card .activity-item{padding:11px 7px;border-bottom:1px solid #ebe7ed;border-radius:.6rem;color:#4b424f}.updates-card .activity-item:hover{background:rgba(255,255,255,.78)}.updates-card .activity-icon{background:#e4f3f4;color:var(--ad-turquoise)}.updates-card .activity-item.campaign .activity-icon{background:#f0e8f4;color:var(--ad-purple)}.updates-card .activity-item.task .activity-icon{background:#edf4e4;color:var(--ad-green)}
     .ai-section-title{margin:0 0 14px;color:#302832;font-size:1.08rem;font-weight:900}.ai-section-title:after{content:'';display:block;width:44px;height:3px;margin-top:7px;border-radius:999px;background:var(--ad-turquoise)}.ai-panel{overflow:hidden!important;border:1px solid #eee8f0!important;border-top:1px solid #eee8f0!important;border-radius:1rem!important;background:linear-gradient(135deg,#fff 0%,#fbf8fc 58%,#f2fbfa 100%)!important;box-shadow:0 9px 22px rgba(61,23,79,.07)!important}.ai-panel .panel-head{padding:19px 22px 14px;border-bottom:1px solid #ece7ee;background:transparent}.ai-panel .panel-head h3{color:#302832;font-size:.9rem}.ai-panel .panel-head span{color:#817786}.ai-panel .panel-head i{border-radius:.7rem;background:var(--ad-turquoise)!important;color:#fff}.ai-panel:nth-child(2) .panel-head i{background:var(--ad-purple)!important}.ai-panel .panel-body{padding:18px 22px 20px}.ai-panel .chart-box{height:240px}.ai-note{padding-top:9px;border-top:1px solid #ece7ee}.ai-peak{background:#e4f3f4;color:var(--ad-turquoise)}.ai-panel:nth-child(2) .ai-peak{background:#f0e8f4;color:var(--ad-purple)}
     /* Tema oscuro del dashboard */
-    html.admin-dark-nav body { background:#111722; }
-    html.admin-dark-nav .admin-control { --ad-line:#343e50;--ad-ink:#edf2fa;--ad-muted:#aab6c8;--ad-surface:#202938;--ad-soft:#283345;background:#111722;color:#edf2fa; }
+    html.admin-dark-nav body { background:#141414; }
+    html.admin-dark-nav .admin-control { --ad-line:#353535;--ad-ink:#e5e5e5;--ad-muted:#c0c0c0;--ad-surface:#202020;--ad-soft:#292929;background:#141414;color:#e5e5e5; }
     html.admin-dark-nav .section-heading h2,
     html.admin-dark-nav .ai-section-title,
     html.admin-dark-nav .client-followup-head h3,
     html.admin-dark-nav .workload-chart-head h2,
     html.admin-dark-nav .campaign-insight-head h2,
     html.admin-dark-nav .campaign-insights-grid .heatmap-head h3,
-    html.admin-dark-nav .admin-control .panel-head h3 { color:#f1f5fb; }
+    html.admin-dark-nav .admin-control .panel-head h3 { color:#f5f5f5; }
     html.admin-dark-nav .section-heading p,
     html.admin-dark-nav .admin-control .panel-head span,
     html.admin-dark-nav .campaign-insight-head span,
-    html.admin-dark-nav .client-followup-head small { color:#aab6c8; }
+    html.admin-dark-nav .client-followup-head small { color:#c0c0c0; }
     html.admin-dark-nav .admin-control .section-link,
     html.admin-dark-nav .admin-control .heatmap-head small { color:#8dd7e3; }
-    html.admin-dark-nav .admin-control .kpi-card { --soft:#263247;background:linear-gradient(135deg,#202938 35%,color-mix(in srgb,var(--accent) 13%,#202938));border-color:color-mix(in srgb,var(--accent) 45%,#39465b);box-shadow:inset 0 4px 0 var(--accent),0 10px 24px rgba(0,0,0,.18); }
+    html.admin-dark-nav .admin-control .kpi-card { --soft:#292929;background:linear-gradient(135deg,#202020 35%,color-mix(in srgb,var(--accent) 13%,#202020));border-color:color-mix(in srgb,var(--accent) 45%,#404040);box-shadow:inset 0 4px 0 var(--accent),0 10px 24px rgba(0,0,0,.18); }
     html.admin-dark-nav .admin-control .kpi-card:hover { box-shadow:inset 0 4px 0 var(--accent),0 16px 28px rgba(0,0,0,.3); }
-    html.admin-dark-nav .kpi-top span { color:#d5dfec; }
-    html.admin-dark-nav .admin-control .kpi-card .kpi-copy strong { color:#f5f7fb; }
-    html.admin-dark-nav .admin-control .kpi-card .kpi-copy small { color:#aab6c8; }
-    html.admin-dark-nav .kpi-open { background:#303c50;border-color:#506078;color:#cdebf0; }
+    html.admin-dark-nav .kpi-top span { color:#e0e0e0; }
+    html.admin-dark-nav .admin-control .kpi-card .kpi-copy strong { color:#fafafa; }
+    html.admin-dark-nav .admin-control .kpi-card .kpi-copy small { color:#c0c0c0; }
+    html.admin-dark-nav .kpi-open { background:#303030;border-color:#505050;color:#e5e5e5; }
     html.admin-dark-nav .client-followup-card,
     html.admin-dark-nav .workload-chart-panel,
     html.admin-dark-nav .finance-dashboard-card,
     html.admin-dark-nav .campaign-flow-card,
     html.admin-dark-nav .campaign-insights-grid .delivery-heatmap,
     html.admin-dark-nav .updates-card,
-    html.admin-dark-nav .ai-panel { background:linear-gradient(135deg,#202938,#1c2533)!important;border-color:#364256!important;box-shadow:0 9px 24px rgba(0,0,0,.18)!important;color:#e2eaf5; }
-    html.admin-dark-nav .admin-control .panel-head { border-color:#364256;background:transparent; }
+    html.admin-dark-nav .ai-panel { background:linear-gradient(135deg,#202020,#242424)!important;border-color:#353535!important;box-shadow:0 9px 24px rgba(0,0,0,.18)!important;color:#e5e5e5; }
+    html.admin-dark-nav .admin-control .panel-head { border-color:#353535;background:transparent; }
     html.admin-dark-nav .client-followup-head>a,
     html.admin-dark-nav .finance-dashboard-card .panel-head .section-link,
     html.admin-dark-nav .income-plan-control,
-    html.admin-dark-nav .heatmap-nav-button { background:#2c394d;border-color:#465771;color:#b9eaf1; }
+    html.admin-dark-nav .heatmap-nav-button { background:#303030;border-color:#4a4a4a;color:#e5e5e5; }
     html.admin-dark-nav .client-followup-head>a:hover,
     html.admin-dark-nav .finance-dashboard-card .panel-head .section-link:hover,
     html.admin-dark-nav .heatmap-nav-button:hover { background:#117e8c;color:#fff; }
-    html.admin-dark-nav .client-followup-card .followup-item { background:color-mix(in srgb,var(--follow-accent) 10%,#263143);border-color:color-mix(in srgb,var(--follow-accent) 28%,#435169);color:#dae3ef; }
-    html.admin-dark-nav .client-followup-card .followup-item:hover { background:color-mix(in srgb,var(--follow-accent) 18%,#263143); }
-    html.admin-dark-nav .client-followup-card .followup-item span { color:#cbd6e5; }
-    html.admin-dark-nav .client-followup-card .followup-item strong { color:#f1f5fb; }
-    html.admin-dark-nav .finance-dashboard-card .finance-stat { background:#302d47; }
-    html.admin-dark-nav .finance-dashboard-card .finance-stat:nth-child(2) { background:#25404a; }
+    html.admin-dark-nav .client-followup-card .followup-item { background:color-mix(in srgb,var(--follow-accent) 10%,#292929);border-color:color-mix(in srgb,var(--follow-accent) 28%,#4a4a4a);color:#e5e5e5; }
+    html.admin-dark-nav .client-followup-card .followup-item:hover { background:color-mix(in srgb,var(--follow-accent) 18%,#292929); }
+    html.admin-dark-nav .client-followup-card .followup-item span { color:#cccccc; }
+    html.admin-dark-nav .client-followup-card .followup-item strong { color:#f5f5f5; }
+    html.admin-dark-nav .finance-dashboard-card .finance-stat { background:#2c2c2c; }
+    html.admin-dark-nav .finance-dashboard-card .finance-stat:nth-child(2) { background:#303030; }
     html.admin-dark-nav .finance-dashboard-card .finance-stat strong,
     html.admin-dark-nav .finance-dashboard-card .finance-stat:nth-child(1) strong,
-    html.admin-dark-nav .finance-dashboard-card .finance-stat:nth-child(2) strong { color:#f1f5fb; }
+    html.admin-dark-nav .finance-dashboard-card .finance-stat:nth-child(2) strong { color:#f5f5f5; }
     html.admin-dark-nav .finance-stat small,
     html.admin-dark-nav .plan-summary small,
-    html.admin-dark-nav .manager-stat small { color:#aab6c8; }
-    html.admin-dark-nav .income-plan-control:hover { background:#3a4960; }
-    html.admin-dark-nav .plan-income-row { color:#cbd6e5; }
+    html.admin-dark-nav .manager-stat small { color:#c0c0c0; }
+    html.admin-dark-nav .income-plan-control:hover { background:#383838; }
+    html.admin-dark-nav .plan-income-row { color:#cccccc; }
     html.admin-dark-nav .plan-income-row b,
-    html.admin-dark-nav .plan-summary strong { color:#f1f5fb; }
+    html.admin-dark-nav .plan-summary strong { color:#f5f5f5; }
     html.admin-dark-nav .plan-income-track,
-    html.admin-dark-nav .progress-track { background:#3b485c; }
-    html.admin-dark-nav .finance-dashboard-card .plan-summary { background:linear-gradient(135deg,#302d47,#25404a); }
+    html.admin-dark-nav .progress-track { background:#3b3b3b; }
+    html.admin-dark-nav .finance-dashboard-card .plan-summary { background:linear-gradient(135deg,#2c2c2c,#303030); }
     html.admin-dark-nav .campaign-donut-center strong { color:#dfb9f3; }
-    html.admin-dark-nav .campaign-donut-center span { color:#aab6c8; }
-    html.admin-dark-nav .campaign-flow-legend-item { background:#2b374a;color:#d4deeb; }
-    html.admin-dark-nav .campaign-flow-legend-item strong { color:#f1f5fb; }
-    html.admin-dark-nav .heatmap-month { background:#2a4550;color:#b9eaf1; }
+    html.admin-dark-nav .campaign-donut-center span { color:#c0c0c0; }
+    html.admin-dark-nav .campaign-flow-legend-item { background:#2b2b2b;color:#dedede; }
+    html.admin-dark-nav .campaign-flow-legend-item strong { color:#f5f5f5; }
+    html.admin-dark-nav .heatmap-month { background:#303030;color:#e5e5e5; }
     html.admin-dark-nav .heatmap-weekdays span,
-    html.admin-dark-nav .heatmap-legend { color:#aab6c8; }
-    html.admin-dark-nav .heatmap-day { background:#344154;color:#e2eaf5; }
-    html.admin-dark-nav .campaign-insights-grid .heatmap-day.level-1 { background:#2c535e;color:#ddf6f8; }
+    html.admin-dark-nav .heatmap-legend { color:#c0c0c0; }
+    html.admin-dark-nav .heatmap-day { background:#353535;color:#e5e5e5; }
+    html.admin-dark-nav .campaign-insights-grid .heatmap-day.level-1 { background:#414141;color:#f5f5f5; }
     html.admin-dark-nav .campaign-insights-grid .heatmap-day.level-2 { background:#3f8188;color:#fff; }
-    html.admin-dark-nav .heatmap-day b { background:#e2eaf5;color:#263247; }
-    html.admin-dark-nav .heatmap-legend i:first-of-type { background:#344154; }
-    html.admin-dark-nav .campaign-monitoring-card { background:#202938;border-color:#364256;box-shadow:0 9px 24px rgba(0,0,0,.18); }
+    html.admin-dark-nav .heatmap-day b { background:#e5e5e5;color:#292929; }
+    html.admin-dark-nav .heatmap-legend i:first-of-type { background:#353535; }
+    html.admin-dark-nav .campaign-monitoring-card { background:#202020;border-color:#353535;box-shadow:0 9px 24px rgba(0,0,0,.18); }
     html.admin-dark-nav .campaign-monitoring-card .campaign-table th { background:#426129;border-color:#66813d; }
-    html.admin-dark-nav .campaign-monitoring-card .campaign-table td { color:#dbe5ef;border-color:#3b4d4c; }
-    html.admin-dark-nav .campaign-monitoring-card .campaign-table tbody tr:nth-child(odd) { background:#202938; }
-    html.admin-dark-nav .campaign-monitoring-card .campaign-table tbody tr:nth-child(even) { background:#263744; }
-    html.admin-dark-nav .campaign-monitoring-card .campaign-table tbody tr:hover { background:#344b52; }
-    html.admin-dark-nav .campaign-name { color:#f1f5fb; }
+    html.admin-dark-nav .campaign-monitoring-card .campaign-table td { color:#e5e5e5;border-color:#4a4a4a; }
+    html.admin-dark-nav .campaign-monitoring-card .campaign-table tbody tr:nth-child(odd) { background:#202020; }
+    html.admin-dark-nav .campaign-monitoring-card .campaign-table tbody tr:nth-child(even) { background:#292929; }
+    html.admin-dark-nav .campaign-monitoring-card .campaign-table tbody tr:hover { background:#353535; }
+    html.admin-dark-nav .campaign-name { color:#f5f5f5; }
     html.admin-dark-nav .campaign-client,
-    html.admin-dark-nav .progress-label { color:#aab6c8; }
+    html.admin-dark-nav .progress-label { color:#c0c0c0; }
     html.admin-dark-nav .campaign-monitoring-card .table-action { background:#354b41;color:#b9df91; }
     html.admin-dark-nav .status-badge.active { background:#1c4939;color:#a8efc3; }
     html.admin-dark-nav .status-badge.risk { background:#573238;color:#ffc1bc; }
     html.admin-dark-nav .status-badge.paused { background:#574529;color:#ffe0a0; }
-    html.admin-dark-nav .status-badge.done { background:#394456;color:#d4deeb; }
+    html.admin-dark-nav .status-badge.done { background:#353535;color:#dedede; }
     html.admin-dark-nav .updates-card .timeline-item,
-    html.admin-dark-nav .updates-card .activity-item { color:#dbe5ef;border-color:#364256; }
+    html.admin-dark-nav .updates-card .activity-item { color:#e5e5e5;border-color:#353535; }
     html.admin-dark-nav .updates-card .timeline-item:hover,
-    html.admin-dark-nav .updates-card .activity-item:hover { background:#2b374a; }
+    html.admin-dark-nav .updates-card .activity-item:hover { background:#2b2b2b; }
     html.admin-dark-nav .updates-card .timeline-date strong { color:#cfa9ed; }
-    html.admin-dark-nav .updates-card .timeline-icon { box-shadow:0 0 0 4px #202938; }
+    html.admin-dark-nav .updates-card .timeline-icon { box-shadow:0 0 0 4px #202020; }
     html.admin-dark-nav .timeline-copy strong,
-    html.admin-dark-nav .activity-copy strong { color:#f1f5fb; }
+    html.admin-dark-nav .activity-copy strong { color:#f5f5f5; }
     html.admin-dark-nav .timeline-copy small,
     html.admin-dark-nav .activity-copy span,
     html.admin-dark-nav .activity-item time,
-    html.admin-dark-nav .timeline-date small { color:#aab6c8; }
-    html.admin-dark-nav .ai-note { color:#aab6c8;border-color:#364256; }
-    html.admin-dark-nav .ai-peak { background:#244550;color:#b9eaf1; }
+    html.admin-dark-nav .timeline-date small { color:#c0c0c0; }
+    html.admin-dark-nav .ai-note { color:#c0c0c0;border-color:#353535; }
+    html.admin-dark-nav .ai-peak { background:#303030;color:#e5e5e5; }
     html.admin-dark-nav .ai-panel:nth-child(2) .ai-peak { background:#443354;color:#e3bdf5; }
-    html.admin-dark-nav .empty-state { color:#aab6c8; }
-    html.admin-dark-nav .empty-state i { color:#8194ad; }
+    html.admin-dark-nav .empty-state { color:#c0c0c0; }
+    html.admin-dark-nav .empty-state i { color:#999999; }
     @media(max-width:1250px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.alert-grid{grid-template-columns:repeat(3,1fr)}}
     @media(max-width:980px){.control-hero{min-height:205px;align-items:center;justify-content:center;flex-direction:column;text-align:center}.quick-actions{justify-content:center}.kpi-heatmap-layout,.kpi-followup-layout,.workload-finance-grid,.campaign-insights-grid,.split-grid,.ai-grid{grid-template-columns:1fr}.alert-grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:640px){.admin-control{padding:0 0 34px}.control-hero{padding:24px 20px}.dashboard-section{margin-right:12px;margin-left:12px}.kpi-grid,.kpi-heatmap-layout .kpi-grid,.kpi-followup-layout .kpi-grid,.alert-grid{grid-template-columns:1fr}.quick-actions{width:100%}.quick-action{flex:1;justify-content:center}.manager-row{grid-template-columns:minmax(0,1fr) repeat(3,56px)}.manager-stat small{font-size:.45rem}.finance-summary{grid-template-columns:1fr}.section-heading{align-items:flex-start;flex-direction:column}.delivery-heatmap{padding:14px}.heatmap-day{height:31px}.client-followup-card,.workload-chart-panel,.campaign-flow-card,.campaign-insights-grid .delivery-heatmap{padding:17px}.finance-dashboard-card .panel-head{padding:17px 17px 0}.finance-dashboard-card .panel-body{padding:16px 17px 17px}.workload-chart-head{flex-direction:column}.workload-chart-box{overflow-x:auto}.workload-chart-box canvas{min-width:560px}.campaign-donut-layout{grid-template-columns:1fr}.campaign-donut-box{height:210px}}
@@ -366,10 +366,10 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(typeof Chart==='undefined') return;
     const dashboardIsDark=()=>document.documentElement.classList.contains('admin-dark-nav');
     const updateDashboardChartsTheme=()=>{
-        const dark=dashboardIsDark(),ink=dark?'#cbd6e5':'#746b78',grid=dark?'rgba(203,214,229,.14)':'rgba(17,126,140,.08)';
+        const dark=dashboardIsDark(),ink=dark?'#cccccc':'#746b78',grid=dark?'rgba(204,204,204,.14)':'rgba(17,126,140,.08)';
         Chart.defaults.color=ink;
         Object.values(Chart.instances).forEach(chart=>{
-            if(chart.canvas.id==='campaignFlowChart')chart.data.datasets[0].borderColor=dark?'#202938':'#fff';
+            if(chart.canvas.id==='campaignFlowChart')chart.data.datasets[0].borderColor=dark?'#202020':'#fff';
             if(chart.options.scales)Object.values(chart.options.scales).forEach(scale=>{
                 if(scale.ticks)scale.ticks.color=ink;
                 if(scale.grid && scale.grid.display!==false)scale.grid.color=grid;
@@ -382,10 +382,10 @@ document.addEventListener('DOMContentLoaded',()=>{
             chart.update('none');
         });
     };
-    Chart.defaults.font.family="Inter, 'Segoe UI', sans-serif";Chart.defaults.color=dashboardIsDark()?'#cbd6e5':'#746b78';
+    Chart.defaults.font.family="Inter, 'Segoe UI', sans-serif";Chart.defaults.color=dashboardIsDark()?'#cccccc':'#746b78';
     new MutationObserver(updateDashboardChartsTheme).observe(document.documentElement,{attributes:true,attributeFilter:['class']});
     const campaignFlowCanvas=document.getElementById('campaignFlowChart');
-    if(campaignFlowCanvas)new Chart(campaignFlowCanvas,{type:'doughnut',data:{labels:['Por iniciar','En curso','En riesgo','Pausadas','Finalizadas'],datasets:[{data:[{{ $pipeline['por_iniciar'] }},{{ $pipeline['en_curso'] }},{{ $pipeline['en_riesgo'] }},{{ $pipeline['pausadas'] }},{{ $pipeline['finalizadas'] }}],backgroundColor:['#3d174f','#117e8c','#c64733','#ef6c22','#7da533'],borderColor:dashboardIsDark()?'#202938':'#fff',borderWidth:4,hoverOffset:7}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',animation:{animateRotate:true,animateScale:true,duration:1200,easing:'easeOutQuart'},plugins:{legend:{display:false},tooltip:{backgroundColor:'#302832',padding:11,cornerRadius:8,callbacks:{label:context=>` ${context.label}: ${context.raw} campañas`}}}}});
+    if(campaignFlowCanvas)new Chart(campaignFlowCanvas,{type:'doughnut',data:{labels:['Por iniciar','En curso','En riesgo','Pausadas','Finalizadas'],datasets:[{data:[{{ $pipeline['por_iniciar'] }},{{ $pipeline['en_curso'] }},{{ $pipeline['en_riesgo'] }},{{ $pipeline['pausadas'] }},{{ $pipeline['finalizadas'] }}],backgroundColor:['#3d174f','#117e8c','#c64733','#ef6c22','#7da533'],borderColor:dashboardIsDark()?'#202020':'#fff',borderWidth:4,hoverOffset:7}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',animation:{animateRotate:true,animateScale:true,duration:1200,easing:'easeOutQuart'},plugins:{legend:{display:false},tooltip:{backgroundColor:'#302832',padding:11,cornerRadius:8,callbacks:{label:context=>` ${context.label}: ${context.raw} campañas`}}}}});
     const managerData=@json($managerWorkload->values());
     const managerCanvas=document.getElementById('managerWorkloadChart');
     const renderManagerWorkload=()=>{
@@ -394,7 +394,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         const campaignValueLabels={id:'campaignValueLabels',afterDatasetsDraw(chart){const{ctx}=chart;ctx.save();ctx.fillStyle=dashboardIsDark()?'#d8bee9':'#5b2b76';ctx.font="700 11px Inter, 'Segoe UI', sans-serif";ctx.textBaseline='middle';chart.getDatasetMeta(0).data.forEach((bar,index)=>ctx.fillText(chart.data.datasets[0].data[index],bar.x+8,bar.y));ctx.restore()}};
         new Chart(managerCanvas,{type:'bar',plugins:[campaignValueLabels],data:{labels:managerData.map(manager=>manager.name),datasets:[
             {label:'Campañas asignadas',data:managerData.map(manager=>manager.campaigns),backgroundColor:'#5b2b76',hoverBackgroundColor:'#117e8c',borderRadius:8,borderSkipped:false,maxBarThickness:24}
-        ]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,interaction:{mode:'nearest',axis:'y',intersect:true},animation:{duration:1200,easing:'easeOutQuart',delay:context=>context.type==='data'?context.dataIndex*120:0},layout:{padding:{right:34}},plugins:{legend:{display:false},tooltip:{backgroundColor:'#302832',padding:11,cornerRadius:8,callbacks:{label:context=>` Campañas asignadas: ${context.raw}`}}},scales:{x:{beginAtZero:true,grid:{color:'rgba(91,43,118,.08)'},border:{display:false},ticks:{precision:0,stepSize:1,padding:7}},y:{offset:true,grid:{display:false},border:{display:false},ticks:{color:dashboardIsDark()?'#cbd6e5':'#3d174f',font:{size:11,weight:'700'},padding:10}}}}});
+        ]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,interaction:{mode:'nearest',axis:'y',intersect:true},animation:{duration:1200,easing:'easeOutQuart',delay:context=>context.type==='data'?context.dataIndex*120:0},layout:{padding:{right:34}},plugins:{legend:{display:false},tooltip:{backgroundColor:'#302832',padding:11,cornerRadius:8,callbacks:{label:context=>` Campañas asignadas: ${context.raw}`}}},scales:{x:{beginAtZero:true,grid:{color:'rgba(91,43,118,.08)'},border:{display:false},ticks:{precision:0,stepSize:1,padding:7}},y:{offset:true,grid:{display:false},border:{display:false},ticks:{color:dashboardIsDark()?'#cccccc':'#3d174f',font:{size:11,weight:'700'},padding:10}}}}});
     };
     if(managerCanvas){
         if('IntersectionObserver' in window){const workloadObserver=new IntersectionObserver((entries,observer)=>{if(entries.some(entry=>entry.isIntersecting)){renderManagerWorkload();observer.disconnect()}},{threshold:.2});workloadObserver.observe(managerCanvas)}else renderManagerWorkload();

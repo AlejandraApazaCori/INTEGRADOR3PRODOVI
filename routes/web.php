@@ -194,6 +194,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/clientes/campanias/{campania}/feedback', [CampaignFeedbackController::class, 'clientPage'])
         ->name('clientes.campanias.feedback');
+    Route::get('/clientes/campanias/{campania}/reuniones', [\App\Http\Controllers\Cliente\ReunionClienteController::class, 'index'])
+        ->name('clientes.campanias.reuniones.index');
+    Route::post('/clientes/campanias/{campania}/reuniones', [\App\Http\Controllers\Cliente\ReunionClienteController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('clientes.campanias.reuniones.store');
     Route::get('/clientes/mensajes/no-leidos', [CampaignFeedbackController::class, 'clientUnreadCount'])
         ->name('clientes.mensajes.no-leidos');
     Route::get('/campanias/{campania}/mensajes', [CampaignFeedbackController::class, 'index'])
@@ -410,6 +415,10 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
         ->name('administrador.backups.schedule');
     Route::get('/backups/ultimo/descargar', [\App\Http\Controllers\Admin\DatabaseBackupController::class, 'downloadLatest'])
         ->name('administrador.backups.download-latest');
+    Route::get('/backups/ultimo/descargar-excel', [\App\Http\Controllers\Admin\DatabaseBackupController::class, 'downloadLatestExcel'])
+        ->name('administrador.backups.download-latest-excel');
+    Route::get('/backups/{backup}/descargar-excel', [\App\Http\Controllers\Admin\DatabaseBackupController::class, 'downloadExcel'])
+        ->name('administrador.backups.download-excel');
     Route::get('/backups/{backup}/descargar', [\App\Http\Controllers\Admin\DatabaseBackupController::class, 'download'])
         ->name('administrador.backups.download');
 

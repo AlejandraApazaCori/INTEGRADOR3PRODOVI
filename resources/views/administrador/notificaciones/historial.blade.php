@@ -15,7 +15,7 @@
                     </div>
                     <div class="flex-1 text-center sm:text-left">
                         <h1 class="text-3xl font-bold text-white mb-1">Historial de notificaciones</h1>
-                        <p style="color: #bfdbfe; font-size: 0.9rem;">Registro completo de pagos, campañas y archivos subidos</p>
+                        <p style="color: #bfdbfe; font-size: 0.9rem;">Registro de pagos, campañas, tareas y reuniones</p>
                     </div>
                     <a href="{{ url()->previous() }}" 
                        class="inline-flex items-center px-4 py-2.5 rounded-xl font-semibold text-white transition-all hover:-translate-y-0.5 flex-shrink-0" 

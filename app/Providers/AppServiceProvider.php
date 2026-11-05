@@ -47,10 +47,16 @@ class AppServiceProvider extends ServiceProvider
                     ->orderBy('created_at', 'desc')
                     ->take(5)
                     ->get();
+                $reunionesNoVistas = $user->unreadNotifications()
+                    ->where('type', \App\Notifications\ReunionAgendadaNotification::class)
+                    ->orderBy('created_at', 'desc')
+                    ->take(5)
+                    ->get();
 
                 $notificationCount = ($canSeeGlobalNotifications ? \App\Models\Pago::where('visto', false)->count() : 0)
                     + ($canSeeGlobalNotifications ? \App\Models\Campania::where('visto', false)->count() : 0)
-                    + $user->unreadNotifications()->where('type', \App\Notifications\TareaEntregadaNotification::class)->count();
+                    + $user->unreadNotifications()->where('type', \App\Notifications\TareaEntregadaNotification::class)->count()
+                    + $user->unreadNotifications()->where('type', \App\Notifications\ReunionAgendadaNotification::class)->count();
 
                 $pagosVistos = $canSeeGlobalNotifications ? \App\Models\Pago::with(['usuario', 'plan', 'codigoPago'])
                     ->where('visto', true)
@@ -66,6 +72,11 @@ class AppServiceProvider extends ServiceProvider
 
                 $tareasVistas = $user->readNotifications()
                     ->where('type', \App\Notifications\TareaEntregadaNotification::class)
+                    ->orderBy('created_at', 'desc')
+                    ->take(3)
+                    ->get();
+                $reunionesVistas = $user->readNotifications()
+                    ->where('type', \App\Notifications\ReunionAgendadaNotification::class)
                     ->orderBy('created_at', 'desc')
                     ->take(3)
                     ->get();
@@ -109,6 +120,16 @@ class AppServiceProvider extends ServiceProvider
                         'url' => route('administrador.tareas.show', $notification->data['task_id']),
                     ]);
                 }
+                foreach ($reunionesNoVistas as $notification) {
+                    $dashboardNotifications->push([
+                        'type' => 'meeting',
+                        'icon' => 'fa-calendar-check',
+                        'title' => $notification->data['title'] ?? 'Nueva reunión agendada',
+                        'message' => $notification->data['message'] ?? 'Hay una reunión de campaña agendada.',
+                        'date' => $notification->created_at,
+                        'url' => route('administrador.campañas.show', $notification->data['campaign_id']).'#reuniones',
+                    ]);
+                }
 
                 $dashboardNotifications = $dashboardNotifications->sortByDesc('date')->take(3);
 
@@ -117,9 +138,11 @@ class AppServiceProvider extends ServiceProvider
                     'pagosNoVistos' => $pagosNoVistos,
                     'campaniasNoVistas' => $campaniasNoVistas,
                     'tareasNoVistas' => $tareasNoVistas,
+                    'reunionesNoVistas' => $reunionesNoVistas,
                     'pagosVistos' => $pagosVistos,
                     'campaniasVistas' => $campaniasVistas,
                     'tareasVistas' => $tareasVistas,
+                    'reunionesVistas' => $reunionesVistas,
                     'latestPendingPayments' => $pagosNoVistos,
                     'latestPendingTasks' => $tareasNoVistas,
                     'pendingPaymentsCount' => $pagosNoVistos->count(),

@@ -977,6 +977,58 @@
         #questionnaire-index .back-button { width: auto; justify-content: flex-start; }
         #questionnaire-index .page-actions .new-topic-button { width: 100%; justify-content: center; }
     }
+
+    /* Modo oscuro del administrador; el banner conserva su color. */
+    html.admin-dark-nav #questionnaire-index { background:#141414 !important; color:#f5f5f5; }
+    html.admin-dark-nav #questionnaire-index .questionnaire-overview,
+    html.admin-dark-nav #questionnaire-index .topics-toolbar { border-color:#3a3a3a !important; }
+    html.admin-dark-nav #questionnaire-index .questionnaire-overview h2,
+    html.admin-dark-nav #questionnaire-index .topic-row p.text-base { color:#f5f5f5 !important; }
+    html.admin-dark-nav #questionnaire-index .questionnaire-overview p,
+    html.admin-dark-nav #questionnaire-index .topic-description,
+    html.admin-dark-nav #questionnaire-index .topics-toolbar>span,
+    html.admin-dark-nav #questionnaire-index #temas-count,
+    html.admin-dark-nav #questionnaire-index>.w-full>.mt-6 { color:#b8b8b8; }
+    html.admin-dark-nav #questionnaire-index .questionnaire-kpis article { background:#202020; border-color:#353535; box-shadow:inset 0 4px 0 var(--kpi-accent),0 10px 24px rgba(0,0,0,.16); }
+    html.admin-dark-nav #questionnaire-index .questionnaire-kpis article div span,
+    html.admin-dark-nav #questionnaire-index .questionnaire-kpis article div small { color:#b8b8b8; }
+    html.admin-dark-nav #questionnaire-index .questionnaire-kpis article div strong { color:#f5f5f5; }
+    html.admin-dark-nav #questionnaire-index .topic-row,
+    html.admin-dark-nav #questionnaire-index .topic-row:hover,
+    html.admin-dark-nav #questionnaire-index #temas-list>li:not(.topic-row) { background:#202020; border-color:#3a3a3a !important; box-shadow:0 12px 28px rgba(0,0,0,.18); }
+    html.admin-dark-nav #questionnaire-index .topic-row { border-top-color:var(--topic-accent) !important; }
+    html.admin-dark-nav #questionnaire-index .topic-row>div:last-child { background:#292929; border-color:#3a3a3a; }
+    html.admin-dark-nav #questionnaire-index .topic-row .cursor-move,
+    html.admin-dark-nav #questionnaire-index .topic-action,
+    html.admin-dark-nav #questionnaire-index .topic-id { background:#383838 !important; color:#d1d1d1 !important; }
+    html.admin-dark-nav #questionnaire-index #temas-list .text-gray-500,
+    html.admin-dark-nav #questionnaire-index #temas-list .text-gray-400 { color:#b8b8b8; }
+    html.admin-dark-nav #questionnaire-index .status-alert { background:#233528; border-color:#42684a; color:#c1efc8; }
+    html.admin-dark-nav .preview-dialog,
+    html.admin-dark-nav .preview-body { background:#202020; border-color:#3a3a3a; color:#f5f5f5; }
+    html.admin-dark-nav .preview-cover h3,
+    html.admin-dark-nav .preview-question-content>label { color:#f5f5f5; }
+    html.admin-dark-nav .preview-cover p,
+    html.admin-dark-nav .preview-question-content>p,
+    html.admin-dark-nav .preview-optional,
+    html.admin-dark-nav .preview-progress,
+    html.admin-dark-nav .preview-empty { color:#b8b8b8; }
+    html.admin-dark-nav .preview-cover-meta,
+    html.admin-dark-nav .preview-question,
+    html.admin-dark-nav .preview-footer { border-color:#3a3a3a; }
+    html.admin-dark-nav .preview-footer { background:#292929; }
+    html.admin-dark-nav .preview-question textarea,
+    html.admin-dark-nav .preview-question input[type="text"],
+    html.admin-dark-nav .preview-select-trigger,
+    html.admin-dark-nav .preview-select-menu,
+    html.admin-dark-nav .preview-checkboxes label,
+    html.admin-dark-nav .preview-prev { background:#292929; border-color:#4a4a4a; color:#f5f5f5; }
+    html.admin-dark-nav .preview-question textarea::placeholder { color:#999; }
+    html.admin-dark-nav .preview-select-menu label { color:#e5e5e5; }
+    html.admin-dark-nav .preview-select-menu label:hover,
+    html.admin-dark-nav .preview-select-menu label.is-selected,
+    html.admin-dark-nav .preview-checkboxes label:hover { background:#383838; color:#fff; }
+    html.admin-dark-nav .sortable-ghost { background:#383838; }
 </style>
 @endpush
 @endsection

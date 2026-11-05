@@ -327,6 +327,209 @@
     @media(max-width:760px){.campaign-subtabs{display:flex;overflow-x:auto}.campaign-subtab{min-width:145px;flex:1 0 145px}}
     @media(max-width:760px){.campaign-audience-row{grid-template-columns:34px minmax(0,1fr)}.campaign-audience-row>div:last-child{grid-column:2}.campaign-audiences>header{flex-direction:column}.campaign-strategy-grid{grid-template-columns:1fr}}
     @media(max-width:640px){.campaign-detail-page{padding-bottom:24px}.campaign-detail-hero{min-height:200px;margin-top:0}.campaign-detail-hero-content{min-height:200px;align-items:stretch;flex-direction:column;justify-content:center;padding:26px 20px}.campaign-detail-heading{align-items:flex-start}.campaign-detail-heading h1{white-space:normal}.campaign-hero-context{align-items:stretch}.campaign-hero-back{width:100%}.campaign-hero-summary{grid-template-columns:1fr}.campaign-hero-metric{padding:12px 14px;border-right:0;border-bottom:1px solid rgba(255,255,255,.18)}.campaign-hero-metric:nth-child(2){border-bottom:0}.campaign-hero-progress-row{grid-column:1;padding:10px 14px}.campaign-detail-content,.campaign-documents,.campaign-calendar,.campaign-tasks,.campaign-resources,.campaign-meetings,.campaign-analytics{width:calc(100% - 24px)}.campaign-detail-content{padding-top:14px}.campaign-detail-sidebar{grid-template-columns:1fr}.campaign-analytics-card{grid-column:auto}.campaign-schedule{grid-template-columns:1fr}.campaign-date+.campaign-date{padding-left:0;border-top:1px solid #eceeea;border-left:0}.campaign-card-body{padding:18px}.campaign-company-row{align-items:flex-start;flex-direction:column}}
+    /* Modo oscuro del detalle; el banner conserva su diseño original. */
+    html.admin-dark-nav .campaign-detail-page{background:#141414;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page .campaign-subtabs,
+    html.admin-dark-nav .campaign-detail-page .campaign-subtab,
+    html.admin-dark-nav .campaign-detail-page .campaign-detail-kpis,
+    html.admin-dark-nav .campaign-detail-page .campaign-detail-kpi,
+    html.admin-dark-nav .campaign-detail-page .campaign-detail-card,
+    html.admin-dark-nav .campaign-detail-page .campaign-analytics-card{background:#202020;border-color:#353535;box-shadow:none;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page .campaign-subtab.is-active{background:#292929;color:#fff}
+    html.admin-dark-nav .campaign-detail-page .campaign-detail-kpi span,
+    html.admin-dark-nav .campaign-detail-page .campaign-detail-kpi small,
+    html.admin-dark-nav .campaign-detail-page .campaign-card-header span,
+    html.admin-dark-nav .campaign-detail-page .campaign-name-block small,
+    html.admin-dark-nav .campaign-detail-page .campaign-description-block small,
+    html.admin-dark-nav .campaign-detail-page .campaign-description-block p,
+    html.admin-dark-nav .campaign-detail-page .campaign-person small,
+    html.admin-dark-nav .campaign-detail-page .campaign-analytics-card span,
+    html.admin-dark-nav .campaign-detail-page .campaign-analytics-card small{color:#b8b8b8}
+    html.admin-dark-nav .campaign-detail-page .campaign-detail-kpi strong,
+    html.admin-dark-nav .campaign-detail-page .campaign-card-header h2,
+    html.admin-dark-nav .campaign-detail-page .campaign-underlined-title,
+    html.admin-dark-nav .campaign-detail-page .campaign-name-block h3,
+    html.admin-dark-nav .campaign-detail-page .campaign-person strong,
+    html.admin-dark-nav .campaign-detail-page .campaign-analytics-card strong{color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page .campaign-card-header,
+    html.admin-dark-nav .campaign-detail-page .campaign-description-block,
+    html.admin-dark-nav .campaign-detail-page .campaign-schedule,
+    html.admin-dark-nav .campaign-detail-page .campaign-date+.campaign-date,
+    html.admin-dark-nav .campaign-detail-page .campaign-person+.campaign-person,
+    html.admin-dark-nav .campaign-detail-page .campaign-company-row{border-color:#353535}
+    html.admin-dark-nav .campaign-detail-page .campaign-strategy-grid article,
+    html.admin-dark-nav .campaign-detail-page .campaign-audiences,
+    html.admin-dark-nav .campaign-detail-page .campaign-audience-row,
+    html.admin-dark-nav .campaign-detail-page .campaign-date,
+    html.admin-dark-nav .campaign-detail-page .campaign-progress,
+    html.admin-dark-nav .campaign-detail-page .campaign-analytics-card>a{background:#292929;border-color:#444;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page .campaign-strategy-grid small,
+    html.admin-dark-nav .campaign-detail-page .campaign-audience-row small,
+    html.admin-dark-nav .campaign-detail-page .campaign-date small,
+    html.admin-dark-nav .campaign-detail-page .campaign-progress>small{color:#aaa}
+    html.admin-dark-nav .campaign-detail-page .campaign-strategy-grid p,
+    html.admin-dark-nav .campaign-detail-page .campaign-audience-row p{color:#ccc!important}
+    html.admin-dark-nav .campaign-detail-page .campaign-audience-row strong,
+    html.admin-dark-nav .campaign-detail-page .campaign-date strong,
+    html.admin-dark-nav .campaign-detail-page .campaign-progress>div:first-child{color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page .campaign-progress-track{background:#444}
+    html.admin-dark-nav .campaign-detail-page .campaign-strategy-tags span,
+    html.admin-dark-nav .campaign-detail-page .campaign-audiences>header>span{background:#383838;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page .campaign-strategy-tags span.is-kpi{background:#203b2d;color:#a7e8bc}
+    html.admin-dark-nav .campaign-detail-page .campaign-document-card,
+    html.admin-dark-nav .campaign-detail-page .campaign-documents-workspace,
+    html.admin-dark-nav .campaign-detail-page .embedded-planning-workspace,
+    html.admin-dark-nav .campaign-detail-page .tasks-workspace,
+    html.admin-dark-nav .campaign-detail-page .resource-library,
+    html.admin-dark-nav .campaign-detail-page .meetings-workspace,
+    html.admin-dark-nav .campaign-detail-page .feedback-workspace,
+    html.admin-dark-nav .campaign-detail-page .admin-social-connections,
+    html.admin-dark-nav .campaign-detail-page .campaign-report-panel,
+    html.admin-dark-nav .campaign-detail-page .meta-analytics-head,
+    html.admin-dark-nav .campaign-detail-page .meta-analytics-tabs,
+    html.admin-dark-nav .campaign-detail-page .meta-kpis,
+    html.admin-dark-nav .campaign-detail-page .meta-card{background:#202020!important;border-color:#353535!important;color:#e5e5e5;box-shadow:none!important}
+    html.admin-dark-nav .campaign-detail-page .campaign-plan-list>div,
+    html.admin-dark-nav .campaign-detail-page .campaign-documents-empty,
+    html.admin-dark-nav .campaign-detail-page .embedded-planning-switch,
+    html.admin-dark-nav .campaign-detail-page .embedded-calendar-toolbar,
+    html.admin-dark-nav .campaign-detail-page .embedded-gantt-toolbar,
+    html.admin-dark-nav .campaign-detail-page .embedded-calendar-grid,
+    html.admin-dark-nav .campaign-detail-page .embedded-calendar-weekday,
+    html.admin-dark-nav .campaign-detail-page .embedded-calendar-day,
+    html.admin-dark-nav .campaign-detail-page .embedded-gantt-board,
+    html.admin-dark-nav .campaign-detail-page .embedded-gantt-cell,
+    html.admin-dark-nav .campaign-detail-page .task-column,
+    html.admin-dark-nav .campaign-detail-page .task-kanban-card,
+    html.admin-dark-nav .campaign-detail-page .tasks-toolbar,
+    html.admin-dark-nav .campaign-detail-page .tasks-table-filters,
+    html.admin-dark-nav .campaign-detail-page .resource-library-content,
+    html.admin-dark-nav .campaign-detail-page .resource-item,
+    html.admin-dark-nav .campaign-detail-page .meeting-card,
+    html.admin-dark-nav .campaign-detail-page .feedback-feed-card,
+    html.admin-dark-nav .campaign-detail-page .feedback-composer-card,
+    html.admin-dark-nav .campaign-detail-page .feedback-context-card,
+    html.admin-dark-nav .campaign-detail-page .feedback-message-content,
+    html.admin-dark-nav .campaign-detail-page .admin-social-option,
+    html.admin-dark-nav .campaign-detail-page .campaign-report-grid>a,
+    html.admin-dark-nav .campaign-detail-page .meta-account,
+    html.admin-dark-nav .campaign-detail-page .meta-best-slot,
+    html.admin-dark-nav .campaign-detail-page .meta-post{background:#292929!important;border-color:#444!important;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page .tasks-table td{background:#202020;border-color:#353535;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page .tasks-table tbody tr:nth-child(even) td{background:#292929}
+    html.admin-dark-nav .campaign-detail-page .tasks-table tbody tr:hover td{background:#353535}
+    html.admin-dark-nav .campaign-detail-page .task-title,
+    html.admin-dark-nav .campaign-detail-page .task-card-top h4{color:#f5f5f5!important}
+    html.admin-dark-nav .campaign-detail-page .task-column-header,
+    html.admin-dark-nav .campaign-detail-page .embedded-planning-header,
+    html.admin-dark-nav .campaign-detail-page .resource-library-bar,
+    html.admin-dark-nav .campaign-detail-page .meetings-header,
+    html.admin-dark-nav .campaign-detail-page .feedback-header{border-color:#353535}
+    html.admin-dark-nav .campaign-detail-page :is(.campaign-documents,.campaign-calendar,.campaign-tasks,.campaign-feedback,.campaign-resources,.campaign-meetings,.campaign-analytics) :is(h2,h3,h4,strong,label){color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page :is(.campaign-documents,.campaign-calendar,.campaign-tasks,.campaign-feedback,.campaign-resources,.campaign-meetings,.campaign-analytics) :is(p,small){color:#b8b8b8}
+    html.admin-dark-nav .campaign-detail-page :is(input,textarea,select){background:#141414;border-color:#4a4a4a;color:#f5f5f5;color-scheme:dark}
+    html.admin-dark-nav .campaign-detail-page :is(input,textarea)::placeholder{color:#999}
+    html.admin-dark-nav .campaign-detail-page :is(.campaign-document-actions a,.campaign-document-actions button,.embedded-planning-switch button,.tasks-view-switch button,.tasks-table-filters button,.task-card-actions a,.task-card-actions button,.task-actions a,.task-actions button,.resource-layout-switch button,.resource-library-tabs button,.meeting-date-trigger,.feedback-dropdown-trigger,.meta-analytics-tabs button,.meta-period-trigger,.meta-period-menu button){background:#292929;border-color:#4a4a4a;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page :is(.task-status-dropdown-menu,.meeting-select-menu,.meeting-time-dropdown,.meeting-calendar-popover,.feedback-dropdown-menu,.meta-period-menu){background:#292929;border-color:#4a4a4a;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page :is(.task-upload-drawer-panel,.resource-upload-dialog,.resource-rename-dialog,.meeting-drawer,.feedback-delete-dialog,.feedback-context-dialog){background:#202020;border-color:#353535;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page :is(.task-upload-drawer-body,.task-upload-drawer-panel footer,.task-upload-context,.task-upload-dropzone,.task-upload-files-list,.resource-upload-body,.resource-rename-body,.meeting-drawer-body,.feedback-editor,.feedback-selected-context,.feedback-compose-mode){background:#292929;border-color:#444;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page .meta-analytics{color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page .meta-analytics-state{background:rgba(32,32,32,.95);border-color:#353535;color:#ccc}
+    html.admin-dark-nav .campaign-detail-page .meta-no-data,
+    html.admin-dark-nav .campaign-detail-page .meta-post-media{background:#292929;border-color:#444;color:#aaa}
+    /* Calendario y Gantt */
+    html.admin-dark-nav .campaign-detail-page :is(.embedded-planning-switch,.embedded-calendar-grid,.embedded-planning-legend,.embedded-gantt-row.is-header,.embedded-gantt-corner,.embedded-gantt-day,.embedded-calendar-weekday){background:#292929;border-color:#444;color:#ccc}
+    html.admin-dark-nav .campaign-detail-page :is(.embedded-calendar-day,.embedded-gantt-board,.embedded-gantt-label,.embedded-gantt-cell){background:#202020!important;border-color:#353535;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page :is(.embedded-calendar-day.is-other,.embedded-gantt-cell.is-weekend){background:#252525!important;color:#aaa}
+    html.admin-dark-nav .campaign-detail-page :is(.embedded-calendar-day.is-today,.embedded-gantt-cell.is-today){background:#382b22!important}
+    html.admin-dark-nav .campaign-detail-page .embedded-gantt-row{border-color:#353535}
+    html.admin-dark-nav .campaign-detail-page .embedded-calendar-day-number,
+    html.admin-dark-nav .campaign-detail-page .embedded-gantt-label strong,
+    html.admin-dark-nav .campaign-detail-page :is(.embedded-calendar-toolbar,.embedded-gantt-toolbar) h3{color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page :is(.embedded-gantt-label span,.embedded-gantt-toolbar p,.embedded-gantt-toolbar>span,.embedded-planning-legend span,.embedded-calendar-more){color:#b8b8b8}
+    html.admin-dark-nav .campaign-detail-page .embedded-calendar-event{background:color-mix(in srgb,var(--event-color) 24%,#202020);color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page .embedded-calendar-event:hover{background:color-mix(in srgb,var(--event-color) 35%,#202020)}
+    html.admin-dark-nav .campaign-detail-page .embedded-calendar-toolbar button{background:#292929;border-color:#4a4a4a;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page .embedded-planning-switch button.is-active{background:#444;color:#fff}
+    /* Tareas: tablero, lista y controles */
+    html.admin-dark-nav .campaign-detail-page :is(.tasks-board,.tasks-view-switch,.task-column-body){background:#202020;border-color:#353535}
+    html.admin-dark-nav .campaign-detail-page :is(.task-column-header,.task-status-dropdown-control>[data-status-trigger],.task-status-dropdown-menu button){background:#292929;border-color:#444;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page :is(.task-column-header h3,.task-column-empty,.tasks-empty h3,.tasks-filter-empty strong){color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page :is(.task-card-deliverable,.task-card-info>div,.task-card-status-select,.tasks-table td>small,.tasks-empty p){color:#b8b8b8}
+    html.admin-dark-nav .campaign-detail-page :is(.task-card-info,.task-column-empty){border-color:#444}
+    html.admin-dark-nav .campaign-detail-page :is(.task-card-labels span,.task-meta-labels span,.task-column-header>span,.tasks-table-filters button>span){background:#383838;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page .tasks-view-switch button.is-active{background:#444;color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page .tasks-table-filters button.is-active{background:#7da533;border-color:#7da533;color:#fff}
+    html.admin-dark-nav .campaign-detail-page .tasks-table-filters button.is-active>span{background:rgba(255,255,255,.22);color:#fff}
+    html.admin-dark-nav .campaign-detail-page :is(.task-status-dropdown-menu button:hover,.task-status-dropdown-menu button.is-selected,.task-column-add:hover){background:#383838;color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page :is(.task-upload-field-label,.task-upload-description>span,.task-upload-context strong,.task-upload-files-list>strong,.task-upload-dropzone strong){color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page :is(.task-upload-files-list li,.task-upload-dropzone small,.task-upload-context small){color:#b8b8b8;border-color:#444}
+    html.admin-dark-nav .campaign-detail-page .task-upload-drawer-panel footer button:not([type=submit]){background:#383838;border-color:#555;color:#e5e5e5}
+    /* Feedback: conversación, editor y selectores */
+    html.admin-dark-nav .campaign-detail-page :is(.feedback-layout,.feedback-main-filters,.feedback-contexts,.feedback-conversation-head,.feedback-message-panel-head,.feedback-editor-toolbar,.feedback-editor-hint,.feedback-image-previews,.feedback-privacy-note){background:#202020;border-color:#353535;color:#ccc}
+    html.admin-dark-nav .campaign-detail-page :is(.feedback-filters button,.feedback-dropdown-menu>button,.feedback-conversation-head>button,.feedback-message-panel-head button,.feedback-delete-dialog footer button:not(:last-child),.feedback-context-dialog footer button:not(:last-child)){background:#292929;border-color:#4a4a4a;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page :is(.feedback-filters button.is-active,.feedback-dropdown-menu>button.is-selected,.feedback-dropdown-menu>button:hover,.feedback-editor-toolbar button.is-active){background:#383838;color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page .feedback-new-context .feedback-dropdown-trigger{background:#117e8c;border-color:#117e8c;color:#fff}
+    html.admin-dark-nav .campaign-detail-page :is(.feedback-message.is-own .feedback-message-content,.feedback-context-card.is-general){background:#303030!important;border-color:#4a4a4a!important}
+    html.admin-dark-nav .campaign-detail-page :is(.feedback-message-meta span,.feedback-message-meta a,.feedback-image-preview,.feedback-inline-image,.feedback-message-images a){background:#383838;border-color:#4a4a4a;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page :is(.feedback-editor-input,.feedback-editor-input strong,.feedback-editor-input b,.feedback-message-text,.feedback-message-text strong,.feedback-context-card strong,.feedback-contexts-heading h3,.feedback-conversation-head strong,.feedback-message-panel-head strong,.feedback-selected-context strong,.feedback-compose-mode strong,.feedback-context-browser-heading strong,.feedback-delete-dialog h3,.feedback-context-dialog h3){color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page :is(.feedback-context-card em,.feedback-message-meta,.feedback-message-actions button,.feedback-compose-mode em,.feedback-delete-dialog p,.feedback-context-dialog>p,.feedback-editor-hint,.feedback-image-hint){color:#b8b8b8}
+    html.admin-dark-nav .campaign-detail-page :is(.feedback-editor-toolbar button,.feedback-context-dialog label>span){color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page :is(.feedback-delete-dialog footer button:last-child,.feedback-context-dialog footer button:last-child){color:#fff}
+    /* Panel lateral de subida de recursos */
+    html.admin-dark-nav .campaign-detail-page :is(.resource-upload-dialog,.resource-rename-dialog){background:#202020;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page :is(.resource-upload-dialog>header>span,.resource-rename-dialog>header>span){background:#353535;color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page :is(.resource-upload-body,.resource-rename-body){background:#202020;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page :is(.resource-upload-dropzone,.resource-upload-links>div,.resource-selected-files,.resource-upload-visibility,.resource-rename-body>div:not(.resource-upload-errors)){background:#292929;border-color:#4a4a4a;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page :is(.resource-upload-dropzone:hover,.resource-upload-links>div:focus-within){background:#353535;border-color:#777}
+    html.admin-dark-nav .campaign-detail-page :is(.resource-upload-dialog footer,.resource-rename-dialog footer){background:#202020;border-color:#353535}
+    html.admin-dark-nav .campaign-detail-page :is(.resource-upload-dialog footer button:not([type=submit]),.resource-rename-dialog footer button:not([type=submit]),.resource-upload-links-head button,.resource-selected-files span){background:#353535;border-color:#555;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page :is(.resource-upload-field-label,.resource-upload-links-head label,.resource-upload-visibility strong,.resource-upload-dropzone strong,.resource-rename-body>label){color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page :is(.resource-upload-dropzone small,.resource-upload-visibility small,.resource-upload-links-head label span,.resource-rename-body>small,.resource-upload-divider){color:#b8b8b8}
+    html.admin-dark-nav .campaign-detail-page .resource-upload-divider:before,
+    html.admin-dark-nav .campaign-detail-page .resource-upload-divider:after{background:#4a4a4a}
+    html.admin-dark-nav .campaign-detail-page .resource-upload-visibility>span{background:#202020;border-color:#777}
+    html.admin-dark-nav .campaign-detail-page .resource-upload-visibility>input:checked+span{background:#5b2b76;border-color:#5b2b76}
+    html.admin-dark-nav .campaign-detail-page :is(.resource-upload-links input,.resource-rename-body input){background:transparent;border:0;color:#f5f5f5}
+    /* Reuniones */
+    html.admin-dark-nav .campaign-detail-page :is(.meeting-client-access,.meeting-quota-control,.meeting-drawer>header,.meeting-drawer footer,.meeting-calendar-popover,.meeting-select-menu,.meeting-time-dropdown>[data-time-menu]){background:#292929;border-color:#444;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page :is(.meeting-date,.meetings-empty>i,.meeting-person-avatar,.meeting-access-icon){background:#383838;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page .meeting-status{background:#263a29;color:#b6e3b5}
+    html.admin-dark-nav .campaign-detail-page .meeting-people>span{background:#383838;border-color:#202020;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page .meeting-client-access form>button,
+    html.admin-dark-nav .campaign-detail-page :is(.meeting-drawer>header button,.meeting-drawer footer button:not([type=submit]),.meeting-custom-select>button,.meeting-calendar-popover>header button,.meeting-calendar-days button,.meeting-time-dropdown>[data-time-trigger],.meeting-time-dropdown>[data-time-menu] button,.meeting-select-menu button){background:#292929;border-color:#4a4a4a;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page .meeting-participants>label{background:#292929;border-color:#444;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page .meeting-participants>label:has(input:checked){background:#35402f;border-color:#6a8c3e}
+    html.admin-dark-nav .campaign-detail-page :is(.meeting-calendar-days button:hover,.meeting-select-menu button:hover,.meeting-select-menu button.is-selected,.meeting-time-dropdown>[data-time-menu] button:hover,.meeting-time-dropdown>[data-time-menu] button.is-selected){background:#383838;color:#fff}
+    html.admin-dark-nav .campaign-detail-page .meeting-calendar-days button.is-selected{background:#5b2b76;color:#fff}
+    html.admin-dark-nav .campaign-detail-page .meeting-calendar-days button.is-outside{color:#888}
+    html.admin-dark-nav .campaign-detail-page .meeting-calendar-days button.is-today:not(.is-selected){color:#b6e3b5}
+    html.admin-dark-nav .campaign-detail-page .meeting-quota-control input{background:transparent;border:0;color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page :is(.meetings-header h2,.meeting-main h3,.meeting-client-access h3,.meeting-drawer>header h2,.meeting-calendar-popover>header strong,.meeting-participants strong){color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page :is(.meetings-header p,.meeting-main small,.meeting-main>p,.meeting-client-access p,.meeting-client-access form>small,.meeting-quota-control span,.meeting-drawer legend small,.meeting-participant-heading,.meeting-participants small,.meeting-calendar-week span,.meeting-time-picker>span){color:#b8b8b8}
+    html.admin-dark-nav .campaign-detail-page :is(.meeting-client-access form>label,.meeting-drawer-body>label,.meeting-form-grid>label,.meeting-drawer legend){color:#e5e5e5}
+    /* Conexiones y reportes */
+    html.admin-dark-nav .campaign-detail-page :is(.admin-social-option.is-linked,.admin-social-option.is-disabled,.admin-social-option aside,.admin-social-status,.admin-social-notice,.admin-social-missing,.campaign-report-grid>a>span){background:#383838;border-color:#4a4a4a;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page :is(.admin-social-connections header h2,.admin-social-option-top strong,.campaign-report-panel>header h2,.campaign-report-grid strong){color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page :is(.admin-social-connections header p,.admin-social-option>p,.admin-social-help,.campaign-report-panel>header p,.campaign-report-grid small){color:#b8b8b8}
+    html.admin-dark-nav .campaign-detail-page :is(.admin-social-option-top b,.admin-social-option.is-linked .admin-social-option-top b){background:#383838;color:#e5e5e5}
+    /* Analíticas por cuenta */
+    html.admin-dark-nav .campaign-detail-page .meta-analytics-tabs button{background:#202020;border-color:#353535;color:#b8b8b8}
+    html.admin-dark-nav .campaign-detail-page .meta-analytics-tabs button.is-active{background:#353535;color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page :is(.meta-kpi,.meta-audience,.meta-rank>div,.meta-empty-inline){border-color:#444}
+    html.admin-dark-nav .campaign-detail-page :is(.meta-period-trigger,.meta-period-menu,.meta-period-menu button){background:#292929;border-color:#4a4a4a;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page :is(.meta-period-menu button:hover,.meta-period-menu button:focus-visible,.meta-period-menu button[aria-selected="true"]){background:#383838;color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page :is(.meta-period-trigger>span,.meta-period-menu button>span,.meta-evidence){background:#383838;color:#e5e5e5}
+    html.admin-dark-nav .campaign-detail-page :is(.meta-rank>div,.meta-api-notes){background:#292929;border-color:#4a4a4a}
+    html.admin-dark-nav .campaign-detail-page :is(.meta-analytics-head h2,.meta-analytics-state strong,.meta-account strong,.meta-kpi strong,.meta-card>header h3,.meta-section-title h3,.meta-best-slot strong,.meta-rank strong){color:#f5f5f5}
+    html.admin-dark-nav .campaign-detail-page :is(.meta-analytics-head p,.meta-analytics-head label,.meta-account small,.meta-kpi small,.meta-kpi span,.meta-card>header small,.meta-section-title small,.meta-best-slot small,.meta-rank small,.meta-post-metrics,.meta-heatmap>span,.meta-period-field>span){color:#b8b8b8}
+    html.admin-dark-nav .campaign-detail-page .meta-post p{color:#ccc!important}
+    html.admin-dark-nav .campaign-detail-page .meta-api-notes{color:#d9c7a5}
+    html.admin-dark-nav .campaign-detail-page .admin-social-status.is-connected,
+    html.admin-dark-nav .campaign-detail-page .admin-social-notice:not(.is-error){background:#263a29;color:#b6e3b5}
+    html.admin-dark-nav .campaign-detail-page .admin-social-status:not(.is-connected),
+    html.admin-dark-nav .campaign-detail-page :is(.admin-social-notice.is-error,.admin-social-missing){background:#422b25;color:#f5b9a8}
+    html.admin-dark-nav .campaign-detail-page .meta-heatmap .cell{background:rgba(165,108,191,calc(.16 + var(--heat,.05)))}
 </style>
 
 <script>

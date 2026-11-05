@@ -238,6 +238,100 @@
 @media(max-width:760px){.wizard-team-layout{grid-template-columns:1fr;gap:28px}.wizard-team-column-head{align-items:flex-start;flex-wrap:wrap}.wizard-team-column-head>button{margin-left:49px}.wizard-task-source{align-items:flex-start;flex-direction:column}.wizard-task-source>div:last-child{width:100%;flex-wrap:wrap}.wizard-task-source button{flex:1}.wizard-audience-row{grid-template-columns:1fr}.wizard-audience-remove{width:100%;margin-top:0}.wizard-audiences-head{align-items:flex-start;flex-direction:column}}
 @media(max-width:900px){.wizard-task-grid .task-three{grid-column:1/-1}}@media(max-width:620px){.task-options{grid-template-columns:1fr}.wizard-task-grid .task-three{grid-column:auto}.task-content-types>div span{min-height:34px;padding:0 9px!important}}
 .wizard-confirm-modal{position:fixed;z-index:10000;inset:0;display:grid;place-items:center;padding:20px}.wizard-confirm-modal[hidden]{display:none}.wizard-confirm-backdrop{position:absolute;inset:0;background:rgba(15,23,42,.68);backdrop-filter:blur(4px)}.wizard-confirm-card{position:relative;width:min(500px,100%);padding:28px;border:1px solid #fed7aa;border-radius:18px;background:#fff;box-shadow:0 28px 75px rgba(15,23,42,.3)}.wizard-confirm-icon{width:48px;height:48px;display:grid;place-items:center;margin-bottom:15px;border-radius:14px;background:#fff7ed;color:#ea580c;font-size:1.2rem}.wizard-confirm-card small{color:#ea580c;font-size:.59rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.wizard-confirm-card h2{margin:4px 0 0;color:#1f2937;font-size:1.15rem}.wizard-confirm-card p{margin:16px 0 22px;color:#64748b;font-size:.73rem;line-height:1.65}.wizard-confirm-actions{display:flex;justify-content:flex-end;gap:9px}.wizard-confirm-actions button{min-height:42px;padding:0 15px;border-radius:10px;font-size:.68rem;font-weight:900;cursor:pointer}.wizard-confirm-cancel{border:1px solid #dbe1e8;background:#fff;color:#64748b}.wizard-confirm-accept{border:1px solid #dc2626;background:#dc2626;color:#fff}
+html.admin-dark-nav .campaign-wizard-page{background:#141414;color:#e5e5e5}
+html.admin-dark-nav .campaign-wizard-page .wizard-readiness{background:#202020;border-color:#353535;box-shadow:0 14px 35px rgba(0,0,0,.2)}
+html.admin-dark-nav .campaign-wizard-page .wizard-readiness article{border-color:#353535}
+html.admin-dark-nav .campaign-wizard-page .wizard-readiness small,
+html.admin-dark-nav .campaign-wizard-page .wizard-readiness article>div>span{color:#bcbcbc}
+html.admin-dark-nav .campaign-wizard-page .wizard-readiness strong{color:#f5f5f5}
+html.admin-dark-nav .campaign-wizard-page .wizard-readiness-link{background:#292929;border-color:#4a4a4a;color:#d9f99d}
+html.admin-dark-nav .campaign-wizard-page .campaign-creation-timeline button{color:#bcbcbc}
+html.admin-dark-nav .campaign-wizard-page .campaign-creation-timeline button:not(:last-child):after{background:#4a4a4a}
+html.admin-dark-nav .campaign-wizard-page .campaign-creation-timeline button>span{background:#202020;border-color:#4a4a4a;color:#cccccc}
+html.admin-dark-nav .campaign-wizard-page .campaign-creation-timeline button.is-active>span{background:#638522;border-color:#638522;color:#fff}
+html.admin-dark-nav .campaign-wizard-page .campaign-creation-timeline button.is-complete>span{background:#059669;border-color:#059669;color:#fff}
+html.admin-dark-nav .campaign-wizard-page .campaign-creation-timeline strong{color:#e5e5e5}
+html.admin-dark-nav .campaign-wizard-page .campaign-creation-timeline small{color:#bcbcbc}
+html.admin-dark-nav .campaign-wizard-page .wizard-mode-heading h2{color:#a3e635}
+html.admin-dark-nav .campaign-wizard-page .wizard-section-heading p,
+html.admin-dark-nav .campaign-wizard-page .wizard-mode span,
+html.admin-dark-nav .campaign-wizard-page .wizard-mode em{color:#c0c0c0}
+html.admin-dark-nav .campaign-wizard-page .wizard-mode{background:#202020;border-color:#353535;color:#f5f5f5}
+html.admin-dark-nav .campaign-wizard-page .wizard-mode:hover,
+html.admin-dark-nav .campaign-wizard-page .wizard-mode.is-selected{border-color:#7da533;background:#292929}
+html.admin-dark-nav .campaign-wizard-page .wizard-mode>i,
+html.admin-dark-nav .campaign-wizard-page .wizard-mode em{background:#353535;color:#d9f99d}
+html.admin-dark-nav .campaign-wizard-page .wizard-mode.is-selected:after{color:#a3e635}
+html.admin-dark-nav .campaign-wizard-page .wizard-grid label>span,
+html.admin-dark-nav .campaign-wizard-page .wizard-grid legend,
+html.admin-dark-nav .campaign-wizard-page .wizard-team-column-head strong,
+html.admin-dark-nav .campaign-wizard-page .wizard-team-column>label>span,
+html.admin-dark-nav .campaign-wizard-page .wizard-designer-row label>span,
+html.admin-dark-nav .campaign-wizard-page .wizard-task-grid label,
+html.admin-dark-nav .campaign-wizard-page .wizard-audiences-head span,
+html.admin-dark-nav .campaign-wizard-page .wizard-audience-row label span,
+html.admin-dark-nav .campaign-wizard-page .task-assignees legend,
+html.admin-dark-nav .campaign-wizard-page .task-content-types>legend,
+html.admin-dark-nav .campaign-wizard-page .task-other-type>span,
+html.admin-dark-nav .campaign-wizard-page .task-custom-check strong{color:#e5e5e5}
+html.admin-dark-nav .campaign-wizard-page .wizard-grid label>small,
+html.admin-dark-nav .campaign-wizard-page .wizard-team-column-head small,
+html.admin-dark-nav .campaign-wizard-page .wizard-designers-empty,
+html.admin-dark-nav .campaign-wizard-page .wizard-audiences-head small,
+html.admin-dark-nav .campaign-wizard-page .task-assignees legend small,
+html.admin-dark-nav .campaign-wizard-page .task-custom-check small,
+html.admin-dark-nav .campaign-wizard-page .wizard-task-source span,
+html.admin-dark-nav .campaign-wizard-page .wizard-footer #mode-result,
+html.admin-dark-nav .campaign-wizard-page .wizard-footer a{color:#bcbcbc}
+html.admin-dark-nav .campaign-wizard-page .wizard-team-recommendation>div,
+html.admin-dark-nav .campaign-wizard-page .task-person-option span small,
+html.admin-dark-nav .campaign-wizard-page .task-assignees>div>p{color:#bcbcbc}
+html.admin-dark-nav .campaign-wizard-page .wizard-grid input,
+html.admin-dark-nav .campaign-wizard-page .wizard-grid textarea,
+html.admin-dark-nav .campaign-wizard-page .wizard-grid select,
+html.admin-dark-nav .campaign-wizard-page .wizard-task input,
+html.admin-dark-nav .campaign-wizard-page .wizard-task textarea,
+html.admin-dark-nav .campaign-wizard-page .wizard-task select{background:#202020;border-color:#4a4a4a;color:#f5f5f5;color-scheme:dark}
+html.admin-dark-nav .campaign-wizard-page input::placeholder,
+html.admin-dark-nav .campaign-wizard-page textarea::placeholder{color:#a8a8a8}
+html.admin-dark-nav .campaign-wizard-page .wizard-check span,
+html.admin-dark-nav .campaign-wizard-page .task-person-option span,
+html.admin-dark-nav .campaign-wizard-page .task-content-types>div span,
+html.admin-dark-nav .campaign-wizard-page .task-custom-check{background:#202020;border-color:#4a4a4a;color:#e5e5e5}
+html.admin-dark-nav .campaign-wizard-page .wizard-check input:checked+span,
+html.admin-dark-nav .campaign-wizard-page .task-person-option input:checked+span,
+html.admin-dark-nav .campaign-wizard-page .task-custom-check:has(input:checked){background:#294331;border-color:#638522;color:#d9f99d}
+html.admin-dark-nav .campaign-wizard-page .task-content-types>div input:checked+span{background:#638522;border-color:#638522;color:#fff}
+html.admin-dark-nav .campaign-wizard-page .task-custom-check>span{background:#292929;border-color:#666;color:transparent}
+html.admin-dark-nav .campaign-wizard-page .task-custom-check>input:checked+span{background:#638522;border-color:#638522;color:#fff}
+html.admin-dark-nav .campaign-wizard-page .wizard-audiences,
+html.admin-dark-nav .campaign-wizard-page .wizard-task,
+html.admin-dark-nav .campaign-wizard-page .wizard-audience-row{background:#202020;border-color:#353535}
+html.admin-dark-nav .campaign-wizard-page .wizard-empty{border-color:#4a4a4a;color:#c0c0c0}
+html.admin-dark-nav .campaign-wizard-page .wizard-empty strong,
+html.admin-dark-nav .campaign-wizard-page .wizard-task-source strong{color:#f5f5f5}
+html.admin-dark-nav .campaign-wizard-page .wizard-task-source,
+html.admin-dark-nav .campaign-wizard-page .wizard-team-column{border-color:#353535}
+html.admin-dark-nav .campaign-wizard-page .wizard-task-source button:not(#add-task),
+html.admin-dark-nav .campaign-wizard-page .wizard-team-column-head>button,
+html.admin-dark-nav .campaign-wizard-page .wizard-button-secondary,
+html.admin-dark-nav .campaign-wizard-page .wizard-audiences-head button{background:#292929!important;border-color:#4a4a4a!important;color:#e5e5e5!important}
+html.admin-dark-nav .campaign-wizard-page .custom-dropdown-trigger,
+html.admin-dark-nav .campaign-wizard-page .custom-dropdown-menu,
+html.admin-dark-nav .campaign-wizard-page .custom-dropdown-option{background:#202020;border-color:#4a4a4a;color:#f5f5f5}
+html.admin-dark-nav .campaign-wizard-page .custom-dropdown-option:hover,
+html.admin-dark-nav .campaign-wizard-page .custom-dropdown-option.is-selected{background:#353535;color:#d9f99d}
+html.admin-dark-nav .campaign-wizard-page .wizard-prefill-note,
+html.admin-dark-nav .campaign-wizard-page .wizard-prefill-note strong{color:#d0d0d0}
+html.admin-dark-nav .campaign-wizard-page .wizard-alert.is-error{background:#451a25;border-color:#9f3344;color:#fecaca}
+html.admin-dark-nav .wizard-loading>div,
+html.admin-dark-nav .wizard-confirm-card{background:#202020;border-color:#4a4a4a;color:#e5e5e5}
+html.admin-dark-nav .wizard-loading{background:rgba(0,0,0,.72)}
+html.admin-dark-nav .wizard-confirm-backdrop{background:rgba(0,0,0,.72)}
+html.admin-dark-nav .wizard-loading p,
+html.admin-dark-nav .wizard-confirm-card p{color:#c0c0c0}
+html.admin-dark-nav .wizard-confirm-card h2{color:#f5f5f5}
+html.admin-dark-nav .wizard-confirm-cancel{background:#353535;border-color:#4a4a4a;color:#e5e5e5}
 </style>
 
 <script>

@@ -32,6 +32,13 @@
         @if(session('password_link_sent'))
             <div class="cuenta-notice cuenta-notice-mail"><i class="fas fa-envelope-circle-check"></i>{{ session('password_link_sent') }}</div>
         @endif
+        @if(!($adminPreview ?? false) && ($campaniaReuniones ?? null))
+            <div class="cuenta-meetings-shortcut">
+                <span class="cuenta-meetings-icon"><i class="fas fa-calendar-days"></i></span>
+                <div><small>REUNIONES DE CAMPAÑA</small><strong>{{ $proximaReunion ? 'Próxima: '.$proximaReunion->fecha_inicio->format('d/m/Y H:i') : 'Coordina con tu equipo' }}</strong><p>{{ $proximaReunion?->titulo ?? 'Consulta tus reuniones o agenda una nueva.' }}</p></div>
+                <a href="{{ route('clientes.campanias.reuniones.index', $campaniaReuniones) }}">Ver reuniones <i class="fas fa-arrow-right"></i></a>
+            </div>
+        @endif
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Columna izquierda - Datos del cliente -->
@@ -683,6 +690,7 @@
         #mi-cuenta-page .cuenta-banner-side { width: 100%; margin-left: 0; }
         #mi-cuenta-page .cuenta-banner-total { width: 100%; }
     }
+    .cuenta-meetings-shortcut{display:flex;align-items:center;gap:16px;margin-bottom:24px;padding:17px 20px;border:1px solid #d8e6e8;border-radius:13px;background:#f4fbfb}.cuenta-meetings-icon{width:44px;height:44px;display:grid;place-items:center;flex:0 0 44px;border-radius:10px;background:#117e8c;color:#fff}.cuenta-meetings-shortcut>div{min-width:0;flex:1}.cuenta-meetings-shortcut small,.cuenta-meetings-shortcut strong{display:block}.cuenta-meetings-shortcut small{color:#117e8c;font-size:.57rem;font-weight:900;letter-spacing:.09em}.cuenta-meetings-shortcut strong{margin-top:3px;color:#302834;font-size:.78rem}.cuenta-meetings-shortcut p{margin:3px 0 0;color:#756d78;font-size:.66rem}.cuenta-meetings-shortcut>a{display:inline-flex;align-items:center;gap:7px;padding:10px 12px;border-radius:8px;background:#117e8c;color:#fff;font-size:.65rem;font-weight:900;text-decoration:none;white-space:nowrap}.cuenta-meetings-shortcut>a:hover{background:#0d6974;color:#fff}html[data-client-theme="dark"] .cuenta-meetings-shortcut{background:#242127;border-color:#403943}html[data-client-theme="dark"] .cuenta-meetings-shortcut strong{color:#f4f1f5}html[data-client-theme="dark"] .cuenta-meetings-shortcut p{color:#bbb2be}@media(max-width:600px){.cuenta-meetings-shortcut{align-items:flex-start;flex-wrap:wrap}.cuenta-meetings-shortcut>a{margin-left:60px}}
 </style>
 
 <!-- Modal para detalles del plan -->
