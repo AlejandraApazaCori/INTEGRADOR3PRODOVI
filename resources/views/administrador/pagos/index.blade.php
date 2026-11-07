@@ -69,12 +69,9 @@
                 <div class="rp-banner-overlay absolute inset-0"></div>
                 <div class="relative z-10 px-8 py-8">
                     <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                        <div class="flex h-14 w-14 items-center justify-center rounded-2xl flex-shrink-0" style="background: rgba(255,255,255,0.2);">
-                            <i class="fas fa-credit-card text-white text-2xl"></i>
-                        </div>
                         <div class="flex-1 text-center sm:text-left">
+                            @include('administrador.pagos.dashboard-back')
                             <h1 class="text-3xl font-bold text-white mb-1">Gestión de Pagos</h1>
-                            <p style="color: #bfdbfe; font-size: 0.9rem;">Administra y monitorea el estado de todas las suscripciones</p>
                         </div>
                     </div>
                 </div>
@@ -129,8 +126,18 @@
                         <button type="button" class="payments-custom-trigger" data-payment-trigger><i class="fas fa-wallet"></i><span data-payment-label>{{ $methodLabels[request('method')] ?? 'Todos los métodos' }}</span><i class="fas fa-chevron-down"></i></button>
                         <div class="payments-custom-menu" data-payment-menu><button type="button" data-value="">Todos los métodos</button><button type="button" data-value="qr">QR</button><button type="button" data-value="fisico">Físico</button></div>
                     </div>
-                    <label class="payments-users-date"><span>Pago desde</span><div><i class="fas fa-calendar-day"></i><input type="date" name="date_from" value="{{ request('date_from') }}" onchange="this.form.submit()"></div></label>
-                    <label class="payments-users-date"><span>Pago hasta</span><div><i class="fas fa-calendar-check"></i><input type="date" name="date_to" value="{{ request('date_to') }}" onchange="this.form.submit()"></div></label>
+                    @foreach([['date_from','Pago desde','fa-calendar-day'],['date_to','Pago hasta','fa-calendar-check']] as [$field,$title,$icon])
+                        <div class="payments-users-date payments-date-picker {{ $field === 'date_from' ? 'is-from' : 'is-to' }}" data-payment-date>
+                            <input id="payment_{{ $field }}" type="hidden" name="{{ $field }}" value="{{ request($field) }}">
+                            <button type="button" class="payments-date-trigger" data-date-trigger aria-expanded="false"><i class="fas {{ $icon }}"></i><span><small>{{ $title }}</small><strong data-date-label>Seleccionar fecha</strong></span><i class="fas fa-chevron-down"></i></button>
+                            <div class="payments-date-calendar hidden" data-date-calendar>
+                                <header><button type="button" data-prev aria-label="Mes anterior"><i class="fas fa-chevron-left"></i></button><strong data-month></strong><button type="button" data-next aria-label="Mes siguiente"><i class="fas fa-chevron-right"></i></button></header>
+                                <div class="payments-calendar-week"><span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sá</span><span>Do</span></div>
+                                <div class="payments-calendar-days" data-days></div>
+                                <button type="button" class="payments-calendar-clear" data-clear><i class="fas fa-eraser"></i> Quitar fecha</button>
+                            </div>
+                        </div>
+                    @endforeach
                     <div class="payments-custom-dropdown" data-payment-dropdown>
                         <input type="hidden" name="order" value="{{ request('order', 'newest') }}">
                         <button type="button" class="payments-custom-trigger" data-payment-trigger><i class="fas fa-arrow-down-wide-short"></i><span data-payment-label>{{ request('order') === 'oldest' ? 'Más antiguos primero' : 'Más recientes primero' }}</span><i class="fas fa-chevron-down"></i></button>
@@ -528,6 +535,78 @@
 
             document.addEventListener('click', () => closePaymentDropdowns());
 
+            const paymentDatePickers = [...document.querySelectorAll('[data-payment-date]')];
+            const paymentMonths = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+            const parsePaymentDate = value => {
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+                const [year, month, day] = value.split('-').map(Number);
+                const date = new Date(year, month - 1, day);
+                return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? date : null;
+            };
+            const paymentDateValue = date => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+            const paymentDateLabel = value => {
+                const date = parsePaymentDate(value);
+                return date ? new Intl.DateTimeFormat('es-ES', { day:'2-digit', month:'short', year:'numeric' }).format(date) : 'Seleccionar fecha';
+            };
+            const closePaymentDates = () => paymentDatePickers.forEach(picker => {
+                picker.classList.remove('is-open');
+                picker.querySelector('[data-date-calendar]').classList.add('hidden');
+                picker.querySelector('[data-date-trigger]').setAttribute('aria-expanded', 'false');
+            });
+
+            paymentDatePickers.forEach(picker => {
+                const input = picker.querySelector('input[type="hidden"]');
+                const label = picker.querySelector('[data-date-label]');
+                const trigger = picker.querySelector('[data-date-trigger]');
+                const calendar = picker.querySelector('[data-date-calendar]');
+                const days = picker.querySelector('[data-days]');
+                const monthTitle = picker.querySelector('[data-month]');
+                let visible = parsePaymentDate(input.value) || new Date();
+                visible = new Date(visible.getFullYear(), visible.getMonth(), 1);
+                label.textContent = paymentDateLabel(input.value);
+
+                const render = () => {
+                    const year = visible.getFullYear();
+                    const month = visible.getMonth();
+                    const count = new Date(year, month + 1, 0).getDate();
+                    const offset = (new Date(year, month, 1).getDay() + 6) % 7;
+                    const from = document.getElementById('payment_date_from').value;
+                    const to = document.getElementById('payment_date_to').value;
+                    monthTitle.textContent = `${paymentMonths[month]} ${year}`;
+                    days.replaceChildren();
+                    for (let index = 0; index < offset; index++) days.appendChild(document.createElement('span'));
+                    for (let day = 1; day <= count; day++) {
+                        const date = new Date(year, month, day);
+                        const value = paymentDateValue(date);
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.textContent = day;
+                        button.setAttribute('aria-label', new Intl.DateTimeFormat('es-ES', { day:'numeric', month:'long', year:'numeric' }).format(date));
+                        button.classList.toggle('selected', value === input.value);
+                        button.disabled = input.name === 'date_from' ? Boolean(to && value > to) : Boolean(from && value < from);
+                        button.addEventListener('click', () => { input.value = value; paymentFilterForm.requestSubmit(); });
+                        days.appendChild(button);
+                    }
+                };
+
+                trigger.addEventListener('click', event => {
+                    event.stopPropagation();
+                    const opening = !picker.classList.contains('is-open');
+                    closePaymentDates();
+                    closePaymentDropdowns();
+                    if (!opening) return;
+                    picker.classList.add('is-open');
+                    calendar.classList.remove('hidden');
+                    trigger.setAttribute('aria-expanded', 'true');
+                    render();
+                });
+                calendar.addEventListener('click', event => event.stopPropagation());
+                picker.querySelector('[data-prev]').addEventListener('click', () => { visible = new Date(visible.getFullYear(), visible.getMonth() - 1, 1); render(); });
+                picker.querySelector('[data-next]').addEventListener('click', () => { visible = new Date(visible.getFullYear(), visible.getMonth() + 1, 1); render(); });
+                picker.querySelector('[data-clear]').addEventListener('click', () => { input.value = ''; paymentFilterForm.requestSubmit(); });
+            });
+            document.addEventListener('click', closePaymentDates);
+
             if (abrirReporteMensual) {
                 abrirReporteMensual.addEventListener('click', function () {
                     reporteMensualModal.classList.remove('hidden');
@@ -563,7 +642,7 @@
             });
 
             document.addEventListener('keydown', function (event) {
-                if (event.key === 'Escape') closePaymentDropdowns();
+                if (event.key === 'Escape') { closePaymentDropdowns(); closePaymentDates(); }
                 if (event.key === 'Escape' && !reenvioModal?.classList.contains('hidden')) cerrarModalReenvio();
             });
 
@@ -1006,7 +1085,6 @@
         .payments-hero .relative.z-10 { display: flex; align-items: center; min-height: 180px; padding: 30px 48px; }
         .payments-hero .relative.z-10 > div { width: 100%; padding-right: 570px; }
         .payments-hero h1 { margin: 0 0 4px; color: #fff; font-size: clamp(1.55rem,3vw,2.25rem); font-weight: 900; letter-spacing: -.04em; }
-        .payments-hero h1::before { content: 'Administración financiera'; display: block; margin-bottom: 7px; color: #dbeafe; font-size: .68rem; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
         .payments-hero p { color: #dbeafe !important; font-size: .74rem !important; font-weight: 600; }
         .payments-hero .h-14.w-14 { width: 52px; height: 52px; border: 1px solid rgba(255,255,255,.24); border-radius: 14px; background: rgba(255,255,255,.14) !important; backdrop-filter: blur(5px); }
         .payments-tabs { position: absolute; z-index: 20; top: 67px; right: 48px; display: flex; justify-content: flex-end; padding: 0; }
@@ -1033,6 +1111,21 @@
         @media(max-width:980px) { .payments-hero .relative.z-10 > div { padding-right:0; }.payments-tabs { position:static; order:2; justify-content:center; margin:14px 24px 0; }.payments-tabs .btn-action { border-color:#dce4f3; background:#f4f7fd; color:#4f46e5; }.payments-tabs .btn-action:first-child { background:#4f46e5;color:#fff; }.payments-alert { order:3; }.payments-users-content{margin-top:18px} }
         @media(max-width:640px){.payments-page{padding-top:20px}.payments-hero{min-height:205px}.payments-hero .relative.z-10{min-height:205px;padding:28px 20px}.payments-tabs{display:grid;grid-template-columns:1fr;margin-right:12px;margin-left:12px}.payments-summary-grid,.payments-users-content,.payments-users-table-area{grid-template-columns:1fr;margin-right:12px;margin-left:12px}.payments-users-filter-grid{grid-template-columns:1fr}.payments-users-filter-grid>*,.payments-users-search{grid-column:1}.payments-users-table-toolbar{align-items:flex-start;flex-direction:column}.payments-alert{width:calc(100% - 24px)}.payments-report-card{align-items:stretch;flex-direction:column}.payments-report-card p{max-width:none}.payments-report-actions{width:100%;grid-template-columns:repeat(3,1fr)}.payment-drive-alert{align-items:flex-start;flex-direction:column}#comprobanteModal{padding:12px}#comprobanteModalDialog{width:calc(100vw - 24px);max-height:calc(100vh - 24px);border-radius:18px!important}#comprobanteModalBody{padding:10px}}
 
+        @media(max-width:980px){
+            .payments-tabs{display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+            .payments-tabs .btn-action{flex:0 0 auto;white-space:nowrap}
+        }
+        @media(max-width:640px){
+            .payments-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;overflow:visible}
+            .payments-tabs .btn-action{width:100%;min-width:0;min-height:36px;padding:6px 7px;font-size:.62rem;gap:5px;white-space:normal;text-align:center;line-height:1.15}
+            .payments-tabs .btn-action i{font-size:.72rem}
+            .payments-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+            .payments-summary-card{min-height:130px;padding:12px;gap:8px}
+            .payments-summary-card>div{min-width:0}
+            .payments-summary-card>i{display:none}
+            .payments-summary-card strong{max-width:100%;overflow:visible;font-size:1.3rem;text-overflow:clip;white-space:normal;overflow-wrap:anywhere}
+            .payments-summary-card span,.payments-summary-card small{overflow-wrap:anywhere}
+        }
         /* Modo oscuro del administrador; el banner conserva sus colores. */
         html.admin-dark-nav .payments-page { background:#141414; color:#f5f5f5; }
         html.admin-dark-nav .payments-users-content,
@@ -1115,6 +1208,7 @@
         html.admin-dark-nav #comprobanteModalBody>.bg-white { background:#fff; color:#111827; }
         html.admin-dark-nav #reenvioCorreoDialog .bg-white { background:#383838; color:#f5f5f5; }
         html.admin-dark-nav #reporteMensualModal .bg-purple-100 { background:#383044; }
+        @media(max-width:1100px){.payments-hero-icon{display:none}}
         html.admin-dark-nav #payment-drive-new-folder,
         html.admin-dark-nav #payment-drive-folder-trigger,
         html.admin-dark-nav #payment-drive-folder-menu { background:#303030; border-color:#4a4a4a !important; color:#f5f5f5; }
@@ -1122,5 +1216,35 @@
         html.admin-dark-nav #cerrarModalReporte,
         html.admin-dark-nav #reenvioCorreoDialog form button:first-child,
         html.admin-dark-nav #comprobanteModalDialog button { background:#383838 !important; border-color:#555; color:#f5f5f5; }
+        .payments-date-picker{position:relative;z-index:40;min-width:0}
+        .payments-date-picker.is-open{z-index:120}
+        .payments-date-trigger{width:100%;height:50px;display:flex;align-items:center;gap:10px;padding:0 14px;border:1px solid #d9dcd6;border-radius:14px;background:#fff;color:#374151;text-align:left;box-shadow:0 2px 5px rgba(55,60,52,.08);cursor:pointer}
+        .payments-date-trigger>i:first-child{color:#117e8c}
+        .payments-date-trigger>i:last-child{color:#9ca3af;font-size:.62rem}
+        .payments-date-trigger>span{min-width:0;flex:1}
+        .payments-date-trigger small,.payments-date-trigger strong{display:block}
+        .payments-date-trigger small{color:#8d9585;font-size:.55rem}
+        .payments-date-trigger strong{margin-top:2px;color:#39432f;font-size:.69rem}
+        .payments-date-trigger:focus-visible,.payments-date-picker.is-open .payments-date-trigger{outline:0;border-color:#8a9186;box-shadow:0 0 0 3px rgba(98,104,95,.12)}
+        .payments-users-date>.payments-date-calendar{position:absolute;top:calc(100% + 7px);right:0;left:auto;width:min(290px,calc(100vw - 48px));height:auto;display:block;padding:13px;border:1px solid #dce7cc;border-radius:13px;background:#fff;box-shadow:0 16px 35px rgba(31,41,55,.16)}
+        .payments-users-date>.payments-date-calendar.hidden{display:none}
+        .payments-date-picker.is-from>.payments-date-calendar{right:auto;left:0}
+        .payments-date-calendar header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+        .payments-date-calendar header button{width:32px;height:32px;border:0;border-radius:8px;background:#edf4e4;color:#638524}
+        .payments-date-calendar header strong{color:#34451f;font-size:.78rem;text-transform:capitalize}
+        .payments-calendar-week,.payments-calendar-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+        .payments-calendar-week span{text-align:center;color:#9aa18f;font-size:.55rem;font-weight:900}
+        .payments-calendar-days button,.payments-calendar-days>span{aspect-ratio:1;display:grid;place-items:center;border:0;border-radius:8px;background:transparent;color:#48513e;font-size:.66rem;font-weight:800}
+        .payments-calendar-days button:hover{background:#edf4e4}
+        .payments-calendar-days button.selected{background:#7da533;color:#fff}
+        .payments-calendar-days button:disabled{color:#d1d5db;cursor:not-allowed}
+        .payments-calendar-clear{width:100%;margin-top:8px;padding:8px;border:0;border-radius:8px;background:#f4f6f1;color:#758069;font-size:.65rem;font-weight:800}
+        html.admin-dark-nav .payments-date-trigger,html.admin-dark-nav .payments-users-date>.payments-date-calendar{background:#242424;border-color:#4a4a4a;color:#f5f5f5}
+        html.admin-dark-nav .payments-date-trigger strong,html.admin-dark-nav .payments-date-calendar header strong,html.admin-dark-nav .payments-calendar-days button{color:#f5f5f5}
+        html.admin-dark-nav .payments-date-trigger small,html.admin-dark-nav .payments-calendar-week span{color:#b8b8b8}
+        html.admin-dark-nav .payments-date-calendar header button,html.admin-dark-nav .payments-calendar-clear{background:#353535;color:#c8eba5}
+        html.admin-dark-nav .payments-calendar-days button:hover{background:#35442b}
+        html.admin-dark-nav .payments-calendar-days button.selected{background:#7da533;color:#fff}
+        html.admin-dark-nav .payments-calendar-days button:disabled{color:#666}
     </style>
 @endpush

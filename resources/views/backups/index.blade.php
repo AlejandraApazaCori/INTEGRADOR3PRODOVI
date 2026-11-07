@@ -12,7 +12,8 @@
     .backups-heading { display: flex; align-items: center; gap: 17px; }
     .backups-heading-icon { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; flex: 0 0 52px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.24); backdrop-filter: blur(5px); font-size: 22px; }
     .backups-heading h1 { margin: 0 0 4px; font-size: clamp(1.55rem, 3vw, 2.25rem); font-weight: 900; letter-spacing: -.04em; }
-    .backups-heading h1::before { content: 'Seguridad de la información'; display: block; margin-bottom: 7px; color: #dbeafe; font-size: .68rem; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
+    .backups-dashboard-back { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 13px; padding: 7px 12px; border: 1px solid rgba(255,255,255,.36); border-radius: 9px; background: rgba(255,255,255,.12); color: #fff; font-size: .7rem; font-weight: 800; text-decoration: none; transition: .18s; }
+    .backups-dashboard-back:hover,.backups-dashboard-back:focus-visible { border-color: #fff; background: #fff; color: #2563eb; }
     .backups-heading p { margin: 0; color: #dbeafe; font-size: .74rem; font-weight: 600; }
     .backups-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
     .backup-btn { min-height: 43px; padding: 0 17px; border: 0; border-radius: 11px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; font-size: .82rem; font-weight: 800; text-decoration: none; cursor: pointer; transition: .2s ease; }
@@ -90,8 +91,83 @@
     .history-empty { padding: 46px 20px; text-align: center; color: #94a3b8; }
     .history-empty i { display: block; margin-bottom: 10px; font-size: 30px; }
     .history-pagination { padding: 14px 18px; border-top: 1px solid #f1f5f9; }
+    html.admin-dark-nav .backups-page { background:#141414; color:#e5e5e5; }
+    html.admin-dark-nav .backup-alert-success { background:#1c3928; border-color:#376f49; color:#b8edc4; }
+    html.admin-dark-nav .backup-alert-error { background:#472a2a; border-color:#855050; color:#ffc1c1; }
+    html.admin-dark-nav .backup-stat,html.admin-dark-nav .backup-panel { background:#202020; border-color:#353535; box-shadow:0 9px 24px rgba(0,0,0,.2); }
+    html.admin-dark-nav .backup-stat-label,html.admin-dark-nav .backup-stat-meta,html.admin-dark-nav .backup-panel-header p,html.admin-dark-nav .calendar-label,html.admin-dark-nav .calendar-note,html.admin-dark-nav .calendar-disabled { color:#c0c0c0; }
+    html.admin-dark-nav .backup-stat-value,html.admin-dark-nav .backup-panel-header h2 { color:#f5f5f5; }
+    html.admin-dark-nav .backup-stat-icon,html.admin-dark-nav .history-file-icon { background:#1c3e42; color:#8dd7e3; }
+    html.admin-dark-nav .backup-panel-header,html.admin-dark-nav .history-pagination { border-color:#353535; }
+    html.admin-dark-nav .frequency-card label { background:#292929; border-color:#4a4a4a; color:#c0c0c0; }
+    html.admin-dark-nav .frequency-card label strong { color:#f5f5f5; }
+    html.admin-dark-nav .frequency-card input:checked + label { background:#1c3e42; border-color:#3e7278; color:#8dd7e3; box-shadow:inset 0 0 0 1px #3e7278; }
+    html.admin-dark-nav .frequency-card input:checked + label strong { color:#b9edf3; }
+    html.admin-dark-nav .schedule-field label { color:#e5e5e5; }
+    html.admin-dark-nav .schedule-field input,html.admin-dark-nav .schedule-field select { background:#292929; border-color:#4a4a4a; color:#f5f5f5; color-scheme:dark; }
+    html.admin-dark-nav .schedule-field select option { background:#292929; color:#f5f5f5; }
+    html.admin-dark-nav .schedule-switch { background:#292929; border-color:#4a4a4a; }
+    html.admin-dark-nav .schedule-switch strong { color:#f5f5f5; }
+    html.admin-dark-nav .schedule-switch small { color:#c0c0c0; }
+    html.admin-dark-nav .switch-slider { background:#555; }
+    html.admin-dark-nav .switch-control input:checked + .switch-slider { background:#2563eb; }
+    html.admin-dark-nav .calendar-card { background:#242424; border-color:#3e7278; }
+    html.admin-dark-nav .calendar-day { color:#f5f5f5; }
+    html.admin-dark-nav .calendar-weekday { color:#c0c0c0; }
+    html.admin-dark-nav .calendar-time { background:#292929; border-color:#4a4a4a; color:#8dd7e3; }
+    html.admin-dark-nav .history-table th { background:#292929; border-color:#4a4a4a; color:#d0d0d0; }
+    html.admin-dark-nav .history-table td { border-color:#353535; color:#e5e5e5; }
+    html.admin-dark-nav .history-table tbody tr:nth-child(even) { background:#292929; }
+    html.admin-dark-nav .history-table tbody tr:hover { background:#333d2d; }
+    html.admin-dark-nav .history-file strong { color:#f5f5f5; }
+    html.admin-dark-nav .history-file small { color:#c0c0c0; }
+    html.admin-dark-nav .status-completed { background:#1c3928; color:#b8edc4; }
+    html.admin-dark-nav .status-processing { background:#493821; color:#ffe0a0; }
+    html.admin-dark-nav .status-failed { background:#472a2a; color:#ffc1c1; }
+    html.admin-dark-nav .history-download { background:#1c3e42; color:#8dd7e3; }
+    html.admin-dark-nav .history-download:hover { background:#28545a; }
+    html.admin-dark-nav .history-error { color:#ffc1c1; }
+    html.admin-dark-nav .history-empty { color:#c0c0c0; }
+    html.admin-dark-nav .history-pagination { color:#e5e5e5; }
+    html.admin-dark-nav .history-pagination a,html.admin-dark-nav .history-pagination span { color:#e5e5e5; }
+    html.admin-dark-nav .history-pagination .bg-white,html.admin-dark-nav .history-pagination .bg-gray-100 { background:#303030!important; border-color:#4a4a4a!important; }
     @media (max-width: 900px) { .backup-stats { grid-template-columns: repeat(2, 1fr); } .backup-grid { grid-template-columns: 1fr; } }
     @media (max-width: 680px) { .backups-hero { min-height: 220px; } .backups-hero-content { min-height: 220px; padding: 26px 20px; align-items: flex-start; flex-direction: column; justify-content: center; } .backups-heading { align-items: center; } .backups-actions { width: 100%; justify-content: flex-start; } .backup-btn { flex: 1; } .backup-alert { width: calc(100% - 24px); } .backup-stats { grid-template-columns: 1fr; margin-right: 12px; margin-left: 12px; } .backup-grid { margin-right: 12px; margin-left: 12px; } .history-panel { margin-right: 12px; margin-left: 12px; } .frequency-options { grid-template-columns: 1fr; } .frequency-card label { min-height: 65px; flex-direction: row; } .schedule-fields { grid-template-columns: 1fr; } }
+    .backup-scroll-hint { display: none; }
+    @media (max-width: 680px) {
+        .backups-hero, .backups-hero-content { min-height: 0; }
+        .backups-hero-content { padding: 22px 16px; gap: 18px; }
+        .backups-heading-icon { display: none; }
+        .backups-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .backups-actions form { grid-column: 1 / -1; }
+        .backups-actions .backup-btn { width: 100%; min-width: 0; min-height: 42px; padding: 8px; font-size: .7rem; text-align: center; }
+        .backup-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .backup-stat { min-width: 0; min-height: 125px; padding: 12px; }
+        .backup-stat-top { align-items: flex-start; gap: 5px; }
+        .backup-stat-label { min-width: 0; font-size: .62rem; line-height: 1.25; overflow-wrap: anywhere; }
+        .backup-stat-icon { width: 30px; height: 30px; flex: none; font-size: .8rem; }
+        .backup-stat-value { font-size: .83rem; white-space: normal; overflow-wrap: anywhere; line-height: 1.25; }
+        .backup-stat-meta { font-size: .64rem; overflow-wrap: anywhere; }
+        .backup-panel-header { padding: 16px; }
+        .backup-panel-body, .calendar-wrap { padding: 16px; }
+        .frequency-options { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+        .frequency-card label { min-height: 72px; flex-direction: column; gap: 4px; padding: 8px 4px; text-align: center; }
+        .frequency-card label strong { font-size: .7rem; }
+        .backup-scroll-hint { display: block; margin: 0; padding: 9px 16px; color: #64748b; font-size: .7rem; }
+        html.admin-dark-nav .backup-scroll-hint { color: #b8b8b8; }
+        .history-table { min-width: 720px; }
+        .history-table th, .history-table td { padding: 11px 12px; }
+    }
+    @media (max-width: 1100px) {
+        .backups-hero-content { flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
+        .backups-heading { position: relative; width: 100%; justify-content: center; text-align: center; }
+        .backups-heading-icon { position: absolute; left: 0; top: 50%; transform: translateY(-50%); }
+        .backups-actions { width: 100%; justify-content: center; }
+    }
+    @media (max-width: 680px) {
+        .backups-hero-content { align-items: center; padding: 22px 16px; }
+        .backups-heading-icon { display: none; }
+    }
 </style>
 @endpush
 
@@ -106,10 +182,10 @@
             <div class="rp-banner-overlay"></div>
             <div class="backups-hero-content">
                 <div class="backups-heading">
-                    <div class="backups-heading-icon"><i class="fas fa-database"></i></div>
                     <div>
+                        <a href="{{ route('administrador.dashboard') }}" class="backups-dashboard-back"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al dashboard</a>
                         <h1>Respaldos de base de datos</h1>
-                        <p>Protege la información del sistema y descarga copias en formato SQL o Excel.</p>
+
                     </div>
                 </div>
                 <div class="backups-actions">
@@ -118,6 +194,9 @@
                     </a>
                     <a href="{{ $latestBackup ? route('administrador.backups.download-latest-excel') : '#' }}" class="backup-btn backup-btn-ghost {{ $latestBackup ? '' : 'backup-btn-disabled' }}" @if(!$latestBackup) aria-disabled="true" @endif>
                         <i class="fas fa-file-excel"></i> Descargar último Excel
+                    </a>
+                    <a href="{{ $latestBackup ? route('administrador.backups.download-latest-csv') : '#' }}" class="backup-btn backup-btn-ghost {{ $latestBackup ? '' : 'backup-btn-disabled' }}" @if(!$latestBackup) aria-disabled="true" @endif title="Un CSV por tabla dentro de un ZIP">
+                        <i class="fas fa-file-csv"></i> Descargar último CSV (ZIP)
                     </a>
                     <form method="POST" action="{{ route('administrador.backups.store') }}" onsubmit="return confirm('¿Deseas crear un respaldo completo de la base de datos ahora?');">
                         @csrf
@@ -239,6 +318,7 @@
                 <p>Las copias se almacenan de forma privada y solo los administradores pueden descargarlas.</p>
             </header>
             @if($backups->count())
+                <p class="backup-scroll-hint"><i class="fas fa-arrows-left-right mr-1"></i>Desliza la tabla para ver más columnas</p>
                 <div class="history-table-wrap">
                     <table class="history-table">
                         <thead><tr><th>Archivo</th><th>Fecha</th><th>Origen</th><th>Tamaño</th><th>Estado</th><th>Acción</th></tr></thead>
@@ -265,9 +345,11 @@
                                         @if($backup->status === 'completed')
                                             <a href="{{ route('administrador.backups.download', $backup) }}" class="history-download" title="Descargar SQL"><i class="fas fa-file-code"></i> SQL</a>
                                             <a href="{{ route('administrador.backups.download-excel', $backup) }}" class="history-download" title="Descargar Excel"><i class="fas fa-file-excel"></i> Excel</a>
+                                            <a href="{{ route('administrador.backups.download-csv', $backup) }}" class="history-download" title="Descargar CSV: un archivo por tabla dentro de un ZIP"><i class="fas fa-file-csv"></i> CSV</a>
                                         @else
                                             <span class="history-download backup-btn-disabled"><i class="fas fa-file-code"></i> SQL</span>
                                             <span class="history-download backup-btn-disabled"><i class="fas fa-file-excel"></i> Excel</span>
+                                            <span class="history-download backup-btn-disabled"><i class="fas fa-file-csv"></i> CSV</span>
                                         @endif
                                     </td>
                                 </tr>

@@ -17,22 +17,10 @@ class TareaController extends Controller
 {
     public function create(Campania $campania)
     {
-        $asignables = User::whereHas('roles', function ($query) {
-            $query->whereIn('nombre_rol', ['Disenador', 'Community Manager', 'Administrador', 'Super Administrador'])
-                ->orWhereIn('nombre_rol', ['Diseñador']);
-        })->with('roles')->get();
-
-        $cm = User::with('roles')->find($campania->community_manager_id);
-        if ($cm && ! $asignables->contains('id', $cm->id)) {
-            $asignables->push($cm);
-        }
-
-        $adminActual = Auth::user()?->loadMissing('roles');
-        if ($adminActual && ! in_array($adminActual->id, $asignables->pluck('id')->toArray(), true)) {
-            $asignables->push($adminActual);
-        }
-
-        return view('administrador.tareas.crear', compact('campania', 'asignables'));
+        return redirect()->route('administrador.campañas.edit', [
+            'campania' => $campania,
+            'nueva_tarea' => 1,
+        ]);
     }
 
     public function store(Request $request, Campania $campania)

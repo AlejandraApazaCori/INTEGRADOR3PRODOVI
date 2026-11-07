@@ -254,6 +254,7 @@
     </div>
 </div>
 
+@push('styles')
 <style>
     .rp-banner{background:linear-gradient(135deg,#789d32 25%,transparent 25%) -50px 0,linear-gradient(225deg,#789d32 25%,transparent 25%) -50px 0,linear-gradient(315deg,#789d32 25%,transparent 25%),linear-gradient(45deg,#789d32 25%,transparent 25%),linear-gradient(to bottom,#8aae3e 0%,#638522 100%);background-size:100px 100px,100px 100px,100px 100px,100px 100px,100% 100%;background-color:#638522}
     .campaign-detail-page{min-height:100vh;padding-bottom:48px;background:#fff;color:#302834}
@@ -531,6 +532,7 @@
     html.admin-dark-nav .campaign-detail-page :is(.admin-social-notice.is-error,.admin-social-missing){background:#422b25;color:#f5b9a8}
     html.admin-dark-nav .campaign-detail-page .meta-heatmap .cell{background:rgba(165,108,191,calc(.16 + var(--heat,.05)))}
 </style>
+@endpush
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {

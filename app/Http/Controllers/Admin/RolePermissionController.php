@@ -14,7 +14,10 @@ class RolePermissionController extends Controller
 {
     public function index()
     {
-        $roles = Role::with(['permissions', 'users'])->orderBy('nombre_rol')->get();
+        $roles = Role::with(['permissions', 'users'])
+            ->orderByRaw("CASE nombre_rol WHEN 'Super Administrador' THEN 0 WHEN 'Administrador' THEN 1 ELSE 2 END")
+            ->orderBy('nombre_rol')
+            ->get();
         $permissions = Permission::with('roles')->orderBy('nombre_permiso')->get();
         $users = User::with('roles')->orderBy('name')->paginate(12);
 

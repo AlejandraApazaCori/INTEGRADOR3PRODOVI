@@ -174,6 +174,12 @@
     @media(max-width:1250px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.alert-grid{grid-template-columns:repeat(3,1fr)}}
     @media(max-width:980px){.control-hero{min-height:205px;align-items:center;justify-content:center;flex-direction:column;text-align:center}.quick-actions{justify-content:center}.kpi-heatmap-layout,.kpi-followup-layout,.workload-finance-grid,.campaign-insights-grid,.split-grid,.ai-grid{grid-template-columns:1fr}.alert-grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:640px){.admin-control{padding:0 0 34px}.control-hero{padding:24px 20px}.dashboard-section{margin-right:12px;margin-left:12px}.kpi-grid,.kpi-heatmap-layout .kpi-grid,.kpi-followup-layout .kpi-grid,.alert-grid{grid-template-columns:1fr}.quick-actions{width:100%}.quick-action{flex:1;justify-content:center}.manager-row{grid-template-columns:minmax(0,1fr) repeat(3,56px)}.manager-stat small{font-size:.45rem}.finance-summary{grid-template-columns:1fr}.section-heading{align-items:flex-start;flex-direction:column}.delivery-heatmap{padding:14px}.heatmap-day{height:31px}.client-followup-card,.workload-chart-panel,.campaign-flow-card,.campaign-insights-grid .delivery-heatmap{padding:17px}.finance-dashboard-card .panel-head{padding:17px 17px 0}.finance-dashboard-card .panel-body{padding:16px 17px 17px}.workload-chart-head{flex-direction:column}.workload-chart-box{overflow-x:auto}.workload-chart-box canvas{min-width:560px}.campaign-donut-layout{grid-template-columns:1fr}.campaign-donut-box{height:210px}}
+    @media(max-width:640px){
+        .kpi-followup-layout .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+        .kpi-followup-layout .kpi-card{min-height:130px;padding:13px}
+        .kpi-followup-layout .kpi-visual{display:none}
+        .kpi-followup-layout .kpi-card .kpi-copy strong{font-size:1.35rem;white-space:normal;overflow-wrap:anywhere}
+    }
 </style>
 @endpush
 

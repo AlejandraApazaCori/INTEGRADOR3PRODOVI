@@ -15,7 +15,6 @@
                         Volver al dashboard
                     </a>
                     <h1 class="hero-title">Estructura del <span>cuestionario</span></h1>
-                    <p class="hero-description">Organiza los temas y preguntas de tu cuestionario.</p>
                 </div>
                 <a href="{{ route('administrador.cuestionario.estructura.create') }}" class="banner-new-topic-button">
                     <i class="fas fa-plus-circle"></i>Añadir nuevo tema
@@ -23,13 +22,7 @@
             </div>
         </div>
 
-        <section class="questionnaire-overview">
-            <div>
-                <span class="questionnaire-overview-kicker"><i class="fas fa-sitemap"></i> Constructor del cuestionario</span>
-                <h2>Temas y preguntas</h2>
-                <p>Define el recorrido que completarán tus clientes y reorganiza cada sección arrastrando sus cards.</p>
-            </div>
-        </section>
+      
 
         <!-- Alertas mejoradas -->
         @if(session('success'))

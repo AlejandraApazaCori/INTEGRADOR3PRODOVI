@@ -8,7 +8,6 @@
         <nav class="campaigns-top-actions" aria-label="Acciones de campañas">
             <a href="{{ route('administrador.campañas.index') }}" class="campaign-top-action is-active"><i class="fas fa-table-columns"></i>General</a>
             <a href="{{ route('administrador.campañas.analiticas') }}" class="campaign-top-action"><i class="fas fa-chart-line"></i>Analíticas</a>
-            <a href="{{ route('administrador.dashboard') }}" class="campaign-top-action"><i class="fas fa-arrow-left"></i>Volver al panel</a>
         </nav>
 
         <!-- Banner -->
@@ -17,12 +16,9 @@
             <div class="campaigns-hero-content relative z-10">
                 <div class="flex flex-col lg:flex-row justify-between items-center gap-4 sm:gap-6">
                     <div class="flex items-center gap-4">
-                        <div class="flex h-14 w-14 items-center justify-center rounded-2xl flex-shrink-0" style="background: rgba(255,255,255,0.2);">
-                            <i class="fas fa-bullhorn text-white text-2xl"></i>
-                        </div>
                         <div class="flex-1 text-center sm:text-left">
+                            <a href="{{ route('administrador.dashboard') }}" class="campaigns-dashboard-back"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al dashboard</a>
                             <h1 class="text-3xl font-bold text-white mb-1">Gestión de Campañas</h1>
-                            <p style="color: #bfdbfe; font-size: 0.9rem;">Administra y supervisa todas las campañas de marketing</p>
                         </div>
                     </div>
                 </div>
@@ -1176,7 +1172,8 @@
     .campaigns-hero-content { display:flex; align-items:center; min-height:180px; padding:30px 48px; }
     .campaigns-hero-content>div { width:100%; padding-right:440px; }
     .campaigns-hero h1 { margin:0 0 4px; color:#fff; font-size:clamp(1.55rem,3vw,2.25rem); font-weight:900; letter-spacing:-.04em; }
-    .campaigns-hero h1::before { content:'Operación de marketing'; display:block; margin-bottom:7px; color:#dbeafe; font-size:.68rem; font-weight:900; letter-spacing:.15em; text-transform:uppercase; }
+    .campaigns-dashboard-back { display:inline-flex; align-items:center; gap:8px; margin-bottom:13px; padding:7px 12px; border:1px solid rgba(255,255,255,.36); border-radius:9px; background:rgba(255,255,255,.12); color:#fff; font-size:.7rem; font-weight:800; text-decoration:none; transition:.18s; }
+    .campaigns-dashboard-back:hover,.campaigns-dashboard-back:focus-visible { border-color:#fff; background:#fff; color:#2563eb; }
     .campaigns-hero p { color:#dbeafe!important; font-size:.74rem!important; font-weight:600; }
     .campaigns-hero .h-14.w-14 { width:52px; height:52px; border:1px solid rgba(255,255,255,.24); border-radius:14px; background:rgba(255,255,255,.14)!important; backdrop-filter:blur(5px); }
     .campaigns-top-actions { position:absolute; z-index:20; top:67px; right:48px; display:flex; justify-content:flex-end; gap:9px; padding:0; }
@@ -1393,6 +1390,10 @@
     html.admin-dark-nav #mensaje-modal .text-gray-500,
     html.admin-dark-nav #mensaje-modal .text-gray-700 { color:#cccccc; }
     html.admin-dark-nav #mensaje-modal .bg-gray-50 { background:#292929; }
+    @media (max-width: 640px) {
+        .campaigns-hero-icon { display: none; }
+        .campaigns-hero, .campaigns-hero-content { min-height: 140px; }
+    }
 </style>
 @endpush
 @endsection

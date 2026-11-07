@@ -434,9 +434,11 @@
 
         /* Modo oscuro del administrador; el banner conserva sus colores. */
         html.admin-dark-nav body { background:#141414; color:#f5f5f5; }
+        html.admin-dark-nav .page-shell { background:#141414; color:#e5e5e5; }
         html.admin-dark-nav .plans-container,
         html.admin-dark-nav .plan-card,
         html.admin-dark-nav .modal-content { background:#202020; border-color:#353535; color:#f5f5f5; box-shadow:0 12px 28px rgba(0,0,0,.18); }
+        html.admin-dark-nav .plan-card:hover { box-shadow:0 20px 40px rgba(0,0,0,.3); }
         html.admin-dark-nav .section-heading { border-color:#3a3a3a; }
         html.admin-dark-nav .section-heading h2,
         html.admin-dark-nav .plan-features h4,
@@ -444,14 +446,20 @@
         html.admin-dark-nav .section-heading p,
         html.admin-dark-nav .empty-state { color:#b8b8b8; }
         html.admin-dark-nav .plan-header { background:#303030; border-bottom:1px solid #4a4a4a; }
+        html.admin-dark-nav .plan-badge { background:#454545; color:#f5f5f5; }
         html.admin-dark-nav .plan-title,
         html.admin-dark-nav .plan-subtitle,
         html.admin-dark-nav .plan-price { color:#f5f5f5; }
-        html.admin-dark-nav .feature-item { border-color:#3a3a3a; }
+        html.admin-dark-nav .plan-features { background:#202020; color:#e5e5e5; }
+        html.admin-dark-nav .feature-item { border-color:#3a3a3a; color:#e5e5e5; }
         html.admin-dark-nav .feature-frequency { background:#383838; color:#d1d1d1; }
         html.admin-dark-nav .plan-actions,
         html.admin-dark-nav .modal-footer { background:#292929; }
         html.admin-dark-nav .modal-body { color:#e5e5e5; }
+        html.admin-dark-nav .modal { background:rgba(0,0,0,.72); }
+        html.admin-dark-nav .modal-footer .btn-secondary { background:#454545; color:#f5f5f5; }
+        html.admin-dark-nav .modal-footer .btn-secondary:hover { background:#555; }
+        html.admin-dark-nav .empty-icon { color:#a8c782; opacity:1; }
         html.admin-dark-nav .alert-success { background:#233528; border-color:#42684a; color:#c1efc8; }
         html.admin-dark-nav .alert-danger { background:#382525; border-color:#704040; color:#fecaca; }
     </style>

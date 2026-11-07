@@ -122,7 +122,7 @@ class TareaArchivoController extends Controller
 
         DB::transaction(function () use ($archivo, $validated, $taskStatus) {
             $archivo->update(['estado' => $validated['estado']]);
-            $archivo->tarea()->update(['estado' => $taskStatus]);
+            $archivo->tarea->update(['estado' => $taskStatus]);
         });
 
         return back()->with('success', 'Estado del archivo y de la tarea actualizado correctamente');

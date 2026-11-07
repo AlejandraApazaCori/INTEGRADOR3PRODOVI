@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\AccessLog;
 use App\Models\AuditLog;
 use App\Models\SecurityLog;
+use App\Models\Campania;
+use App\Models\CampaignActivityLog;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
@@ -15,6 +18,13 @@ class LogController extends Controller
 {
     public function index(Request $request)
     {
+        $this->ensureAdministrator();
+        $request->validate([
+            'campaign_status' => ['nullable', 'in:all,active,inactive'],
+            'campaign_id' => ['nullable', 'integer', 'min:1'],
+            'client_id' => ['nullable', 'integer', 'min:1'],
+            'event_type' => ['nullable', 'in:all,campaign_created,campaign_updated,campaign_deleted,campaign_published,campaign_team_changed,task_created,task_updated,task_deleted,task_status_changed,task_published,task_assignees_changed'],
+        ]);
         $fechaInicio = $request->input('fecha_inicio');
         $fechaFin = $request->input('fecha_fin');
 
@@ -58,11 +68,40 @@ class LogController extends Controller
         }
         $auditLogs = $queryAudit->paginate(15, ['*'], 'audit_page');
 
+        $queryCampaign = CampaignActivityLog::with('campaign')->latest('created_at')->latest('id');
+        if ($fechaInicio) $queryCampaign->whereDate('created_at', '>=', $fechaInicio);
+        if ($fechaFin) $queryCampaign->whereDate('created_at', '<=', $fechaFin);
+        if ($request->filled('campaign_id')) $queryCampaign->where('campaign_id', $request->integer('campaign_id'));
+        if ($request->filled('client_id')) $queryCampaign->where('client_id', $request->integer('client_id'));
+        if ($request->filled('event_type') && $request->input('event_type') !== 'all') {
+            $queryCampaign->where('action', $request->input('event_type'));
+        }
+        $activeCampaigns = Campania::query()->select('id')->where('estado', 'activa')->where('es_borrador', false);
+        if ($request->input('campaign_status') === 'active') {
+            $queryCampaign->whereIn('campaign_id', $activeCampaigns);
+        } elseif ($request->input('campaign_status') === 'inactive') {
+            $queryCampaign->whereNotIn('campaign_id', $activeCampaigns);
+        }
+        $campaignLogs = $queryCampaign->paginate(15, ['*'], 'campaign_page')->withQueryString();
+        $latestCampaignEvents = DB::table('campaign_activity_logs')->selectRaw('campaign_id, MAX(id) as latest_id')->groupBy('campaign_id');
+        $campaignOptions = DB::table('campaign_activity_logs as events')
+            ->joinSub($latestCampaignEvents, 'latest', 'events.id', '=', 'latest.latest_id')
+            ->select('events.campaign_id', 'events.campaign_name', 'events.client_id')
+            ->orderBy('events.campaign_name')->get();
+        $latestClientEvents = DB::table('campaign_activity_logs')->selectRaw('client_id, MAX(id) as latest_id')
+            ->whereNotNull('client_id')->groupBy('client_id');
+        $clientOptions = DB::table('campaign_activity_logs as events')
+            ->joinSub($latestClientEvents, 'latest', 'events.id', '=', 'latest.latest_id')
+            ->select('events.client_id', 'events.client_name')->orderBy('events.client_name')->get();
+
         return view('administrador.logs.index', compact(
             'accessLogs',
             'errorLogs',
             'securityLogs',
             'auditLogs',
+            'campaignLogs',
+            'campaignOptions',
+            'clientOptions',
             'fechaInicio',
             'fechaFin'
         ));
@@ -70,6 +109,7 @@ class LogController extends Controller
 
     public function exportPdf($type, Request $request)
     {
+        $this->ensureAdministrator();
         abort_unless(in_array($type, ['access', 'security', 'audit', 'error'], true), 404);
         $request->validate([
             'fecha_inicio' => ['nullable', 'date'],
@@ -252,6 +292,11 @@ class LogController extends Controller
         }
 
         return $errorLogs;
+    }
+
+    private function ensureAdministrator(): void
+    {
+        abort_unless(auth()->user()?->hasAnyRole(['Super Administrador', 'Administrador']), 403);
     }
 
     private function generateChartBase64($labels, $dataVals, $chartTitle)

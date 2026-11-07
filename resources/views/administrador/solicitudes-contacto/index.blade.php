@@ -10,7 +10,6 @@
             <div>
                 <a href="{{ route('administrador.dashboard') }}" class="requests-back"><i class="fas fa-arrow-left"></i> Volver al dashboard</a>
                 <h1>Solicitudes de <span>contacto</span></h1>
-                <p>Gestiona los proyectos enviados desde el formulario público.</p>
             </div>
             <a href="{{ url('/#contact') }}" target="_blank" rel="noopener noreferrer" class="requests-public-link"><i class="fas fa-arrow-up-right-from-square"></i> Ver formulario público</a>
         </div>
@@ -19,9 +18,7 @@
     <main class="requests-content">
         <section class="requests-overview">
             <div>
-                <span><i class="fas fa-comments"></i> Hablemos de tu Proyecto</span>
                 <h2>Solicitudes recibidas</h2>
-                <p>Consulta los datos de contacto, el servicio de interés y el mensaje enviado por cada posible cliente.</p>
             </div>
         </section>
 
@@ -36,8 +33,8 @@
             <div class="requests-filter-title"><span><i class="fas fa-filter"></i> Filtrar solicitudes</span><small>{{ $solicitudes->total() }} resultado(s)</small></div>
             <form method="GET" action="{{ route('administrador.solicitudes-contacto.index') }}" class="requests-filter-form">
                 <label class="requests-search"><span>Buscar</span><div><i class="fas fa-magnifying-glass"></i><input name="buscar" type="search" value="{{ request('buscar') }}" placeholder="Nombre, correo, teléfono o mensaje"></div></label>
-                <label><span>Servicio</span><select name="servicio"><option value="">Todos los servicios</option>@foreach ($servicios as $valor => $etiqueta)<option value="{{ $valor }}" @selected(request('servicio') === $valor)>{{ $etiqueta }}</option>@endforeach</select></label>
-                <label><span>Confirmación</span><select name="envio"><option value="">Todos los estados</option><option value="enviado" @selected(request('envio') === 'enviado')>Enviada</option><option value="no_enviado" @selected(request('envio') === 'no_enviado')>No enviada</option></select></label>
+                <div class="requests-filter-field"><label for="request-service-trigger">Servicio</label><select name="servicio" aria-label="Servicio" data-request-select data-icon="fa-layer-group" data-trigger-id="request-service-trigger"><option value="">Todos los servicios</option>@foreach ($servicios as $valor => $etiqueta)<option value="{{ $valor }}" @selected(request('servicio') === $valor)>{{ $etiqueta }}</option>@endforeach</select></div>
+                <div class="requests-filter-field"><label for="request-status-trigger">Confirmación</label><select name="envio" aria-label="Confirmación" data-request-select data-icon="fa-envelope-circle-check" data-trigger-id="request-status-trigger"><option value="">Todos los estados</option><option value="enviado" @selected(request('envio') === 'enviado')>Enviada</option><option value="no_enviado" @selected(request('envio') === 'no_enviado')>No enviada</option></select></div>
                 <div class="requests-filter-actions">
                     <button type="submit"><i class="fas fa-magnifying-glass"></i> Aplicar filtros</button>
                     @if (request()->hasAny(['buscar', 'servicio', 'envio']))<a href="{{ route('administrador.solicitudes-contacto.index') }}" title="Limpiar filtros" aria-label="Limpiar filtros"><i class="fas fa-rotate-left"></i></a>@endif
@@ -91,7 +88,168 @@
     .requests-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:16px}.requests-kpis article{--accent:#117e8c;--soft:#e6f4f5;--rgb:17,126,140;position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:132px;padding:21px;border:1px solid rgba(var(--rgb),.22);border-radius:1rem;background:linear-gradient(135deg,#fff 35%,var(--soft));box-shadow:inset 0 4px 0 var(--accent),0 10px 24px rgba(45,66,34,.09);transition:.22s}.requests-kpis article::before{content:'';position:absolute;z-index:-1;top:-42px;right:-34px;width:125px;height:125px;border:22px solid rgba(var(--rgb),.09);border-radius:50%}.requests-kpis article::after{content:'';position:absolute;z-index:-1;right:13px;bottom:8px;width:88px;height:45px;opacity:.22;background-image:radial-gradient(circle,var(--accent) 1.4px,transparent 1.6px);background-size:9px 9px;transform:rotate(-5deg)}.requests-kpis article:hover{transform:translateY(-5px);box-shadow:inset 0 4px 0 var(--accent),0 17px 32px rgba(var(--rgb),.16)}.requests-kpis span,.requests-kpis small{display:block}.requests-kpis span{color:#596170;font-size:.7rem;font-weight:900;text-transform:uppercase}.requests-kpis strong{display:block;margin-top:9px;color:#263024;font-size:1.85rem;font-weight:900;line-height:1}.requests-kpis small{margin-top:8px;color:#7f8878;font-size:.62rem}.requests-kpis article>i{width:52px;height:52px;display:grid;place-items:center;flex:none;border-radius:14px;background:var(--accent);color:#fff;font-size:1.18rem;box-shadow:0 8px 17px rgba(var(--rgb),.27)}.requests-kpi-total{--accent:#117e8c!important;--soft:#e6f4f5!important;--rgb:17,126,140!important}.requests-kpi-month{--accent:#5b2b76!important;--soft:#f3edf6!important;--rgb:91,43,118!important}.requests-kpi-sent{--accent:#7da533!important;--soft:#f0f6e7!important;--rgb:125,165,51!important}.requests-kpi-pending{--accent:#e37225!important;--soft:#fff0e6!important;--rgb:227,114,37!important}
     .requests-filter-panel{margin-top:22px;padding:16px;border:1px solid #e1dde4;border-left:4px solid var(--turquoise);border-radius:12px;background:#fff;box-shadow:0 5px 14px rgba(48,40,52,.05)}.requests-filter-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;padding-bottom:11px;border-bottom:1px solid #ece8ee}.requests-filter-title span{color:#655c68;font-size:.72rem;font-weight:900}.requests-filter-title i{margin-right:6px;color:var(--turquoise)}.requests-filter-title small{color:#8a818d;font-size:.66rem;font-weight:700}.requests-filter-form{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:12px;align-items:end}.requests-filter-form label>span{display:block;margin-bottom:6px;color:#706775;font-size:.62rem;font-weight:900;text-transform:uppercase}.requests-filter-form input,.requests-filter-form select{width:100%;height:44px;border:1px solid #dcd7de;border-radius:9px;background:#fff;color:#453c48;font-size:.72rem;outline:none}.requests-filter-form input:focus,.requests-filter-form select:focus{border-color:var(--turquoise);box-shadow:0 0 0 3px rgba(17,126,140,.1)}.requests-search div{position:relative}.requests-search i{position:absolute;top:15px;left:14px;color:#9a929d;font-size:.75rem}.requests-search input{padding:0 13px 0 39px}.requests-filter-form select{padding:0 12px}.requests-filter-actions{display:flex;gap:8px}.requests-filter-actions button,.requests-filter-actions a{height:44px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:9px;font-size:.7rem;font-weight:900}.requests-filter-actions button{padding:0 16px;border:0;background:var(--orange);color:#fff;box-shadow:0 7px 15px rgba(239,108,34,.2)}.requests-filter-actions button:hover{background:#dc5710}.requests-filter-actions a{width:44px;border:1px solid #dcd7de;background:#f7f5f8;color:#706775}
     .requests-list{display:grid;gap:18px;margin-top:18px}.request-card{--card-accent:var(--orange);display:flex;min-height:185px;overflow:hidden;border:1px solid #ded7e1;border-top:5px solid var(--card-accent);border-radius:5px;background:#fff;box-shadow:0 15px 36px #e5dfe7;transition:.2s}.request-card:nth-child(3n+2){--card-accent:var(--turquoise)}.request-card:nth-child(3n){--card-accent:var(--purple)}.request-card:hover{transform:translateY(-5px);box-shadow:0 22px 44px #d8d0db}.request-main{min-width:0;display:flex;flex:1;gap:16px;padding:22px 24px}.request-number{width:42px;height:42px;display:grid;place-items:center;flex:none;border-radius:4px;background:var(--card-accent);color:#fff;font-size:.82rem;font-weight:900}.request-copy{min-width:0;flex:1}.request-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.request-heading h2{margin:0;color:var(--ink);font-size:.95rem;font-weight:900}.request-service{display:inline-block;margin-top:6px;padding:4px 8px;border-radius:999px;background:#f4f1f5;color:#77707a;font-size:.59rem;font-weight:800}.request-status-wrap{display:flex;align-items:flex-end;flex-direction:column;gap:7px}.request-status-wrap time{color:#8b828e;font-size:.62rem;font-weight:700}.request-status{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;font-size:.58rem;font-weight:900}.request-status.is-sent{background:#edf6e4;color:#587922}.request-status.is-pending{background:#fff0e6;color:#b64b0d}.request-contact-data{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:11px}.request-contact-data a,.request-contact-data span{color:#6f6673;font-size:.66rem;font-weight:700}.request-contact-data i{margin-right:5px;color:var(--card-accent)}.request-contact-data a:hover{color:var(--turquoise)}.request-message{margin-top:14px;padding-top:12px;border-top:1px solid #ece8ee}.request-message span{color:#938a96;font-size:.57rem;font-weight:900;letter-spacing:.07em;text-transform:uppercase}.request-message p{margin:5px 0 0;color:#655c68;font-size:.7rem;line-height:1.55;white-space:pre-line}.request-actions{width:132px;display:flex;align-items:stretch;justify-content:center;flex-direction:column;gap:9px;padding:18px;border-left:1px solid #e5dfe7;background:#f7f5f8}.request-actions a{min-height:42px;display:flex;align-items:center;justify-content:center;gap:7px;border:1px solid #e1dce3;border-radius:9px;background:#fff;font-size:.64rem;font-weight:900;box-shadow:0 3px 8px rgba(48,40,52,.07);transition:.18s}.request-actions a:hover{transform:translateY(-2px)}.request-action-email{color:var(--purple)}.request-action-whatsapp{color:#25804a}.requests-empty{padding:55px 24px;border:1px dashed #d4ced6;border-radius:14px;background:#fff;text-align:center}.requests-empty>i{color:#c7c0ca;font-size:2.2rem}.requests-empty h2{margin:13px 0 3px;color:var(--ink);font-size:1rem;font-weight:900}.requests-empty p{margin:0;color:#8b828e;font-size:.7rem}.requests-pagination{margin-top:22px;padding-top:15px;border-top:1px solid #ddd8df}
+    html.admin-dark-nav #contact-requests-index{background:#141414;--ink:#f5f5f5;color:#e5e5e5}
+    html.admin-dark-nav .requests-overview,html.admin-dark-nav .requests-filter-title,html.admin-dark-nav .requests-pagination{border-color:#353535}
+    html.admin-dark-nav .requests-overview>div>span{color:#8dd7e3}
+    html.admin-dark-nav .requests-overview p,html.admin-dark-nav .requests-filter-title small,html.admin-dark-nav .requests-empty p{color:#c0c0c0}
+    html.admin-dark-nav .requests-kpis article{background:linear-gradient(135deg,#202020 35%,color-mix(in srgb,var(--accent) 14%,#202020));border-color:rgba(var(--rgb),.42);box-shadow:inset 0 4px 0 var(--accent),0 10px 24px rgba(0,0,0,.2)}
+    html.admin-dark-nav .requests-kpis article:hover{box-shadow:inset 0 4px 0 var(--accent),0 17px 32px rgba(0,0,0,.3)}
+    html.admin-dark-nav .requests-kpis span,html.admin-dark-nav .requests-kpis small{color:#c0c0c0}
+    html.admin-dark-nav .requests-kpis strong{color:#f5f5f5}
+    html.admin-dark-nav .requests-filter-panel,html.admin-dark-nav .request-card,html.admin-dark-nav .requests-empty{background:#202020;border-color:#353535;box-shadow:0 9px 24px rgba(0,0,0,.2)}
+    html.admin-dark-nav .request-card{border-top-color:var(--card-accent)}
+    html.admin-dark-nav .request-card:hover{box-shadow:0 17px 32px rgba(0,0,0,.3)}
+    html.admin-dark-nav .requests-filter-panel{border-left-color:var(--turquoise)}
+    html.admin-dark-nav .requests-filter-title span,html.admin-dark-nav .requests-filter-form label>span{color:#e5e5e5}
+    html.admin-dark-nav .requests-filter-form input,html.admin-dark-nav .requests-filter-form select{background:#292929;border-color:#4a4a4a;color:#f5f5f5}
+    html.admin-dark-nav .requests-filter-form input::placeholder{color:#aaa}
+    html.admin-dark-nav .requests-filter-form select option{background:#292929;color:#f5f5f5}
+    html.admin-dark-nav .requests-filter-actions a{background:#303030;border-color:#4a4a4a;color:#e5e5e5}
+    html.admin-dark-nav .request-service{background:#353535;color:#dedede}
+    html.admin-dark-nav .request-status-wrap time,html.admin-dark-nav .request-contact-data a,html.admin-dark-nav .request-contact-data span,html.admin-dark-nav .request-message span{color:#c0c0c0}
+    html.admin-dark-nav .request-status.is-sent{background:#30432a;color:#c8eba5}
+    html.admin-dark-nav .request-status.is-pending{background:#493021;color:#ffb684}
+    html.admin-dark-nav .request-message{border-color:#353535}
+    html.admin-dark-nav .request-message p{color:#e5e5e5}
+    html.admin-dark-nav .request-actions{background:#292929;border-color:#353535}
+    html.admin-dark-nav .request-actions a{background:#353535;border-color:#4a4a4a}
+    html.admin-dark-nav .request-action-email{color:#d5a9ed}
+    html.admin-dark-nav .request-action-whatsapp{color:#a8efc3}
+    html.admin-dark-nav .requests-pagination{color:#e5e5e5}
+    html.admin-dark-nav .requests-pagination a,html.admin-dark-nav .requests-pagination span{color:#e5e5e5}
+    html.admin-dark-nav .requests-pagination .bg-gray-100,html.admin-dark-nav .requests-pagination .bg-white{background:#303030!important;border-color:#4a4a4a!important}
+    .requests-filter-panel{position:relative;z-index:5;overflow:visible}
+    .requests-filter-field{position:relative;min-width:0}
+    .requests-filter-field>label{display:block;margin-bottom:6px;color:#706775;font-size:.62rem;font-weight:900;text-transform:uppercase}
+    .requests-filter-form select.requests-native-select{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;opacity:0;clip-path:inset(50%);pointer-events:none}
+    .requests-custom-select{position:relative}
+    .requests-select-trigger{width:100%;height:44px;display:flex;align-items:center;gap:9px;padding:0 12px;border:1px solid #dcd7de;border-radius:9px;background:#fff;color:#453c48;text-align:left;font-size:.72rem;cursor:pointer}
+    .requests-select-trigger>i:first-child{width:17px;color:var(--turquoise);text-align:center}
+    .requests-select-trigger>span{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .requests-select-trigger>i:last-child{color:#817786;font-size:.68rem;transition:transform .18s}
+    .requests-custom-select.is-open .requests-select-trigger>i:last-child{transform:rotate(180deg)}
+    .requests-select-trigger:focus-visible,.requests-custom-select.is-open .requests-select-trigger{outline:0;border-color:var(--turquoise);box-shadow:0 0 0 3px rgba(17,126,140,.15)}
+    .requests-select-menu{position:absolute;z-index:30;top:calc(100% + 6px);right:0;left:0;display:none;max-height:230px;overflow-y:auto;padding:5px;border:1px solid #dcd7de;border-radius:10px;background:#fff;box-shadow:0 16px 32px rgba(48,40,52,.18)}
+    .requests-custom-select.is-open .requests-select-menu{display:grid;gap:2px}
+    .requests-select-option{width:100%;min-height:38px;padding:8px 10px;border:0;border-radius:7px;background:transparent;color:#453c48;text-align:left;font-size:.72rem;cursor:pointer;overflow-wrap:anywhere}
+    .requests-select-option:hover,.requests-select-option:focus-visible,.requests-select-option.is-selected{outline:0;background:#eaf5f6;color:#0d6975}
+    html.admin-dark-nav .requests-filter-field>label{color:#e5e5e5}
+    html.admin-dark-nav .requests-select-trigger,html.admin-dark-nav .requests-select-menu{background:#292929;border-color:#4a4a4a;color:#f5f5f5}
+    html.admin-dark-nav .requests-select-trigger>i:last-child{color:#b8b8b8}
+    html.admin-dark-nav .requests-select-option{color:#e5e5e5}
+    html.admin-dark-nav .requests-select-option:hover,html.admin-dark-nav .requests-select-option:focus-visible,html.admin-dark-nav .requests-select-option.is-selected{background:#294246;color:#a7e7eb}
     @media(max-width:1050px){.requests-kpis{grid-template-columns:repeat(2,1fr)}.requests-filter-form{grid-template-columns:repeat(2,1fr)}.requests-filter-actions{grid-column:1/-1}.requests-filter-actions button{flex:1}}@media(max-width:700px){.requests-banner-content{align-items:stretch;flex-direction:column;padding:24px 18px}.requests-public-link{width:100%}.requests-content{padding:0 18px}.requests-kpis,.requests-filter-form{grid-template-columns:1fr}.requests-filter-actions{grid-column:auto}.request-card{align-items:stretch;flex-direction:column}.request-main{padding:18px 16px}.request-heading{flex-direction:column}.request-status-wrap{align-items:flex-start}.request-actions{width:100%;flex-direction:row;padding:12px 16px;border-top:1px solid #e5dfe7;border-left:0}.request-actions a{flex:1}.requests-banner h1{font-size:1.7rem}}
 </style>
 @endpush
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const dropdowns = [];
+    const closeDropdowns = (except = null) => {
+        dropdowns.forEach(({ wrapper, trigger }) => {
+            if (wrapper === except) return;
+            wrapper.classList.remove('is-open');
+            trigger.setAttribute('aria-expanded', 'false');
+        });
+    };
+
+    document.querySelectorAll('[data-request-select]').forEach(select => {
+        const wrapper = document.createElement('div');
+        const trigger = document.createElement('button');
+        const icon = document.createElement('i');
+        const text = document.createElement('span');
+        const chevron = document.createElement('i');
+        const menu = document.createElement('div');
+        const options = [];
+
+        wrapper.className = 'requests-custom-select';
+        trigger.type = 'button';
+        trigger.id = select.dataset.triggerId;
+        trigger.className = 'requests-select-trigger';
+        trigger.setAttribute('aria-haspopup', 'listbox');
+        trigger.setAttribute('aria-expanded', 'false');
+        icon.className = 'fas ' + select.dataset.icon;
+        chevron.className = 'fas fa-chevron-down';
+        menu.className = 'requests-select-menu';
+        menu.id = trigger.id + '-menu';
+        menu.setAttribute('role', 'listbox');
+        menu.setAttribute('aria-label', select.getAttribute('aria-label'));
+        trigger.setAttribute('aria-controls', menu.id);
+        trigger.append(icon, text, chevron);
+
+        const sync = () => {
+            text.textContent = select.selectedOptions[0]?.textContent.trim() || '';
+            options.forEach(option => {
+                const selected = option.dataset.value === select.value;
+                option.classList.toggle('is-selected', selected);
+                option.setAttribute('aria-selected', String(selected));
+            });
+        };
+        const open = () => {
+            closeDropdowns(wrapper);
+            wrapper.classList.add('is-open');
+            trigger.setAttribute('aria-expanded', 'true');
+        };
+        const close = () => {
+            wrapper.classList.remove('is-open');
+            trigger.setAttribute('aria-expanded', 'false');
+        };
+
+        Array.from(select.options).forEach(nativeOption => {
+            const option = document.createElement('button');
+            option.type = 'button';
+            option.className = 'requests-select-option';
+            option.dataset.value = nativeOption.value;
+            option.textContent = nativeOption.textContent.trim();
+            option.setAttribute('role', 'option');
+            option.addEventListener('click', () => {
+                select.value = option.dataset.value;
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+                close();
+                trigger.focus();
+            });
+            menu.appendChild(option);
+            options.push(option);
+        });
+
+        trigger.addEventListener('click', () => wrapper.classList.contains('is-open') ? close() : open());
+        trigger.addEventListener('keydown', event => {
+            if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+            event.preventDefault();
+            open();
+            (options.find(option => option.dataset.value === select.value) || options[0])?.focus();
+        });
+        menu.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                close();
+                trigger.focus();
+                return;
+            }
+            if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+            event.preventDefault();
+            const index = options.indexOf(document.activeElement);
+            options[(index + (event.key === 'ArrowDown' ? 1 : -1) + options.length) % options.length]?.focus();
+        });
+
+        select.addEventListener('change', sync);
+        wrapper.append(trigger, menu);
+        select.insertAdjacentElement('afterend', wrapper);
+        select.classList.add('requests-native-select');
+        select.tabIndex = -1;
+        select.setAttribute('aria-hidden', 'true');
+        sync();
+        dropdowns.push({ wrapper, trigger });
+    });
+
+    document.addEventListener('click', event => {
+        dropdowns.forEach(({ wrapper, trigger }) => {
+            if (wrapper.contains(event.target)) return;
+            wrapper.classList.remove('is-open');
+            trigger.setAttribute('aria-expanded', 'false');
+        });
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') closeDropdowns();
+    });
+});
+</script>
 @endsection

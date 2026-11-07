@@ -269,6 +269,8 @@
         </div>
     </div>
 
+    <button type="button" class="admin-sidebar-overlay" aria-label="Cerrar menú de navegación" onclick="closeMobileSidebar()"></button>
+
     <!-- Popup de confirmación para cerrar sesión -->
     <div class="confirmation-popup" id="logoutConfirmationPopup">
         <div class="confirmation-box">

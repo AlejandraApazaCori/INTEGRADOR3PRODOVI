@@ -46,12 +46,9 @@
                 <div class="rp-banner-overlay absolute inset-0"></div>
                 <div class="relative z-10 px-8 py-8">
                     <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                        <div class="flex h-14 w-14 items-center justify-center rounded-2xl flex-shrink-0" style="background: rgba(255,255,255,0.2);">
-                            <i class="fas fa-chart-line text-white text-2xl"></i>
-                        </div>
                         <div class="flex-1 text-center sm:text-left">
+                            @include('administrador.pagos.dashboard-back')
                             <h1 class="text-3xl font-bold text-white mb-1">Analíticas de Pagos</h1>
-                            <p style="color: #bfdbfe; font-size: 0.9rem;">Visualiza y analiza los pagos realizados en tu plataforma</p>
                         </div>
                         <a href="{{ route('administrador.pagos.index') }}" class="inline-flex items-center px-4 py-2.5 rounded-xl font-semibold text-white transition-all hover:-translate-y-0.5 flex-shrink-0" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(4px);">
                             <i class="fas fa-arrow-left mr-2 text-sm"></i>
@@ -314,6 +311,20 @@
             let currentPage = 1;
             let totalPages = 1;
             let chartInstances = {};
+            const chartTheme = () => document.documentElement.classList.contains('admin-dark-nav')
+                ? { text: '#e5e5e5', grid: 'rgba(229, 229, 229, 0.14)' }
+                : { text: '#374151', grid: 'rgba(148, 163, 184, 0.18)' };
+            document.getElementById('adminThemeToggle')?.addEventListener('click', () => {
+                const colors = chartTheme();
+                Object.values(chartInstances).forEach(chart => {
+                    chart.options.plugins.legend.labels.color = colors.text;
+                    for (const axis of Object.values(chart.options.scales || {})) {
+                        axis.ticks.color = colors.text;
+                        axis.grid.color = colors.grid;
+                    }
+                    chart.update();
+                });
+            });
             const analyticsSelectControllers = [];
             const analyticsCalendarControllers = [];
 
@@ -719,6 +730,7 @@
             }
 
             function buildCircularOptions() {
+                const colors = chartTheme();
                 return {
                     responsive: true,
                     maintainAspectRatio: false,
@@ -727,7 +739,8 @@
                             position: 'bottom',
                             labels: {
                                 usePointStyle: true,
-                                padding: 16
+                                padding: 16,
+                                color: colors.text
                             }
                         }
                     }
@@ -735,6 +748,7 @@
             }
 
             function buildCartesianOptions({ currency = false, integer = false, legend = true, indexAxis = 'x' } = {}) {
+                const colors = chartTheme();
                 return {
                     responsive: true,
                     maintainAspectRatio: false,
@@ -745,7 +759,8 @@
                             position: 'bottom',
                             labels: {
                                 usePointStyle: true,
-                                padding: 16
+                                padding: 16,
+                                color: colors.text
                             }
                         },
                         tooltip: {
@@ -764,9 +779,11 @@
                     scales: {
                         x: {
                             grid: {
-                                display: indexAxis !== 'y'
+                                display: indexAxis !== 'y',
+                                color: colors.grid
                             },
                             ticks: {
+                                color: colors.text,
                                 maxRotation: 0,
                                 autoSkip: true,
                                 callback(value) {
@@ -781,9 +798,10 @@
                         y: {
                             beginAtZero: true,
                             grid: {
-                                color: 'rgba(148, 163, 184, 0.18)'
+                                color: colors.grid
                             },
                             ticks: {
+                                color: colors.text,
                                 precision: integer ? 0 : undefined,
                                 callback(value) {
                                     if (currency && indexAxis !== 'y') {
@@ -1140,7 +1158,7 @@
         }
 
         /* Rediseño unificado del panel de analíticas */
-        .payments-analytics-page{min-height:100vh;padding:20px 0 48px;background:#fff;color:#302834}.payments-analytics-shell{position:relative;display:flex;flex-direction:column;width:100%}.analytics-hero{order:1;width:100%;min-height:180px;margin:0;border-radius:0;box-shadow:none}.analytics-hero .relative.z-10{display:flex;align-items:center;min-height:180px;padding:30px 48px}.analytics-hero .relative.z-10>div{width:100%;padding-right:570px}.analytics-hero .relative.z-10>div>a{display:none}.analytics-hero h1{margin:0 0 4px;color:#fff;font-size:clamp(1.55rem,3vw,2.25rem);font-weight:900;letter-spacing:-.04em}.analytics-hero h1::before{content:'Administración financiera';display:block;margin-bottom:7px;color:#dbeafe;font-size:.68rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase}.analytics-hero p{color:#dbeafe!important;font-size:.74rem!important;font-weight:600}.analytics-hero .h-14.w-14{width:52px;height:52px;border:1px solid rgba(255,255,255,.24);border-radius:14px;background:rgba(255,255,255,.14)!important;backdrop-filter:blur(5px)}.analytics-hero .rp-banner-overlay,.analytics-hero .absolute.inset-0{background:linear-gradient(rgba(15,23,42,.28),rgba(15,23,42,.28)),radial-gradient(circle at 0 0,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 100% 100%,rgba(255,255,255,.16),transparent 50%);background-size:100% 100%,50% 50%,50% 50%;background-position:0 0,0 0,100% 100%}
+        .payments-analytics-page{min-height:100vh;padding:20px 0 48px;background:#fff;color:#302834}.payments-analytics-shell{position:relative;display:flex;flex-direction:column;width:100%}.analytics-hero{order:1;width:100%;min-height:180px;margin:0;border-radius:0;box-shadow:none}.analytics-hero .relative.z-10{display:flex;align-items:center;min-height:180px;padding:30px 48px}.analytics-hero .relative.z-10>div{width:100%;padding-right:570px}.analytics-hero .relative.z-10>div>a{display:none}.analytics-hero h1{margin:0 0 4px;color:#fff;font-size:clamp(1.55rem,3vw,2.25rem);font-weight:900;letter-spacing:-.04em}.analytics-hero p{color:#dbeafe!important;font-size:.74rem!important;font-weight:600}.analytics-hero .h-14.w-14{width:52px;height:52px;border:1px solid rgba(255,255,255,.24);border-radius:14px;background:rgba(255,255,255,.14)!important;backdrop-filter:blur(5px)}.analytics-hero .rp-banner-overlay,.analytics-hero .absolute.inset-0{background:linear-gradient(rgba(15,23,42,.28),rgba(15,23,42,.28)),radial-gradient(circle at 0 0,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 100% 100%,rgba(255,255,255,.16),transparent 50%);background-size:100% 100%,50% 50%,50% 50%;background-position:0 0,0 0,100% 100%}
         .analytics-tabs{position:absolute;z-index:20;top:67px;right:48px;justify-content:flex-end;padding:0}.analytics-tabs .btn-action{min-height:42px;gap:8px;padding:10px 13px;border:1px solid rgba(255,255,255,.24);border-radius:.65rem;background:rgba(255,255,255,.12);color:#fff;box-shadow:none;font-size:.69rem;font-weight:900;backdrop-filter:blur(4px)}.analytics-tabs .btn-action:nth-child(2){border-color:#fff;background:#fff;color:#4f46e5}.analytics-tabs .analytics-register-action{border-color:#ef6c22;background:#ef6c22;color:#fff}.analytics-tabs .btn-action:hover{transform:translateY(-2px);border-color:#fff;background:#fff;color:#4f46e5;box-shadow:0 8px 20px rgba(31,41,55,.16)}.analytics-tabs .btn-action__mark{display:none}
         .analytics-filters{order:3;margin:24px 24px 0!important;padding:20px!important;border:1px solid #d9e7f0!important;border-radius:16px!important;background:linear-gradient(90deg,#f7faff,#eff9fa)!important;box-shadow:0 9px 22px rgba(30,72,110,.07)!important}.analytics-filters>.flex.items-center{margin-bottom:18px}.analytics-filters>.flex.items-center>div:first-child{width:42px;height:42px;display:grid;place-items:center;flex:0 0 auto;margin-right:12px!important;padding:0!important;border-radius:11px!important;background:linear-gradient(135deg,#2563b9,#1593b5)!important;box-shadow:0 7px 15px rgba(21,147,181,.2)!important}.analytics-filters>.flex.items-center i{font-size:.9rem!important}.analytics-filters h2{color:#263f52;font-size:.95rem;font-weight:900}.analytics-filters h2::after{content:'';display:block;width:44px;height:3px;margin-top:6px;border-radius:999px;background:#1593b5}.analytics-filters h2+p{margin-top:5px;color:#78909f;font-size:.64rem}.analytics-filters form>.grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}.analytics-filters label{margin-bottom:7px;color:#405568;font-size:.64rem;font-weight:900}.analytics-filters label i{color:#1593b5}.analytics-filters input,.analytics-filters select{width:100%;height:48px;padding:0 13px;border:1px solid #d8e4ec;border-radius:12px;background:#fff;color:#304657;font-size:.72rem;font-weight:600;outline:0;transition:.18s}.analytics-filters input:focus,.analytics-filters select:focus{border-color:#1593b5;box-shadow:0 0 0 3px rgba(21,147,181,.13)}.analytics-filters form>.flex button{min-height:41px;padding:9px 14px;border-radius:10px;font-size:.67rem;font-weight:900;box-shadow:none}.analytics-filters #resetFilters{border:1px solid #d4e2eb;background:#fff;color:#62798a}.analytics-filters button[type=submit]{border:0;background:linear-gradient(135deg,#2563b9,#1593b5);color:#fff}.analytics-filters button[type=submit]:hover{filter:brightness(.94)}
         .analytics-native-control{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;padding:0!important;border:0!important;opacity:0!important;pointer-events:none!important}.analytics-custom-dropdown,.analytics-date-control{position:relative}.analytics-custom-trigger{width:100%;height:48px;display:flex;align-items:center;gap:9px;padding:0 11px;border:1px solid #d8e4ec;border-radius:12px;background:#fff;color:#304657;text-align:left;cursor:pointer;transition:.18s}.analytics-custom-trigger>span:nth-child(2){min-width:0;flex:1;overflow:hidden;font-size:.68rem;font-weight:800;text-overflow:ellipsis;white-space:nowrap}.analytics-custom-trigger:hover,.analytics-custom-dropdown.is-open .analytics-custom-trigger,.analytics-date-control.is-open .analytics-custom-trigger{border-color:#1593b5;box-shadow:0 0 0 3px rgba(21,147,181,.13)}.analytics-control-icon{width:30px;height:30px;display:grid;place-items:center;flex:0 0 auto;border-radius:8px;background:#e5f6f8;color:#1593b5}.analytics-control-icon i{font-size:.72rem!important}.analytics-control-chevron{color:#8ba0ad;font-size:.6rem!important;transition:transform .18s}.is-open .analytics-control-chevron{transform:rotate(180deg)}.analytics-custom-menu{position:absolute;z-index:100;top:calc(100% + 7px);right:0;left:0;max-height:245px;overflow-y:auto;padding:7px;border:1px solid #d5e4ed;border-radius:13px;background:#fff;box-shadow:0 16px 34px rgba(30,72,110,.17)}.analytics-custom-menu.is-hidden,.analytics-calendar.is-hidden{display:none}.analytics-custom-menu button{width:100%;min-height:39px;padding:8px 10px;border:0;border-radius:8px;background:transparent;color:#4c6271;text-align:left;font-size:.67rem;font-weight:700;cursor:pointer}.analytics-custom-menu button:hover,.analytics-custom-menu button.is-selected{background:#eaf7f9;color:#117e9b}.analytics-custom-menu button.is-selected::after{content:'✓';float:right;color:#1593b5;font-weight:900}
@@ -1150,6 +1168,45 @@
         #chartsSection{gap:16px;margin-bottom:18px}.chart-card{position:relative;overflow:hidden;padding:18px;border:1px solid #dce7ee;border-radius:15px;background:linear-gradient(135deg,#fff,#f7fbfd);box-shadow:0 9px 22px rgba(30,72,110,.07)}.chart-card::before{content:'';position:absolute;top:0;right:0;left:0;height:3px;background:linear-gradient(90deg,#2563b9,#1593b5)}.chart-card__title{display:flex;align-items:center;justify-content:center;min-height:34px;margin-bottom:10px;color:#30495b;font-size:.78rem;font-weight:900}.chart-card__title::after{content:'';width:7px;height:7px;margin-left:8px;border-radius:50%;background:#1593b5;box-shadow:0 0 0 4px rgba(21,147,181,.1)}.chart-card__canvas{height:285px}.chart-card__canvas--wide{height:325px}
         .analytics-table-wrap{border:1px solid #fed7aa!important;border-radius:13px!important;background:#fff;box-shadow:0 9px 22px rgba(249,115,22,.09)!important}.analytics-table{border-collapse:separate;border-spacing:0}.analytics-table thead{background:#f97316!important}.analytics-table th{padding:12px 13px!important;border-right:1px solid rgba(255,255,255,.3)!important;background:#f97316!important;color:#fff!important;font-size:.57rem!important;font-weight:900!important;letter-spacing:.05em}.analytics-table th:last-child{border-right:0!important}.analytics-table td{padding:12px 13px!important;border-right:1px solid #fed7aa!important;border-bottom:1px solid #ffedd5!important;color:#57534e!important;font-size:.67rem!important}.analytics-table td:last-child{border-right:0!important}.analytics-table tbody tr:nth-child(odd) td{background:#fff!important}.analytics-table tbody tr:nth-child(even) td{background:#fff7ed!important}.analytics-table tbody tr:hover td{background:#ffedd5!important}.analytics-table tbody tr:last-child td{border-bottom:0!important}.analytics-table td:first-child{color:#c2410c!important;font-weight:900!important}.analytics-table td button{font-size:.57rem!important;font-weight:800!important}.analytics-results #paginationContainer{margin-top:16px;padding:12px;border:1px solid #fed7aa;border-radius:12px;background:#fffaf5}
         #modalComprobante>div>div.inline-block{border:1px solid #d9e7f0;border-radius:18px!important}#modalComprobante header{background:linear-gradient(90deg,#f4f8fd,#edf9fa)!important}#modalComprobante header i{color:#1593b5!important}
+        html.admin-dark-nav .payments-analytics-page{background:#141414;color:#e5e5e5}
+        html.admin-dark-nav .analytics-tabs .btn-action{border-color:#4a4a4a;background:#292929;color:#e5e5e5}
+        html.admin-dark-nav .analytics-tabs .btn-action:nth-child(2){border-color:#7c86ed;background:#4f46e5;color:#fff}
+        html.admin-dark-nav .analytics-tabs .analytics-register-action{border-color:#ef6c22;background:#c85618;color:#fff}
+        html.admin-dark-nav .analytics-tabs .btn-action:hover{border-color:#8dd7e3;background:#1c3e42;color:#fff}
+        html.admin-dark-nav .analytics-filters{background:linear-gradient(90deg,#202020,#242424)!important;border-color:#353535!important;box-shadow:0 9px 22px rgba(0,0,0,.2)!important}
+        html.admin-dark-nav .analytics-filters h2,html.admin-dark-nav .analytics-filters label{color:#f5f5f5}
+        html.admin-dark-nav .analytics-filters h2+p{color:#c0c0c0}
+        html.admin-dark-nav .analytics-filters input,html.admin-dark-nav .analytics-filters select,html.admin-dark-nav .analytics-custom-trigger{background:#292929;border-color:#4a4a4a;color:#f5f5f5}
+        html.admin-dark-nav .analytics-filters input::placeholder{color:#aaa}
+        html.admin-dark-nav .analytics-filters #resetFilters{background:#303030;border-color:#4a4a4a;color:#e5e5e5}
+        html.admin-dark-nav .analytics-control-icon,html.admin-dark-nav .analytics-calendar-head button{background:#1c3e42;color:#8dd7e3}
+        html.admin-dark-nav .analytics-custom-menu,html.admin-dark-nav .analytics-calendar{background:#242424;border-color:#4a4a4a;box-shadow:0 16px 34px rgba(0,0,0,.35)}
+        html.admin-dark-nav .analytics-custom-menu button,html.admin-dark-nav .analytics-calendar-head strong,html.admin-dark-nav .analytics-calendar-days button{color:#e5e5e5}
+        html.admin-dark-nav .analytics-custom-menu button:hover,html.admin-dark-nav .analytics-custom-menu button.is-selected,html.admin-dark-nav .analytics-calendar-days button:hover{background:#1c3e42;color:#8dd7e3}
+        html.admin-dark-nav .analytics-calendar-week span{color:#c0c0c0}
+        html.admin-dark-nav .analytics-calendar-days button.is-selected,html.admin-dark-nav .analytics-calendar-days button.is-selected:hover{background:linear-gradient(135deg,#2563b9,#1593b5);color:#fff}
+        html.admin-dark-nav .analytics-calendar-days button:disabled{color:#777}
+        html.admin-dark-nav .analytics-results #appliedFilters span{background:#1c3e42!important;border-color:#3e7278!important;color:#a8e9f0!important}
+        html.admin-dark-nav .analytics-summary-card{background:linear-gradient(135deg,#202020 35%,color-mix(in srgb,var(--sum-accent) 14%,#202020));border-color:rgba(var(--sum-rgb),.42);color:#f5f5f5!important;box-shadow:inset 0 4px 0 var(--sum-accent),0 10px 24px rgba(0,0,0,.2)}
+        html.admin-dark-nav .analytics-summary-card:hover{box-shadow:inset 0 4px 0 var(--sum-accent),0 17px 32px rgba(0,0,0,.3)}
+        html.admin-dark-nav .analytics-summary-card p:first-child{color:#c0c0c0!important}
+        html.admin-dark-nav .analytics-summary-card p[id]{color:#f5f5f5!important}
+        html.admin-dark-nav .chart-card{background:linear-gradient(135deg,#202020,#242424);border-color:#353535;box-shadow:0 9px 22px rgba(0,0,0,.2)}
+        html.admin-dark-nav .chart-card__title{color:#f5f5f5}
+        html.admin-dark-nav .chart-card__empty{background:#292929;border-color:#4a4a4a;color:#c0c0c0}
+        html.admin-dark-nav .analytics-table-wrap{background:#202020;border-color:#65472d!important;box-shadow:0 9px 22px rgba(0,0,0,.2)!important}
+        html.admin-dark-nav .analytics-table td{border-color:#4a3a30!important;color:#e5e5e5!important}
+        html.admin-dark-nav .analytics-table tbody tr:nth-child(odd) td{background:#202020!important}
+        html.admin-dark-nav .analytics-table tbody tr:nth-child(even) td{background:#292929!important}
+        html.admin-dark-nav .analytics-table tbody tr:hover td{background:#3a322b!important}
+        html.admin-dark-nav .analytics-table td:first-child{color:#ffb684!important}
+        html.admin-dark-nav .analytics-results #paginationContainer{background:#242424;border-color:#65472d;color:#e5e5e5}
+        html.admin-dark-nav .analytics-results #paginationContainer a,html.admin-dark-nav .analytics-results #paginationContainer span{color:#e5e5e5}
+        html.admin-dark-nav .analytics-results #paginationContainer button{background:#303030;border-color:#4a4a4a;color:#e5e5e5}
+        html.admin-dark-nav #modalComprobante>div>div.inline-block{background:#202020;border-color:#353535;color:#e5e5e5}
+        html.admin-dark-nav #modalComprobante header{background:#242424!important;border-color:#353535}
+        html.admin-dark-nav #modalComprobante #modal-title{color:#f5f5f5}
+        html.admin-dark-nav #modalComprobante #contenidoComprobante,html.admin-dark-nav #modalComprobante footer{background:#202020;border-color:#353535;color:#e5e5e5}
         @media(max-width:1150px){.analytics-filters form>.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.analytics-hero .relative.z-10>div{padding-right:0}.analytics-tabs{position:static;order:2;justify-content:center;margin:14px 24px 0}.analytics-tabs .btn-action{border-color:#dce4f3;background:#f4f7fd;color:#4f46e5}.analytics-tabs .btn-action:nth-child(2){background:#4f46e5;color:#fff}.analytics-filters{margin-top:18px!important}}
         @media(max-width:700px){.payments-analytics-page{padding-top:20px}.analytics-hero{min-height:210px}.analytics-hero .relative.z-10{min-height:210px;padding:28px 20px}.analytics-hero .h-14.w-14{display:none}.analytics-tabs{display:grid;grid-template-columns:1fr;margin-right:12px;margin-left:12px}.analytics-filters,.analytics-results{margin-right:12px!important;margin-left:12px!important}.analytics-filters form>.grid{grid-template-columns:1fr}.analytics-filters form>.flex{flex-direction:column}.analytics-filters form>.flex button{width:100%}.analytics-calendar,[data-analytics-calendar="endDate"] .analytics-calendar{right:auto;left:0;width:min(290px,calc(100vw - 66px))}.chart-card__canvas,.chart-card__canvas--wide{height:260px}}
 </style>

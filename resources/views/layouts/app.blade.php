@@ -88,7 +88,7 @@
     <!-- Barra superior -->
     <div class="topbar" id="topbar">
         <div class="topbar-left">
-            <button class="topbar-toggle-btn" onclick="toggleSidebar()" title="Mostrar/ocultar menú lateral">
+            <button type="button" class="topbar-toggle-btn" onclick="toggleSidebar()" title="Mostrar/ocultar menú lateral" aria-label="Abrir menú de navegación" aria-expanded="false">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="3" y1="6" x2="21" y2="6"/>
                     <line x1="3" y1="12" x2="21" y2="12"/>

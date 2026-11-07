@@ -9,6 +9,7 @@ use App\Models\Pago;
 use App\Models\PlanMarketing;
 use App\Models\Suscripcion;
 use App\Models\User;
+use App\Observers\CampaignActivityObserver;
 use App\Services\CampaignAudienceService;
 use App\Services\CampaignBlueprintService;
 use App\Services\CampaignBriefPrefillService;
@@ -849,6 +850,7 @@ class CampañasController extends Controller
         }
 
         DB::transaction(function () use ($campania, $validated, $designerIds) {
+            $previousDesignerIds = $campania->disenadores()->pluck('users.id')->all();
             $campania->update([
                 'nombre' => $validated['nombre'],
                 'descripcion' => $validated['descripcion'],
@@ -865,6 +867,7 @@ class CampañasController extends Controller
                 'fecha_fin' => $validated['fecha_fin'],
             ]);
             $campania->disenadores()->sync($designerIds);
+            app(CampaignActivityObserver::class)->designersChanged($campania, $previousDesignerIds, $designerIds);
 
             $retainedTaskIds = [];
             foreach ($validated['tareas'] ?? [] as $taskData) {
@@ -873,6 +876,7 @@ class CampañasController extends Controller
                 $task = ! empty($taskData['id'])
                     ? $campania->tareas()->findOrFail($taskData['id'])
                     : $campania->tareas()->make(['creador_id' => Auth::id()]);
+                $previousResponsibleIds = $task->exists ? $task->responsables()->pluck('users.id')->all() : [];
 
                 $task->fill([
                     'titulo' => $taskData['titulo'],
@@ -890,10 +894,13 @@ class CampañasController extends Controller
                 ]);
                 $task->save();
                 $task->responsables()->sync($responsibleIds);
+                if ($previousResponsibleIds !== []) {
+                    app(CampaignActivityObserver::class)->assigneesChanged($task, $previousResponsibleIds, $responsibleIds);
+                }
                 $retainedTaskIds[] = $task->id;
             }
 
-            $campania->tareas()->whereNotIn('id', $retainedTaskIds)->delete();
+            $campania->tareas()->whereNotIn('id', $retainedTaskIds)->get()->each->delete();
         });
 
         return redirect()->route('administrador.campañas.show', $campania)

@@ -417,8 +417,12 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
         ->name('administrador.backups.download-latest');
     Route::get('/backups/ultimo/descargar-excel', [\App\Http\Controllers\Admin\DatabaseBackupController::class, 'downloadLatestExcel'])
         ->name('administrador.backups.download-latest-excel');
+    Route::get('/backups/ultimo/descargar-csv', [\App\Http\Controllers\Admin\DatabaseBackupController::class, 'downloadLatestCsv'])
+        ->name('administrador.backups.download-latest-csv');
     Route::get('/backups/{backup}/descargar-excel', [\App\Http\Controllers\Admin\DatabaseBackupController::class, 'downloadExcel'])
         ->name('administrador.backups.download-excel');
+    Route::get('/backups/{backup}/descargar-csv', [\App\Http\Controllers\Admin\DatabaseBackupController::class, 'downloadCsv'])
+        ->name('administrador.backups.download-csv');
     Route::get('/backups/{backup}/descargar', [\App\Http\Controllers\Admin\DatabaseBackupController::class, 'download'])
         ->name('administrador.backups.download');
 

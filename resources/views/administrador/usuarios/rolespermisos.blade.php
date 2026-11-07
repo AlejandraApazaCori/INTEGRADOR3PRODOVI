@@ -5,7 +5,10 @@
 @section('content')
 <div class="roles-page">
     <header class="roles-hero">
-        <div><span>Control de accesos</span><h1>Roles y Permisos</h1><p>Administra los roles del sistema y sus permisos de acceso</p></div>
+        <div>
+            @include('administrador.usuarios.dashboard-back')
+            <h1>Roles y Permisos</h1>
+        </div>
         <div class="roles-hero-icon"><i class="fas fa-user-shield"></i></div>
     </header>
 
@@ -26,7 +29,7 @@
             <section class="roles-panel">
                 <header class="roles-panel-heading">
                     <span class="roles-panel-icon orange"><i class="fas fa-users-gear"></i></span>
-                    <div><h2>Roles del sistema</h2><p>Todos los perfiles registrados actualmente.</p><i></i></div>
+                    <div><h2>Roles del sistema</h2><i></i></div>
                 </header>
                 <form action="{{ route('administrador.roles.store') }}" method="POST" class="new-role-form">
                     @csrf
@@ -50,8 +53,9 @@
             <section class="roles-panel permissions-panel">
                 <header class="roles-panel-heading">
                     <span class="roles-panel-icon turquoise"><i class="fas fa-table-cells-large"></i></span>
-                    <div><h2>Matriz de permisos</h2><p>Activa o desactiva los accesos disponibles para cada rol.</p><i></i></div>
+                    <div><h2>Matriz de permisos</h2><i></i></div>
                 </header>
+                <p class="permissions-scroll-hint"><i class="fas fa-arrows-left-right"></i> Desliza la matriz para ver los demás roles</p>
                 <div class="permissions-table-scroll">
                     <table class="permissions-table">
                         <thead><tr><th>Permiso / Funcionalidad</th>@foreach($roles as $role)<th>{{ $role->nombre_rol }}</th>@endforeach</tr></thead>
@@ -95,6 +99,69 @@
     .roles-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:24px}.roles-kpi{--kpi-accent:#117e8c;--kpi-soft:#e6f4f5;--kpi-rgb:17,126,140;position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:132px;padding:21px;border:1px solid rgba(var(--kpi-rgb),.22);border-radius:16px;background:linear-gradient(135deg,#fff 35%,var(--kpi-soft));box-shadow:inset 0 4px 0 var(--kpi-accent),0 10px 24px rgba(45,66,34,.09);transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}.roles-kpi:before{content:'';position:absolute;z-index:-1;top:-42px;right:-34px;width:125px;height:125px;border:22px solid rgba(var(--kpi-rgb),.09);border-radius:50%}.roles-kpi:after{content:'';position:absolute;z-index:-1;right:13px;bottom:8px;width:88px;height:45px;opacity:.22;background-image:radial-gradient(circle,var(--kpi-accent) 1.4px,transparent 1.6px);background-size:9px 9px;transform:rotate(-5deg)}.roles-kpi:hover{transform:translateY(-5px);border-color:rgba(var(--kpi-rgb),.38);box-shadow:inset 0 4px 0 var(--kpi-accent),0 17px 32px rgba(var(--kpi-rgb),.16)}.roles-kpi>div,.roles-kpi>i{position:relative;z-index:1}.roles-kpi span,.roles-kpi small{display:block}.roles-kpi span{color:#596170;font-size:.7rem;font-weight:900;letter-spacing:.025em;text-transform:uppercase}.roles-kpi strong{display:block;margin-top:9px;color:#263024;font-size:1.85rem;font-weight:900;line-height:1}.roles-kpi small{margin-top:8px;color:#7f8878;font-size:.62rem;font-weight:600}.roles-kpi>i{width:52px;height:52px;display:grid;place-items:center;flex:0 0 auto;border:1px solid rgba(255,255,255,.55);border-radius:14px;background:var(--kpi-accent);color:#fff;font-size:1.18rem;box-shadow:0 8px 17px rgba(var(--kpi-rgb),.27),inset 0 1px 0 rgba(255,255,255,.28);transition:transform .22s ease}.roles-kpi:hover>i{transform:rotate(-6deg) scale(1.06)}.kpi-orange{--kpi-accent:#e37225;--kpi-soft:#fff0e6;--kpi-rgb:227,114,37}.kpi-yellow{--kpi-accent:#e3a122;--kpi-soft:#fff6df;--kpi-rgb:227,161,34}.kpi-green{--kpi-accent:#7da533;--kpi-soft:#f0f6e7;--kpi-rgb:125,165,51}.kpi-turquoise{--kpi-accent:#117e8c;--kpi-soft:#e6f4f5;--kpi-rgb:17,126,140}
     .roles-content{margin:0 24px 30px}.roles-alert{display:flex;align-items:flex-start;gap:11px;margin-bottom:16px;padding:13px 16px;border-radius:12px;font-size:.78rem}.roles-alert.success{border:1px solid #bfe3c5;background:#ecf8ee;color:#276738}.roles-alert.error{border:1px solid #f3c4c4;background:#fff0f0;color:#a72d2d}.roles-alert ul{margin:5px 0 0;padding-left:17px}.roles-layout{display:grid;grid-template-columns:minmax(300px,.72fr) minmax(540px,1.28fr);gap:18px;align-items:start}.roles-panel{overflow:hidden;border:1px solid #d8e3c7;border-radius:16px;background:#fff;box-shadow:0 9px 24px rgba(91,121,38,.1)}.roles-panel-heading{display:flex;align-items:center;gap:13px;padding:18px 20px;border-bottom:1px solid #e5ecd9}.roles-panel-icon{width:44px;height:44px;display:grid;place-items:center;flex:0 0 auto;border-radius:12px;font-size:1rem}.roles-panel-icon.orange{background:#ffedd5;color:#e37225}.roles-panel-icon.turquoise{background:#e6f4f5;color:#117e8c}.roles-panel-heading h2{margin:0;color:#30372b;font-size:1rem;font-weight:900}.roles-panel-heading p{margin:4px 0 0;color:#8a9380;font-size:.67rem}.roles-panel-heading div>i{display:block;width:54px;height:3px;margin-top:9px;border-radius:5px;background:#117e8c}.new-role-form{display:flex;gap:9px;padding:16px 20px;background:#fbfcf9}.new-role-form>div{position:relative;min-width:0;flex:1}.new-role-form>div i{position:absolute;top:16px;left:15px;color:#117e8c;font-size:.78rem}.new-role-form input{width:100%;height:46px;padding:0 13px 0 40px;border:1px solid #d8e3c7;border-radius:12px;background:#fff;color:#374151;font-size:.76rem;outline:0}.new-role-form input:focus{border-color:#7da533;box-shadow:0 0 0 3px rgba(125,165,51,.12)}.new-role-form>button{display:flex;align-items:center;justify-content:center;gap:8px;padding:0 16px;border:0;border-radius:12px;background:#7da533;color:#fff;font-size:.72rem;font-weight:900;box-shadow:0 6px 14px rgba(125,165,51,.22);transition:.18s}.new-role-form>button:hover{transform:translateY(-2px);background:#6d922c}.roles-list{display:grid;gap:1px;padding:0 20px 18px}.role-row{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:11px;padding:13px 10px;border-bottom:1px solid #e5ecd9}.role-row:nth-child(even){background:#f4f8ed}.role-row-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:#edf4e4;color:#638524}.role-row-copy strong,.role-row-copy small,.role-users strong,.role-users small{display:block}.role-row-copy strong{color:#35402d;font-size:.77rem}.role-row-copy small{margin-top:4px;color:#90998a;font-size:.62rem}.role-row-copy small i{margin-right:5px;color:#d58b13}.role-users{text-align:right}.role-users strong{color:#117e8c;font-size:.9rem}.role-users small{color:#9ca3af;font-size:.58rem}.roles-empty{padding:38px 20px;text-align:center}.roles-empty>i,.roles-empty strong,.roles-empty span{display:block}.roles-empty>i{margin-bottom:9px;color:#aabd8b;font-size:1.7rem}.roles-empty strong{color:#48513e;font-size:.78rem}.roles-empty span{margin-top:5px;color:#92998a;font-size:.66rem}
     .permissions-table-scroll{overflow-x:auto}.permissions-table{width:100%;min-width:650px;border-collapse:collapse}.permissions-table th{padding:13px 15px;border-right:1px solid rgba(255,255,255,.3);background:#7da533;color:#fff;text-align:center;font-size:.62rem;font-weight:900;letter-spacing:.03em;text-transform:uppercase}.permissions-table th:first-child{min-width:245px;text-align:left}.permissions-table th:last-child{border-right:0}.permissions-table td{padding:14px 15px;border-right:1px solid #d8e3c7;border-bottom:1px solid #dfe8d1;text-align:center;vertical-align:middle}.permissions-table td:first-child{text-align:left}.permissions-table td:last-child{border-right:0}.permissions-table tbody tr:nth-child(odd){background:#fff}.permissions-table tbody tr:nth-child(even){background:#f1f7e8}.permissions-table tbody tr:hover{background:#e9f2dc}.permissions-table td>strong,.permissions-table td>small{display:block}.permissions-table td>strong{color:#36402e;font-size:.72rem}.permissions-table td>strong i{margin-right:7px;color:#7da533}.permissions-table td>small{max-width:330px;margin-top:4px;color:#8d9585;font-size:.6rem;line-height:1.4}.permission-toggle{display:inline-flex;align-items:center;gap:7px;padding:4px 8px 4px 4px;border:1px solid #d8ded2;border-radius:999px;background:#fff;color:#969d90;transition:.18s}.permission-toggle>span{width:25px;height:25px;display:grid;place-items:center;border-radius:50%;background:#eef0eb;color:#a8aea2;font-size:.59rem}.permission-toggle small{font-size:.59rem;font-weight:900}.permission-toggle.is-active{border-color:#b8cf96;background:#edf4e4;color:#587923}.permission-toggle.is-active>span{background:#7da533;color:#fff}.permission-toggle:hover{transform:translateY(-1px);box-shadow:0 5px 11px rgba(91,121,38,.13)}
+    html.admin-dark-nav .roles-page{background:#141414;color:#e5e5e5}
+    html.admin-dark-nav .roles-kpi{background:linear-gradient(135deg,#202020 35%,color-mix(in srgb,var(--kpi-accent) 14%,#202020));border-color:rgba(var(--kpi-rgb),.42);box-shadow:inset 0 4px 0 var(--kpi-accent),0 10px 24px rgba(0,0,0,.2)}
+    html.admin-dark-nav .roles-kpi:hover{box-shadow:inset 0 4px 0 var(--kpi-accent),0 17px 32px rgba(0,0,0,.3)}
+    html.admin-dark-nav .roles-kpi span,html.admin-dark-nav .roles-kpi small{color:#c0c0c0}
+    html.admin-dark-nav .roles-kpi strong{color:#f5f5f5}
+    html.admin-dark-nav .roles-panel{background:#202020;border-color:#353535;box-shadow:0 9px 24px rgba(0,0,0,.2)}
+    html.admin-dark-nav .roles-panel-heading,html.admin-dark-nav .role-row{border-color:#353535}
+    html.admin-dark-nav .roles-panel-heading h2,html.admin-dark-nav .role-row-copy strong,html.admin-dark-nav .roles-empty strong{color:#f5f5f5}
+    html.admin-dark-nav .roles-panel-heading p,html.admin-dark-nav .role-row-copy small,html.admin-dark-nav .role-users small,html.admin-dark-nav .roles-empty span{color:#c0c0c0}
+    html.admin-dark-nav .roles-panel-icon.orange{background:#493021;color:#ffad70}
+    html.admin-dark-nav .roles-panel-icon.turquoise{background:#1c3e42;color:#8dd7e3}
+    html.admin-dark-nav .new-role-form{background:#242424}
+    html.admin-dark-nav .new-role-form input{background:#2b2b2b;border-color:#4a4a4a;color:#f5f5f5}
+    html.admin-dark-nav .new-role-form input::placeholder{color:#aaa}
+    html.admin-dark-nav .new-role-form input:focus{border-color:#9cbe61;box-shadow:0 0 0 3px rgba(156,190,97,.2)}
+    html.admin-dark-nav .role-row:nth-child(even){background:#292929}
+    html.admin-dark-nav .role-row-icon{background:#35442b;color:#b9df91}
+    html.admin-dark-nav .role-users strong{color:#8dd7e3}
+    html.admin-dark-nav .roles-empty>i{color:#9cbe61}
+    html.admin-dark-nav .permissions-table th{background:#426129;border-color:#66813d}
+    html.admin-dark-nav .permissions-table td{border-color:#3b3b3b}
+    html.admin-dark-nav .permissions-table tbody tr:nth-child(odd){background:#202020}
+    html.admin-dark-nav .permissions-table tbody tr:nth-child(even){background:#292929}
+    html.admin-dark-nav .permissions-table tbody tr:hover{background:#333d2d}
+    html.admin-dark-nav .permissions-table td>strong{color:#f5f5f5}
+    html.admin-dark-nav .permissions-table td>strong i{color:#a8cc72}
+    html.admin-dark-nav .permissions-table td>small{color:#c0c0c0}
+    html.admin-dark-nav .permission-toggle{background:#303030;border-color:#505050;color:#d0d0d0}
+    html.admin-dark-nav .permission-toggle>span{background:#454545;color:#d0d0d0}
+    html.admin-dark-nav .permission-toggle.is-active{background:#30432a;border-color:#688b48;color:#c8eba5}
+    html.admin-dark-nav .permission-toggle.is-active>span{background:#7da533;color:#fff}
+    html.admin-dark-nav .roles-alert.success{background:#1c3928;border-color:#376f49;color:#b8edc4}
+    html.admin-dark-nav .roles-alert.error{background:#472a2a;border-color:#855050;color:#ffc1c1}
     @media(max-width:1100px){.roles-layout{grid-template-columns:1fr}.roles-kpi-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:640px){.roles-hero{min-height:180px;padding:24px 20px}.roles-hero-icon{display:none}.roles-kpi-grid{grid-template-columns:1fr;margin:14px 12px}.roles-content{margin:0 12px 20px}.new-role-form{flex-direction:column}.new-role-form>button{height:44px}}
+    .permissions-scroll-hint{display:none}
+    @media(max-width:1100px){
+        .roles-layout,.roles-panel,.permissions-table-scroll{min-width:0}
+        .roles-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media(max-width:640px){
+        .roles-hero{min-height:135px;justify-content:center;padding:22px 16px;text-align:center}
+        .roles-hero-icon{display:none}
+        .roles-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+        .roles-kpi{min-width:0;min-height:116px;align-items:flex-start;gap:6px;padding:12px}
+        .roles-kpi>div{min-width:0}
+        .roles-kpi span{font-size:.62rem;line-height:1.25;overflow-wrap:anywhere}
+        .roles-kpi strong{font-size:1.45rem}
+        .roles-kpi small{font-size:.59rem;line-height:1.25;overflow-wrap:anywhere}
+        .roles-kpi>i{width:34px;height:34px;border-radius:9px;font-size:.82rem}
+        .roles-panel-heading{align-items:flex-start;padding:14px;gap:10px}
+        .roles-panel-icon{width:36px;height:36px;font-size:.85rem}
+        .roles-panel-heading>div{min-width:0}
+        .new-role-form{padding:14px}
+        .roles-list{padding:0 14px 14px}
+        .role-row{grid-template-columns:32px minmax(0,1fr) auto;gap:8px;padding:11px 4px}
+        .role-row-icon{width:30px;height:30px}
+        .role-row-copy{min-width:0;overflow-wrap:anywhere}
+        .permissions-scroll-hint{display:block;margin:0;padding:9px 14px;color:#6b7280;font-size:.7rem}
+        html.admin-dark-nav .permissions-scroll-hint{color:#b8b8b8}
+        .permissions-table th,.permissions-table td{padding:10px 12px}
+    }
+    .roles-page{min-height:0;padding-bottom:12px}
+    .roles-content{margin-bottom:0}
+    @media(max-width:640px){.roles-page{padding-bottom:8px}}
 </style>
 @endpush

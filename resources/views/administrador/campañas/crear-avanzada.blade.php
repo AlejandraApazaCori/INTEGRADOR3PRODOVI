@@ -228,6 +228,7 @@
 .wizard-team-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:42px;margin-top:30px}.wizard-team-column{padding-top:18px;border-top:3px solid #e5eadf}.wizard-team-column:first-child{border-color:#638522}.wizard-team-column:last-child{border-color:#ef6c22}.wizard-team-column-head{min-height:42px;display:flex;align-items:center;gap:11px;margin-bottom:20px}.wizard-team-column-head>span{width:38px;height:38px;display:grid;place-items:center;flex:0 0 38px;border-radius:50%;background:#638522;color:#fff}.wizard-team-column:last-child .wizard-team-column-head>span{background:#ef6c22}.wizard-team-column-head>div{min-width:0;flex:1}.wizard-team-column-head strong,.wizard-team-column-head small{display:block}.wizard-team-column-head strong{color:#35402f;font-size:.78rem}.wizard-team-column-head small{margin-top:3px;color:#7d857a;font-size:.61rem;line-height:1.4}.wizard-team-column>label,.wizard-designer-row label{display:block}.wizard-team-column>label>span,.wizard-designer-row label>span{display:block;margin-bottom:7px;color:#3f4755;font-size:.68rem;font-weight:900}.wizard-team-column-head>button{min-height:34px;padding:0 10px;border:1px solid #ef6c22;border-radius:8px;background:#fff;color:#d85b16;font-size:.6rem;font-weight:900;cursor:pointer}.wizard-team-column-head>button:hover{background:#ef6c22;color:#fff}
 .wizard-designer-row{display:grid;grid-template-columns:minmax(0,1fr) 36px;align-items:end;gap:9px;margin-top:12px}.wizard-designer-row:first-child{margin-top:0}.remove-designer{width:36px;height:42px;border:1px solid #f0d6d2;border-radius:9px;background:#fff;color:#c43d32;cursor:pointer}.remove-designer:hover{background:#fff1ef}.wizard-designers-empty{padding:14px 0;color:#8a9288;font-size:.63rem;line-height:1.5}.wizard-designers-empty[hidden]{display:none}
 .wizard-tasks-heading{display:block;text-align:center}.wizard-tasks-heading .wizard-mode-heading{justify-content:center}.wizard-task-source{margin:24px 0 8px;padding:15px 0;display:flex;align-items:center;justify-content:space-between;gap:18px;border-top:1px solid #e5eadf;border-bottom:1px solid #e5eadf}.wizard-task-source>div{display:flex;align-items:center;gap:10px}.wizard-task-source>div:first-child{min-width:0}.wizard-task-source>div:first-child>i{width:36px;height:36px;display:grid;place-items:center;flex:0 0 36px;border-radius:50%;background:#638522;color:#fff;font-size:.72rem}.wizard-task-source span,.wizard-task-source strong{display:block}.wizard-task-source span{color:#717a6e;font-size:.64rem;line-height:1.45}.wizard-task-source strong{margin-bottom:2px;color:#3f4a39;font-size:.7rem}.wizard-task-source button{min-height:38px;padding:0 11px;border:1px solid #638522;border-radius:9px;background:#fff;color:#638522;font-size:.59rem;font-weight:900;white-space:nowrap;cursor:pointer}.wizard-task-source #add-task{border-color:#ef6c22;background:#ef6c22;color:#fff}.wizard-task-source button:hover{transform:translateY(-1px);box-shadow:0 6px 14px rgba(75,94,57,.13)}
+.wizard-task.is-new-task{border:2px solid #ef6c22;background:#fffaf5;box-shadow:0 0 0 4px rgba(239,108,34,.13)}.wizard-new-task-notice{margin:0 0 12px;color:#b94c0d;font-size:.72rem;font-weight:800}
 .wizard-task-grid .task-full{grid-column:1/-1}.task-assignees{margin:2px 0 0;padding:0;border:0}.task-assignees legend{margin-bottom:9px;color:#4d5749;font-size:.64rem;font-weight:900}.task-assignees legend small{margin-left:5px;color:#8a9287;font-size:.57rem;font-weight:600}.task-assignees>div{display:flex;flex-wrap:wrap;gap:8px}.task-assignees>div>p{margin:0;color:#8a9287;font-size:.62rem}.task-person-option{position:relative}.task-person-option input{position:absolute!important;width:1px!important;height:1px!important;opacity:0}.task-person-option span{min-height:40px;display:flex!important;align-items:flex-start;justify-content:center;flex-direction:column;padding:7px 12px!important;border:1px solid #dfe4dc;border-radius:9px;background:#fff;color:#566052;cursor:pointer;transition:.16s}.task-person-option span b{font-size:.62rem}.task-person-option span small{margin:2px 0 0;color:#8b9388;font-size:.51rem}.task-person-option input:checked+span{border-color:#638522;background:#f1f7e8;color:#526f1c;box-shadow:inset 0 -2px 0 #638522}.task-person-option input:focus+span{box-shadow:0 0 0 3px rgba(99,133,34,.14)}
 .wizard-task-grid .task-three{grid-column:span 3}.task-content-types{margin:0;padding:0;border:0}.task-content-types>legend{margin-bottom:9px;color:#4d5749;font-size:.64rem;font-weight:900}.task-content-types>div{display:flex;flex-wrap:wrap;gap:7px}.task-content-types>div label{position:relative}.task-content-types>div input{position:absolute!important;width:1px!important;height:1px!important;opacity:0}.task-content-types>div span{min-height:36px;display:inline-flex!important;align-items:center;gap:6px;margin:0!important;padding:0 11px!important;border:1px solid #dfe4dc;border-radius:999px;background:#fff;color:#626b5e;font-size:.58rem;font-weight:850;cursor:pointer;transition:.16s}.task-content-types>div input:checked+span{border-color:#638522;background:#638522;color:#fff;box-shadow:0 5px 12px rgba(99,133,34,.2)}.task-content-types>div input:focus+span{box-shadow:0 0 0 3px rgba(99,133,34,.16)}.task-other-type{max-width:390px;display:block;margin-top:12px}.task-other-type[hidden]{display:none}.task-other-type>span{display:block;margin-bottom:6px;color:#4d5749;font-size:.61rem;font-weight:850}
 .task-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:-2px}.task-custom-check{position:relative;min-height:58px;display:flex!important;align-items:center;gap:10px;padding:10px 12px!important;border:1px solid #e0e4de;border-radius:10px;background:#fff;cursor:pointer;transition:.16s}.task-custom-check>input[type=checkbox]{position:absolute!important;width:1px!important;height:1px!important;opacity:0}.task-custom-check>span{width:22px;height:22px;display:grid!important;place-items:center;flex:0 0 22px;margin:0!important;border:2px solid #cfd5cb;border-radius:6px;background:#fff;color:transparent;font-size:.55rem;transition:.16s}.task-custom-check>div{min-width:0}.task-custom-check strong,.task-custom-check small{display:block}.task-custom-check strong{color:#4b5547;font-size:.63rem}.task-custom-check small{margin-top:3px;color:#899186;font-size:.53rem;line-height:1.35}.task-custom-check:has(input[type=checkbox]:checked){border-color:#a9bf80;background:#f8fbf4}.task-custom-check>input[type=checkbox]:checked+span{border-color:#638522;background:#638522;color:#fff}.task-custom-check>input[type=checkbox]:focus+span{box-shadow:0 0 0 3px rgba(99,133,34,.14)}
@@ -337,6 +338,7 @@ html.admin-dark-nav .wizard-confirm-cancel{background:#353535;border-color:#4a4a
 <script>
 function initializeCampaignWizard() {
     const isEditing = @json($isEditing);
+    const requestedNewTask = isEditing && new URLSearchParams(window.location.search).get('nueva_tarea') === '1';
     const modeInput = document.getElementById('modo_creacion');
     const tasksContainer = document.getElementById('tasks-container');
     const tasksEmpty = document.getElementById('tasks-empty');
@@ -837,7 +839,26 @@ function initializeCampaignWizard() {
     setDesignerSelections(initialDesignerIds);
     renderTasks();
     prefillNote.hidden = isEditing || modeInput.value === 'manual';
-    showStep(0);
+    if (requestedNewTask) {
+        showStep(3);
+        if (!@json($errors->any())) {
+            document.getElementById('add-task').click();
+            const newTask = tasksContainer.lastElementChild;
+            if (newTask) {
+                newTask.classList.add('is-new-task');
+                const notice = document.createElement('p');
+                notice.className = 'wizard-new-task-notice';
+                notice.textContent = 'Nueva tarea: completa los campos y guarda los cambios.';
+                newTask.prepend(notice);
+                requestAnimationFrame(() => {
+                    newTask.scrollIntoView({behavior:'smooth', block:'center'});
+                    newTask.querySelector('[name$="[titulo]"]')?.focus({preventScroll:true});
+                });
+            }
+        }
+    } else {
+        showStep(0);
+    }
 }
 
 if (document.readyState === 'loading') {

@@ -399,7 +399,7 @@
 .pwiz-banner::before,.pwiz-banner::after { display:none; }
 .pwiz-banner-overlay { background:linear-gradient(rgba(15,23,42,.28),rgba(15,23,42,.28)),radial-gradient(circle at 0 0,rgba(255,255,255,.2),transparent 50%),radial-gradient(circle at 100% 100%,rgba(255,255,255,.16),transparent 50%);background-size:100% 100%,50% 50%,50% 50%;background-position:0 0,0 0,100% 100%; }
 .pwiz-banner-icon { width:52px;height:52px;border:1px solid rgba(255,255,255,.24);border-radius:14px;background:rgba(255,255,255,.14);font-size:20px;backdrop-filter:blur(5px); }
-.pwiz-banner-text h1 { margin:0;color:#fff;font-size:clamp(1.55rem,3vw,2.25rem);font-weight:900;letter-spacing:-.04em; }.pwiz-banner-text h1::before { content:'Administración financiera';display:block;margin-bottom:7px;color:#dbeafe;font-size:.68rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase; }.pwiz-banner-text p { color:#dbeafe;font-size:.74rem;font-weight:600; }
+.pwiz-banner-text h1 { margin:0;color:#fff;font-size:clamp(1.55rem,3vw,2.25rem);font-weight:900;letter-spacing:-.04em; }.pwiz-banner-text p { color:#dbeafe;font-size:.74rem;font-weight:600; }
 .pwiz-banner-back { padding:11px 15px;border:1px solid rgba(255,255,255,.35);border-radius:.7rem;background:rgba(255,255,255,.14);font-size:.72rem;font-weight:900;backdrop-filter:blur(5px); }.pwiz-banner-back:hover { transform:translateY(-2px);background:#fff;color:#4f46e5;box-shadow:0 8px 20px rgba(31,41,55,.16); }
 .pwiz-stepper,.pwiz-panel,.pwiz-content-stage>div[style*="margin-bottom"] { width:calc(100% - 48px);max-width:960px;margin-right:auto;margin-left:auto; }
 .pwiz-stepper { margin-top:24px;margin-bottom:18px;padding:16px 26px;border:1px solid #dbe7f1;border-radius:15px;background:linear-gradient(90deg,#f4f8fd,#edf9fa);box-shadow:0 8px 20px rgba(30,72,110,.06); }
@@ -521,10 +521,9 @@ html.admin-dark-nav .pwiz-page-wrapper .text-red-600 { color:#fecaca; }
       {{-- ── Banner ─────────────────────────────────────────────────── --}}
       <div class="pwiz-banner">
         <div class="pwiz-banner-overlay"></div>
-        <div class="pwiz-banner-icon"><i class="fas fa-credit-card"></i></div>
         <div class="pwiz-banner-text">
+          @include('administrador.pagos.dashboard-back')
           <h1>Registrar pago manual</h1>
-          <p>Registra una suscripción y pago para un cliente en pocos pasos.</p>
         </div>
         <a href="{{ route('administrador.pagos.index') }}" class="pwiz-banner-back">
           <i class="fas fa-arrow-left"></i> Volver atrás

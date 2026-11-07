@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\Tarea;
+use App\Models\Campania;
+use App\Observers\CampaignActivityObserver;
 use App\Services\FacebookService;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -23,6 +25,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+
+        Campania::observe(CampaignActivityObserver::class);
+        Tarea::observe(CampaignActivityObserver::class);
 
         $this->processScheduledPublicationsFromWeb();
 

@@ -285,6 +285,82 @@
     #questionnaire-editor{min-height:100vh;padding-bottom:55px;background:#f7f8fa}#questionnaire-editor .prodovi-hero{min-height:180px;padding:28px 48px;border:0;background:linear-gradient(135deg,#4f46e5 25%,transparent 25%) -50px 0,linear-gradient(225deg,#4f46e5 25%,transparent 25%) -50px 0,linear-gradient(315deg,#4f46e5 25%,transparent 25%),linear-gradient(45deg,#4f46e5 25%,transparent 25%),linear-gradient(to bottom,#3b82f6,#2563eb);background-color:#1d4ed8;background-size:100px 100px,100px 100px,100px 100px,100px 100px,100% 100%}#questionnaire-editor .prodovi-hero::before{content:'';position:absolute;display:block;z-index:0;inset:0;background:linear-gradient(rgba(15,23,42,.2),rgba(15,23,42,.2)),radial-gradient(circle at 0 0,rgba(255,255,255,.2),transparent 48%),radial-gradient(circle at 100% 100%,rgba(255,255,255,.16),transparent 45%)}#questionnaire-editor .hero-title span{color:#dbeafe}#questionnaire-editor .hero-description{color:#dbeafe}#questionnaire-editor .hero-kicker{color:#dbeafe}#questionnaire-editor .back-button{border-radius:9px;text-transform:none}#questionnaire-editor .back-button:hover{border-color:#fff;background:#fff;color:#2563eb}.editor-hero-status{position:relative;z-index:2;display:flex;align-items:center;gap:13px;min-width:260px;padding:15px 17px;border:1px solid rgba(255,255,255,.24);border-radius:14px;background:rgba(255,255,255,.12);color:#fff;backdrop-filter:blur(8px)}.editor-hero-status>i{width:42px;height:42px;display:grid;place-items:center;flex:none;border-radius:11px;background:#fff;color:#2563eb}.editor-hero-status strong,.editor-hero-status small{display:block}.editor-hero-status strong{font-size:.76rem}.editor-hero-status small{margin-top:3px;color:#dbeafe;font-size:.59rem}#questionnaire-editor .editor-shell{overflow:visible!important;background:transparent}#questionnaire-editor .editor-shell>.p-8{max-width:1480px;margin:auto;padding:24px!important}#questionnaire-editor .topic-panel{padding:0;border:1px solid #e1dde4;border-top:5px solid var(--prodovi-orange);border-bottom:1px solid #e1dde4;border-radius:16px;background:#fff;box-shadow:0 10px 28px rgba(48,40,52,.07)}#questionnaire-editor .topic-panel>.sm\:col-span-2:first-child{padding:19px 22px 0}#questionnaire-editor .topic-panel>.section-label{padding:0}#questionnaire-editor .topic-field{margin:0 22px 22px;padding:16px!important;border:1px solid #e4dfe6!important;border-radius:11px!important;background:#faf9fb;box-shadow:none!important}#questionnaire-editor .topic-field:hover{border-color:#bcdadd!important;background:#fff}#questionnaire-editor .section-label{margin:0;padding-bottom:13px;border-bottom:1px solid #e5e0e7;color:#117e8c;font-size:.7rem}#questionnaire-editor .section-label-icon{border-radius:9px;background:#edf7f8;color:#117e8c}#questionnaire-editor input:not([type=checkbox]),#questionnaire-editor textarea,#questionnaire-editor select,#questionnaire-editor .type-dropdown-trigger{border:1px solid #ded9e1;border-radius:10px;background:#fff;box-shadow:none}#questionnaire-editor input:not([type=checkbox]):focus,#questionnaire-editor textarea:focus,#questionnaire-editor select:focus,#questionnaire-editor .type-dropdown-trigger.is-open{border-color:#117e8c;box-shadow:0 0 0 3px rgba(17,126,140,.12)}#questionnaire-editor .questions-section{margin-top:24px;padding:20px 22px 28px;border:1px solid #e1dde4;border-top:5px solid #117e8c;border-radius:16px;background:#fff;box-shadow:0 10px 28px rgba(48,40,52,.07)}#questionnaire-editor .questions-section>.flex:first-child{margin-bottom:18px!important;padding-bottom:14px;border-bottom:1px solid #e5e0e7}#questionnaire-editor .add-question-button{border-radius:9px;background:#ef6c22;box-shadow:0 8px 17px rgba(239,108,34,.18)}#questionnaire-editor .add-question-button:hover{background:#dc5710}#questionnaire-editor #preguntas-container{display:grid;gap:18px}#questionnaire-editor .pregunta-item{--question-color:#5b2b76;overflow:visible;border:1px solid #ded7e1;border-top:5px solid var(--question-color);border-radius:5px;background:#fff;box-shadow:0 15px 36px #e5dfe7}#questionnaire-editor .pregunta-item:nth-child(3n+2){--question-color:#ef6c22}#questionnaire-editor .pregunta-item:nth-child(3n){--question-color:#117e8c}#questionnaire-editor .pregunta-item:hover{border-color:#ded7e1;transform:translateY(-4px);box-shadow:0 22px 44px #d8d0db}#questionnaire-editor .question-head{border-radius:0;background:#f7f5f8}#questionnaire-editor .question-accent{display:none}#questionnaire-editor .question-number{border-radius:4px!important;background:var(--question-color);box-shadow:none}#questionnaire-editor .pregunta-item>.p-5{padding:21px 22px}#questionnaire-editor .type-current-icon{border-radius:8px;background:#edf7f8;color:#117e8c}#questionnaire-editor .type-dropdown-menu{border-radius:11px}#questionnaire-editor .type-dropdown-option{border-radius:7px}#questionnaire-editor .type-dropdown-option:hover,#questionnaire-editor .type-dropdown-option.is-selected{background:#edf7f8;color:#0d6975}#questionnaire-editor .options-builder{padding:17px;border:1px solid #d6e7e9;border-left:4px solid #117e8c;border-radius:10px;background:#f8fcfc}#questionnaire-editor .option-builder-row{border:1px solid #e1e4e4;border-radius:8px;background:#fff}#questionnaire-editor .required-box{border-radius:10px;background:#faf9fb}#questionnaire-editor .floating-actions{right:24px;bottom:24px;padding:9px;border:1px solid #ddd8df;border-radius:13px;background:rgba(255,255,255,.96);box-shadow:0 14px 34px rgba(48,40,52,.18)}#questionnaire-editor .cancel-button,#questionnaire-editor .save-button{min-height:42px;border-radius:9px}#questionnaire-editor .save-button{background:#5b2b76;box-shadow:none}#questionnaire-editor .save-button:hover{background:#431760}#questionnaire-editor #empty-preguntas-state{border-radius:10px;background:#faf9fb}
     #questionnaire-editor .topic-panel{gap:0}#questionnaire-editor #preguntas-container>*+*{margin-top:0}
     @media(max-width:700px){#questionnaire-editor .prodovi-hero{min-height:240px;align-items:stretch;flex-direction:column;padding:24px 18px}.editor-hero-status{width:100%;min-width:0}#questionnaire-editor .editor-shell>.p-8{padding:12px!important}#questionnaire-editor .topic-panel,#questionnaire-editor .questions-section{border-radius:12px}#questionnaire-editor .topic-field{margin-right:15px;margin-left:15px}#questionnaire-editor .questions-section{padding:17px 15px 25px}#questionnaire-editor .floating-actions{right:10px;bottom:10px;left:10px}}
+    html.admin-dark-nav #questionnaire-editor{background:#141414;color:#e5e5e5}
+    html.admin-dark-nav #questionnaire-editor .topic-panel,
+    html.admin-dark-nav #questionnaire-editor .questions-section,
+    html.admin-dark-nav #questionnaire-editor .pregunta-item{background:#202020;border-color:#3a3a3a;box-shadow:0 10px 28px rgba(0,0,0,.18)}
+    html.admin-dark-nav #questionnaire-editor .topic-panel{border-top-color:var(--prodovi-orange)}
+    html.admin-dark-nav #questionnaire-editor .questions-section{border-top-color:#39a9b6}
+    html.admin-dark-nav #questionnaire-editor .pregunta-item{border-top-color:var(--question-color)}
+    html.admin-dark-nav #questionnaire-editor .pregunta-item:hover{border-color:#555;border-top-color:var(--question-color);box-shadow:0 16px 32px rgba(0,0,0,.25)}
+    html.admin-dark-nav #questionnaire-editor .topic-field,
+    html.admin-dark-nav #questionnaire-editor .question-head,
+    html.admin-dark-nav #questionnaire-editor .required-box,
+    html.admin-dark-nav #questionnaire-editor #empty-preguntas-state{background:#292929;border-color:#414141!important}
+    html.admin-dark-nav #questionnaire-editor .topic-field:hover{background:#303030}
+    html.admin-dark-nav #questionnaire-editor .section-label,
+    html.admin-dark-nav #questionnaire-editor .questions-section>.flex:first-child,
+    html.admin-dark-nav #questionnaire-editor .question-head{border-bottom-color:#414141}
+    html.admin-dark-nav #questionnaire-editor .section-label{color:#7dd3df}
+    html.admin-dark-nav #questionnaire-editor label,
+    html.admin-dark-nav #questionnaire-editor .question-head h3,
+    html.admin-dark-nav #questionnaire-editor .options-builder-title,
+    html.admin-dark-nav #questionnaire-editor #empty-preguntas-state h3{color:#f5f5f5}
+    html.admin-dark-nav #questionnaire-editor .text-slate-400,
+    html.admin-dark-nav #questionnaire-editor .options-builder-description,
+    html.admin-dark-nav #questionnaire-editor #empty-preguntas-state p{color:#b8b8b8}
+    html.admin-dark-nav #questionnaire-editor input:not([type=checkbox]),
+    html.admin-dark-nav #questionnaire-editor textarea,
+    html.admin-dark-nav #questionnaire-editor select,
+    html.admin-dark-nav #questionnaire-editor .type-dropdown-trigger,
+    html.admin-dark-nav #questionnaire-editor .type-dropdown-menu,
+    html.admin-dark-nav #questionnaire-editor .option-builder-row{background:#292929;border-color:#4a4a4a;color:#f5f5f5;color-scheme:dark}
+    html.admin-dark-nav #questionnaire-editor input::placeholder,
+    html.admin-dark-nav #questionnaire-editor textarea::placeholder{color:#a0a0a0}
+    html.admin-dark-nav #questionnaire-editor .type-dropdown-option{color:#e5e5e5}
+    html.admin-dark-nav #questionnaire-editor .type-dropdown-option:hover,
+    html.admin-dark-nav #questionnaire-editor .type-dropdown-option.is-selected{background:#354448;color:#9ce2e8}
+    html.admin-dark-nav #questionnaire-editor .type-current-icon,
+    html.admin-dark-nav #questionnaire-editor .section-label-icon,
+    html.admin-dark-nav #questionnaire-editor .options-builder-icon{background:#293b3e;color:#8ad7df}
+    html.admin-dark-nav #questionnaire-editor .options-builder{background:#252e30;border-color:#42646a}
+    html.admin-dark-nav #questionnaire-editor .remove-option-button{background:#492c2c;color:#ffaaa2}
+    html.admin-dark-nav #questionnaire-editor .add-other-button{background:#49352a;color:#ffb47f;border-color:#86533a}
+    html.admin-dark-nav #questionnaire-editor .floating-actions{background:rgba(32,32,32,.97);border-color:#4a4a4a;box-shadow:0 14px 34px rgba(0,0,0,.35)}
+    html.admin-dark-nav #questionnaire-editor .cancel-button,
+    html.admin-dark-nav #questionnaire-editor #empty-preguntas-state button{background:#383838;border-color:#555;color:#f5f5f5}
+    html.admin-dark-nav #questionnaire-editor .cancel-button:hover,
+    html.admin-dark-nav #questionnaire-editor #empty-preguntas-state button:hover{background:#484848}
+    html.admin-dark-nav #questionnaire-editor .pregunta-requerido:not(:checked)+div{background:#555}
+    html.admin-dark-nav #questionnaire-editor textarea::-webkit-scrollbar-track{background:#292929}
+    html.admin-dark-nav #questionnaire-editor textarea::-webkit-scrollbar-thumb{background:#666}
+    @media(max-width:1100px){
+        #questionnaire-editor .prodovi-hero{padding:24px;gap:20px}
+        #questionnaire-editor .editor-shell>.p-8{padding:18px!important}
+        #questionnaire-editor .pregunta-item .lg\:grid-cols-12{grid-template-columns:minmax(0,1fr)}
+        #questionnaire-editor .pregunta-item .lg\:col-span-8,
+        #questionnaire-editor .pregunta-item .lg\:col-span-4,
+        #questionnaire-editor .pregunta-item .lg\:col-span-12{grid-column:auto}
+    }
+    @media(max-width:700px){
+        #questionnaire-editor .prodovi-hero{min-height:0;padding:20px 16px}
+        #questionnaire-editor .hero-title{font-size:1.7rem}
+        #questionnaire-editor .editor-shell>.p-8{padding:12px!important}
+        #questionnaire-editor .topic-panel{grid-template-columns:minmax(0,1fr);margin-bottom:18px}
+        #questionnaire-editor .topic-panel>.sm\:col-span-2,
+        #questionnaire-editor .topic-field{grid-column:auto}
+        #questionnaire-editor .topic-field{min-width:0;margin:0 14px 14px;padding:12px!important}
+        #questionnaire-editor .questions-section{padding:16px 14px 24px}
+        #questionnaire-editor .questions-section>.flex:first-child{align-items:stretch}
+        #questionnaire-editor .questions-section>.flex:first-child .add-question-button{justify-content:center}
+        #questionnaire-editor .pregunta-item>.p-5{padding:16px 14px}
+        #questionnaire-editor .question-head{padding:12px 14px}
+        #questionnaire-editor .options-builder{padding:12px}
+        #questionnaire-editor .option-builder-add{grid-template-columns:repeat(2,minmax(0,1fr))}
+        #questionnaire-editor .option-builder-add button{justify-content:center;min-width:0;padding:8px}
+        #questionnaire-editor .floating-actions{gap:8px;padding:8px}
+        #questionnaire-editor .floating-actions>*{min-width:0;padding:9px 10px;font-size:.8rem}
+    }
 </style>
 
 <div id="questionnaire-editor" class="min-h-screen font-sans">
@@ -298,9 +374,9 @@
                     Regresar
                 </a>
                 <h1 class="hero-title">Constructor de <span>brief</span></h1>
-                <p class="hero-description">
-                    {{ isset($tema) ? 'Edita “' . $tema->nombre_tema . '” y define preguntas claras, rápidas y útiles para conocer cada marca.' : 'Construye un brief breve y atractivo para conocer lo esencial de cada marca.' }}
-                </p>
+                @isset($tema)
+                    <p class="hero-description">Edita “{{ $tema->nombre_tema }}” y define preguntas claras, rápidas y útiles para conocer cada marca.</p>
+                @endisset
             </div>
             <div class="editor-hero-status">
                 <i class="fas fa-list-check"></i>

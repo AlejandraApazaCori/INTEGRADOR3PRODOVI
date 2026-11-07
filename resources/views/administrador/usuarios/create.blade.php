@@ -59,9 +59,7 @@
 <div class="users-create-page">
     <header class="users-create-hero">
         <div class="users-create-hero-copy">
-            <span>Administración de clientes</span>
             <h1>Crear nuevo usuario</h1>
-            <p>Completa el formulario para dar de alta a un nuevo usuario en el sistema.</p>
         </div>
         <a href="{{ route('administrador.usuarios.index') }}" class="users-create-back">
             <i class="fas fa-arrow-left" aria-hidden="true"></i> Volver a la lista

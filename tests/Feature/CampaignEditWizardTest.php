@@ -97,6 +97,16 @@ class CampaignEditWizardTest extends TestCase
             ->assertSee('WhatsApp')
             ->assertSee('Guardar cambios');
 
+        $this->actingAs($admin)
+            ->get(route('administrador.tareas.create', $campaign))
+            ->assertRedirect(route('administrador.campañas.edit', ['campania' => $campaign, 'nueva_tarea' => 1]));
+
+        $this->actingAs($admin)
+            ->get(route('administrador.campañas.edit', ['campania' => $campaign, 'nueva_tarea' => 1]))
+            ->assertOk()
+            ->assertSee('requestedNewTask', false)
+            ->assertSee('Nueva tarea: completa los campos y guarda los cambios.');
+
         $response = $this->actingAs($admin)->put(route('administrador.campañas.update', $campaign), [
             'nombre' => 'Campaña actualizada',
             'descripcion' => 'Descripción actualizada',

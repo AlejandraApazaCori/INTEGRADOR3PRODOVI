@@ -451,6 +451,45 @@
         html.admin-dark-nav .analytics-recommendation .bg-amber-100 { background:#383838; }
         html.admin-dark-nav .analytics-recommendation .text-slate-900 { color:#f5f5f5; }
         html.admin-dark-nav .analytics-recommendation .text-slate-700 { color:#e5e5e5; }
+        .analytics-kpi .analytics-kpi-body > .analytics-kpi-visual {
+            width: 48px !important;
+            min-width: 48px;
+            height: 48px !important;
+            display: grid !important;
+            align-items: center !important;
+            justify-items: center;
+            padding: 0 !important;
+            border-color: rgba(255,255,255,.35) !important;
+            background: var(--accent) !important;
+        }
+        .analytics-kpi .analytics-kpi-body > .analytics-kpi-visual > i {
+            width: auto;
+            height: auto;
+            background: transparent;
+            color: #fff !important;
+            font-size: 1.2rem;
+            opacity: 1;
+        }
+        .analytics-recommendations + .analytics-chart-grid { margin-top: 24px !important; }
+        .analytics-dashboard-back { display:inline-flex; align-items:center; gap:8px; margin-bottom:13px; padding:7px 12px; border:1px solid rgba(255,255,255,.36); border-radius:9px; background:rgba(255,255,255,.12); color:#fff; font-size:.7rem; font-weight:800; text-decoration:none; transition:.18s; }
+        .analytics-dashboard-back:hover,.analytics-dashboard-back:focus-visible { border-color:#fff; background:#fff; color:#2563eb; }
+        @media (max-width: 640px) {
+            .analytics-hero { min-height: 0; }
+            .analytics-hero-body { padding: 20px 16px !important; }
+            .analytics-hero-layout { gap: 16px; }
+            .analytics-hero-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+            .analytics-hero-action { min-width: 0; justify-content: center; padding: 9px 8px; white-space: normal; text-align: center; }
+            .analytics-period { grid-column: 1 / -1; }
+            .analytics-period [data-filter-fields] { flex-wrap: wrap; justify-content: center; }
+            .analytics-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; }
+            .analytics-kpi { min-width: 0; min-height: 118px; padding: 12px !important; }
+            .analytics-kpi-top span { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; line-height: 1.2; }
+            .analytics-kpi-body { gap: 4px; margin-top: 9px; }
+            .analytics-kpi-copy strong { font-size: clamp(1.05rem, 5vw, 1.4rem); white-space: normal; overflow-wrap: anywhere; }
+            .analytics-kpi-copy small { white-space: normal; line-height: 1.25; }
+            .analytics-kpi .analytics-kpi-body > .analytics-kpi-visual { width: 36px !important; min-width: 36px; height: 36px !important; }
+            .analytics-kpi .analytics-kpi-body > .analytics-kpi-visual > i { font-size: .95rem; }
+        }
     </style>
 
     <div class="analytics-shell">
@@ -460,6 +499,7 @@
                 <div class="analytics-hero-body relative z-10 px-8 py-8">
                     <div class="analytics-hero-layout">
                         <div class="analytics-hero-copy">
+                            <a href="{{ route('administrador.dashboard') }}" class="analytics-dashboard-back"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al dashboard</a>
                             <h1 class="text-3xl font-bold text-white mb-1">Analíticas de campañas</h1>
                         </div>
                         <nav class="analytics-hero-actions" aria-label="Acciones de analíticas">
@@ -486,7 +526,6 @@
                                 <button type="submit" style="border:1px solid rgba(255,255,255,.45);border-radius:6px;background:#fff;color:#4f46e5;padding:5px 9px;font-weight:900;cursor:pointer;">Aplicar</button>
                             </form>
                             <a href="{{ route('administrador.campañas.index') }}" class="analytics-hero-action is-primary"><i class="fas fa-bullhorn"></i>Campañas</a>
-                            <a href="{{ route('administrador.dashboard') }}" class="analytics-hero-action"><i class="fas fa-arrow-left"></i>Volver al panel</a>
                         </nav>
                     </div>
                 </div>
@@ -494,32 +533,69 @@
 
             <!-- KPI Cards mejoradas -->
             <div class="analytics-section-heading">
-                <div><span>Resumen ejecutivo</span><h2>Indicadores principales</h2></div>
+                <div><h2>Indicadores principales</h2></div>
                 <p>Lectura consolidada de {{ $monthName }}</p>
             </div>
             <section class="analytics-kpi-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
                 <article class="analytics-kpi analytics-kpi-campaigns">
                     <div class="analytics-kpi-top"><span>Total campañas</span><i class="fas fa-arrow-up"></i></div>
-                    <div class="analytics-kpi-body"><div class="analytics-kpi-copy"><strong>{{ $totalCampaigns }}</strong><small>Activas, finalizadas y en preparación.</small></div><div class="analytics-kpi-visual" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div>
+                    <div class="analytics-kpi-body"><div class="analytics-kpi-copy"><strong>{{ $totalCampaigns }}</strong><small>Activas, finalizadas y en preparación.</small></div><div class="analytics-kpi-visual" aria-hidden="true"><i class="fas fa-bullhorn"></i></div></div>
                 </article>
                 <article class="analytics-kpi analytics-kpi-reach">
                     <div class="analytics-kpi-top"><span>Alcance total</span><i class="fas fa-arrow-up"></i></div>
-                    <div class="analytics-kpi-body"><div class="analytics-kpi-copy"><strong>{{ number_format($totalReach) }}</strong><small>Visibilidad acumulada del periodo.</small></div><div class="analytics-kpi-visual" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div>
+                    <div class="analytics-kpi-body"><div class="analytics-kpi-copy"><strong>{{ number_format($totalReach) }}</strong><small>Visibilidad acumulada del periodo.</small></div><div class="analytics-kpi-visual" aria-hidden="true"><i class="fas fa-eye"></i></div></div>
                 </article>
                 <article class="analytics-kpi analytics-kpi-interactions">
                     <div class="analytics-kpi-top"><span>Interacciones</span><i class="fas fa-arrow-up"></i></div>
-                    <div class="analytics-kpi-body"><div class="analytics-kpi-copy"><strong>{{ number_format($totalInteractions) }}</strong><small>Clics, reacciones y respuestas del mes.</small></div><div class="analytics-kpi-visual" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div>
+                    <div class="analytics-kpi-body"><div class="analytics-kpi-copy"><strong>{{ number_format($totalInteractions) }}</strong><small>Clics, reacciones y respuestas del mes.</small></div><div class="analytics-kpi-visual" aria-hidden="true"><i class="fas fa-hand-pointer"></i></div></div>
                 </article>
                 <article class="analytics-kpi analytics-kpi-engagement">
                     <div class="analytics-kpi-top"><span>Engagement promedio</span><i class="fas fa-arrow-up"></i></div>
-                    <div class="analytics-kpi-body"><div class="analytics-kpi-copy"><strong>{{ number_format($averageEngagement, 1) }}%</strong><small>Rendimiento promedio de los clientes.</small></div><div class="analytics-kpi-visual" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div>
+                    <div class="analytics-kpi-body"><div class="analytics-kpi-copy"><strong>{{ number_format($averageEngagement, 1) }}%</strong><small>Rendimiento promedio de los clientes.</small></div><div class="analytics-kpi-visual" aria-hidden="true"><i class="fas fa-chart-line"></i></div></div>
                 </article>
             </section>
 
-            <div class="analytics-section-heading">
-                <div><span>Comportamiento</span><h2>Evolución y estado operativo</h2></div>
-                <p>Gráficos comparativos del periodo</p>
-            </div>
+         
+            <section class="analytics-recommendations grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <article class="analytics-recommendation analytics-card rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="rounded-2xl bg-cyan-100 p-3">
+                            <svg class="w-6 h-6 text-cyan-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900">Recomendación automática del periodo</h2>
+                            <p class="text-sm text-slate-500">Sugerencia estadística con al menos dos publicaciones por franja.</p>
+                        </div>
+                    </div>
+                    <p id="automaticRecommendation" class="text-base leading-7 text-slate-700"></p>
+                </article>
+
+                <article class="analytics-recommendation analytics-card rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="rounded-2xl bg-amber-100 p-3">
+                            <svg class="w-6 h-6 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.19 3.674a1 1 0 00.95.69h3.864c.969 0 1.371 1.24.588 1.81l-3.126 2.272a1 1 0 00-.364 1.118l1.194 3.674c.3.922-.755 1.688-1.539 1.118l-3.127-2.272a1 1 0 00-1.175 0l-3.127 2.272c-.783.57-1.838-.196-1.539-1.118l1.194-3.674a1 1 0 00-.364-1.118L2.397 9.101c-.783-.57-.38-1.81.588-1.81h3.864a1 1 0 00.95-.69l1.19-3.674z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900">Empresa recomendada para análisis</h2>
+                            <p class="text-sm text-slate-500">La empresa con mejor engagement homogeneizado del periodo.</p>
+                        </div>
+                    </div>
+                    @if ($recommendedCampaign)
+                        <p class="text-base leading-7 text-slate-700">
+                            <span class="font-bold text-slate-900">"{{ $recommendedCampaign['campaign'] }}"</span>
+                            obtuvo el mayor engagement con
+                            <span class="font-bold text-emerald-700">{{ number_format($recommendedCampaign['engagement'], 1) }}%</span>.
+                        </p>
+                    @else
+                        <p class="text-base leading-7 text-slate-700">Todavía no existen campañas con alcance suficiente para realizar esta comparación.</p>
+                    @endif
+                </article>
+            </section>
+
             <section class="analytics-chart-grid grid grid-cols-1 xl:grid-cols-12 gap-6 mb-8">
                 <article class="analytics-card rounded-2xl p-6 xl:col-span-7 shadow-sm border border-gray-100">
                     <div class="analytics-card-header flex items-start justify-between gap-4 mb-5">
@@ -699,49 +775,6 @@
                 @endif
             </section>
 
-            <div class="analytics-section-heading" style="margin-top: 14px;">
-                <div><span>Decisiones sugeridas</span><h2>Recomendaciones del periodo</h2></div>
-                <p>Hallazgos construidos con los datos actuales</p>
-            </div>
-            <section class="analytics-recommendations grid grid-cols-1 xl:grid-cols-2 gap-6">
-                <article class="analytics-recommendation analytics-card rounded-2xl p-6 shadow-sm border border-gray-100">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="rounded-2xl bg-cyan-100 p-3">
-                            <svg class="w-6 h-6 text-cyan-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h2 class="text-xl font-bold text-slate-900">Recomendación automática del periodo</h2>
-                            <p class="text-sm text-slate-500">Sugerencia estadística con al menos dos publicaciones por franja.</p>
-                        </div>
-                    </div>
-                    <p id="automaticRecommendation" class="text-base leading-7 text-slate-700"></p>
-                </article>
-
-                <article class="analytics-recommendation analytics-card rounded-2xl p-6 shadow-sm border border-gray-100">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="rounded-2xl bg-amber-100 p-3">
-                            <svg class="w-6 h-6 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.19 3.674a1 1 0 00.95.69h3.864c.969 0 1.371 1.24.588 1.81l-3.126 2.272a1 1 0 00-.364 1.118l1.194 3.674c.3.922-.755 1.688-1.539 1.118l-3.127-2.272a1 1 0 00-1.175 0l-3.127 2.272c-.783.57-1.838-.196-1.539-1.118l1.194-3.674a1 1 0 00-.364-1.118L2.397 9.101c-.783-.57-.38-1.81.588-1.81h3.864a1 1 0 00.95-.69l1.19-3.674z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h2 class="text-xl font-bold text-slate-900">Empresa recomendada para análisis</h2>
-                            <p class="text-sm text-slate-500">La empresa con mejor engagement homogeneizado del periodo.</p>
-                        </div>
-                    </div>
-                    @if ($recommendedCampaign)
-                        <p class="text-base leading-7 text-slate-700">
-                            <span class="font-bold text-slate-900">"{{ $recommendedCampaign['campaign'] }}"</span>
-                            obtuvo el mayor engagement con
-                            <span class="font-bold text-emerald-700">{{ number_format($recommendedCampaign['engagement'], 1) }}%</span>.
-                        </p>
-                    @else
-                        <p class="text-base leading-7 text-slate-700">Todavía no existen campañas con alcance suficiente para realizar esta comparación.</p>
-                    @endif
-                </article>
-            </section>
         </div>
     </div>
 

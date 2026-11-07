@@ -1,7 +1,7 @@
 {{-- Encabezado y métricas de Gestión de Usuarios. --}}
 <header class="users-control-hero">
     <div class="users-control-copy">
-        <span>Administración de clientes</span>
+        @include('administrador.usuarios.dashboard-back')
         <h1>Gestión de usuarios</h1>
     </div>
     <div class="users-quick-actions" aria-label="Acciones de usuarios">
@@ -78,5 +78,5 @@
     .users-kpi-card > i { width:52px; height:52px; display:grid; place-items:center; flex:0 0 auto; border:1px solid rgba(255,255,255,.55); border-radius:14px; background:var(--kpi-accent); color:#fff; font-size:1.18rem; box-shadow:0 8px 17px rgba(var(--kpi-rgb),.27),inset 0 1px 0 rgba(255,255,255,.28); transition:transform .22s ease; }.users-kpi-card:hover > i { transform:rotate(-6deg) scale(1.06); }
     .users-kpi-total { --kpi-accent:#117e8c; --kpi-soft:#e6f4f5; --kpi-rgb:17,126,140; }.users-kpi-active { --kpi-accent:#7da533; --kpi-soft:#f0f6e7; --kpi-rgb:125,165,51; }.users-kpi-admin { --kpi-accent:#e3a122; --kpi-soft:#fff6df; --kpi-rgb:227,161,34; }.users-kpi-no-plan { --kpi-accent:#e37225; --kpi-soft:#fff0e6; --kpi-rgb:227,114,37; }
     @media(max-width: 980px) { .users-control-hero { min-height: 205px; flex-direction: column; justify-content: center; text-align: center; }.users-quick-actions { justify-content: center; }.users-kpi-grid { grid-template-columns: repeat(2,1fr); } }
-    @media(max-width: 640px) { .users-control-hero { padding: 24px 20px; }.users-quick-actions { width: 100%; }.users-quick-actions a { flex: 1; justify-content: center; }.users-kpi-grid { grid-template-columns: 1fr; margin-right: 12px; margin-left: 12px; } }
+    @media(max-width: 640px) { .users-control-hero { padding: 24px 20px; }.users-quick-actions { width: 100%; }.users-quick-actions a { flex: 1; justify-content: center; }.users-kpi-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; margin-right: 12px; margin-left: 12px; }.users-kpi-card { min-height: 130px; padding: 12px; gap: 8px; }.users-kpi-card > div { min-width: 0; }.users-kpi-card > i { width: 38px; height: 38px; font-size: .95rem; }.users-kpi-card strong { font-size: 1.5rem; }.users-kpi-card span,.users-kpi-card small { overflow-wrap: anywhere; } }
 </style>
