@@ -104,6 +104,15 @@ class FacebookService
             ->values();
 
         if ($imageFiles->isEmpty()) {
+            $videoFile = $tarea->archivos->first(function ($archivo) {
+                return $archivo->estado === 'aprobado'
+                    && in_array(strtolower($archivo->extension), ['mp4', 'mov'], true);
+            });
+
+            if ($videoFile) {
+                return $this->postSingleVideoToPage($pageId, $pageAccessToken, $message, $videoFile);
+            }
+
             return $this->postToPage($pageId, $pageAccessToken, $message);
         }
 
@@ -230,6 +239,81 @@ class FacebookService
         }
 
         return [$pageId, $pageAccessToken, null];
+    }
+
+    private function postSingleVideoToPage(string $pageId, string $pageAccessToken, string $message, \App\Models\TareaArchivo $archivo): array
+    {
+        $endpoint = "https://graph.facebook.com/{$this->apiVersion}/{$pageId}/videos";
+        $parameters = [
+            'description' => $message,
+            'access_token' => $pageAccessToken,
+        ];
+
+        try {
+            if ($archivo->isOnDrive()) {
+                $response = Http::asForm()->timeout(180)->post($endpoint, [
+                    ...$parameters,
+                    'file_url' => $archivo->mediaUrl(),
+                ]);
+            } else {
+                $absolutePath = Storage::disk('public')->path($archivo->ruta_archivo);
+                if (! is_file($absolutePath)) {
+                    return [
+                        'success' => false,
+                        'facebook_post_id' => null,
+                        'error' => 'No se encontró el video aprobado para publicar.',
+                        'code' => 404,
+                    ];
+                }
+
+                $stream = fopen($absolutePath, 'rb');
+                try {
+                    $response = Http::timeout(180)
+                        ->attach('source', $stream, $archivo->nombre_original ?: basename($absolutePath))
+                        ->post($endpoint, $parameters);
+                } finally {
+                    fclose($stream);
+                }
+            }
+
+            $payload = $response->json();
+            if ($response->successful() && ! empty($payload['id'])) {
+                return [
+                    'success' => true,
+                    'facebook_post_id' => $payload['id'],
+                    'raw' => $payload,
+                    'message' => 'Publicación con video creada exitosamente',
+                ];
+            }
+
+            Log::error('Facebook video API Error', [
+                'page_id' => $pageId,
+                'archivo_id' => $archivo->id,
+                'status' => $response->status(),
+                'error' => $payload['error']['message'] ?? 'Facebook no confirmó la publicación del video.',
+            ]);
+
+            return [
+                'success' => false,
+                'facebook_post_id' => null,
+                'raw' => $payload,
+                'error' => $payload['error']['message'] ?? 'Facebook no confirmó la publicación del video.',
+                'code' => $payload['error']['code'] ?? $response->status(),
+            ];
+        } catch (\Throwable $e) {
+            Log::error('Facebook video upload exception', [
+                'page_id' => $pageId,
+                'archivo_id' => $archivo->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'facebook_post_id' => null,
+                'error' => $e->getMessage(),
+                'code' => 500,
+            ];
+        }
     }
 
     private function postSingleImageToPage(string $pageId, string $pageAccessToken, string $message, \App\Models\TareaArchivo $archivo): array
