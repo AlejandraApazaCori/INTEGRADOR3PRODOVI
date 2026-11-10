@@ -401,6 +401,7 @@
         .analytics-workspace>.analytics-section-heading{margin:26px 24px 12px}.analytics-workspace>.analytics-kpi-grid,.analytics-workspace>.analytics-chart-grid,.analytics-workspace>.analytics-table-card,.analytics-workspace>.analytics-heatmap,.analytics-workspace>.analytics-recommendations{width:auto;margin-right:24px!important;margin-left:24px!important}.analytics-section-heading>div>span{color:#6366f1}.analytics-section-heading h2{color:#1f2937;font-size:1.08rem}.analytics-section-heading p{color:#6b7280;font-size:.7rem}
         .analytics-kpi-grid{gap:16px!important}.analytics-kpi{--accent:#117e8c;--soft:#e6f4f5;--accent-rgb:17,126,140;isolation:isolate;min-height:132px;display:flex;flex-direction:column;justify-content:space-between;padding:16px 17px!important;border:1px solid rgba(var(--accent-rgb),.22)!important;border-radius:1rem!important;background:linear-gradient(135deg,#fff 35%,var(--soft))!important;box-shadow:inset 0 4px 0 var(--accent),0 10px 24px rgba(45,66,34,.09)!important}.analytics-kpi:before{z-index:-1;top:-45px;right:-38px;left:auto;width:125px;height:125px;border:22px solid rgba(var(--accent-rgb),.09);border-radius:50%;background:transparent}.analytics-kpi:after{z-index:-1;right:12px!important;bottom:6px!important;width:86px!important;height:44px!important;border-radius:0!important;background-color:transparent!important;background-image:radial-gradient(circle,var(--accent) 1.4px,transparent 1.6px)!important;background-size:9px 9px!important;opacity:.2;transform:rotate(-5deg)}.analytics-kpi:hover{transform:translateY(-5px);border-color:rgba(var(--accent-rgb),.38)!important;box-shadow:inset 0 4px 0 var(--accent),0 17px 32px rgba(var(--accent-rgb),.16)!important}.analytics-kpi-campaigns{--accent:#117e8c;--soft:#e6f4f5;--accent-rgb:17,126,140}.analytics-kpi-reach{--accent:#7da533;--soft:#f0f6e7;--accent-rgb:125,165,51}.analytics-kpi-interactions{--accent:#e3a122;--soft:#fff6df;--accent-rgb:227,161,34}.analytics-kpi-engagement{--accent:#e37225;--soft:#fff0e6;--accent-rgb:227,114,37}.analytics-kpi-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.analytics-kpi-top span{min-width:0;overflow:hidden;color:#50594a;font-size:.63rem;font-weight:900;letter-spacing:.025em;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.analytics-kpi-top>i{width:26px;height:26px;display:grid;place-items:center;flex:0 0 auto;border:1px solid rgba(var(--accent-rgb),.2);border-radius:50%;background:#fff;color:var(--accent);font-size:.55rem;box-shadow:0 3px 8px rgba(var(--accent-rgb),.12);transform:rotate(45deg)}.analytics-kpi-body{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:13px}.analytics-kpi-copy{min-width:0}.analytics-kpi-copy strong{display:block;color:#263024;font-size:1.65rem;font-weight:900;line-height:1;letter-spacing:-.045em;white-space:nowrap}.analytics-kpi-copy small{display:block;max-width:150px;margin-top:6px;overflow:hidden;color:#7f8878;font-size:.58rem;font-weight:650;text-overflow:ellipsis;white-space:nowrap}.analytics-kpi .analytics-kpi-visual{width:auto!important;height:50px!important;min-width:64px;display:flex!important;align-items:flex-end!important;justify-content:center!important;gap:4px;padding:8px!important;border:1px solid rgba(255,255,255,.55)!important;border-radius:.8rem!important;background:var(--accent)!important;box-shadow:0 8px 17px rgba(var(--accent-rgb),.25),inset 0 1px 0 rgba(255,255,255,.28)!important}.analytics-kpi-visual i{width:5px;border-radius:4px 4px 1px 1px;background:#fff}.analytics-kpi-visual i:nth-child(1){height:25%}.analytics-kpi-visual i:nth-child(2){height:48%;opacity:.68}.analytics-kpi-visual i:nth-child(3){height:76%}.analytics-kpi-visual i:nth-child(4){height:56%;opacity:.7}.analytics-kpi-visual i:nth-child(5){height:92%}
         .analytics-card{border:1px solid #eee8f0!important;border-radius:1rem!important;background:linear-gradient(135deg,#fff 0%,#fbf8fc 58%,#f2fbfa 100%)!important;box-shadow:0 9px 22px rgba(61,23,79,.07)!important}.analytics-card-header h2,.analytics-heatmap-head h2,.analytics-recommendation h2{color:#302832!important;font-size:1rem!important}.analytics-card-header h2:after,.analytics-heatmap-head h2:after,.analytics-recommendation h2:after{width:44px;height:3px;background:#117e8c}.analytics-card-header p,.analytics-heatmap-head p,.analytics-recommendation p{color:#817786!important}.analytics-card-badge{background:#e4f3f4!important;color:#117e8c!important}.analytics-table-wrap{border-color:#eee8f0}.analytics-table thead{background:#f9fafb}.analytics-table th{color:#6b7280!important}.analytics-recommendation:last-child h2:after{background:#e37225}
+        .analytics-chart-grid--reach>.analytics-card:first-child,.analytics-chart-grid--reach>.analytics-card:last-child{grid-column:span 12}
         @media(max-width:1000px){.analytics-hero{min-height:205px}.analytics-hero-layout{justify-content:center;flex-direction:column;text-align:center}.analytics-hero-actions{justify-content:center}.analytics-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.analytics-chart-grid>.analytics-card,.analytics-chart-grid--reverse>.analytics-card{grid-column:span 12!important}.heatmap-top-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
         @media(max-width:640px){.analytics-shell{padding-bottom:28px}.analytics-workspace{width:100%}.analytics-workspace>.analytics-section-heading{margin-right:12px;margin-left:12px}.analytics-workspace>.analytics-kpi-grid,.analytics-workspace>.analytics-chart-grid,.analytics-workspace>.analytics-table-card,.analytics-workspace>.analytics-heatmap,.analytics-workspace>.analytics-recommendations{margin-right:12px!important;margin-left:12px!important}.analytics-hero-body{padding:24px 20px!important}.analytics-hero-layout{align-items:center}.analytics-hero-actions{width:100%}.analytics-hero-action{flex:1;justify-content:center}.analytics-period{flex-basis:100%}.analytics-kpi-grid{grid-template-columns:1fr!important}.analytics-chart-grid{display:block!important}.analytics-chart-grid>.analytics-card{margin-bottom:12px}.analytics-card-header{flex-direction:column}.chart-box,.chart-box--small{height:255px!important}.analytics-table-card,.analytics-heatmap{padding:15px!important}.analytics-heatmap-head{align-items:flex-start;flex-direction:column}.heatmap-top-grid{grid-template-columns:1fr}.analytics-heatmap-notes{grid-template-columns:1fr!important}.analytics-recommendations{grid-template-columns:1fr!important}.analytics-section-heading{align-items:flex-start;flex-direction:column;gap:5px}}
         /* Modo oscuro del administrador; el banner conserva sus colores. */
@@ -532,10 +533,7 @@
             </header>
 
             <!-- KPI Cards mejoradas -->
-            <div class="analytics-section-heading">
-                <div><h2>Indicadores principales</h2></div>
-                <p>Lectura consolidada de {{ $monthName }}</p>
-            </div>
+           
             <section class="analytics-kpi-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
                 <article class="analytics-kpi analytics-kpi-campaigns">
                     <div class="analytics-kpi-top"><span>Total campañas</span><i class="fas fa-arrow-up"></i></div>
@@ -624,21 +622,8 @@
                 </article>
             </section>
 
-            <section class="analytics-chart-grid analytics-chart-grid--reverse grid grid-cols-1 xl:grid-cols-12 gap-6 mb-8">
-                <article class="analytics-card rounded-2xl p-6 xl:col-span-5 shadow-sm border border-gray-100">
-                    <div class="analytics-card-header flex items-start justify-between gap-4 mb-5">
-                        <div>
-                            <h2 class="text-xl font-bold text-slate-900">Campañas por usuario</h2>
-                            <p class="text-sm text-slate-500">Comparación de actividad entre clientes durante el periodo.</p>
-                        </div>
-                        <span class="analytics-card-badge rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 border border-indigo-100">Carga por cliente</span>
-                    </div>
-                    <div class="chart-box chart-box--small">
-                        <canvas id="campaignsByUserChart"></canvas>
-                    </div>
-                </article>
-
-                <article class="analytics-card rounded-2xl p-6 xl:col-span-7 shadow-sm border border-gray-100">
+            <section class="analytics-chart-grid analytics-chart-grid--reach grid grid-cols-1 xl:grid-cols-12 gap-6 mb-8">
+                <article class="analytics-card rounded-2xl p-6 xl:col-span-12 shadow-sm border border-gray-100">
                     <div class="analytics-card-header flex items-start justify-between gap-4 mb-5">
                         <div>
                             <h2 class="text-xl font-bold text-slate-900">Alcance por empresa</h2>
@@ -838,7 +823,6 @@
 
             destroyExistingChart('dailyPerformanceChart');
             destroyExistingChart('campaignStatusChart');
-            destroyExistingChart('campaignsByUserChart');
             destroyExistingChart('reachByCampaignChart');
 
             new Chart(document.getElementById('dailyPerformanceChart'), {
@@ -915,50 +899,6 @@
                                 usePointStyle: true,
                                 padding: 18,
                                 color: chartText
-                            }
-                        }
-                    }
-                }
-            });
-
-            new Chart(document.getElementById('campaignsByUserChart'), {
-                type: 'bar',
-                data: {
-                    labels: dashboardData.campaignsByUser.map((item) => item.user),
-                    datasets: [{
-                        label: 'Campañas',
-                        data: dashboardData.campaignsByUser.map((item) => item.campaigns),
-                        backgroundColor: ['#d9edef', '#b8dde0', '#7fbfc5', '#43a4ad', '#117e8c'],
-                        borderRadius: 7,
-                        borderSkipped: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                color: chartText
-                            }
-                        },
-                        x: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1,
-                                color: chartText
-                            },
-                            grid: {
-                                color: 'rgba(148, 163, 184, 0.15)'
                             }
                         }
                     }

@@ -72,34 +72,27 @@ class UserController extends Controller
         if ($request->has('status') && !empty($request->status)) {
             switch ($request->status) {
                 case 'admin':
-                    $query->whereHas('roles', function($q) {
-                        $q->whereIn('nombre_rol', ['Super Administrador', 'Administrador']);
-                    });
+                case 'staff':
+                    $query->whereDoesntHave('roles', fn ($q) => $q->where('nombre_rol', 'Cliente'));
                     break;
                     
                 case 'active':
                     $query->whereHas('suscripciones', function($q) {
                         $q->where('estado', 'activa')
                           ->where('fecha_fin', '>', now());
-                    })->whereDoesntHave('roles', function($q) {
-                        $q->whereIn('nombre_rol', ['Super Administrador', 'Administrador']);
-                    });
+                    })->whereHas('roles', fn ($q) => $q->where('nombre_rol', 'Cliente'));
                     break;
                     
                 case 'inactive':
                     $query->whereHas('suscripciones', function($q) {
                         $q->where('estado', '!=', 'activa')
                           ->orWhere('fecha_fin', '<', now());
-                    })->whereDoesntHave('roles', function($q) {
-                        $q->whereIn('nombre_rol', ['Super Administrador', 'Administrador']);
-                    });
+                    })->whereHas('roles', fn ($q) => $q->where('nombre_rol', 'Cliente'));
                     break;
                     
                 case 'no_plan':
                     $query->doesntHave('suscripciones')
-                          ->whereDoesntHave('roles', function($q) {
-                              $q->whereIn('nombre_rol', ['Super Administrador', 'Administrador']);
-                          });
+                          ->whereHas('roles', fn ($q) => $q->where('nombre_rol', 'Cliente'));
                     break;
             }
         }
@@ -393,10 +386,10 @@ class UserController extends Controller
         }
         if ($request->filled('status')) {
             match ($request->status) {
-                'admin' => $query->whereHas('roles', fn ($q) => $q->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])),
-                'active' => $query->whereHas('suscripciones', fn ($q) => $q->where('estado', 'activa')->where('fecha_fin', '>', now())),
-                'inactive' => $query->whereHas('suscripciones', fn ($q) => $q->where('estado', '!=', 'activa')->orWhere('fecha_fin', '<', now())),
-                'no_plan' => $query->doesntHave('suscripciones'),
+                'admin', 'staff' => $query->whereDoesntHave('roles', fn ($q) => $q->where('nombre_rol', 'Cliente')),
+                'active' => $query->whereHas('roles', fn ($q) => $q->where('nombre_rol', 'Cliente'))->whereHas('suscripciones', fn ($q) => $q->where('estado', 'activa')->where('fecha_fin', '>', now())),
+                'inactive' => $query->whereHas('roles', fn ($q) => $q->where('nombre_rol', 'Cliente'))->whereHas('suscripciones', fn ($q) => $q->where('estado', '!=', 'activa')->orWhere('fecha_fin', '<', now())),
+                'no_plan' => $query->whereHas('roles', fn ($q) => $q->where('nombre_rol', 'Cliente'))->doesntHave('suscripciones'),
                 default => null,
             };
         }

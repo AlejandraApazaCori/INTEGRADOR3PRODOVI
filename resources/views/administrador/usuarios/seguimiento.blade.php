@@ -32,7 +32,6 @@
 <div class="team-followup">
     <header class="tf-hero">
         <div class="tf-hero-copy">
-            <span class="tf-eyebrow">Usuarios / Equipo</span>
             <h1>Seguimiento de {{ $user->name }}</h1>
             <p>{{ $user->email }} · {{ $user->roles->pluck('nombre_rol')->join(', ') ?: 'Sin rol asignado' }}</p>
         </div>
@@ -44,7 +43,6 @@
 
     <div class="tf-content">
         <section aria-labelledby="tf-summary-title">
-            <div class="tf-heading"><small>Panorama individual</small><h2 id="tf-summary-title">Resumen del trabajo</h2><p>Las tareas cuentan cuando esta persona figura como responsable. Los archivos cuentan cuando los subió esta persona.</p></div>
             <div class="tf-kpis">
                 @foreach([
                     ['Campañas vinculadas', $totalCampaigns, 'campaigns', 'fa-bullhorn'],
@@ -82,7 +80,6 @@
         </section>
 
         <section class="tf-panel tf-campaigns" aria-labelledby="tf-campaigns-title">
-            <div class="tf-heading"><small>Participación</small><h2 id="tf-campaigns-title">Campañas en las que participó</h2><p>Incluye campañas creadas, asignadas y campañas con tareas o entregas registradas.</p></div>
             <div class="tf-campaign-list">
                 @forelse($campaigns as $campaign)
                     @php

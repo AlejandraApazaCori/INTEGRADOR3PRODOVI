@@ -28,7 +28,7 @@
         <i class="fas fa-user-shield"></i>
     </div>
     <div class="users-kpi-card users-kpi-no-plan">
-        <div><span>Sin plan</span><strong>{{ $users->filter(fn ($user) => $user->suscripciones->isEmpty() && $user->roles->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->isEmpty())->count() }}</strong><small>Requieren seguimiento</small></div>
+        <div><span>Sin plan</span><strong>{{ $users->filter(fn ($user) => $user->suscripciones->isEmpty() && $user->roles->contains('nombre_rol', 'Cliente'))->count() }}</strong><small>Requieren seguimiento</small></div>
         <i class="fas fa-user-slash"></i>
     </div>
 </div>
