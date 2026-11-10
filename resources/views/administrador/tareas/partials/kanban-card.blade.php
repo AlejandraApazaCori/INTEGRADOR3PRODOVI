@@ -5,10 +5,12 @@
     $prioridadTarjeta = in_array($tarea->prioridad, ['media', 'alta', 'urgente'], true) ? 'is-'.$tarea->prioridad : '';
     $estadoKanban = $estadoKanban ?? $tarea->estado;
     $archivoAprobadoTarjeta = $tarea->archivos->where('estado', 'aprobado')->sortByDesc('revisado_equipo_at')->first();
-    $puedePublicarse = $tarea->estado === 'aprobado' && $tarea->archivos->contains(fn ($file) => $file->estado === 'aprobado' && (! $tarea->revision_cliente_habilitada || $file->revision_cliente_estado === 'aprobado'));
+    $puedePublicarse = Auth::user()?->hasAnyRole(['Super Administrador', 'Administrador', 'Community Manager'])
+        && $tarea->estado === 'aprobado'
+        && $tarea->archivos->contains(fn ($file) => $file->estado === 'aprobado' && (! $tarea->revision_cliente_habilitada || $file->revision_cliente_estado === 'aprobado'));
 @endphp
 
-<article class="task-kanban-card" draggable="true" data-task-id="{{ $tarea->id }}" data-task-status="{{ $estadoKanban }}" data-status-url="{{ route('administrador.tareas.update-estado', $tarea->id) }}" data-publish-url="{{ route('administrador.publicaciones.publicar', ['tarea_id' => $tarea->id]) }}">
+<article class="task-kanban-card" draggable="true" data-task-id="{{ $tarea->id }}" data-task-status="{{ $estadoKanban }}" data-status-url="{{ route('administrador.tareas.update-estado', $tarea->id) }}" @if(Auth::user()?->hasAnyRole(['Super Administrador', 'Administrador', 'Community Manager'])) data-publish-url="{{ route('administrador.publicaciones.publicar', ['tarea_id' => $tarea->id]) }}" @endif>
     <span class="task-card-accent {{ $prioridadTarjeta }}"></span>
     <div class="task-card-top"><h4>{{ $tarea->titulo }}</h4><span class="task-card-priority {{ $prioridadTarjeta }}">{{ ucfirst($tarea->prioridad) }}</span></div>
     <span class="task-card-deliverable">{{ $tarea->entregable ? 'Entregable: '.$tarea->entregable : 'Tarea #'.$tarea->id }}</span>

@@ -49,6 +49,7 @@ class PublicacionController extends Controller
 
     public function horarios(Request $request, PublicationTimingService $timing)
     {
+        $this->authorizePublisher($request);
         $validated = $request->validate(['tarea_id' => 'required|integer|exists:tareas,id']);
         $tarea = $this->loadPublishingTask($validated['tarea_id']);
         abort_if($tarea->revision_cliente_habilitada && ! $this->reviewWorkflow->canPublish($tarea), 409);
@@ -71,6 +72,7 @@ class PublicacionController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorizePublisher($request);
         $validated = $request->validate([
             'tarea_id' => 'required|integer|exists:tareas,id',
             'message' => 'required|string|max:5000',
@@ -146,6 +148,7 @@ class PublicacionController extends Controller
 
     public function generateCopy(Request $request)
     {
+        $this->authorizePublisher($request);
         $request->validate([
             'tarea_id' => 'required|integer|exists:tareas,id',
         ]);
@@ -156,6 +159,11 @@ class PublicacionController extends Controller
             'success' => true,
             'copy' => $copy,
         ]);
+    }
+
+    private function authorizePublisher(Request $request): void
+    {
+        abort_unless($request->user()?->hasAnyRole(['Super Administrador', 'Administrador', 'Community Manager']), 403);
     }
 
     private function loadPublishingTask(int $tareaId): Tarea

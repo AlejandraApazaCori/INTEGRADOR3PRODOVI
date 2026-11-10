@@ -238,7 +238,9 @@ class TareaArchivoController extends Controller
 
     public function updateEstado(Request $request, TareaArchivo $archivo, TaskReviewWorkflow $review)
     {
-        abort_unless((int) $archivo->tarea->asignado_id === (int) Auth::id(), 403, 'Solo la persona asignada puede revisar este entregable.');
+        abort_unless(Auth::user()?->hasAnyRole(['Super Administrador', 'Administrador'])
+            || (! Auth::user()?->hasAnyRole(['Diseñador', 'Disenador'])
+                && (int) $archivo->tarea->asignado_id === (int) Auth::id()), 403, 'Solo la persona asignada o un administrador puede revisar este entregable.');
         $validated = $request->validate([
             'estado' => 'required|in:pendiente,aprobado,rechazado'
         ]);
@@ -275,7 +277,8 @@ class TareaArchivoController extends Controller
     public function updateClientReview(Request $request, Tarea $tarea, TaskReviewWorkflow $review)
     {
         abort_unless(Auth::user()?->hasAnyRole(['Super Administrador', 'Administrador'])
-            || (int) $tarea->asignado_id === (int) Auth::id(), 403);
+            || (! Auth::user()?->hasAnyRole(['Diseñador', 'Disenador'])
+                && (int) $tarea->asignado_id === (int) Auth::id()), 403);
         $validated = $request->validate(['revision_cliente_habilitada' => ['required', 'boolean']]);
         $enabled = (bool) $validated['revision_cliente_habilitada'];
         abort_if(in_array($tarea->publication_status, ['published', 'partial'], true) || $tarea->estado === 'publicado', 409, 'Una publicación realizada no puede volver a revisión.');

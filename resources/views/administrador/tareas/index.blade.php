@@ -181,7 +181,7 @@ function initializeTaskWorkspace() {
     }
     function syncPublishAction(card, status) {
         const currentAction = card.querySelector('.task-card-publish');
-        if (status !== 'aprobado') {
+        if (status !== 'aprobado' || !card.dataset.publishUrl) {
             currentAction?.remove();
             return;
         }

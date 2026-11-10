@@ -491,11 +491,13 @@
                                 <i class="fas fa-eye"></i>
                                 <span id="preview-toggle-text">Ocultar Vista Previa</span>
                             </button>
+                            @if(Auth::user()?->hasAnyRole(['Super Administrador', 'Administrador', 'Community Manager']))
                             <button type="submit" id="publish-submit-btn" {{ ! $metaReady ? 'disabled' : '' }}
                                     class="inline-flex items-center gap-2 px-7 py-3 rounded-xl text-white font-semibold shadow-lg transition-all duration-200 hover:shadow-2xl hover:-translate-y-0.5 rp-publish-btn" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);">
                                 <i class="fas fa-rocket"></i>
                                 Publicar
                             </button>
+                            @endif
                         </div>
                     </form>
                 </div>

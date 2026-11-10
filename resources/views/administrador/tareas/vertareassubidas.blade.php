@@ -24,7 +24,11 @@
     $reviewUploadErrors = $errors->getBag('reviewUpload');
     $abrirDrawer = request()->boolean('subir') || session('open_upload_drawer') || $reviewUploadErrors->any();
     $puedePublicar = app(\App\Services\TaskReviewWorkflow::class)->canPublish($tarea);
-    $puedeRevisar = (int) $tarea->asignado_id === (int) Auth::id();
+    $esAdministrador = Auth::user()?->hasAnyRole(['Super Administrador', 'Administrador']);
+    $esDisenador = Auth::user()?->hasAnyRole(['Diseñador', 'Disenador']);
+    $puedeRevisar = $esAdministrador
+        || (! $esDisenador && (int) $tarea->asignado_id === (int) Auth::id());
+    $puedePublicarContenido = Auth::user()?->hasAnyRole(['Super Administrador', 'Administrador', 'Community Manager']);
 @endphp
 
 <div class="review-page">
@@ -69,7 +73,7 @@
                 <section class="review-card review-deliverables">
                     <header class="review-card-header">
                         <div><h2>Archivos adjuntos</h2><p>Descarga y define el resultado de cada entregable.</p></div>
-                        @if($tarea->estado === 'aprobado' && $puedePublicar)
+                        @if($tarea->estado === 'aprobado' && $puedePublicar && $puedePublicarContenido)
                             <a href="{{ route('administrador.publicaciones.publicar', ['tarea_id' => $tarea->id]) }}" class="review-publish"><i class="fas fa-rocket"></i> Publicar contenido</a>
                         @endif
                     </header>
@@ -178,7 +182,7 @@
                         <header class="review-card-header compact"><div><span>Aprobación adicional</span><h2>Revisión con el cliente</h2></div></header>
                         <div class="review-client-settings-body">
                             <p>Al activarla, las piezas aprobadas por la persona asignada esperan también la decisión del cliente antes de publicarse.</p>
-                            @if($puedeRevisar || Auth::user()?->hasAnyRole(['Super Administrador', 'Administrador']))
+                            @if($puedeRevisar)
                                 <form method="POST" action="{{ route('administrador.tareas.revision-cliente', $tarea) }}">
                                     @csrf @method('PATCH')
                                     <input type="hidden" name="revision_cliente_habilitada" value="{{ $tarea->revision_cliente_habilitada ? 0 : 1 }}">
