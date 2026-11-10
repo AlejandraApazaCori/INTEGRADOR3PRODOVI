@@ -526,6 +526,10 @@ class UserController extends Controller
         }
 
         try {
+            if (in_array(config('mail.default'), ['log', 'array'], true)) {
+                throw new \RuntimeException('El transportador de correo no entrega mensajes. Configure MAIL_MAILER=smtp.');
+            }
+
             Mail::to($user->email)->send(new CuentaCreadaAdministrador($user, $request->password));
         } catch (\Throwable $e) {
             Log::error('No se pudo enviar el correo de cuenta creada.', [

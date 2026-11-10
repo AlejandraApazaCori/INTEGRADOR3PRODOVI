@@ -88,14 +88,7 @@ class GoogleAuthController extends Controller
                 'details' => ['method' => 'google_oauth', 'email' => $user->email],
             ]);
 
-            $user = User::with('roles')->find(Auth::id());
-            $userRole = $user?->roles->first();
-
-            if ($userRole && in_array($userRole->nombre_rol, ['Super Administrador', 'Administrador'], true)) {
-                return redirect()->route('administrador.dashboard');
-            }
-
-            return redirect()->route('clientes.home');
+            return redirect()->route('dashboard');
         } catch (Throwable $e) {
             Log::error('Google authentication failed.', [
                 'message' => $e->getMessage(),

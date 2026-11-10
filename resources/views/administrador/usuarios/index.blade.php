@@ -128,6 +128,17 @@
                 </form>
             </div>
 
+            @if(session('success'))
+                <div class="users-drive-success mb-6 rounded-xl px-5 py-4" style="background: #ecf8ee; border: 1px solid #bfe3c5; color: #276738;" role="status">
+                    <i class="fas fa-circle-check mr-2"></i>{{ session('success') }}
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="users-drive-error mb-6 rounded-xl px-5 py-4" style="background: #fff0f0; border: 1px solid #f3c4c4; color: #a72d2d;" role="alert">
+                    <i class="fas fa-circle-exclamation mr-2"></i>{{ session('error') }}
+                </div>
+            @endif
+
             @if(session('drive_success'))
                 <div class="users-drive-success mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl px-5 py-4" style="background: #ecf8ee; border: 1px solid #bfe3c5; color: #276738;">
                     <span><i class="fas fa-circle-check mr-2"></i>{{ session('drive_success.message') }}</span>
@@ -455,7 +466,10 @@
                             </thead>
                             <tbody>
                                 @foreach($users as $user)
-                                <tr class="users-table-row transition-colors duration-150 cursor-pointer" style="background: {{ $loop->even ? '#f1f7e8' : '#ffffff' }};" onclick="window.location='{{ route('administrador.usuarios.view', $user->id) }}'">
+                                @php
+                                    $isClient = $user->roles->contains('nombre_rol', 'Cliente');
+                                @endphp
+                                <tr class="users-table-row transition-colors duration-150 cursor-pointer" style="background: {{ $loop->even ? '#f1f7e8' : '#ffffff' }};" onclick="window.location='{{ $isClient ? route('administrador.usuarios.view', $user->id) : route('administrador.usuarios.seguimiento', $user->id) }}'">
                                     <td class="px-4 py-4 whitespace-nowrap text-center font-bold" style="color: #638524; border-right: 1px solid #d8e3c7; border-bottom: 1px solid #dfe8d1;">{{ $user->registration_number }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap" style="border-right: 1px solid #d8e3c7; border-bottom: 1px solid #dfe8d1;">
                                         <div class="flex items-center">
@@ -521,17 +535,19 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" style="border-bottom: 1px solid #dfe8d1;" onclick="event.stopPropagation()">
                                         <div class="flex items-center gap-2">
-                                            <a href="{{ route('administrador.usuarios.view', $user->id) }}" class="user-action user-action-view inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg transition-colors duration-200" style="color: #638524; background: #edf4e4;">
+                                            <a href="{{ $isClient ? route('administrador.usuarios.view', $user->id) : route('administrador.usuarios.seguimiento', $user->id) }}" class="user-action user-action-view inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg transition-colors duration-200" style="color: #638524; background: #edf4e4;">
                                                 <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                                 </svg>
                                                 Ver
                                             </a>
+                                            @if($isClient)
                                             <a href="{{ route('administrador.usuarios.historial-campanias', $user->id) }}" class="user-action inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg transition-colors duration-200" style="color: #6355a5; background: #f0edfa;" title="Ver historial de campañas de {{ $user->name }}" aria-label="Historial de campañas de {{ $user->name }}">
                                                 <i class="fas fa-clock-rotate-left mr-1" aria-hidden="true"></i>
                                                 Historial de campañas
                                             </a>
+                                            @endif
                                             <a href="{{ route('administrador.usuarios.edit', $user->id) }}" class="user-action user-action-edit inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg transition-colors duration-200" style="color: #0d6975; background: #e6f4f5;">
                                                 <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>

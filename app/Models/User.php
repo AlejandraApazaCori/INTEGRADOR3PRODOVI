@@ -56,6 +56,17 @@ class User extends Authenticatable
         return $this->hasAnyRole($role);
     }
 
+    public function isStaff(): bool
+    {
+        return $this->hasAnyRole([
+            'Super Administrador',
+            'Administrador',
+            'Community Manager',
+            'Diseñador',
+            'Disenador',
+        ]);
+    }
+
     public function permissions(): Collection
     {
         return $this->roles

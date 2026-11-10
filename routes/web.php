@@ -555,6 +555,10 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
         ->name('administrador.usuarios.force-destroy');
     Route::get('/usuarios/{user}/view', [\App\Http\Controllers\Admin\UserViewController::class, 'show'])
         ->name('administrador.usuarios.view');
+    Route::get('/usuarios/{user}/seguimiento', [\App\Http\Controllers\Admin\UserViewController::class, 'staffTracking'])
+        ->name('administrador.usuarios.seguimiento');
+    Route::get('/usuarios/{user}/seguimiento/campanias/{campania}', [\App\Http\Controllers\Admin\UserViewController::class, 'staffCampaign'])
+        ->name('administrador.usuarios.seguimiento.campania');
     Route::get('/usuarios/{user}/historial-campanias', [\App\Http\Controllers\Admin\UserViewController::class, 'campaignHistory'])
         ->name('administrador.usuarios.historial-campanias');
     Route::get('/usuarios/{user}/analiticas-campania', [\App\Http\Controllers\Admin\UserViewController::class, 'campaignAnalytics'])

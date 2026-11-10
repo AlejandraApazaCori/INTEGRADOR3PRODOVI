@@ -27,7 +27,7 @@ class ClienteController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->hasAnyRole(['Super Administrador', 'Administrador'])) {
+        if ($user->isStaff()) {
             return redirect()->route('administrador.dashboard');
         }
 
