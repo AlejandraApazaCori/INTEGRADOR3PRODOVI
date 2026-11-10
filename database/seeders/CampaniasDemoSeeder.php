@@ -60,7 +60,7 @@ class CampaniasDemoSeeder extends Seeder
         $this->command?->info('Datos demo creados: 2 campañas activas del mes y 10 finalizadas del año, con pagos y contenido relacionado.');
     }
 
-    protected function seedCampaign(array $definition, int $index, Plan $plan, array $team): void
+    private function seedCampaign(array $definition, int $index, Plan $plan, array $team): void
     {
         $number = $index + 1;
         $client = $this->client($definition, $number);
@@ -91,7 +91,7 @@ class CampaniasDemoSeeder extends Seeder
         $receipt->save();
     }
 
-    protected function team(): array
+    private function team(): array
     {
         return [
             'admin' => $this->teamMember(
@@ -143,7 +143,7 @@ class CampaniasDemoSeeder extends Seeder
         return $user;
     }
 
-    protected function client(array $definition, int $number): User
+    private function client(array $definition, int $number): User
     {
         $role = Role::query()->where('nombre_rol', 'Cliente')->firstOrFail();
         $email = sprintf('cliente.campania.%02d@demo.prodovi.test', $number);
@@ -163,7 +163,7 @@ class CampaniasDemoSeeder extends Seeder
         return $client;
     }
 
-    protected function subscription(User $client, Plan $plan, array $definition, int $number): Suscripcion
+    private function subscription(User $client, Plan $plan, array $definition, int $number): Suscripcion
     {
         $paymentCode = $this->paymentCode($number);
         $existingPayment = Pago::withTrashed()->where('codigo_pago', $paymentCode)->first();
@@ -191,7 +191,7 @@ class CampaniasDemoSeeder extends Seeder
         return $subscription;
     }
 
-    protected function company(User $client, Suscripcion $subscription, array $definition): Empresa
+    private function company(User $client, Suscripcion $subscription, array $definition): Empresa
     {
         $company = Empresa::withTrashed()->firstOrNew(['suscripcion_id' => $subscription->id]);
         $company->fill([
@@ -210,7 +210,7 @@ class CampaniasDemoSeeder extends Seeder
         return $company;
     }
 
-    protected function payment(
+    private function payment(
         User $client,
         Suscripcion $subscription,
         Plan $plan,
@@ -261,7 +261,7 @@ class CampaniasDemoSeeder extends Seeder
         return $payment;
     }
 
-    protected function questionnaire(Empresa $company, array $definition): void
+    private function questionnaire(Empresa $company, array $definition): void
     {
         $answers = [
             $definition['company_description'],
@@ -286,7 +286,7 @@ class CampaniasDemoSeeder extends Seeder
         );
     }
 
-    protected function marketingPlan(Empresa $company, Suscripcion $subscription, array $definition): void
+    private function marketingPlan(Empresa $company, Suscripcion $subscription, array $definition): void
     {
         $plan = PlanMarketing::withTrashed()->firstOrNew(['suscripcion_id' => $subscription->id]);
         $plan->fill([
@@ -299,7 +299,7 @@ class CampaniasDemoSeeder extends Seeder
         $this->stamp($plan, $definition['start']->copy()->subDays(3));
     }
 
-    protected function campaign(
+    private function campaign(
         User $client,
         Suscripcion $subscription,
         Empresa $company,
@@ -308,7 +308,7 @@ class CampaniasDemoSeeder extends Seeder
         array $team
     ): Campania {
         $campaign = Campania::withTrashed()->firstOrNew([
-            'nombre' => $this->campaignName($number, $definition),
+            'nombre' => sprintf('DEMO %02d · %s', $number, $definition['campaign']),
         ]);
         $campaign->fill([
             'descripcion' => $definition['description'],
@@ -346,7 +346,7 @@ class CampaniasDemoSeeder extends Seeder
         return $campaign;
     }
 
-    protected function tasks(Campania $campaign, array $definition, int $number, array $team): array
+    private function tasks(Campania $campaign, array $definition, int $number, array $team): array
     {
         $templates = [
             ['Definir línea visual', 'Preparar paleta, tipografías y criterios gráficos para las piezas.', 'Guía visual aprobada', 'otro', 'alta', 'designer'],
@@ -447,7 +447,7 @@ class CampaniasDemoSeeder extends Seeder
         $comment->save();
     }
 
-    protected function resources(Empresa $company, array $definition, User $admin): void
+    private function resources(Empresa $company, array $definition, User $admin): void
     {
         $resources = [
             ['Manual de marca y referencias', 'cliente', true, 'https://example.com/recursos/manual-de-marca'],
@@ -473,7 +473,7 @@ class CampaniasDemoSeeder extends Seeder
         }
     }
 
-    protected function meetings(Campania $campaign, array $definition, array $team): void
+    private function meetings(Campania $campaign, array $definition, array $team): void
     {
         $dates = [
             $definition['start']->copy()->addDays(3)->setTime(10, 0),
@@ -511,7 +511,7 @@ class CampaniasDemoSeeder extends Seeder
         }
     }
 
-    protected function feedback(Campania $campaign, array $tasks, User $client, array $definition, array $team): void
+    private function feedback(Campania $campaign, array $tasks, User $client, array $definition, array $team): void
     {
         $context = CampaniaMensajeContexto::query()->firstOrCreate(
             ['campania_id' => $campaign->id, 'nombre' => 'Revisión creativa'],
@@ -626,11 +626,6 @@ class CampaniasDemoSeeder extends Seeder
     private function paymentCode(int $number): string
     {
         return sprintf('DEMO-CAMP-%02d', $number);
-    }
-
-    protected function campaignName(int $number, array $definition): string
-    {
-        return sprintf('DEMO %02d · %s', $number, $definition['campaign']);
     }
 
     private function stamp(Model $model, Carbon $date): void

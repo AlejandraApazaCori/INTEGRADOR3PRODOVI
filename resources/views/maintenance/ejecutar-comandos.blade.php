@@ -259,30 +259,6 @@
             </section>
 
             <section class="demo-panel">
-                <h2>Cargar clientes y campañas nuevas</h2>
-                <p>Crea o actualiza 11 clientes con empresas registradas, suscripciones activas, pagos completados, comprobantes, cuestionarios, planes de marketing y recursos. Seis tienen campañas activas con tareas, archivos, mensajes y reuniones; cinco quedan sin campaña para iniciar su planificación. No ejecuta la carga de las 12 campañas antiguas ni conecta cuentas sociales. Puede repetirse sin duplicar este lote.</p>
-                <div class="staff-summary">
-                    <span>6 campañas activas nuevas</span>
-                    <span>5 clientes sin campaña</span>
-                    <span>11 empresas y pagos</span>
-                    <span>0 cuentas sociales</span>
-                </div>
-                <form method="POST" action="{{ route('mantenimiento.web.seed-new-clients-campaigns') }}" data-command-form onsubmit="return confirm('¿Deseas cargar los 11 clientes nuevos y sus datos relacionados?');">
-                    @csrf
-                    <button type="submit">Ejecutar seeder de clientes y campañas nuevas</button>
-                </form>
-
-                @if(session('new_clients_result'))
-                    @php($newClientsResult = session('new_clients_result'))
-                    <div class="result {{ $newClientsResult['success'] ? '' : 'error' }}" aria-live="polite">
-                        <h2>{{ $newClientsResult['success'] ? 'Clientes nuevos cargados correctamente' : 'La carga de clientes nuevos falló' }}</h2>
-                        <p>{{ $newClientsResult['message'] }}</p>
-                        @if(!empty($newClientsResult['output']))<pre>{{ $newClientsResult['output'] }}</pre>@endif
-                    </div>
-                @endif
-            </section>
-
-            <section class="demo-panel">
                 <h2>Cargar solicitudes de contacto</h2>
                 <p>Crea o actualiza 15 solicitudes realistas para probar la bandeja “Hablemos de tu Proyecto”. Incluye distintos servicios, fechas, teléfonos y estados de confirmación; puede ejecutarse nuevamente sin duplicar datos.</p>
                 <div class="staff-summary">

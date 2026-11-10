@@ -23,6 +23,14 @@
     .backup-btn-primary { background: #1d4ed8; color: #fff; box-shadow: 0 8px 18px rgba(29,78,216,.2); }
     .backup-btn-secondary { background: #eef2ff; color: #3730a3; }
     .backup-btn-disabled { pointer-events: none; opacity: .55; }
+    .backup-confirm-dialog { width: min(420px, calc(100% - 32px)); max-width: none; padding: 28px; border: 1px solid #e5e7eb; border-radius: 18px; background: #fff; color: #172033; box-shadow: 0 24px 70px rgba(15,23,42,.25); text-align: center; }
+    .backup-confirm-dialog::backdrop { background: rgba(15,23,42,.6); }
+    .backup-confirm-icon { width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 50%; display: grid; place-items: center; background: #eff6ff; color: #2563eb; font-size: 24px; }
+    .backup-confirm-dialog h2 { margin: 0 0 10px; font-size: 1.1rem; font-weight: 800; }
+    .backup-confirm-dialog p { margin: 0; color: #4b5563; font-size: .9rem; line-height: 1.5; }
+    .backup-confirm-actions { display: flex; justify-content: center; gap: 10px; margin-top: 24px; }
+    .backup-confirm-actions > .backup-btn, .backup-confirm-actions form { flex: 1; }
+    .backup-confirm-actions form .backup-btn { width: 100%; }
     .backup-alert { width: calc(100% - 48px); margin: 24px auto 0; border-radius: 13px; padding: 14px 17px; display: flex; gap: 11px; align-items: flex-start; font-size: .85rem; font-weight: 600; }
     .backup-alert-success { color: #166534; background: #f0fdf4; border: 1px solid #bbf7d0; }
     .backup-alert-error { color: #991b1b; background: #fef2f2; border: 1px solid #fecaca; }
@@ -94,6 +102,9 @@
     html.admin-dark-nav .backups-page { background:#141414; color:#e5e5e5; }
     html.admin-dark-nav .backup-alert-success { background:#1c3928; border-color:#376f49; color:#b8edc4; }
     html.admin-dark-nav .backup-alert-error { background:#472a2a; border-color:#855050; color:#ffc1c1; }
+    html.admin-dark-nav .backup-confirm-dialog { background:#202020; border-color:#4a4a4a; color:#f5f5f5; }
+    html.admin-dark-nav .backup-confirm-dialog p { color:#c0c0c0; }
+    html.admin-dark-nav .backup-confirm-icon { background:#1c3e42; color:#8dd7e3; }
     html.admin-dark-nav .backup-stat,html.admin-dark-nav .backup-panel { background:#202020; border-color:#353535; box-shadow:0 9px 24px rgba(0,0,0,.2); }
     html.admin-dark-nav .backup-stat-label,html.admin-dark-nav .backup-stat-meta,html.admin-dark-nav .backup-panel-header p,html.admin-dark-nav .calendar-label,html.admin-dark-nav .calendar-note,html.admin-dark-nav .calendar-disabled { color:#c0c0c0; }
     html.admin-dark-nav .backup-stat-value,html.admin-dark-nav .backup-panel-header h2 { color:#f5f5f5; }
@@ -198,13 +209,23 @@
                     <a href="{{ $latestBackup ? route('administrador.backups.download-latest-csv') : '#' }}" class="backup-btn backup-btn-ghost {{ $latestBackup ? '' : 'backup-btn-disabled' }}" @if(!$latestBackup) aria-disabled="true" @endif title="Un CSV por tabla dentro de un ZIP">
                         <i class="fas fa-file-csv"></i> Descargar último CSV (ZIP)
                     </a>
-                    <form method="POST" action="{{ route('administrador.backups.store') }}" onsubmit="return confirm('¿Deseas crear un respaldo completo de la base de datos ahora?');">
-                        @csrf
-                        <button type="submit" class="backup-btn backup-btn-light"><i class="fas fa-plus-circle"></i> Crear respaldo ahora</button>
-                    </form>
+                    <button type="button" class="backup-btn backup-btn-light" id="openBackupConfirm"><i class="fas fa-plus-circle"></i> Crear respaldo ahora</button>
                 </div>
             </div>
         </section>
+
+        <dialog class="backup-confirm-dialog" id="backupConfirmDialog" aria-labelledby="backupConfirmTitle" aria-describedby="backupConfirmMessage">
+            <div class="backup-confirm-icon"><i class="fas fa-database" aria-hidden="true"></i></div>
+            <h2 id="backupConfirmTitle">Crear respaldo</h2>
+            <p id="backupConfirmMessage">¿Deseas crear un respaldo completo de la base de datos ahora?</p>
+            <div class="backup-confirm-actions">
+                <button type="button" class="backup-btn backup-btn-secondary" id="cancelBackupConfirm">Cancelar</button>
+                <form method="POST" action="{{ route('administrador.backups.store') }}" id="createBackupForm">
+                    @csrf
+                    <button type="submit" class="backup-btn backup-btn-primary">Sí, crear respaldo</button>
+                </form>
+            </div>
+        </dialog>
 
         @if(session('success'))
             <div class="backup-alert backup-alert-success"><i class="fas fa-check-circle"></i><span>{{ session('success') }}</span></div>
@@ -369,6 +390,13 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const backupDialog = document.getElementById('backupConfirmDialog');
+        document.getElementById('openBackupConfirm').addEventListener('click', () => backupDialog.showModal());
+        document.getElementById('cancelBackupConfirm').addEventListener('click', () => backupDialog.close());
+        document.getElementById('createBackupForm').addEventListener('submit', function () {
+            this.querySelector('button[type="submit"]').disabled = true;
+        });
+
         const radios = document.querySelectorAll('input[name="frequency"]');
         const weeklyField = document.getElementById('weeklyField');
         const monthlyField = document.getElementById('monthlyField');

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Database\Seeders\CampaniasDemoSeeder;
-use Database\Seeders\ClientesCampaniasNuevasSeeder;
 use Database\Seeders\SolicitudesContactoSeeder;
 use Database\Seeders\StaffUsersSeeder;
 use Illuminate\Database\Schema\Blueprint;
@@ -285,58 +284,6 @@ class MantenimientoWebController extends Controller
             return redirect()->route('mantenimiento.web.index')->with('demo_campaigns_result', [
                 'success' => false,
                 'message' => 'Ocurrió un error al crear los datos de campañas: '.$exception->getMessage(),
-            ]);
-        } finally {
-            flock($lockHandle, LOCK_UN);
-            fclose($lockHandle);
-        }
-    }
-
-    public function seedNewClientsAndCampaigns(Request $request): RedirectResponse
-    {
-        $lockDirectory = storage_path('framework/cache');
-        File::ensureDirectoryExists($lockDirectory);
-        $lockHandle = fopen($lockDirectory.DIRECTORY_SEPARATOR.'mantenimiento-web-clientes-nuevos.lock', 'c');
-
-        if ($lockHandle === false || ! flock($lockHandle, LOCK_EX | LOCK_NB)) {
-            if (is_resource($lockHandle)) {
-                fclose($lockHandle);
-            }
-
-            return redirect()->route('mantenimiento.web.index')->with('new_clients_result', [
-                'success' => false,
-                'message' => 'La carga de clientes nuevos ya se está ejecutando. Espera a que termine.',
-            ]);
-        }
-
-        try {
-            $exitCode = Artisan::call('db:seed', [
-                '--class' => ClientesCampaniasNuevasSeeder::class,
-                '--force' => true,
-            ]);
-            $output = trim(Artisan::output());
-
-            Log::notice('Seeder de clientes y campañas nuevas ejecutado desde mantenimiento web.', [
-                'exit_code' => $exitCode,
-                'ip' => $request->ip(),
-            ]);
-
-            return redirect()->route('mantenimiento.web.index')->with('new_clients_result', [
-                'success' => $exitCode === 0,
-                'message' => $exitCode === 0
-                    ? 'Se crearon o actualizaron 6 clientes con campañas activas y 5 con empresa registrada sin campaña. Las campañas antiguas no se ejecutaron.'
-                    : 'La carga de clientes nuevos no terminó correctamente.',
-                'output' => $output,
-            ]);
-        } catch (Throwable $exception) {
-            Log::error('Falló el seeder de clientes y campañas nuevas.', [
-                'ip' => $request->ip(),
-                'message' => $exception->getMessage(),
-            ]);
-
-            return redirect()->route('mantenimiento.web.index')->with('new_clients_result', [
-                'success' => false,
-                'message' => 'Ocurrió un error al cargar los clientes nuevos: '.$exception->getMessage(),
             ]);
         } finally {
             flock($lockHandle, LOCK_UN);
