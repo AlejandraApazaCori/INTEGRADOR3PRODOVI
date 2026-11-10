@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use Google\Client;
+use Google\Http\MediaFileUpload;
 use Google\Service\Drive;
 use Google\Service\Drive\DriveFile;
+use Google\Service\Drive\Permission;
 use Google\Service\Sheets as GoogleSheets;
 use Google\Service\Sheets\BatchUpdateSpreadsheetRequest;
 use Google\Service\Sheets\EmbeddedObjectPosition;
@@ -21,6 +23,8 @@ use RuntimeException;
 
 class GoogleDriveReportService
 {
+    private Client $client;
+
     private Drive $drive;
 
     private GoogleSheets $sheets;
@@ -71,6 +75,7 @@ class GoogleDriveReportService
             $client->setAccessToken(['access_token' => $accessToken]);
         }
 
+        $this->client = $client;
         $this->drive = new Drive($client);
         $this->sheets = new GoogleSheets($client);
     }
@@ -380,6 +385,114 @@ class GoogleDriveReportService
     {
         return config('google-drive.folder_id')
             ?: $this->findOrCreateFolder(config('google-drive.folder', 'PRODOVI'));
+    }
+
+    public function ensureTaskFolder(string $userName, int $userId, string $campaignName, int $campaignId, string $taskName, int $taskId): string
+    {
+        $campaignFolder = $this->ensureCampaignFolder($userName, $userId, $campaignName, $campaignId);
+
+        return $this->findOrCreateEntityFolder(trim($taskName), $taskId, $campaignFolder);
+    }
+
+    public function ensureCampaignFolder(string $userName, int $userId, string $campaignName, int $campaignId): string
+    {
+        $campaignLabel = trim($campaignName);
+        if (! str_starts_with(mb_strtolower($campaignLabel), 'campaña ')) {
+            $campaignLabel = 'Campaña '.$campaignLabel;
+        }
+        $userFolder = $this->findOrCreateEntityFolder(trim($userName), $userId, $this->ensureTargetFolder());
+        return $this->findOrCreateEntityFolder($campaignLabel, $campaignId, $userFolder);
+    }
+
+    private function findOrCreateEntityFolder(string $label, int $entityId, string $parentId): string
+    {
+        $name = $label.' ('.$entityId.')';
+        $suffix = ' ('.$entityId.')';
+        $escapedParent = str_replace("'", "\\'", $parentId);
+        $pageToken = null;
+
+        do {
+            $options = [
+                'q' => "'{$escapedParent}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false",
+                'spaces' => 'drive',
+                'fields' => 'nextPageToken,files(id,name)',
+                'pageSize' => 1000,
+            ];
+            if ($pageToken) {
+                $options['pageToken'] = $pageToken;
+            }
+            $page = $this->drive->files->listFiles($options);
+            foreach ($page->getFiles() as $folder) {
+                if (str_ends_with($folder->getName(), $suffix)) {
+                    if ($folder->getName() !== $name) {
+                        $this->drive->files->update($folder->getId(), new DriveFile(['name' => $name]), ['fields' => 'id']);
+                    }
+                    return $folder->getId();
+                }
+            }
+            $pageToken = $page->getNextPageToken();
+        } while ($pageToken);
+
+        return $this->drive->files->create(new DriveFile([
+            'name' => $name,
+            'mimeType' => 'application/vnd.google-apps.folder',
+            'parents' => [$parentId],
+        ]), ['fields' => 'id'])->getId();
+    }
+
+    public function uploadTaskFile(string $path, string $name, string $mimeType, string $folderId): string
+    {
+        $metadata = new DriveFile(['name' => $name, 'parents' => [$folderId]]);
+        $size = filesize($path);
+        $this->client->setDefer(true);
+
+        try {
+            $request = $this->drive->files->create($metadata, ['fields' => 'id']);
+            $chunkSize = 8 * 1024 * 1024;
+            $upload = new MediaFileUpload($this->client, $request, $mimeType, null, true, $chunkSize);
+            $upload->setFileSize($size);
+            $handle = fopen($path, 'rb');
+            try {
+                $result = false;
+                while ($result === false && !feof($handle)) {
+                    $result = $upload->nextChunk(fread($handle, $chunkSize));
+                }
+            } finally {
+                fclose($handle);
+            }
+        } finally {
+            $this->client->setDefer(false);
+        }
+
+        if (! $result instanceof DriveFile || ! $result->getId()) {
+            throw new RuntimeException('Google Drive no confirmó la carga del archivo.');
+        }
+
+        $fileId = $result->getId();
+        try {
+            $this->drive->permissions->create($fileId, new Permission([
+                'type' => 'anyone',
+                'role' => 'writer',
+                'allowFileDiscovery' => false,
+            ]), ['fields' => 'id']);
+        } catch (\Throwable $exception) {
+            try {
+                $this->drive->files->delete($fileId);
+            } catch (\Throwable $cleanupException) {
+                Log::warning('No se pudo eliminar el archivo de Drive tras fallar el permiso de editor.', [
+                    'file_id' => $fileId,
+                    'error' => $cleanupException->getMessage(),
+                ]);
+            }
+            throw $exception;
+        }
+
+        return $fileId;
+    }
+
+    public function taskFileContent(string $fileId): \Psr\Http\Message\StreamInterface
+    {
+        return $this->drive->files->get($fileId, ['alt' => 'media'])->getBody();
     }
 
     private function findOrCreateFolder(string $folderName, string $parentId = 'root'): string

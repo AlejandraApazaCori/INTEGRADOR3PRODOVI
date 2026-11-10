@@ -23,6 +23,8 @@
     };
     $reviewUploadErrors = $errors->getBag('reviewUpload');
     $abrirDrawer = request()->boolean('subir') || session('open_upload_drawer') || $reviewUploadErrors->any();
+    $puedePublicar = app(\App\Services\TaskReviewWorkflow::class)->canPublish($tarea);
+    $puedeRevisar = (int) $tarea->asignado_id === (int) Auth::id();
 @endphp
 
 <div class="review-page">
@@ -38,7 +40,6 @@
             <div class="review-hero-overlay"></div>
             <div class="review-hero-content">
                 <div>
-                    <span>Control de calidad</span>
                     <h1>Revisión de entregables</h1>
                     <p>{{ $tarea->titulo }}</p>
                 </div>
@@ -49,6 +50,9 @@
         <main class="review-content">
             @if(session('success'))
                 <div class="review-alert is-success"><i class="fas fa-circle-check"></i>{{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+                <div class="review-alert is-error"><i class="fas fa-circle-exclamation"></i>{{ session('error') }}</div>
             @endif
             @if($errors->any())
                 <div class="review-alert is-error"><i class="fas fa-circle-exclamation"></i>{{ $errors->first() }}</div>
@@ -65,7 +69,7 @@
                 <section class="review-card review-deliverables">
                     <header class="review-card-header">
                         <div><h2>Archivos adjuntos</h2><p>Descarga y define el resultado de cada entregable.</p></div>
-                        @if($tarea->estado === 'aprobado')
+                        @if($tarea->estado === 'aprobado' && $puedePublicar)
                             <a href="{{ route('administrador.publicaciones.publicar', ['tarea_id' => $tarea->id]) }}" class="review-publish"><i class="fas fa-rocket"></i> Publicar contenido</a>
                         @endif
                     </header>
@@ -98,7 +102,7 @@
                                     default => null,
                                 };
                             @endphp
-                            <article class="review-file">
+                            <article class="review-file" id="revision-archivo-{{ $archivo->id }}">
                                 <div class="review-file-main">
                                     <span class="review-file-icon"><i class="fas {{ $fileIcon }}"></i></span>
                                     <div class="review-file-copy">
@@ -107,16 +111,26 @@
                                             <span class="review-file-status {{ $fileStatusClass }}">{{ $archivo->estado === 'rechazado' ? 'Reformular' : ucfirst($archivo->estado) }}</span>
                                         </div>
                                         <small>{{ strtoupper($extension ?: 'Archivo') }} · {{ $fileSize }} · Subido por {{ $archivo->user?->name ?? 'Usuario eliminado' }}</small>
+                                        @if($archivo->revisado_equipo_at)
+                                            <small>Equipo: {{ $archivo->revisorEquipo?->name ?? 'Usuario eliminado' }} · {{ $archivo->revisado_equipo_at->format('d/m/Y H:i') }}</small>
+                                        @endif
+                                        @if($tarea->revision_cliente_habilitada && $archivo->estado === 'aprobado')
+                                            <small>Cliente: {{ match($archivo->revision_cliente_estado) { 'aprobado' => 'Aprobado', 'rechazado' => 'Solicitó cambios', default => 'Pendiente' } }}@if($archivo->revisado_cliente_at) · {{ $archivo->revisorCliente?->name ?? 'Cliente' }} · {{ $archivo->revisado_cliente_at->format('d/m/Y H:i') }}@endif</small>
+                                        @endif
                                         @if($archivo->descripcion)<p>{{ $archivo->descripcion }}</p>@endif
                                     </div>
                                 </div>
                                 <div class="review-file-actions">
                                     <div class="review-file-links">
                                         @if($previewType)
-                                            <button type="button" class="review-file-preview" data-open-file-preview data-preview-type="{{ $previewType }}" data-preview-url="{{ Storage::url($archivo->ruta_archivo) }}" data-preview-title="{{ $archivo->nombre_original }}"><i class="fas fa-eye"></i> Ver</button>
+                                            <button type="button" class="review-file-preview" data-open-file-preview data-preview-type="{{ $previewType }}" data-preview-url="{{ $archivo->mediaUrl() }}" data-preview-title="{{ $archivo->nombre_original }}"><i class="fas fa-eye"></i> Ver</button>
                                         @endif
-                                        <a href="{{ Storage::url($archivo->ruta_archivo) }}" download><i class="fas fa-download"></i> Descargar</a>
+                                        <a href="{{ $archivo->mediaUrl(true) }}" download><i class="fas fa-download"></i> Descargar</a>
+                                        @if($archivo->isOnDrive())
+                                            <a href="{{ $archivo->driveWebUrl() }}" target="_blank" rel="noopener noreferrer"><i class="fab fa-google-drive"></i> Editar en Drive</a>
+                                        @endif
                                     </div>
+                                    @if($puedeRevisar)
                                     <form action="{{ route('administrador.tareas.archivos.update-estado', $archivo->id) }}" method="POST">
                                         @csrf
                                         @method('PUT')
@@ -124,6 +138,7 @@
                                         <button type="submit" name="estado" value="aprobado" class="is-approve {{ $archivo->estado === 'aprobado' ? 'is-current' : '' }}"><i class="fas fa-check"></i> Aprobar</button>
                                         <button type="submit" name="estado" value="rechazado" class="is-reject {{ $archivo->estado === 'rechazado' ? 'is-current' : '' }}"><i class="fas fa-rotate-left"></i> Reformular</button>
                                     </form>
+                                    @endif
                                 </div>
                             </article>
                         @empty
@@ -154,6 +169,29 @@
                         <div class="review-people">
                             <div><span>{{ strtoupper(mb_substr($tarea->creador?->name ?? 'SC', 0, 2)) }}</span><div><small>Creada por</small><strong>{{ $tarea->creador?->name ?? 'Sin información' }}</strong></div></div>
                             <div><span>{{ strtoupper(mb_substr($tarea->asignado?->name ?? 'SA', 0, 2)) }}</span><div><small>Asignada a</small><strong>{{ $tarea->asignado?->name ?? 'Sin asignar' }}</strong></div></div>
+                            @foreach($archivos->whereNotNull('revisado_equipo_at') as $archivoRevisado)
+                                <div><span><i class="fas fa-check"></i></span><div><small>{{ $archivoRevisado->estado === 'aprobado' ? 'Aprobó' : 'Revisó' }} {{ $archivoRevisado->nombre_original }}</small><strong>{{ $archivoRevisado->revisorEquipo?->name ?? 'Usuario eliminado' }}</strong></div></div>
+                            @endforeach
+                        </div>
+                    </section>
+                    <section class="review-card review-client-settings">
+                        <header class="review-card-header compact"><div><span>Aprobación adicional</span><h2>Revisión con el cliente</h2></div></header>
+                        <div class="review-client-settings-body">
+                            <p>Al activarla, las piezas aprobadas por la persona asignada esperan también la decisión del cliente antes de publicarse.</p>
+                            @if($puedeRevisar || Auth::user()?->hasAnyRole(['Super Administrador', 'Administrador']))
+                                <form method="POST" action="{{ route('administrador.tareas.revision-cliente', $tarea) }}">
+                                    @csrf @method('PATCH')
+                                    <input type="hidden" name="revision_cliente_habilitada" value="{{ $tarea->revision_cliente_habilitada ? 0 : 1 }}">
+                                    <button type="submit" class="review-client-toggle {{ $tarea->revision_cliente_habilitada ? 'is-on' : '' }}" role="switch" aria-checked="{{ $tarea->revision_cliente_habilitada ? 'true' : 'false' }}"><span></span>{{ $tarea->revision_cliente_habilitada ? 'Activada' : 'Desactivada' }}</button>
+                                </form>
+                            @else
+                                <strong>{{ $tarea->revision_cliente_habilitada ? 'Activada' : 'Desactivada' }}</strong>
+                            @endif
+                            @if($tarea->revision_cliente_habilitada)
+                                @foreach($archivos->where('estado', 'aprobado') as $archivoRevisado)
+                                    <div class="review-client-result"><small>{{ $archivoRevisado->nombre_original }}</small><strong>{{ match($archivoRevisado->revision_cliente_estado) { 'aprobado' => 'Aprobado por el cliente', 'rechazado' => 'Cambios solicitados', default => 'Esperando al cliente' } }}</strong>@if($archivoRevisado->revisado_cliente_at)<span>{{ $archivoRevisado->revisorCliente?->name ?? 'Cliente' }} · {{ $archivoRevisado->revisado_cliente_at->format('d/m/Y H:i') }}</span>@endif</div>
+                                @endforeach
+                            @endif
                         </div>
                     </section>
                 </aside>
@@ -236,6 +274,7 @@
     @media(max-width:900px){.review-top-actions{position:static;justify-content:center;padding:14px 24px 0}.review-top-actions a,.review-top-actions button{border-color:#d8e3c7;background:#f4f8ee;color:#638522}.review-top-actions .is-primary{background:#7da533;color:#fff}.review-hero{margin-top:14px}.review-hero-content{padding:28px 24px}.review-summary{grid-template-columns:repeat(2,1fr)}.review-summary>div:nth-child(2){border-right:0}.review-summary>div:nth-child(-n+2){border-bottom:1px solid #e5e8e2}}
     @media(max-width:640px){.review-page{padding-bottom:24px}.review-top-actions{display:grid;grid-template-columns:1fr;padding:12px}.review-top-actions a,.review-top-actions button{width:100%}.review-hero{min-height:195px;margin-top:0}.review-hero-content{min-height:195px;align-items:flex-start;flex-direction:column;justify-content:center;padding:26px 20px}.review-content{width:calc(100% - 24px);margin-top:14px}.review-summary{grid-template-columns:1fr}.review-summary>div{border-right:0;border-bottom:1px solid #e5e8e2}.review-summary>div:last-child{border-bottom:0}.review-sidebar{grid-template-columns:1fr}.review-card-header{align-items:flex-start;flex-direction:column}.review-publish{width:100%}.review-file-title{align-items:flex-start;flex-direction:column;gap:5px}.review-file-actions{align-items:flex-start;flex-direction:column;padding-left:0}.review-file-actions form{width:100%;display:grid;grid-template-columns:repeat(3,1fr)}.review-file-actions button{width:100%;padding:0 4px}.review-upload-panel{width:100%}.review-upload-body{padding:18px}.review-upload-panel footer{padding:14px 18px}.review-upload-panel footer button{flex:1}}
     @media(max-width:640px){.review-file-links{width:100%}.review-file-links a,.review-file-links button{flex:1;justify-content:center}.review-preview-modal{padding:10px}.review-preview-dialog{max-height:calc(100vh - 20px);border-radius:12px}.review-preview-stage img,.review-preview-stage video{max-height:calc(100vh - 86px)}}
+    .review-client-settings-body{padding:16px 18px}.review-client-settings-body>p{margin:0 0 14px;color:#687168;font-size:.68rem;line-height:1.55}.review-client-settings-body>strong{font-size:.7rem;color:#596257}.review-client-toggle{display:inline-flex;align-items:center;gap:9px;padding:7px 12px;border:1px solid #d7dcd4;border-radius:999px;background:#f3f4f2;color:#687168;font-size:.7rem;font-weight:800;cursor:pointer}.review-client-toggle>span{width:22px;height:13px;border-radius:999px;background:#aeb6ac;position:relative}.review-client-toggle>span:after{content:'';position:absolute;width:9px;height:9px;top:2px;left:2px;border-radius:50%;background:#fff}.review-client-toggle.is-on{border-color:#b8d58c;background:#f2f8e9;color:#50731d}.review-client-toggle.is-on>span{background:#7da533}.review-client-toggle.is-on>span:after{left:11px}.review-client-result{display:grid;gap:3px;margin-top:13px;padding:10px;border:1px solid #e5e8e2;border-radius:8px}.review-client-result small{color:#7e867b;font-size:.58rem;overflow-wrap:anywhere}.review-client-result strong{color:#3d4c36;font-size:.66rem}.review-client-result span{color:#687168;font-size:.57rem}.review-file-copy>small{display:block}
 </style>
 
 <script>

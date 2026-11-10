@@ -133,7 +133,7 @@
 
                     <!-- Acciones -->
                     <aside class="company-detail-aside lg:col-span-1">
-                        <div class="company-actions bg-gray-50 rounded-xl p-6 sticky top-6">
+                        <div class="company-actions bg-gray-50 rounded-xl p-6">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Acciones</h3>
                             <div class="space-y-3">
                                 <a href="{{ route('administrador.usuarios.edit', $empresa->usuario_id) }}" class="w-full flex items-center justify-center px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200">
@@ -225,6 +225,10 @@
                                 </form>
                             </div>
                         </div>
+                        @include('administrador.campañas.partials.conexion-redes', [
+                            'socialAccounts' => $companySocialAccounts,
+                            'socialConnectionContext' => 'admin_company',
+                        ])
                     </aside>
                 </div>
             </div>
@@ -577,7 +581,6 @@
     }
 
     .company-actions {
-        top: 24px;
         padding: 2px 0 2px 28px !important;
         border-left: 1px solid #e1e3de;
         border-radius: 0 !important;
@@ -643,6 +646,35 @@
     .company-actions form:last-child button {
         border-color: #f3c4c4 !important;
         color: #b42323 !important;
+    }
+
+    .company-detail-aside .admin-social-connections {
+        width: 100%;
+        margin: 22px 0 0;
+        padding: 18px;
+        border-radius: 12px;
+        box-shadow: none;
+        scroll-margin-top: 24px;
+    }
+
+    .company-detail-aside .admin-social-connections > header {
+        flex-wrap: wrap;
+    }
+
+    .company-detail-aside .admin-social-status {
+        width: 100%;
+    }
+
+    .company-detail-aside .admin-social-options {
+        grid-template-columns: 1fr;
+    }
+
+    .company-detail-aside .admin-social-option {
+        min-height: 175px;
+    }
+
+    .company-detail-aside .admin-social-option aside strong {
+        max-width: 205px;
     }
 
     @media (max-width: 760px) {

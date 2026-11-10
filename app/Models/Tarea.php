@@ -21,6 +21,7 @@ class Tarea extends Model
         'prioridad',
         'requiere_aprobacion',
         'visible_cliente',
+        'revision_cliente_habilitada',
         'campania_id',
         'creador_id',
         'asignado_id',
@@ -42,6 +43,7 @@ class Tarea extends Model
         'publication_platforms' => 'array',
         'requiere_aprobacion' => 'boolean',
         'visible_cliente' => 'boolean',
+        'revision_cliente_habilitada' => 'boolean',
     ];
 
     public function campania()

@@ -36,6 +36,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/tareas/archivos/{archivo}/media', [\App\Http\Controllers\Admin\TareaArchivoController::class, 'media'])
+    ->middleware('signed')
+    ->name('tareas.archivos.media');
+
 Route::post('/contacto', [ContactoLandingController::class, 'store'])
     ->middleware('throttle:5,1')
     ->name('landing.contacto.store');
@@ -458,6 +462,8 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
             ->name('administrador.campañas.recursos.destroy');
         Route::get('/{campania}/analiticas/datos', [\App\Http\Controllers\Admin\CampañasController::class, 'analyticsData'])
             ->name('administrador.campañas.analiticas.datos');
+        Route::post('/{campania}/drive', [\App\Http\Controllers\Admin\CampañasController::class, 'openDriveFolder'])
+            ->name('administrador.campañas.drive');
         Route::get('/{campania}', [\App\Http\Controllers\Admin\CampañasController::class, 'show'])
             ->name('administrador.campañas.show');
         Route::get('/{campania}/editar', [\App\Http\Controllers\Admin\CampañasController::class, 'edit'])
@@ -502,6 +508,8 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
     });
     Route::put('/tareas/archivos/{archivo}/estado', [\App\Http\Controllers\Admin\TareaArchivoController::class, 'updateEstado'])
         ->name('administrador.tareas.archivos.update-estado');
+    Route::patch('/tareas/{tarea}/revision-cliente', [\App\Http\Controllers\Admin\TareaArchivoController::class, 'updateClientReview'])
+        ->name('administrador.tareas.revision-cliente');
     Route::get('/tareas/{tarea}/ver-subidas', [\App\Http\Controllers\Admin\TareaArchivoController::class, 'verSubidas'])
         ->name('administrador.tareas.ver-subidas');
 
@@ -648,6 +656,8 @@ Route::prefix('empresas')->middleware('auth')->name('empresas.')->group(function
     Route::get('/', [EmpresaController::class, 'index'])->name('index');
     Route::get('/create', [EmpresaController::class, 'create'])->name('create');
     Route::post('/', [EmpresaController::class, 'store'])->name('store');
+    Route::get('/{id}/campanias', [EmpresaController::class, 'campanias'])->name('campanias');
+    Route::get('/{id}/campanias/{campania}', [EmpresaController::class, 'campania'])->name('campanias.show');
     Route::get('/{id}', [EmpresaController::class, 'show'])->name('show');
     Route::get('/{id}/edit', [EmpresaController::class, 'edit'])->name('edit');
     Route::put('/{id}', [EmpresaController::class, 'update'])->name('update');

@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Tarea;
 use App\Services\SocialPublicationService;
+use App\Services\TaskReviewWorkflow;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -14,16 +15,16 @@ class ProcessScheduledPublications extends Command
 
     protected $description = 'Publica automaticamente las tareas programadas en sus redes seleccionadas cuya hora ya llego';
 
-    public function handle(SocialPublicationService $socialPublicationService): int
+    public function handle(SocialPublicationService $socialPublicationService, TaskReviewWorkflow $reviewWorkflow): int
     {
         // El scheduler y el respaldo web ejecutan el mismo comando: comparten exclusión.
         $result = Cache::lock('publicaciones:procesar-programadas', 600)
-            ->get(fn () => $this->process($socialPublicationService));
+            ->get(fn () => $this->process($socialPublicationService, $reviewWorkflow));
 
         return $result === false ? self::SUCCESS : $result;
     }
 
-    private function process(SocialPublicationService $socialPublicationService): int
+    private function process(SocialPublicationService $socialPublicationService, TaskReviewWorkflow $reviewWorkflow): int
     {
         $tareas = Tarea::with([
             'archivos' => fn ($query) => $query->where('estado', 'aprobado'),
@@ -43,6 +44,13 @@ class ProcessScheduledPublications extends Command
         }
 
         foreach ($tareas as $tarea) {
+            if ($tarea->revision_cliente_habilitada && ! $reviewWorkflow->canPublish($tarea)) {
+                $tarea->forceFill([
+                    'publication_status' => 'failed',
+                    'publication_error' => 'La aprobación del cliente ya no está vigente. La publicación programada fue detenida.',
+                ])->save();
+                continue;
+            }
             $cliente = $tarea->campania?->cliente;
             $message = $tarea->publication_message;
 

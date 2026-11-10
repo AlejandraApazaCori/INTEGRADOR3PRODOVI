@@ -187,6 +187,23 @@
                         </div>
                     </section>
 
+                    <section class="campaign-detail-card campaign-drive-card" aria-labelledby="campaign-drive-title">
+                        <div class="campaign-card-header compact">
+                            <div><span>Archivos de la campaña</span><h2 id="campaign-drive-title">Carpeta en Drive</h2></div>
+                        </div>
+                        <div class="campaign-card-body compact">
+                            <p>Accede a los entregables de {{ $campania->nombre }} organizados por tarea.</p>
+                            @if($cliente)
+                                <form action="{{ route('administrador.campañas.drive', $campania) }}" method="POST" target="_blank">
+                                    @csrf
+                                    <button type="submit"><i class="fas fa-arrow-up-right-from-square"></i> Abrir carpeta en Drive</button>
+                                </form>
+                            @else
+                                <div class="campaign-empty-note">Asigna un cliente para acceder a la carpeta.</div>
+                            @endif
+                        </div>
+                    </section>
+
                     <section class="campaign-detail-card">
                         <div class="campaign-card-header compact">
                             <div><span>Responsables</span><h2>Equipo de trabajo</h2></div>
@@ -295,6 +312,7 @@
     .campaign-audiences{margin:0 0 18px;padding:14px;border:1px solid #e3e6e1;border-radius:12px;background:#fafbf9}.campaign-audiences>header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:13px}.campaign-audiences>header>span{flex:0 0 auto;padding:7px 10px;border-radius:999px;background:#f3edf6;color:#5b2b76;font-size:.56rem;font-weight:900}.campaign-audience-list{display:grid;gap:9px}.campaign-audience-row{display:grid;grid-template-columns:34px minmax(180px,.72fr) minmax(240px,1.28fr);align-items:start;gap:12px;padding:13px;border:1px solid #e3e6e1;border-radius:11px;background:#fff}.campaign-audience-number{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:#5b2b76;color:#fff;font-size:.56rem;font-weight:900}.campaign-audience-row>div{min-width:0}.campaign-audience-row small,.campaign-audience-row strong{display:block}.campaign-audience-row small{margin-bottom:5px;color:#858d99;font-size:.53rem;font-weight:900;text-transform:uppercase}.campaign-audience-row strong{color:#374151;font-size:.69rem;font-weight:900;line-height:1.45}.campaign-audience-row p{margin:0!important;color:#646d7a!important;font-size:.66rem!important;line-height:1.55}
     .campaign-detail-sidebar{display:grid;align-content:start;gap:18px}
     .campaign-detail-card{overflow:hidden;border:1px solid #e1e3de;border-radius:16px;background:#fff;box-shadow:0 9px 22px rgba(55,60,52,.06)}
+    .campaign-drive-icon{width:36px;height:36px;display:grid;place-items:center;flex:0 0 36px;border-radius:10px;background:#e9f4e9;color:#188038;font-size:1rem}.campaign-drive-card .campaign-card-body p{margin:0 0 14px;color:#66705f;font-size:.7rem;line-height:1.5}.campaign-drive-card form{margin:0}.campaign-drive-card button{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 13px;border:0;border-radius:9px;background:#188038;color:#fff;font-size:.68rem;font-weight:900;cursor:pointer;transition:background .18s}.campaign-drive-card button:hover{background:#12642b}
     .campaign-card-header{display:flex;align-items:center;gap:13px;padding:20px 22px 16px;border-bottom:1px solid #eceeea}.campaign-card-header.compact{padding:16px 18px 14px}
     .campaign-card-title-icon{width:42px;height:42px;display:grid;place-items:center;flex:0 0 42px;border-radius:12px;color:#fff;box-shadow:0 7px 15px rgba(55,60,52,.14)}.campaign-card-title-icon.is-indigo{background:#4f46e5}.campaign-card-title-icon.is-teal{background:#117e8c}.campaign-card-title-icon.is-purple{background:#5b2b76}
     .campaign-card-header span{display:block;margin-bottom:2px;color:#8a9186;font-size:.58rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.campaign-card-header h2{margin:0;color:#25272b;font-size:.96rem;font-weight:900;letter-spacing:-.015em}
@@ -323,11 +341,11 @@
     .campaign-schedule{gap:0;border-top:1px solid #eceeea;border-bottom:1px solid #eceeea}.campaign-date,.campaign-date.is-end{padding:14px 0;border:0;border-radius:0;background:#fff}.campaign-date+.campaign-date{padding-left:18px;border-left:1px solid #eceeea}
     .campaign-analytics-card{grid-template-columns:minmax(0,1fr) auto;border-radius:12px;background:#faf8fb;box-shadow:none}.campaign-analytics-card>a{width:auto;height:auto;padding:8px 10px;border:1px solid #ddd3e2;border-radius:8px;box-shadow:none;font-size:.58rem;font-weight:900;white-space:nowrap}
     .campaign-documents,.campaign-calendar,.campaign-tasks,.campaign-resources,.campaign-meetings,.campaign-analytics{margin-top:16px}.campaign-tasks .tasks-workspace{border-radius:12px!important;box-shadow:0 5px 15px rgba(55,60,52,.04)!important}
-    @media(max-width:1080px){.campaign-detail-hero-content{align-items:stretch;flex-direction:column;padding:28px 32px}.campaign-hero-summary{width:100%}.campaign-detail-grid{grid-template-columns:1fr}.campaign-detail-sidebar{grid-template-columns:repeat(2,minmax(0,1fr))}.campaign-analytics-card{grid-column:1/-1}}
+    @media(max-width:1080px){.campaign-detail-hero-content{align-items:stretch;flex-direction:column;padding:28px 32px}.campaign-hero-summary{width:100%}.campaign-detail-grid{grid-template-columns:1fr}.campaign-detail-sidebar{grid-template-columns:repeat(2,minmax(0,1fr))}.campaign-drive-card{grid-column:1}.campaign-analytics-card{grid-column:1/-1}}
     @media(max-width:900px){.campaign-detail-hero{margin-top:0}.campaign-detail-hero-content{padding:28px 24px}.campaign-status{flex:0 0 auto}.campaign-detail-content,.campaign-documents,.campaign-calendar,.campaign-tasks,.campaign-resources,.campaign-meetings,.campaign-analytics{width:calc(100% - 32px)}}
     @media(max-width:760px){.campaign-subtabs{display:flex;overflow-x:auto}.campaign-subtab{min-width:145px;flex:1 0 145px}}
     @media(max-width:760px){.campaign-audience-row{grid-template-columns:34px minmax(0,1fr)}.campaign-audience-row>div:last-child{grid-column:2}.campaign-audiences>header{flex-direction:column}.campaign-strategy-grid{grid-template-columns:1fr}}
-    @media(max-width:640px){.campaign-detail-page{padding-bottom:24px}.campaign-detail-hero{min-height:200px;margin-top:0}.campaign-detail-hero-content{min-height:200px;align-items:stretch;flex-direction:column;justify-content:center;padding:26px 20px}.campaign-detail-heading{align-items:flex-start}.campaign-detail-heading h1{white-space:normal}.campaign-hero-context{align-items:stretch}.campaign-hero-back{width:100%}.campaign-hero-summary{grid-template-columns:1fr}.campaign-hero-metric{padding:12px 14px;border-right:0;border-bottom:1px solid rgba(255,255,255,.18)}.campaign-hero-metric:nth-child(2){border-bottom:0}.campaign-hero-progress-row{grid-column:1;padding:10px 14px}.campaign-detail-content,.campaign-documents,.campaign-calendar,.campaign-tasks,.campaign-resources,.campaign-meetings,.campaign-analytics{width:calc(100% - 24px)}.campaign-detail-content{padding-top:14px}.campaign-detail-sidebar{grid-template-columns:1fr}.campaign-analytics-card{grid-column:auto}.campaign-schedule{grid-template-columns:1fr}.campaign-date+.campaign-date{padding-left:0;border-top:1px solid #eceeea;border-left:0}.campaign-card-body{padding:18px}.campaign-company-row{align-items:flex-start;flex-direction:column}}
+    @media(max-width:640px){.campaign-detail-page{padding-bottom:24px}.campaign-detail-hero{min-height:200px;margin-top:0}.campaign-detail-hero-content{min-height:200px;align-items:stretch;flex-direction:column;justify-content:center;padding:26px 20px}.campaign-detail-heading{align-items:flex-start}.campaign-detail-heading h1{white-space:normal}.campaign-hero-context{align-items:stretch}.campaign-hero-back{width:100%}.campaign-hero-summary{grid-template-columns:1fr}.campaign-hero-metric{padding:12px 14px;border-right:0;border-bottom:1px solid rgba(255,255,255,.18)}.campaign-hero-metric:nth-child(2){border-bottom:0}.campaign-hero-progress-row{grid-column:1;padding:10px 14px}.campaign-detail-content,.campaign-documents,.campaign-calendar,.campaign-tasks,.campaign-resources,.campaign-meetings,.campaign-analytics{width:calc(100% - 24px)}.campaign-detail-content{padding-top:14px}.campaign-detail-sidebar{grid-template-columns:1fr}.campaign-drive-card,.campaign-analytics-card{grid-column:auto}.campaign-schedule{grid-template-columns:1fr}.campaign-date+.campaign-date{padding-left:0;border-top:1px solid #eceeea;border-left:0}.campaign-card-body{padding:18px}.campaign-company-row{align-items:flex-start;flex-direction:column}}
     /* Modo oscuro del detalle; el banner conserva su diseño original. */
     html.admin-dark-nav .campaign-detail-page{background:#141414;color:#e5e5e5}
     html.admin-dark-nav .campaign-detail-page .campaign-subtabs,
@@ -358,6 +376,7 @@
     html.admin-dark-nav .campaign-detail-page .campaign-date+.campaign-date,
     html.admin-dark-nav .campaign-detail-page .campaign-person+.campaign-person,
     html.admin-dark-nav .campaign-detail-page .campaign-company-row{border-color:#353535}
+    html.admin-dark-nav .campaign-detail-page .campaign-drive-card .campaign-card-body p{color:#b8b8b8}
     html.admin-dark-nav .campaign-detail-page .campaign-strategy-grid article,
     html.admin-dark-nav .campaign-detail-page .campaign-audiences,
     html.admin-dark-nav .campaign-detail-page .campaign-audience-row,

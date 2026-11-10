@@ -176,7 +176,7 @@
 
                                 {{-- Tareas no vistas --}}
                                 @foreach($tareasNoVistas ?? [] as $notification)
-                                    <a href="{{ route('administrador.tareas.show', $notification->data['task_id']) }}" class="notification-item font-semibold">
+                                    <a href="{{ $notification->data['url'] ?? route('administrador.tareas.show', $notification->data['task_id']) }}" class="notification-item font-semibold">
                                         <div class="notification-item-icon bg-blue-100 text-blue-600">📎</div>
                                         <div class="notification-item-content">
                                             <p class="text-xs font-semibold">{{ $notification->data['title'] ?? 'Tarea entregada' }}</p>
@@ -240,7 +240,7 @@
                                 @endforeach
 
                                 @foreach($tareasVistas ?? [] as $notification)
-                                    <a href="{{ route('administrador.tareas.show', $notification->data['task_id']) }}" class="notification-item opacity-60">
+                                    <a href="{{ $notification->data['url'] ?? route('administrador.tareas.show', $notification->data['task_id']) }}" class="notification-item opacity-60">
                                         <div class="notification-item-icon bg-gray-100 text-gray-400">📎</div>
                                         <div class="notification-item-content">
                                             <p class="text-xs">{{ $notification->data['title'] ?? 'Tarea entregada' }}</p>

@@ -1,7 +1,8 @@
 @php
-    $facebookAccount = $campaignSocialAccounts->get('facebook');
-    $facebookPage = $campaignSocialAccounts->get('facebook_page');
-    $instagramAccount = $campaignSocialAccounts->get('instagram');
+    $socialAccounts = $socialAccounts ?? $campaignSocialAccounts;
+    $facebookAccount = $socialAccounts->get('facebook');
+    $facebookPage = $socialAccounts->get('facebook_page');
+    $instagramAccount = $socialAccounts->get('instagram');
     $facebookLinked = filled($facebookAccount?->provider_user_id) || filled($facebookPage?->provider_user_id);
     $instagramLinked = filled($instagramAccount?->provider_user_id);
     $facebookName = $facebookPage?->display_name
@@ -12,14 +13,16 @@
     $instagramName = $instagramAccount?->display_name
         ?? $instagramAccount?->username
         ?? $instagramAccount?->provider_user_id;
-    $connectionParameters = [
-        'empresa_id' => $empresa?->id,
-        'return_to' => 'admin_campaign',
-        'campania_id' => $campania->id,
-    ];
+    $connectionParameters = ['empresa_id' => $empresa?->id];
+    if (($socialConnectionContext ?? 'admin_campaign') === 'admin_company') {
+        $connectionParameters['return_to'] = 'admin_company';
+    } else {
+        $connectionParameters['return_to'] = 'admin_campaign';
+        $connectionParameters['campania_id'] = $campania->id;
+    }
 @endphp
 
-<section class="admin-social-connections">
+<section id="redes-sociales" class="admin-social-connections">
     <header>
         <span><i class="fas fa-share-nodes"></i></span>
         <div>

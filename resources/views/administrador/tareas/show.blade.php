@@ -195,7 +195,7 @@
                                     <p class="text-xs text-gray-500">{{ number_format($archivo->tamanio / 1024, 2) }} KB · {{ strtoupper($archivo->extension) }}</p>
                                 </div>
                             </div>
-                            <a href="{{ Storage::url($archivo->ruta_archivo) }}" download 
+                            <a href="{{ $archivo->mediaUrl(true) }}" download
                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors" style="color: #4f46e5; background: #eef2ff; hover:bg: #e0e7ff;">
                                 <i class="fas fa-download"></i>
                                 Descargar

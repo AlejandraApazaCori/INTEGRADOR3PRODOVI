@@ -108,10 +108,10 @@ class FacebookService
         }
 
         if ($imageFiles->count() === 1) {
-            return $this->postSingleImageToPage($pageId, $pageAccessToken, $message, $imageFiles->first()->ruta_archivo);
+            return $this->postSingleImageToPage($pageId, $pageAccessToken, $message, $imageFiles->first());
         }
 
-        return $this->postImageCarouselToPage($pageId, $pageAccessToken, $message, $imageFiles->pluck('ruta_archivo')->all());
+        return $this->postImageCarouselToPage($pageId, $pageAccessToken, $message, $imageFiles->all());
     }
 
     public function postToConfiguredPage(string $message): array
@@ -232,8 +232,24 @@ class FacebookService
         return [$pageId, $pageAccessToken, null];
     }
 
-    private function postSingleImageToPage(string $pageId, string $pageAccessToken, string $message, string $relativePath): array
+    private function postSingleImageToPage(string $pageId, string $pageAccessToken, string $message, \App\Models\TareaArchivo $archivo): array
     {
+        if ($archivo->isOnDrive()) {
+            try {
+                $response = Http::asForm()->timeout(60)->post(
+                    "https://graph.facebook.com/{$this->apiVersion}/{$pageId}/photos",
+                    ['url' => $archivo->mediaUrl(), 'caption' => $message, 'access_token' => $pageAccessToken]
+                );
+                $payload = $response->json();
+                return $response->successful()
+                    ? ['success' => true, 'facebook_post_id' => $payload['post_id'] ?? $payload['id'] ?? null, 'raw' => $payload]
+                    : ['success' => false, 'facebook_post_id' => null, 'raw' => $payload, 'error' => $payload['error']['message'] ?? 'No se pudo publicar la imagen.', 'code' => $response->status()];
+            } catch (\Throwable $e) {
+                return ['success' => false, 'facebook_post_id' => null, 'error' => $e->getMessage(), 'code' => 500];
+            }
+        }
+
+        $relativePath = $archivo->ruta_archivo;
         $absolutePath = Storage::disk('public')->path($relativePath);
 
         if (! is_file($absolutePath)) {
@@ -285,27 +301,29 @@ class FacebookService
         }
     }
 
-    private function postImageCarouselToPage(string $pageId, string $pageAccessToken, string $message, array $relativePaths): array
+    private function postImageCarouselToPage(string $pageId, string $pageAccessToken, string $message, array $archivos): array
     {
         try {
             $attachedMedia = [];
 
-            foreach ($relativePaths as $relativePath) {
-                $absolutePath = Storage::disk('public')->path($relativePath);
-
-                if (! is_file($absolutePath)) {
-                    continue;
-                }
-
-                $uploadResponse = Http::timeout(60)
-                    ->attach('source', fopen($absolutePath, 'r'), basename($absolutePath))
-                    ->post(
+            foreach ($archivos as $archivo) {
+                if ($archivo->isOnDrive()) {
+                    $uploadResponse = Http::asForm()->timeout(60)->post(
                         "https://graph.facebook.com/{$this->apiVersion}/{$pageId}/photos",
-                        [
-                            'published' => 'false',
-                            'access_token' => $pageAccessToken,
-                        ]
+                        ['url' => $archivo->mediaUrl(), 'published' => 'false', 'access_token' => $pageAccessToken]
                     );
+                } else {
+                    $absolutePath = Storage::disk('public')->path($archivo->ruta_archivo);
+                    if (! is_file($absolutePath)) {
+                        continue;
+                    }
+                    $uploadResponse = Http::timeout(60)
+                        ->attach('source', fopen($absolutePath, 'r'), basename($absolutePath))
+                        ->post(
+                            "https://graph.facebook.com/{$this->apiVersion}/{$pageId}/photos",
+                            ['published' => 'false', 'access_token' => $pageAccessToken]
+                        );
+                }
 
                 $uploadPayload = $uploadResponse->json();
 

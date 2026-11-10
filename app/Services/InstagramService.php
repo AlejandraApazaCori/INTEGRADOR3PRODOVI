@@ -43,13 +43,16 @@ class InstagramService
                 $extension = strtolower((string) $archivo->extension);
 
                 if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif'], true)) {
+                    if ($archivo->isOnDrive()) {
+                        return ['type' => 'image', 'url' => $this->publicDriveMediaUrl($archivo, $isStory ? 'instagram-story' : 'instagram-feed')];
+                    }
                     $jpegPath = $this->prepareImage($archivo->ruta_archivo, $extension, ! $isStory);
 
                     return ['type' => 'image', 'url' => $jpegPath ? $this->publicMediaUrl($jpegPath) : null];
                 }
 
                 if (in_array($extension, ['mp4', 'mov'], true)) {
-                    return ['type' => 'video', 'url' => $this->publicMediaUrl($archivo->ruta_archivo)];
+                    return ['type' => 'video', 'url' => $archivo->isOnDrive() ? $this->publicDriveMediaUrl($archivo) : $this->publicMediaUrl($archivo->ruta_archivo)];
                 }
 
                 return null;
@@ -284,6 +287,16 @@ class InstagramService
         }
 
         return $url;
+    }
+
+    private function publicDriveMediaUrl(\App\Models\TareaArchivo $archivo, ?string $format = null): ?string
+    {
+        $url = $archivo->mediaUrl(false, $format);
+        $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+        return parse_url($url, PHP_URL_SCHEME) === 'https'
+            && ! in_array($host, ['localhost', '127.0.0.1', '::1'], true)
+            ? $url
+            : null;
     }
 
     private function prepareImage(string $relativePath, string $extension, bool $normalizeForFeed): ?string

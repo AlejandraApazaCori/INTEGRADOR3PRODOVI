@@ -1,7 +1,7 @@
 <section class="discussion-card">
     <header class="discussion-header">
         <div>
-            <span>Colaboración</span>
+           
             <h2>Comentarios</h2>
             <p>Registra observaciones y decisiones del proceso de revisión.</p>
         </div>
@@ -27,7 +27,7 @@
 
         <div class="discussion-list">
             @forelse($tarea->comentarios->sortByDesc('created_at') as $comentario)
-                <article class="discussion-item">
+                <article class="discussion-item" id="comentario-{{ $comentario->id }}">
                     <header>
                         <span class="discussion-avatar">{{ strtoupper(mb_substr($comentario->user?->name ?? 'U', 0, 2)) }}</span>
                         <div>

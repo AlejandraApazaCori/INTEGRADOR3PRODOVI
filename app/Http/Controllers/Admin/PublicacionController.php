@@ -8,6 +8,7 @@ use App\Models\Tarea;
 use App\Services\GroqImageService;
 use App\Services\PublicationTimingService;
 use App\Services\SocialPublicationService;
+use App\Services\TaskReviewWorkflow;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -16,11 +17,13 @@ class PublicacionController extends Controller
     protected GroqImageService $groqImageService;
 
     protected SocialPublicationService $socialPublicationService;
+    protected TaskReviewWorkflow $reviewWorkflow;
 
-    public function __construct(GroqImageService $groqImageService, SocialPublicationService $socialPublicationService)
+    public function __construct(GroqImageService $groqImageService, SocialPublicationService $socialPublicationService, TaskReviewWorkflow $reviewWorkflow)
     {
         $this->groqImageService = $groqImageService;
         $this->socialPublicationService = $socialPublicationService;
+        $this->reviewWorkflow = $reviewWorkflow;
     }
 
     public function index(Request $request)
@@ -32,6 +35,10 @@ class PublicacionController extends Controller
         }
 
         $tarea = $this->loadPublishingTask($tareaId);
+        if ($tarea->revision_cliente_habilitada && ! $this->reviewWorkflow->canPublish($tarea)) {
+            return redirect()->route('administrador.tareas.ver-subidas', $tarea)
+                ->with('error', 'Espera la aprobación del cliente antes de publicar.');
+        }
         $cliente = $tarea->campania?->cliente;
         $empresaId = $tarea->campania?->suscripcion?->empresa?->id;
         $facebookPage = $this->findSocialAccount($cliente, 'facebook_page', $empresaId);
@@ -44,6 +51,7 @@ class PublicacionController extends Controller
     {
         $validated = $request->validate(['tarea_id' => 'required|integer|exists:tareas,id']);
         $tarea = $this->loadPublishingTask($validated['tarea_id']);
+        abort_if($tarea->revision_cliente_habilitada && ! $this->reviewWorkflow->canPublish($tarea), 409);
         $user = $request->user();
         abort_unless($user->hasAnyRole(['Super Administrador', 'Administrador'])
             || in_array((int) $user->id, array_map('intval', array_filter([
@@ -73,6 +81,9 @@ class PublicacionController extends Controller
         ]);
 
         $tarea = $this->loadPublishingTask($validated['tarea_id']);
+        if ($tarea->revision_cliente_habilitada && ! $this->reviewWorkflow->canPublish($tarea)) {
+            return back()->withInput()->with('error', 'Espera la aprobación del cliente antes de publicar o programar.');
+        }
         $cliente = $tarea->campania?->cliente;
 
         if (! $cliente) {
@@ -149,13 +160,19 @@ class PublicacionController extends Controller
 
     private function loadPublishingTask(int $tareaId): Tarea
     {
-        return Tarea::with([
+        $task = Tarea::with([
             'archivos' => function ($query) {
                 $query->where('estado', 'aprobado');
             },
             'campania.cliente.socialAccounts',
             'campania.suscripcion.empresa.socialAccounts',
         ])->findOrFail($tareaId);
+
+        if ($task->revision_cliente_habilitada) {
+            $task->setRelation('archivos', $task->archivos->where('revision_cliente_estado', 'aprobado')->values());
+        }
+
+        return $task;
     }
 
     private function findSocialAccount(?\App\Models\User $cliente, string $provider, ?int $empresaId): ?SocialAccount

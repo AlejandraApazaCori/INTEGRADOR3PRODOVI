@@ -50,7 +50,7 @@ class NotificacionController extends Controller
             ]) : collect();
 
         $tareas = $user->notifications()
-            ->where('type', TareaEntregadaNotification::class)
+            ->whereIn('type', [TareaEntregadaNotification::class, \App\Notifications\TaskReviewNotification::class])
             ->orderBy('created_at', 'desc')
             ->take(50)
             ->get()
@@ -61,7 +61,7 @@ class NotificacionController extends Controller
                 'detalle' => $notification->data['message'] ?? 'Se adjuntaron archivos a una tarea.',
                 'fecha'   => $notification->created_at,
                 'visto'   => $notification->read_at !== null,
-                'url'     => route('administrador.tareas.show', $notification->data['task_id']),
+                'url'     => $notification->data['url'] ?? route('administrador.tareas.show', $notification->data['task_id']),
             ]);
         $reuniones = $user->notifications()
             ->where('type', ReunionAgendadaNotification::class)
@@ -97,7 +97,7 @@ class NotificacionController extends Controller
             Campania::where('visto', false)->update(['visto' => true]);
             TareaArchivo::where('visto', false)->update(['visto' => true]);
         }
-        $user->unreadNotifications()->whereIn('type', [TareaEntregadaNotification::class, ReunionAgendadaNotification::class])->update(['read_at' => now()]);
+        $user->unreadNotifications()->whereIn('type', [TareaEntregadaNotification::class, ReunionAgendadaNotification::class, \App\Notifications\TaskReviewNotification::class])->update(['read_at' => now()]);
 
         return response()->json(['ok' => true]);
     }
@@ -112,7 +112,7 @@ class NotificacionController extends Controller
         $canSeeGlobalNotifications = $user->hasAnyRole(['Super Administrador', 'Administrador', 'Community Manager']);
         $count = ($canSeeGlobalNotifications ? Pago::where('visto', false)->count() : 0)
             + ($canSeeGlobalNotifications ? Campania::where('visto', false)->count() : 0)
-            + $user->unreadNotifications()->whereIn('type', [TareaEntregadaNotification::class, ReunionAgendadaNotification::class])->count();
+            + $user->unreadNotifications()->whereIn('type', [TareaEntregadaNotification::class, ReunionAgendadaNotification::class, \App\Notifications\TaskReviewNotification::class])->count();
 
         return response()->json(['count' => $count]);
     }

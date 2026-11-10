@@ -97,6 +97,7 @@
             <aside class="company-actions-panel">
                 <div class="company-actions-heading"><i class="fas fa-sliders"></i><div><h2>Acciones</h2><p>Gestiona esta empresa</p></div></div>
                 <nav class="company-actions">
+                    <a href="{{ route('empresas.campanias', $empresa->id) }}"><i class="fas fa-bullhorn"></i><span><strong>Ver campañas</strong><small>Publicaciones y revisiones</small></span><i class="fas fa-chevron-right"></i></a>
                     <a href="{{ route('empresas.edit', $empresa->id) }}"><i class="fas fa-pen"></i><span><strong>Editar empresa</strong><small>Actualiza sus datos</small></span><i class="fas fa-chevron-right"></i></a>
                     <a href="{{ route('empresas.cuestionario', $empresa->id) }}" class="company-action-primary">
                         <i class="fas {{ $empresa->cuestionario_completado ? 'fa-file-lines' : 'fa-list-check' }}"></i>

@@ -48,7 +48,7 @@ class AppServiceProvider extends ServiceProvider
                     ->get() : collect();
 
                 $tareasNoVistas = $user->unreadNotifications()
-                    ->where('type', \App\Notifications\TareaEntregadaNotification::class)
+                    ->whereIn('type', [\App\Notifications\TareaEntregadaNotification::class, \App\Notifications\TaskReviewNotification::class])
                     ->orderBy('created_at', 'desc')
                     ->take(5)
                     ->get();
@@ -60,7 +60,7 @@ class AppServiceProvider extends ServiceProvider
 
                 $notificationCount = ($canSeeGlobalNotifications ? \App\Models\Pago::where('visto', false)->count() : 0)
                     + ($canSeeGlobalNotifications ? \App\Models\Campania::where('visto', false)->count() : 0)
-                    + $user->unreadNotifications()->where('type', \App\Notifications\TareaEntregadaNotification::class)->count()
+                    + $user->unreadNotifications()->whereIn('type', [\App\Notifications\TareaEntregadaNotification::class, \App\Notifications\TaskReviewNotification::class])->count()
                     + $user->unreadNotifications()->where('type', \App\Notifications\ReunionAgendadaNotification::class)->count();
 
                 $pagosVistos = $canSeeGlobalNotifications ? \App\Models\Pago::with(['usuario', 'plan', 'codigoPago'])
@@ -76,7 +76,7 @@ class AppServiceProvider extends ServiceProvider
                     ->get() : collect();
 
                 $tareasVistas = $user->readNotifications()
-                    ->where('type', \App\Notifications\TareaEntregadaNotification::class)
+                    ->whereIn('type', [\App\Notifications\TareaEntregadaNotification::class, \App\Notifications\TaskReviewNotification::class])
                     ->orderBy('created_at', 'desc')
                     ->take(3)
                     ->get();
@@ -122,7 +122,7 @@ class AppServiceProvider extends ServiceProvider
                         'title' => $notification->data['title'] ?? 'Tarea entregada',
                         'message' => $notification->data['message'] ?? 'Se adjuntaron archivos a una tarea.',
                         'date' => $notification->created_at,
-                        'url' => route('administrador.tareas.show', $notification->data['task_id']),
+                        'url' => $notification->data['url'] ?? route('administrador.tareas.show', $notification->data['task_id']),
                     ]);
                 }
                 foreach ($reunionesNoVistas as $notification) {

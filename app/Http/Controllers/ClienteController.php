@@ -144,11 +144,16 @@ class ClienteController extends Controller
                 ->get();
             $totalTasks = $visibleTasks->count();
             $completedTasks = $visibleTasks->whereIn('estado', ['entregado', 'aprobado', 'publicado'])->count();
-            $pendingReviewFiles = $visibleTasks->flatMap(function ($task) {
-                return $task->requiere_aprobacion
-                    ? $task->archivos->where('estado', 'pendiente')->map(fn ($file) => ['task' => $task, 'file' => $file])
-                    : collect();
-            })->values();
+            $pendingReviewFiles = $campaniaDashboard->tareas()
+                ->where('revision_cliente_habilitada', true)
+                ->whereHas('archivos', fn ($files) => $files->where('estado', 'aprobado')->where('revision_cliente_estado', 'pendiente'))
+                ->with([
+                    'archivos' => fn ($files) => $files->where('estado', 'aprobado')->where('revision_cliente_estado', 'pendiente')->latest('id'),
+                    'comentarios' => fn ($comments) => $comments->with('user')->latest('id')->limit(8),
+                ])
+                ->get()
+                ->flatMap(fn ($task) => $task->archivos->map(fn ($file) => ['task' => $task, 'file' => $file]))
+                ->values();
             $scheduledTasks = $visibleTasks->where('publication_status', 'scheduled');
             $publishedTasks = $visibleTasks->where('publication_status', 'published');
             $nextPublication = $scheduledTasks

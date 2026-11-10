@@ -10,6 +10,7 @@ use App\Models\Tarea;
 use App\Models\TareaArchivo;
 use App\Models\User;
 use App\Notifications\TareaEntregadaNotification;
+use App\Services\GoogleDriveReportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -23,6 +24,15 @@ class CampaignTaskUploadDrawerTest extends TestCase
     {
         Storage::fake('public');
         [$admin, $campaign, $task] = $this->campaignWithTask();
+        $drive = \Mockery::mock(GoogleDriveReportService::class);
+        $drive->shouldReceive('ensureTaskFolder')->once()->with(
+            $campaign->cliente->name, $campaign->cliente->id,
+            $campaign->nombre, $campaign->id, $task->titulo, $task->id
+        )->andReturn('task-folder');
+        $drive->shouldReceive('uploadTaskFile')->once()->withArgs(fn ($path, $name, $mime, $folder) =>
+            is_file($path) && $name === 'contenido.pdf' && $mime === 'application/pdf' && $folder === 'task-folder'
+        )->andReturn('drive-file-1');
+        $this->app->instance(GoogleDriveReportService::class, $drive);
         $task->update(['estado' => 'en_curso']);
 
         $this->actingAs($admin)
@@ -64,7 +74,8 @@ class CampaignTaskUploadDrawerTest extends TestCase
             'notifiable_id' => $campaign->usuario_cliente_id,
         ]);
         $storedFile = $task->archivos()->firstOrFail();
-        Storage::disk('public')->assertExists($storedFile->ruta_archivo);
+        $this->assertSame('drive:drive-file-1', $storedFile->ruta_archivo);
+        $this->assertFalse(Storage::disk('public')->exists('tareas/archivos/contenido.pdf'));
     }
 
     public function test_upload_errors_return_to_tasks_and_reopen_the_drawer(): void
@@ -91,6 +102,10 @@ class CampaignTaskUploadDrawerTest extends TestCase
     {
         Storage::fake('public');
         [$admin, $campaign, $task] = $this->campaignWithTask();
+        $drive = \Mockery::mock(GoogleDriveReportService::class);
+        $drive->shouldReceive('ensureTaskFolder')->once()->andReturn('task-folder');
+        $drive->shouldReceive('uploadTaskFile')->once()->andReturn('drive-file-2');
+        $this->app->instance(GoogleDriveReportService::class, $drive);
 
         $this->actingAs($admin)
             ->get(route('administrador.tareas.archivos.create', $task))
@@ -114,6 +129,68 @@ class CampaignTaskUploadDrawerTest extends TestCase
             'nombre_original' => 'revision.pdf',
         ]);
         $this->assertSame('entregado', $task->refresh()->estado);
+    }
+
+    public function test_drive_image_preview_is_streamed_from_a_signed_link(): void
+    {
+        [$admin, , $task] = $this->campaignWithTask();
+        $archivo = TareaArchivo::create([
+            'tarea_id' => $task->id,
+            'user_id' => $admin->id,
+            'nombre_original' => 'imagen.png',
+            'ruta_archivo' => 'drive:drive-image-1',
+            'extension' => 'png',
+            'mime_type' => 'image/png',
+            'tamanio' => 7,
+        ]);
+        $drive = \Mockery::mock(GoogleDriveReportService::class);
+        $drive->shouldReceive('taskFileContent')->once()->with('drive-image-1')
+            ->andReturn(\GuzzleHttp\Psr7\Utils::streamFor('imagen!'));
+        $this->app->instance(GoogleDriveReportService::class, $drive);
+
+        $this->actingAs($admin)
+            ->get(route('administrador.tareas.ver-subidas', $task))
+            ->assertOk()
+            ->assertSee('/tareas/archivos/'.$archivo->id.'/media', false);
+
+        $mediaResponse = $this->get($archivo->mediaUrl())
+            ->assertOk()
+            ->assertHeader('Content-Type', 'image/png');
+        $this->assertSame('imagen!', $mediaResponse->streamedContent());
+        $this->get(route('tareas.archivos.media', $archivo))
+            ->assertForbidden();
+    }
+
+    public function test_drive_image_can_be_converted_for_instagram_without_local_storage(): void
+    {
+        if (! extension_loaded('gd')) {
+            $this->markTestSkipped('GD is required for Instagram image conversion.');
+        }
+
+        [$admin, , $task] = $this->campaignWithTask();
+        $archivo = TareaArchivo::create([
+            'tarea_id' => $task->id,
+            'user_id' => $admin->id,
+            'nombre_original' => 'pieza.png',
+            'ruta_archivo' => 'drive:drive-png-1',
+            'extension' => 'png',
+            'mime_type' => 'image/png',
+            'tamanio' => 100,
+        ]);
+        $upload = UploadedFile::fake()->image('pieza.png', 200, 1000);
+        $png = file_get_contents($upload->getRealPath());
+        $drive = \Mockery::mock(GoogleDriveReportService::class);
+        $drive->shouldReceive('taskFileContent')->once()->with('drive-png-1')
+            ->andReturn(\GuzzleHttp\Psr7\Utils::streamFor($png));
+        $this->app->instance(GoogleDriveReportService::class, $drive);
+
+        $response = $this->actingAs($admin)->get($archivo->mediaUrl(false, 'instagram-feed'))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'image/jpeg');
+        [$width, $height] = getimagesizefromstring($response->getContent());
+        $this->assertGreaterThanOrEqual(0.8, $width / $height);
+        $this->assertGreaterThanOrEqual(320, $width);
+        $this->assertFalse(Storage::disk('public')->exists('tareas/archivos/pieza.png'));
     }
 
     public function test_publish_action_is_prominent_on_a_card_with_approved_content(): void
@@ -278,6 +355,30 @@ class CampaignTaskUploadDrawerTest extends TestCase
             ->assertSee('Jóvenes digitales (20-34 años)')
             ->assertSee('Buscan organizar sus compras con anticipación.')
             ->assertSee('Valoran contenido visual y respuestas rápidas.');
+    }
+
+    public function test_campaign_detail_opens_its_drive_folder_from_the_client_sidebar(): void
+    {
+        [$admin, $campaign] = $this->campaignWithTask();
+        $this->actingAs($admin)
+            ->get(route('administrador.campañas.show', $campaign))
+            ->assertOk()
+            ->assertSee('Carpeta en Drive')
+            ->assertSee('Abrir carpeta en Drive')
+            ->assertSee(route('administrador.campañas.drive', $campaign), false);
+
+        $drive = \Mockery::mock(GoogleDriveReportService::class);
+        $drive->shouldReceive('ensureCampaignFolder')->once()->with(
+            $campaign->cliente->name,
+            $campaign->cliente->id,
+            $campaign->nombre,
+            $campaign->id,
+        )->andReturn('existing-campaign-folder');
+        $this->app->instance(GoogleDriveReportService::class, $drive);
+
+        $this->actingAs($admin)
+            ->post(route('administrador.campañas.drive', $campaign))
+            ->assertRedirect('https://drive.google.com/drive/u/0/folders/existing-campaign-folder');
     }
 
     private function campaignWithTask(): array

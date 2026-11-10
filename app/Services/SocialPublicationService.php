@@ -14,6 +14,20 @@ class SocialPublicationService
 
     public function publish(User $user, Tarea $tarea, string $message, array $platforms): array
     {
+        if ($tarea->revision_cliente_habilitada) {
+            $review = app(TaskReviewWorkflow::class);
+            if (! $review->canPublish($tarea)) {
+                return [
+                    'success' => false,
+                    'partial' => false,
+                    'successful_platforms' => [],
+                    'failed_platforms' => $platforms,
+                    'error' => 'La pieza aún no tiene aprobación del cliente.',
+                ];
+            }
+            $approvedFiles = $review->publishableFiles($tarea)->get();
+            $tarea->setRelation('archivos', $approvedFiles);
+        }
         $platforms = array_values(array_unique(array_intersect($platforms, ['facebook', 'instagram'])));
         $results = [];
 

@@ -115,6 +115,16 @@ class EmpresaAdminController extends Controller
             'planesMarketing.suscripcion.plan',
         ])->findOrFail($id);
 
+        $companySocialAccounts = $empresa->socialAccounts()->get()->keyBy('provider');
+        if ((int) $empresa->usuario->empresas()->min('id') === (int) $empresa->id) {
+            $companySocialAccounts = $companySocialAccounts->union(
+                $empresa->usuario->socialAccounts()
+                    ->whereNull('empresa_id')
+                    ->get()
+                    ->keyBy('provider')
+            );
+        }
+
         // 5. Obtener la suscripción activa del usuario
         $suscripcionActiva = Suscripcion::with('plan.caracteristicas')
             ->where('usuario_id', $empresa->usuario_id)
@@ -147,7 +157,7 @@ class EmpresaAdminController extends Controller
             360
         );
 
-        return view('administrador.empresas.show', compact('empresa', 'suscripcionActiva', 'campaniaActiva', 'resumenSecciones', 'resumenVistaPrevia'));
+        return view('administrador.empresas.show', compact('empresa', 'suscripcionActiva', 'campaniaActiva', 'resumenSecciones', 'resumenVistaPrevia', 'companySocialAccounts'));
     }
 
     /**

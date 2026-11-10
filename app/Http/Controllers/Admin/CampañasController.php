@@ -18,6 +18,7 @@ use App\Services\CampaignFeedbackService;
 use App\Services\CampaignPreparationService;
 use App\Services\CampaignTaskPrefillService;
 use App\Services\CommunityManagerRecommender;
+use App\Services\GoogleDriveReportService;
 use App\Services\MetaCampaignAnalyticsService;
 use App\Services\SocialContentPolicy;
 use Carbon\Carbon;
@@ -650,6 +651,8 @@ class CampañasController extends Controller
             'tareas.asignado',
             'tareas.responsables.roles',
             'tareas.archivos',
+            'tareas.archivos.revisorEquipo',
+            'tareas.archivos.revisorCliente',
             'reuniones.participantes',
             'reuniones.creador',
         ]);
@@ -681,6 +684,33 @@ class CampañasController extends Controller
             'campania', 'empresa', 'recursosCliente', 'recursosAdministracion', 'campaignSocialAccounts',
             'publicosObjetivo', 'feedbackParticipants'
         ));
+    }
+
+    public function openDriveFolder(Campania $campania, GoogleDriveReportService $drive)
+    {
+        $campania->loadMissing('cliente');
+        if (! $campania->cliente) {
+            return redirect()->route('administrador.campañas.show', $campania)
+                ->with('error', 'Esta campaña no tiene un cliente asignado.');
+        }
+
+        try {
+            $folderId = $drive->ensureCampaignFolder(
+                $campania->cliente->name,
+                $campania->cliente->id,
+                $campania->nombre,
+                $campania->id,
+            );
+        } catch (\Throwable $exception) {
+            \Illuminate\Support\Facades\Log::error('No se pudo abrir la carpeta de campaña en Drive.', [
+                'campania_id' => $campania->id,
+                'error' => $exception->getMessage(),
+            ]);
+            return redirect()->route('administrador.campañas.show', $campania)
+                ->with('error', 'No se pudo abrir la carpeta de esta campaña en Google Drive.');
+        }
+
+        return redirect()->away('https://drive.google.com/drive/u/0/folders/'.rawurlencode($folderId));
     }
 
     public function analyticsData(Request $request, Campania $campania, MetaCampaignAnalyticsService $analyticsService)

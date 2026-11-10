@@ -36,6 +36,9 @@ class SocialAccountController extends Controller
             $campaign = Campania::query()->findOrFail($request->integer('campania_id'));
             abort_unless($this->campaignBelongsToCompany($campaign, $empresa), 404);
             $returnUrl = route('administrador.campañas.show', $campaign).'#analiticas';
+        } elseif ($empresa && $request->input('return_to') === 'admin_company') {
+            abort_unless($this->isAdministrator($actor), 403);
+            $returnUrl = route('administrador.empresas.show', $empresa->id).'#redes-sociales';
         } elseif ($empresa && $request->input('return_to') === 'empresa') {
             $returnUrl = route('empresas.show', $empresa->id);
         } elseif ($empresa && $request->input('return_to') === 'dashboard') {

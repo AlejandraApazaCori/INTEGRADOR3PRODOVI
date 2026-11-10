@@ -105,6 +105,46 @@ class EmpresaController extends Controller
         ));
     }
 
+    public function campanias($id)
+    {
+        $empresa = Empresa::where('usuario_id', Auth::id())->findOrFail($id);
+        $campanias = \App\Models\Campania::query()
+            ->where('usuario_cliente_id', Auth::id())
+            ->where(function ($query) use ($empresa) {
+                $query->whereHas('empresas', fn ($companies) => $companies->whereKey($empresa->id));
+                if ($empresa->suscripcion_id) {
+                    $query->orWhere('suscripcion_id', $empresa->suscripcion_id);
+                }
+            })
+            ->withCount('tareas')
+            ->latest('fecha_inicio')
+            ->get();
+
+        return view('clientes.empresas.campanias', compact('empresa', 'campanias'));
+    }
+
+    public function campania($id, \App\Models\Campania $campania)
+    {
+        $empresa = Empresa::where('usuario_id', Auth::id())->findOrFail($id);
+        abort_unless((int) $campania->usuario_cliente_id === (int) Auth::id()
+            && (($empresa->suscripcion_id && (int) $campania->suscripcion_id === (int) $empresa->suscripcion_id)
+                || $campania->empresas()->whereKey($empresa->id)->exists()), 404);
+
+        $publishedTasks = $campania->tareas()
+            ->whereIn('publication_status', ['published', 'partial'])
+            ->with('archivos')
+            ->latest('published_at')
+            ->get();
+        $reviewTasks = $campania->tareas()
+            ->where('revision_cliente_habilitada', true)
+            ->whereHas('archivos', fn ($files) => $files->where('estado', 'aprobado'))
+            ->with(['archivos' => fn ($files) => $files->where('estado', 'aprobado')->with('revisorCliente')->latest('id')])
+            ->latest('id')
+            ->get();
+
+        return view('clientes.empresas.campania', compact('empresa', 'campania', 'publishedTasks', 'reviewTasks'));
+    }
+
     /**
      * Mostrar formulario para editar empresa
      */

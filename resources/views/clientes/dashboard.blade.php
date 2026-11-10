@@ -194,7 +194,7 @@
                                                 <button type="button" data-open-piece-review="piece-review-{{ $reviewFile->id }}">
                                                     <span class="dashboard-review-thumb">
                                                         @if($reviewIsImage)
-                                                            <img src="{{ Storage::url($reviewFile->ruta_archivo) }}" alt="{{ $reviewFile->nombre_original }}" loading="lazy">
+                                                            <img src="{{ $reviewFile->mediaUrl() }}" alt="{{ $reviewFile->nombre_original }}" loading="lazy">
                                                         @elseif($reviewIsVideo)
                                                             <i class="fas fa-circle-play"></i>
                                                         @else
@@ -241,11 +241,11 @@
                                     <header><span>{{ strtoupper(mb_substr($empresaActiva->nombre_empresa, 0, 1)) }}</span><div><strong>{{ $empresaActiva->nombre_empresa }}</strong><small>Vista previa de publicación</small></div><i class="fas fa-ellipsis"></i></header>
                                     <div class="piece-social-media">
                                         @if($reviewIsImage)
-                                            <img src="{{ Storage::url($reviewFile->ruta_archivo) }}" alt="{{ $reviewFile->nombre_original }}">
+                                            <img src="{{ $reviewFile->mediaUrl() }}" alt="{{ $reviewFile->nombre_original }}">
                                         @elseif($reviewIsVideo)
-                                            <video src="{{ Storage::url($reviewFile->ruta_archivo) }}" controls playsinline preload="metadata"></video>
+                                            <video src="{{ $reviewFile->mediaUrl() }}" controls playsinline preload="metadata"></video>
                                         @else
-                                            <div class="piece-file-fallback"><i class="fas fa-file-arrow-down"></i><strong>{{ $reviewFile->nombre_original }}</strong><a href="{{ Storage::url($reviewFile->ruta_archivo) }}" target="_blank" rel="noopener">Abrir archivo</a></div>
+                                            <div class="piece-file-fallback"><i class="fas fa-file-arrow-down"></i><strong>{{ $reviewFile->nombre_original }}</strong><a href="{{ $reviewFile->mediaUrl() }}" target="_blank" rel="noopener">Abrir archivo</a></div>
                                         @endif
                                     </div>
                                     <div class="piece-social-actions"><span><i class="far fa-heart"></i><i class="far fa-comment"></i><i class="far fa-paper-plane"></i></span><i class="far fa-bookmark"></i></div>
@@ -259,7 +259,7 @@
                                 @endif
                                 <form method="POST" action="{{ route('clientes.tareas.archivos.revision', $reviewFile) }}" class="piece-review-form">
                                     @csrf
-                                    <label><span>Comentario para el equipo <small>(opcional)</small></span><textarea name="comentario" rows="4" maxlength="2000" placeholder="Indica cambios o deja una observación sobre esta tarea..."></textarea></label>
+                                    <label><span>Retroalimentación <small>(opcional al decidir)</small></span><textarea name="comentario" rows="4" maxlength="2000" placeholder="Indica cambios o deja una observación sobre esta tarea..."></textarea></label>
                                     <div class="piece-review-actions">
                                         <button type="submit" class="is-comment" data-submit-comment><i class="far fa-comment"></i> Comentar</button>
                                         <button type="submit" name="estado" value="rechazado" class="is-change"><i class="fas fa-rotate-left"></i> Solicitar cambios</button>

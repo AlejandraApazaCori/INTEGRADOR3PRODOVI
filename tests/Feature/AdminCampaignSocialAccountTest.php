@@ -48,6 +48,43 @@ class AdminCampaignSocialAccountTest extends TestCase
             );
     }
 
+    public function test_admin_can_connect_social_accounts_from_company_details_without_a_campaign(): void
+    {
+        [$admin, $client, $company, $campaign] = $this->context();
+        $campaign->empresas()->detach();
+        $campaign->delete();
+        config([
+            'services.facebook.client_id' => 'facebook-client-id',
+            'services.facebook.client_secret' => 'facebook-client-secret',
+            'services.facebook.redirect' => 'https://prodovi.test/clientes/social/facebook/callback',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('administrador.empresas.show', $company))
+            ->assertOk()
+            ->assertSee('Conectar redes sociales')
+            ->assertSee('return_to=admin_company');
+
+        $provider = Mockery::mock();
+        $provider->shouldReceive('scopes')->once()->andReturnSelf();
+        $provider->shouldReceive('with')->once()->andReturnSelf();
+        $provider->shouldReceive('redirect')->once()->andReturn(redirect()->away('https://facebook.test/oauth'));
+        Socialite::shouldReceive('driver')->once()->with('facebook')->andReturn($provider);
+
+        $this->get(route('clientes.social.redirect', [
+            'provider' => 'facebook',
+            'empresa_id' => $company->id,
+            'return_to' => 'admin_company',
+        ]))
+            ->assertRedirect('https://facebook.test/oauth')
+            ->assertSessionHas('social_accounts.user_id', $client->id)
+            ->assertSessionHas('social_accounts.empresa_id', $company->id)
+            ->assertSessionHas(
+                'social_accounts.return_url',
+                route('administrador.empresas.show', $company).'#redes-sociales'
+            );
+    }
+
     public function test_admin_facebook_callback_stores_accounts_for_the_campaign_company_and_client(): void
     {
         [$admin, $client, $company, $campaign] = $this->context();

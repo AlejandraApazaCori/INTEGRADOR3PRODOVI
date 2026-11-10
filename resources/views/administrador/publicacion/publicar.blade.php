@@ -29,7 +29,7 @@
             <div class="publication-hero-body relative z-10">
                 <div class="publication-hero-layout">
                     <div class="publication-hero-copy">
-                        <span>Operación de marketing</span>
+                        <span>PUBLICACIÓN DE CONTENIDO</span>
                         <h1>Preparar publicación</h1>
                         <p>Revisa el contenido aprobado, define el mensaje y elige cuándo compartirlo en las redes del cliente.</p>
                     </div>
@@ -192,7 +192,7 @@
                                                 <p class="text-xs text-gray-500">{{ number_format($archivo->tamanio / 1024, 2) }} KB · {{ strtoupper($archivo->extension) }}</p>
                                             </div>
                                         </div>
-                                        <a href="{{ Storage::url($archivo->ruta_archivo) }}" download class="text-gray-400 hover:text-indigo-600 transition-colors rp-download-btn">
+                                        <a href="{{ $archivo->mediaUrl(true) }}" download class="text-gray-400 hover:text-indigo-600 transition-colors rp-download-btn">
                                             <i class="fas fa-download"></i>
                                         </a>
                                     </div>
@@ -356,7 +356,6 @@
                             $hasCarouselPreview = $approvedImageFiles->count() > 1;
                         @endphp
                         <div class="publication-preview-column mb-6" id="publication-preview">
-                            <span class="publication-step-label">Vista previa en tiempo real</span>
                             <label class="block text-sm font-semibold text-gray-700 mb-3">
                                 <i class="fas fa-eye mr-2 text-indigo-400"></i>
                                 Vista Previa
@@ -387,7 +386,7 @@
                                                 <div class="rp-preview-carousel__track" data-carousel-track>
                                                     @foreach($approvedImageFiles as $imageFile)
                                                         <div class="rp-preview-carousel__slide">
-                                                            <img src="{{ Storage::url($imageFile->ruta_archivo) }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
+                                                            <img src="{{ $imageFile->mediaUrl() }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
                                                         </div>
                                                     @endforeach
                                                 </div>
@@ -404,7 +403,7 @@
                                                 </div>
                                             </div>
                                         @elseif($previewImage)
-                                            <img src="{{ Storage::url($previewImage->ruta_archivo) }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
+                                            <img src="{{ $previewImage->mediaUrl() }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
                                         @else
                                             <div class="w-full h-[420px] flex items-center justify-center text-gray-400">
                                                 <i class="fas fa-image text-3xl mr-2"></i>
@@ -449,7 +448,7 @@
                                                 <div class="rp-preview-carousel__track" data-carousel-track>
                                                     @foreach($approvedImageFiles as $imageFile)
                                                         <div class="rp-preview-carousel__slide">
-                                                            <img src="{{ Storage::url($imageFile->ruta_archivo) }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
+                                                            <img src="{{ $imageFile->mediaUrl() }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
                                                         </div>
                                                     @endforeach
                                                 </div>
@@ -466,7 +465,7 @@
                                                 </div>
                                             </div>
                                         @elseif($previewImage)
-                                            <img src="{{ Storage::url($previewImage->ruta_archivo) }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
+                                            <img src="{{ $previewImage->mediaUrl() }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
                                         @else
                                             <div class="w-full h-[420px] flex items-center justify-center text-gray-400">
                                                 <i class="fas fa-image text-3xl mr-2"></i>
