@@ -13,7 +13,7 @@ class PlanController extends Controller
      * Obtiene los planes activos del usuario y conserva el plan principal
      * para los consumidores antiguos del endpoint.
      */
-    public function getPlanContratado(?int $userId = null)
+    public function getPlanContratado(?int $userId = null, bool $includeHistory = false)
     {
         $userId ??= (int) Auth::id();
 
@@ -50,9 +50,22 @@ class PlanController extends Controller
             ], 404);
         }
 
+        $plans = $includeHistory
+            ? Suscripcion::with($relations)
+                ->where('usuario_id', $userId)
+                ->whereHas('plan')
+                ->where(function ($query) {
+                    $query->where('estado', 'activa')
+                        ->orWhere('estado', 'finalizada')
+                        ->orWhere('fecha_fin', '<', now());
+                })
+                ->latest('id')
+                ->get()
+            : $suscripcionesActivas;
+
         return response()->json([
             'plan' => $this->formatSubscription($suscripcionPrincipal),
-            'plans' => $suscripcionesActivas
+            'plans' => $plans
                 ->map(fn (Suscripcion $suscripcion) => $this->formatSubscription($suscripcion))
                 ->values(),
         ]);
@@ -80,6 +93,7 @@ class PlanController extends Controller
 
         return [
             'id' => $suscripcion->id,
+            'plan_id' => $suscripcion->plan_id,
             'nombre' => $suscripcion->plan->nombre,
             'descripcion' => $suscripcion->plan->descripcion,
             'empresa' => $suscripcion->empresa?->nombre_empresa,
@@ -89,6 +103,7 @@ class PlanController extends Controller
             'fecha_fin' => $vigenciaActivada ? Carbon::parse($suscripcion->fecha_fin)->format('d/m/Y') : null,
             'fecha_pago' => $pagoConfirmado?->fecha_pago?->format('d/m/Y'),
             'estado' => $suscripcion->estado,
+            'vencida' => $suscripcion->esta_vencida,
             'caracteristicas' => $todasCaracteristicas
                 ->where('es_destacado', true)
                 ->take(3)

@@ -39,7 +39,7 @@ class UserViewController extends Controller
             $empresas->load('socialAccounts');
         }
         $globalSocialAccounts = $user->linkedSocialAccounts();
-        $planResponse = app(PlanController::class)->getPlanContratado((int) $user->id);
+        $planResponse = app(PlanController::class)->getPlanContratado((int) $user->id, true);
         $accountPlans = $planResponse->getStatusCode() === 200
             ? $planResponse->getData(true)
             : ['plan' => null, 'plans' => []];

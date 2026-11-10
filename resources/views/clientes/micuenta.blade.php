@@ -110,10 +110,15 @@
                 <div class="cuenta-panel overflow-hidden">
                     <div class="px-8 py-6 cuenta-panel-header">
                         <h2 class="text-2xl font-bold">Planes contratados</h2>
-                        <p class="text-indigo-100 mt-1">Tus suscripciones activas</p>
+                        <p class="text-indigo-100 mt-1">{{ ($adminPreview ?? false) ? 'Suscripciones activas y vencidas' : 'Tus suscripciones activas' }}</p>
                     </div>
                     
                     <div class="p-8">
+                        @if($adminPreview ?? false)
+                            <a href="{{ route('administrador.pagos.manual.crear', ['usuario_id' => $accountUser->id]) }}" class="cuenta-button inline-flex items-center px-5 py-3 mb-6 text-white font-medium rounded-xl">
+                                <i class="fas fa-plus mr-2"></i> Activar nuevo plan
+                            </a>
+                        @endif
                         <div id="plan-contratado-container">
                             <div class="text-center py-16">
                                 <div class="relative inline-block">
@@ -892,9 +897,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function renderPlanesActivos(plans) {
         const container = document.getElementById('plan-contratado-container');
+        const adminPreview = @json($adminPreview ?? false);
 
         if (!plans.length) {
-            container.innerHTML = '<div class="active-plans-empty"><i class="fas fa-circle-info"></i><span>No tienes planes activos en este momento.</span></div>';
+            container.innerHTML = `<div class="active-plans-empty"><i class="fas fa-circle-info"></i><span>${adminPreview ? 'Este cliente no tiene planes contratados.' : 'No tienes planes activos en este momento.'}</span></div>`;
             return;
         }
 
@@ -906,6 +912,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <span><i class="fas fa-wand-magic-sparkles"></i></span>
                             <div>
                                 <h3>${plan.nombre}</h3>
+                                ${adminPreview ? `<span class="inline-flex mt-1 px-2 py-1 text-xs font-semibold rounded-full ${plan.vencida ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">${plan.vencida ? 'Vencida' : plan.estado}</span>` : ''}
                                 <p class="active-plan-description">${plan.descripcion || 'Plan de marketing digital'}</p>
                             </div>
                         </div>

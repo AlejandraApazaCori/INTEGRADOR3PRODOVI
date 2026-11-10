@@ -305,14 +305,29 @@ class PagoAdminController extends Controller
         return view('administrador.pagos.analiticas', compact('planes', 'defaultStartDate', 'defaultEndDate'));
     }
 
-    public function createManual()
+    public function createManual(Request $request)
     {
         $planes = Plan::where('activo', true)->get();
         $usuarios = User::whereHas('roles', function ($q) {
             $q->where('nombre_rol', 'Cliente');
         })->get();
 
-        return view('administrador.pagos.create_manual', compact('planes', 'usuarios'));
+        $selectedUser = $request->filled('usuario_id')
+            ? $usuarios->firstWhere('id', (int) $request->query('usuario_id'))
+            : null;
+
+        $previousPayment = $selectedUser
+            ? Pago::with('plan')->where('usuario_id', $selectedUser->id)
+                ->where('estado', 'completado')->latest('fecha_pago')->latest('id')->first()
+            : null;
+        $previousBilling = $selectedUser
+            ? LibelulaTransaction::where('usuario_id', $selectedUser->id)
+                ->where('status', 'paid')->whereNotNull('document_number')->latest('id')->first()
+            : null;
+
+        return view('administrador.pagos.create_manual', compact(
+            'planes', 'usuarios', 'selectedUser', 'previousPayment', 'previousBilling'
+        ));
     }
 
     public function crearPagoQrManual(Request $request, LibelulaClient $client)

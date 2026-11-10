@@ -666,10 +666,18 @@ html.admin-dark-nav .pwiz-page-wrapper .text-red-600 { color:#fecaca; }
                 </button>
               </div>
             </div>
-            <input type="hidden" name="usuario_id" id="usuario_id" value="{{ old('usuario_id') }}">
+            <input type="hidden" name="usuario_id" id="usuario_id" value="{{ old('usuario_id', $selectedUser?->id) }}">
           </div>
 
           <hr class="pwiz-hr">
+
+          @if($previousPayment)
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5 text-sm text-blue-900">
+              Último pago: <strong>{{ $previousPayment->plan?->nombre ?? 'Plan anterior' }}</strong>
+              por <strong>{{ number_format((float) $previousPayment->monto, 2, ',', '.') }} {{ $previousPayment->moneda ?? 'BS' }}</strong>.
+              Elige el plan y confirma el monto del nuevo pago.
+            </div>
+          @endif
 
           {{-- ── Plan + Monto ─────────────────────────────────────── --}}
           <div class="pwiz-grid-2">
@@ -684,7 +692,7 @@ html.admin-dark-nav .pwiz-page-wrapper .text-red-600 { color:#fecaca; }
                     <option value="{{ $plan->id }}"
                             data-precio="{{ $plan->precio }}"
                             data-moneda="{{ $plan->moneda ?? 'BS' }}"
-                            {{ old('plan_id') == $plan->id ? 'selected' : '' }}>
+                            {{ old('plan_id', $previousPayment?->plan_id) == $plan->id ? 'selected' : '' }}>
                       {{ $plan->nombre }} - {{ $plan->precio }} {{ $plan->moneda ?? 'BS' }}
                     </option>
                   @endforeach
@@ -757,16 +765,16 @@ html.admin-dark-nav .pwiz-page-wrapper .text-red-600 { color:#fecaca; }
             <div class="pwiz-qr-billing-grid">
               <div class="pwiz-field pwiz-qr-wide">
                 <label for="qrBusinessName">Razón social</label>
-                <input id="qrBusinessName" type="text" maxlength="255" class="pwiz-input" placeholder="Nombre o razón social">
+                <input id="qrBusinessName" type="text" maxlength="255" class="pwiz-input" placeholder="Nombre o razón social" value="{{ $previousBilling?->business_name ?? $selectedUser?->name ?? '' }}">
               </div>
               <div class="pwiz-field">
                 <label for="qrDocumentType">Tipo de documento</label>
                 <select id="qrDocumentType" class="pwiz-input pwiz-native-plan-select" tabindex="-1" aria-hidden="true">
-                  <option value="1">Carnet de identidad</option>
-                  <option value="2">Carnet de extranjería</option>
-                  <option value="3">Pasaporte</option>
-                  <option value="4">Otro documento</option>
-                  <option value="5">NIT</option>
+                  <option value="1" @selected(($previousBilling?->document_type_code ?? '1') === '1')>Carnet de identidad</option>
+                  <option value="2" @selected($previousBilling?->document_type_code === '2')>Carnet de extranjería</option>
+                  <option value="3" @selected($previousBilling?->document_type_code === '3')>Pasaporte</option>
+                  <option value="4" @selected($previousBilling?->document_type_code === '4')>Otro documento</option>
+                  <option value="5" @selected($previousBilling?->document_type_code === '5')>NIT</option>
                 </select>
                 <div class="pwiz-custom-select" data-custom-native-select="qrDocumentType">
                   <button type="button" class="pwiz-custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
@@ -785,16 +793,16 @@ html.admin-dark-nav .pwiz-page-wrapper .text-red-600 { color:#fecaca; }
               </div>
               <div class="pwiz-field">
                 <label for="qrDocumentNumber">Número de documento</label>
-                <input id="qrDocumentNumber" type="text" inputmode="numeric" maxlength="50" class="pwiz-input" placeholder="Solo números">
+                <input id="qrDocumentNumber" type="text" inputmode="numeric" maxlength="50" class="pwiz-input" placeholder="Solo números" value="{{ $previousBilling?->document_number ?? '' }}">
               </div>
               <div class="pwiz-field">
                 <label for="qrDocumentComplement">Complemento <span>(opcional)</span></label>
-                <input id="qrDocumentComplement" type="text" maxlength="20" class="pwiz-input" placeholder="Ej. 1A">
+                <input id="qrDocumentComplement" type="text" maxlength="20" class="pwiz-input" placeholder="Ej. 1A" value="{{ $previousBilling?->document_complement ?? '' }}">
               </div>
               <div class="pwiz-field">
                 <label for="qrDocumentExtension">Extensión</label>
                 <select id="qrDocumentExtension" class="pwiz-input pwiz-native-plan-select" tabindex="-1" aria-hidden="true">
-                  <option value="">Sin extensión</option><option value="LP">LP</option><option value="CB">CB</option><option value="SC">SC</option><option value="OR">OR</option><option value="PT">PT</option><option value="TJ">TJ</option><option value="CH">CH</option><option value="BE">BE</option><option value="PD">PD</option>
+                  <option value="" @selected(! $previousBilling?->document_extension)>Sin extensión</option><option value="LP" @selected($previousBilling?->document_extension === 'LP')>LP</option><option value="CB" @selected($previousBilling?->document_extension === 'CB')>CB</option><option value="SC" @selected($previousBilling?->document_extension === 'SC')>SC</option><option value="OR" @selected($previousBilling?->document_extension === 'OR')>OR</option><option value="PT" @selected($previousBilling?->document_extension === 'PT')>PT</option><option value="TJ" @selected($previousBilling?->document_extension === 'TJ')>TJ</option><option value="CH" @selected($previousBilling?->document_extension === 'CH')>CH</option><option value="BE" @selected($previousBilling?->document_extension === 'BE')>BE</option><option value="PD" @selected($previousBilling?->document_extension === 'PD')>PD</option>
                 </select>
                 <div class="pwiz-custom-select" data-custom-native-select="qrDocumentExtension">
                   <button type="button" class="pwiz-custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
@@ -828,7 +836,7 @@ html.admin-dark-nav .pwiz-page-wrapper .text-red-600 { color:#fecaca; }
 
           {{-- ── Footer ───────────────────────────────────────────── --}}
           <div class="pwiz-form-footer">
-            <button type="button" class="pwiz-back-btn" onclick="pwizGoTo(2)" style="margin-top:0;">
+            <button type="button" class="pwiz-back-btn" onclick="pwizBackFromPayment()" style="margin-top:0;">
               <i class="fas fa-arrow-left"></i> Atrás
             </button>
             <button type="submit" class="pwiz-submit-btn" id="btnConfirmar">
@@ -895,6 +903,9 @@ document.addEventListener('DOMContentLoaded', function () {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   window.pwizGoTo = pwizGoTo;
+  window.pwizBackFromPayment = function () {
+    pwizGoTo(usuarioId.value ? 1 : 2);
+  };
 
   /* ── Step 1: choose method ───────────────────────────────────── */
   window.pwizSelectMethod = function (method) {
@@ -910,7 +921,12 @@ document.addEventListener('DOMContentLoaded', function () {
       badge.className  = 'pwiz-method-badge qr';
       badgeText.innerHTML = '<i class="fas fa-qrcode"></i> Pago QR';
     }
-    pwizGoTo(2);
+    if (usuarioId.value) {
+      applyMethodSections(method);
+      pwizGoTo(3);
+    } else {
+      pwizGoTo(2);
+    }
   };
 
   /* ── Step 2: client exists? ──────────────────────────────────── */
@@ -1334,17 +1350,16 @@ document.addEventListener('DOMContentLoaded', function () {
     pwizGoTo(3);
   @endif
 
-  @if (old('usuario_id'))
+  @if (old('usuario_id', $selectedUser?->id))
     /* Restore selected user chip */
     (function() {
-      const uid = '{{ old("usuario_id") }}';
+      const uid = @json((string) old('usuario_id', $selectedUser?->id));
       const opt = document.querySelector('.pwiz-user-opt[data-id="' + uid + '"]');
       if (opt) {
         document.getElementById('usuario_id').value = uid;
         document.getElementById('selectedUserName').textContent  = opt.dataset.name;
         document.getElementById('selectedUserEmail').textContent = opt.dataset.email;
         document.getElementById('userInitial').textContent       = opt.dataset.name.charAt(0).toUpperCase();
-        document.getElementById('qrBusinessName').value          = opt.dataset.name;
         document.getElementById('searchWrap').style.display = 'none';
         document.getElementById('selectedUserChip').classList.remove('pwiz-hidden');
       }
