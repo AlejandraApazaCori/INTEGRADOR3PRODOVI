@@ -36,6 +36,7 @@ class NotificacionController extends Controller
             ]) : collect();
 
         $campanias = $canSeeGlobalNotifications ? Campania::with(['creador', 'cliente'])
+            ->visibleToStaff($user)
             ->orderBy('created_at', 'desc')
             ->take(50)
             ->get()
@@ -94,7 +95,9 @@ class NotificacionController extends Controller
 
         if ($user->hasAnyRole(['Super Administrador', 'Administrador', 'Community Manager'])) {
             Pago::where('visto', false)->update(['visto' => true]);
-            Campania::where('visto', false)->update(['visto' => true]);
+            Campania::where('visto', false)
+                ->visibleToStaff($user)
+                ->update(['visto' => true]);
             TareaArchivo::where('visto', false)->update(['visto' => true]);
         }
         $user->unreadNotifications()->whereIn('type', [TareaEntregadaNotification::class, ReunionAgendadaNotification::class, \App\Notifications\TaskReviewNotification::class])->update(['read_at' => now()]);
@@ -111,7 +114,8 @@ class NotificacionController extends Controller
 
         $canSeeGlobalNotifications = $user->hasAnyRole(['Super Administrador', 'Administrador', 'Community Manager']);
         $count = ($canSeeGlobalNotifications ? Pago::where('visto', false)->count() : 0)
-            + ($canSeeGlobalNotifications ? Campania::where('visto', false)->count() : 0)
+            + ($canSeeGlobalNotifications ? Campania::where('visto', false)
+                ->visibleToStaff($user)->count() : 0)
             + $user->unreadNotifications()->whereIn('type', [TareaEntregadaNotification::class, ReunionAgendadaNotification::class, \App\Notifications\TaskReviewNotification::class])->count();
 
         return response()->json(['count' => $count]);

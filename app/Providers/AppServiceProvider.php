@@ -43,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
 
                 $campaniasNoVistas = $canSeeGlobalNotifications ? \App\Models\Campania::with(['creador', 'cliente'])
                     ->where('visto', false)
+                    ->visibleToStaff($user)
                     ->orderBy('created_at', 'desc')
                     ->take(5)
                     ->get() : collect();
@@ -59,7 +60,8 @@ class AppServiceProvider extends ServiceProvider
                     ->get();
 
                 $notificationCount = ($canSeeGlobalNotifications ? \App\Models\Pago::where('visto', false)->count() : 0)
-                    + ($canSeeGlobalNotifications ? \App\Models\Campania::where('visto', false)->count() : 0)
+                    + ($canSeeGlobalNotifications ? \App\Models\Campania::where('visto', false)
+                        ->visibleToStaff($user)->count() : 0)
                     + $user->unreadNotifications()->whereIn('type', [\App\Notifications\TareaEntregadaNotification::class, \App\Notifications\TaskReviewNotification::class])->count()
                     + $user->unreadNotifications()->where('type', \App\Notifications\ReunionAgendadaNotification::class)->count();
 
@@ -71,6 +73,7 @@ class AppServiceProvider extends ServiceProvider
 
                 $campaniasVistas = $canSeeGlobalNotifications ? \App\Models\Campania::with(['creador', 'cliente'])
                     ->where('visto', true)
+                    ->visibleToStaff($user)
                     ->orderBy('created_at', 'desc')
                     ->take(3)
                     ->get() : collect();

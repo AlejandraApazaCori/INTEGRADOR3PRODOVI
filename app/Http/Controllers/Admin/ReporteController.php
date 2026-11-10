@@ -7,6 +7,7 @@ use App\Models\Empresa;
 use App\Models\GoogleDriveReport;
 use App\Services\ExecutiveSummaryFormatter;
 use App\Services\GoogleDriveReportService;
+use App\Support\CampaignDocumentAccess;
 use Barryvdh\DomPDF\Facade\Pdf;
 use DOMDocument;
 use DOMElement;
@@ -23,14 +24,14 @@ class ReporteController extends Controller
 
     public function show($id)
     {
-        $this->authorizeAdmin();
+        abort_unless(auth()->check() && CampaignDocumentAccess::allowsCompany(auth()->user(), (int) $id), 403);
 
         return view('administrador.empresas.reporte', $this->reportData($id));
     }
 
     public function downloadPdf($id)
     {
-        $this->authorizeAdmin();
+        abort_unless(auth()->check() && CampaignDocumentAccess::allowsCompany(auth()->user(), (int) $id), 403);
         $data = $this->reportData($id);
         $pdf = Pdf::loadView('administrador.empresas.pdf-reporte', $data)->setPaper('letter');
 

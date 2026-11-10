@@ -7,7 +7,9 @@
     <div class="campaigns-shell">
         <nav class="campaigns-top-actions" aria-label="Acciones de campañas">
             <a href="{{ route('administrador.campañas.index') }}" class="campaign-top-action is-active"><i class="fas fa-table-columns"></i>General</a>
+            @if($showFinishedCampaigns)
             <a href="{{ route('administrador.campañas.analiticas') }}" class="campaign-top-action"><i class="fas fa-chart-line"></i>Analíticas</a>
+            @endif
         </nav>
 
         <!-- Banner -->
@@ -33,6 +35,7 @@
         @endif
 
         <section class="campaign-kpis" aria-label="Resumen de campañas">
+            @if($showPendingClients)
             <article class="campaign-kpi campaign-kpi-pending">
                 <div>
                     <span>Sin campaña</span>
@@ -41,6 +44,7 @@
                 </div>
                 <i class="fas fa-user-clock"></i>
             </article>
+            @endif
             <article class="campaign-kpi campaign-kpi-active">
                 <div>
                     <span>Campañas activas</span>
@@ -49,6 +53,7 @@
                 </div>
                 <i class="fas fa-bolt"></i>
             </article>
+            @if($showFinishedCampaigns)
             <article class="campaign-kpi campaign-kpi-finished">
                 <div>
                     <span>Finalizadas</span>
@@ -57,9 +62,11 @@
                 </div>
                 <i class="fas fa-check-circle"></i>
             </article>
+            @endif
         </section>
 
         <!-- Sección de clientes sin campaña -->
+        @if($showPendingClients)
         <section class="campaign-section campaign-section-pending bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
             <div class="flex items-center mb-6">
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center mr-4" style="background: #ea9f21;">
@@ -315,6 +322,7 @@
                 <div id="paginacion-clientes-sin-campania" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"></div>
             @endif
         </section>
+        @endif
         
         <!-- Sección de campañas activas -->
         <section class="campaign-section campaign-section-active bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
@@ -431,6 +439,7 @@
         </section>
         
         <!-- Sección de campañas finalizadas -->
+        @if($showFinishedCampaigns)
         <section class="campaign-section campaign-section-finished bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
             <div class="flex items-center mb-6">
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center mr-4" style="background: #475569;">
@@ -580,6 +589,7 @@
                 </button>
             </div>
         </section>
+        @endif
     </div>
 </div>
 <!-- Scripts mejorados -->

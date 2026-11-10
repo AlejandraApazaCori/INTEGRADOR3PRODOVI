@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -45,6 +46,32 @@ class Campania extends Model
     ];
 
     protected $dates = ['fecha_inicio', 'fecha_fin', 'deleted_at'];
+
+    public function scopeVisibleToStaff(Builder $query, User $user): void
+    {
+        if ($user->hasAnyRole(['Super Administrador', 'Administrador'])) {
+            return;
+        }
+
+        if ($user->hasAnyRole(['Diseñador', 'Disenador'])) {
+            $query->where('fecha_fin', '>', now())
+                ->whereIn('estado', ['activa', 'pausada'])
+                ->where(function (Builder $assigned) use ($user) {
+                    $assigned->where('disenador_id', $user->id)
+                        ->orWhereHas('disenadores', fn (Builder $designers) => $designers->where('users.id', $user->id));
+                });
+
+            return;
+        }
+
+        if ($user->hasRole('Community Manager')) {
+            $query->where('community_manager_id', $user->id);
+
+            return;
+        }
+
+        $query->where('usuario_creador_id', $user->id);
+    }
 
     // Relación con el admin que creó la campaña
     public function creador()

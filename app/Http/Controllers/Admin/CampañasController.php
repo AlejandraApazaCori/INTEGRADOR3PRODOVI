@@ -32,8 +32,13 @@ class CampañasController extends Controller
 {
     public function index()
     {
+        $user = Auth::user();
+        $isAdmin = $user->hasAnyRole(['Super Administrador', 'Administrador']);
+        $isDesigner = ! $isAdmin && $user->hasAnyRole(['Diseñador', 'Disenador']);
+        $showPendingClients = $isAdmin || (! $isDesigner && $user->hasRole('Community Manager'));
+
         // 1. Obtener usuarios con suscripción activa que no tienen campaña activa
-        $clientesSinCampania = Pago::with(['usuario', 'suscripcion.empresa.planesMarketing', 'plan'])
+        $clientesSinCampania = $showPendingClients ? Pago::with(['usuario', 'suscripcion.empresa.planesMarketing', 'plan'])
             ->where('estado', 'completado')
             ->whereHas('suscripcion', function ($query) {
                 $query->where('estado', 'activa')
@@ -75,10 +80,11 @@ class CampañasController extends Controller
                 ];
             })
             ->sortByDesc('fecha_fin_suscripcion_raw')
-            ->values();
+            ->values() : collect();
 
         // 2. Obtener campañas activas
         $campaniasActivas = Campania::with(['cliente', 'communityManager'])
+            ->visibleToStaff($user)
             ->where('fecha_fin', '>', now())
             ->whereIn('estado', ['activa', 'pausada'])
             ->orderBy('fecha_fin', 'desc')
@@ -86,6 +92,7 @@ class CampañasController extends Controller
 
         // 3. Obtener campañas finalizadas
         $campaniasFinalizadas = Campania::with(['cliente', 'communityManager'])
+            ->visibleToStaff($user)
             ->where('es_borrador', false)
             ->where(function ($query) {
                 $query->where('fecha_fin', '<=', now())
@@ -130,11 +137,15 @@ class CampañasController extends Controller
             'mesesFinalizadasDisponibles' => $mesesFinalizadasDisponibles,
             'communityManagers' => $communityManagers,
             'adminActual' => Auth::user(),
+            'showPendingClients' => $showPendingClients,
+            'showFinishedCampaigns' => ! $isDesigner,
         ]);
     }
 
     public function analiticas(Request $request)
     {
+        abort_if(Auth::user()->hasAnyRole(['Diseñador', 'Disenador'])
+            && ! Auth::user()->hasAnyRole(['Super Administrador', 'Administrador']), 403);
         $validated = $request->validate([
             'filter_type' => 'nullable|in:all,range,month,year',
             'start_date' => 'nullable|required_if:filter_type,range|date',

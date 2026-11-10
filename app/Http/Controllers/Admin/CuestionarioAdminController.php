@@ -7,6 +7,7 @@ use App\Models\Empresa;
 use App\Models\GoogleDriveReport;
 use App\Models\RespuestaCuestionario;
 use App\Models\TemaCuestionario;
+use App\Support\CampaignDocumentAccess;
 use App\Services\GoogleDriveReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ class CuestionarioAdminController extends Controller
      */
     public function show($id)
     {
-        if (! auth()->check() || ! auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+        if (! auth()->check() || ! CampaignDocumentAccess::allowsCompany(auth()->user(), (int) $id)) {
             abort(403, 'No tienes permisos para acceder a esta pagina.');
         }
 
@@ -127,7 +128,7 @@ class CuestionarioAdminController extends Controller
 
     public function downloadPdf($id)
     {
-        $this->authorizeAdmin();
+        abort_unless(auth()->check() && CampaignDocumentAccess::allowsCompany(auth()->user(), (int) $id), 403);
         $data = $this->documentData($id);
         $pdf = Pdf::loadView('pdf.cuestionario-empresa', $data)->setPaper('letter');
 

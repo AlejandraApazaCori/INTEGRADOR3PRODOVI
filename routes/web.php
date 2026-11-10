@@ -435,7 +435,10 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
     });
 
     // Gestión de campañas
-    Route::prefix('campañas')->middleware(\App\Http\Middleware\EnsurePermission::class.':gestionar-campanas')->group(function () {
+    Route::prefix('campañas')->middleware([
+        \App\Http\Middleware\EnsurePermission::class.':gestionar-campanas',
+        \App\Http\Middleware\EnsureCampaignVisible::class,
+    ])->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\CampañasController::class, 'index'])
             ->name('administrador.campañas.index');
         Route::get('/analiticas', [\App\Http\Controllers\Admin\CampañasController::class, 'analiticas'])
