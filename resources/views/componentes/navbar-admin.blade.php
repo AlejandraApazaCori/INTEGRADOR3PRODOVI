@@ -1,6 +1,15 @@
 @php
     $sidebarLogoData = 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('imagenes/logonegro.png')));
     $sidebarDarkLogoData = 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('imagenes/logoblanco.png')));
+    $sidebarUser = auth()->user();
+    $sidebarSuperAdmin = $sidebarUser->hasRole('Super Administrador');
+    $canManageUsers = $sidebarSuperAdmin || $sidebarUser->hasPermission('gestionar-usuarios');
+    $canManageRoles = $sidebarSuperAdmin || ($sidebarUser->hasPermission('gestionar-roles') && $sidebarUser->hasPermission('gestionar-permisos'));
+    $canManagePayments = $sidebarSuperAdmin || $sidebarUser->hasPermission('gestionar-pagos');
+    $canManageCompanies = $sidebarSuperAdmin || $sidebarUser->hasPermission('gestionar-empresas');
+    $canManageCampaigns = $sidebarSuperAdmin || $sidebarUser->hasPermission('gestionar-campanas');
+    $canManageQuestionnaires = $sidebarSuperAdmin || $sidebarUser->hasPermission('gestionar-cuestionarios');
+    $canViewLogs = $sidebarSuperAdmin || $sidebarUser->hasPermission('ver-logs');
 @endphp
 @include('a.css.componentes.navbar-admin')
 </head>
@@ -44,6 +53,7 @@
             @php
                 $usuariosMenuOpen = request()->routeIs('administrador.usuarios.*') || request()->routeIs('administrador.roles.*') || request()->routeIs('administrador.permisos.*') || request()->routeIs('administrador.usuarios.eliminados');
             @endphp
+            @if($canManageUsers || $canManageRoles)
             <div class="menu-item menu-orange-dark">
                 <a href="#" class="menu-link {{ $usuariosMenuOpen ? 'active' : '' }}" onclick="toggleSubmenu(this); return false;">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -59,20 +69,27 @@
                 </a>
                 <div class="submenu {{ $usuariosMenuOpen ? 'open' : '' }}">
                     <div class="submenu-title">Usuarios</div>
+                    @if($canManageUsers)
                     <div class="submenu-item">
                         <a href="{{ route('administrador.usuarios.index') }}" class="submenu-link {{ request()->routeIs('administrador.usuarios.index') ? 'active' : '' }}">General</a>
                     </div>
+                    @endif
+                    @if($canManageRoles)
                     <div class="submenu-item">
                         <a href="{{ route('administrador.roles.index') }}" class="submenu-link {{ request()->routeIs('administrador.roles.*') || request()->routeIs('administrador.permisos.*') ? 'active' : '' }}">Roles y Permisos</a>
                     </div>
+                    @endif
+                    @if($canManageUsers)
                     <div class="submenu-item">
                         <a href="{{ route('administrador.usuarios.actividad') }}" class="submenu-link {{ request()->routeIs('administrador.usuarios.actividad') ? 'active' : '' }}">Actividad de usuarios</a>
                     </div>
                     <div class="submenu-item">
                         <a href="{{ route('administrador.usuarios.eliminados') }}" class="submenu-link {{ request()->routeIs('administrador.usuarios.eliminados') ? 'active' : '' }}">Usuarios Eliminados</a>
                     </div>
+                    @endif
                 </div>
             </div>
+            @endif
 
             <!-- Solicitudes enviadas desde "Hablemos de tu Proyecto" -->
             @if (auth()->user()->hasAnyRole(['Super Administrador', 'Administrador']))
@@ -92,6 +109,7 @@
             @php
                 $pagosMenuOpen = request()->routeIs('administrador.pagos.*') || request()->routeIs('admin.analiticas.*');
             @endphp
+            @if($canManagePayments)
             <div class="menu-item menu-orange">
                 <a href="#" class="menu-link {{ $pagosMenuOpen ? 'active' : '' }}" onclick="toggleSubmenu(this); return false;">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -119,8 +137,11 @@
                         <a href="{{ route('administrador.pagos.manual.crear') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.manual.*') ? 'active' : '' }}">Registrar pago</a>
                     </div>
                 </div>
-            </div>            <!-- Campañas -->
+            </div>
+            @endif
+            <!-- Campañas -->
             <!-- Planes -->
+            @if($canManagePayments)
             <div class="menu-item menu-green">
                 <a href="{{ route('administrador.planes.index') }}" class="menu-link {{ request()->routeIs('administrador.planes.*') ? 'active' : '' }}">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -131,8 +152,10 @@
                     <span class="menu-text">Planes</span>
                 </a>
             </div>
+            @endif
 
             <!-- Cuestionario Briefing -->
+            @if($canManageQuestionnaires)
             <div class="menu-item menu-teal">
                 <a href="{{ route('administrador.cuestionario.estructura.index') }}" class="menu-link {{ request()->routeIs('administrador.cuestionario.estructura.*') ? 'active' : '' }}">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -145,8 +168,10 @@
                     <span class="menu-text">Cuestionario Briefing</span>
                 </a>
             </div>
+            @endif
 
             <!-- Empresas -->
+            @if($canManageCompanies)
             <div class="menu-item menu-purple">
                 <a href="{{ route('administrador.empresas.index') }}" class="menu-link {{ request()->routeIs('administrador.empresas.*') ? 'active' : '' }}">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -159,6 +184,7 @@
                     <span class="menu-text">Empresas</span>
                 </a>
             </div>
+            @endif
 
             <!-- Campañas -->
             @php
@@ -167,6 +193,7 @@
                 $campanasAnaliticasActive = str_starts_with($currentRouteName, 'administrador.camp') && str_contains($currentRouteName, '.analiticas');
                 $campanasIndexActive = $campanasMenuOpen && ! $campanasAnaliticasActive;
             @endphp
+            @if($canManageCampaigns)
             <div class="menu-item menu-orange-dark">
                 <a href="#" class="menu-link {{ $campanasMenuOpen ? 'active' : '' }}" onclick="toggleSubmenu(this); return false;">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -188,8 +215,10 @@
                     </div>
                 </div>
             </div>
+            @endif
 
             <!-- Logs -->
+            @if($canViewLogs)
             <div class="menu-item menu-orange">
                 <a href="{{ route('administrador.logs.index') }}" class="menu-link {{ request()->routeIs('administrador.logs.*') ? 'active' : '' }}">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -203,8 +232,10 @@
                     <span class="menu-text">Logs</span>
                 </a>
             </div>
+            @endif
 
             <!-- Backups -->
+            @if($sidebarSuperAdmin)
             <div class="menu-item menu-green">
                 <a href="{{ route('administrador.backups.index') }}" class="menu-link {{ request()->routeIs('administrador.backups.*') ? 'active' : '' }}">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -217,6 +248,7 @@
                     <span class="menu-text">Backups</span>
                 </a>
             </div>
+            @endif
         </div>
 
         <!-- Sección de usuario mejorada -->

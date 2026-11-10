@@ -297,7 +297,7 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
         ->name('admin.generar.reporte.campanas');
 
     // GestiÃƒÆ’Ã‚Â³n de pagos
-    Route::prefix('pagos')->group(function () {
+    Route::prefix('pagos')->middleware(\App\Http\Middleware\EnsurePermission::class.':gestionar-pagos')->group(function () {
         Route::get('/', [PagoAdminController::class, 'index'])
             ->name('administrador.pagos.index');
         Route::get('/realizados', [PagoAdminController::class, 'pagosRealizados'])
@@ -338,6 +338,7 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
     });
 
     // Gestión de planes
+    Route::middleware(\App\Http\Middleware\EnsurePermission::class.':gestionar-pagos')->group(function () {
     Route::get('/planes', \App\Http\Controllers\Admin\PlanIndexController::class)
         ->name('administrador.planes.index');
     Route::get('/planes/create', \App\Http\Controllers\Admin\PlanCreateController::class)
@@ -359,6 +360,7 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
         ->name('administrador.planes.caracteristicas.store');
     Route::put('/planes/caracteristicas/{caracteristica}', [\App\Http\Controllers\Admin\PlanController::class, 'updateCaracteristica'])
         ->name('administrador.planes.caracteristicas.update');
+    });
 
     // Logs
     Route::post('/logs/setup-publicaciones-programadas', function () {
@@ -408,9 +410,10 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
             return back()->with('error', 'Hubo un error al ejecutar la carga provisional de publicaciones programadas. Revisa los logs del sistema.');
         }
     })->name('administrador.logs.setup-publicaciones-programadas');
-    Route::get('/logs', [\App\Http\Controllers\Admin\LogController::class, 'index'])->name('administrador.logs.index');
-    Route::get('/logs/export/{type}', [\App\Http\Controllers\Admin\LogController::class, 'exportPdf'])->name('administrador.logs.export');
+    Route::get('/logs', [\App\Http\Controllers\Admin\LogController::class, 'index'])->middleware(\App\Http\Middleware\EnsurePermission::class.':ver-logs')->name('administrador.logs.index');
+    Route::get('/logs/export/{type}', [\App\Http\Controllers\Admin\LogController::class, 'exportPdf'])->middleware(\App\Http\Middleware\EnsurePermission::class.':ver-logs')->name('administrador.logs.export');
 
+    Route::middleware(\App\Http\Middleware\EnsurePermission::class)->group(function () {
     Route::get('/backups', [\App\Http\Controllers\Admin\DatabaseBackupController::class, 'index'])
         ->name('administrador.backups.index');
     Route::post('/backups', [\App\Http\Controllers\Admin\DatabaseBackupController::class, 'store'])
@@ -429,9 +432,10 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
         ->name('administrador.backups.download-csv');
     Route::get('/backups/{backup}/descargar', [\App\Http\Controllers\Admin\DatabaseBackupController::class, 'download'])
         ->name('administrador.backups.download');
+    });
 
     // Gestión de campañas
-    Route::prefix('campañas')->group(function () {
+    Route::prefix('campañas')->middleware(\App\Http\Middleware\EnsurePermission::class.':gestionar-campanas')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\CampañasController::class, 'index'])
             ->name('administrador.campañas.index');
         Route::get('/analiticas', [\App\Http\Controllers\Admin\CampañasController::class, 'analiticas'])
@@ -522,6 +526,7 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
     });
 
     // GestiÃƒÆ’Ã‚Â³n de usuarios
+    Route::middleware(\App\Http\Middleware\EnsurePermission::class.':gestionar-usuarios')->group(function () {
     Route::get('/usuarios', [\App\Http\Controllers\Admin\UserController::class, 'index'])
         ->name('administrador.usuarios.index');
     Route::get('/usuarios/actividad', [\App\Http\Controllers\Admin\UserController::class, 'activity'])
@@ -563,6 +568,7 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
         ->name('administrador.usuarios.historial-campanias');
     Route::get('/usuarios/{user}/analiticas-campania', [\App\Http\Controllers\Admin\UserViewController::class, 'campaignAnalytics'])
         ->name('administrador.usuarios.analiticas-campania');
+    });
 
     // Notificaciones
     Route::prefix('notificaciones')->group(function () {
@@ -575,29 +581,41 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
     });
 
     // Roles y permisos
-    Route::prefix('roles-permisos')->group(function () {
+    Route::prefix('roles-permisos')
+        ->middleware([
+            \App\Http\Middleware\EnsurePermission::class.':gestionar-roles',
+            \App\Http\Middleware\EnsurePermission::class.':gestionar-permisos',
+        ])
+        ->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\RolePermissionController::class, 'index'])
             ->name('administrador.roles.index');
         Route::post('/roles', [\App\Http\Controllers\Admin\RolePermissionController::class, 'storeRole'])
+            ->middleware(\App\Http\Middleware\EnsurePermission::class.':gestionar-roles')
             ->name('administrador.roles.store');
         Route::put('/roles/{role}', [\App\Http\Controllers\Admin\RolePermissionController::class, 'updateRole'])
+            ->middleware(\App\Http\Middleware\EnsurePermission::class.':gestionar-roles')
             ->name('administrador.roles.update');
         Route::delete('/roles/{role}', [\App\Http\Controllers\Admin\RolePermissionController::class, 'destroyRole'])
+            ->middleware(\App\Http\Middleware\EnsurePermission::class.':gestionar-roles')
             ->name('administrador.roles.destroy');
         Route::post('/permisos', [\App\Http\Controllers\Admin\RolePermissionController::class, 'storePermission'])
+            ->middleware(\App\Http\Middleware\EnsurePermission::class.':gestionar-permisos')
             ->name('administrador.permisos.store');
         Route::put('/permisos/{permission}', [\App\Http\Controllers\Admin\RolePermissionController::class, 'updatePermission'])
+            ->middleware(\App\Http\Middleware\EnsurePermission::class.':gestionar-permisos')
             ->name('administrador.permisos.update');
         Route::delete('/permisos/{permission}', [\App\Http\Controllers\Admin\RolePermissionController::class, 'destroyPermission'])
+            ->middleware(\App\Http\Middleware\EnsurePermission::class.':gestionar-permisos')
             ->name('administrador.permisos.destroy');
         Route::put('/usuarios/{user}/roles', [\App\Http\Controllers\Admin\RolePermissionController::class, 'syncUserRoles'])
+            ->middleware(\App\Http\Middleware\EnsurePermission::class.':gestionar-roles')
             ->name('administrador.usuarios.roles.sync');
     });
 
     // ========================================
     // RUTAS PARA EMPRESAS Y PLANES DE MARKETING (CONSOLIDADAS)
     // ========================================
-    Route::prefix('empresas')->name('administrador.empresas.')->group(function () {
+    Route::prefix('empresas')->middleware(\App\Http\Middleware\EnsurePermission::class.':gestionar-empresas')->name('administrador.empresas.')->group(function () {
         // Rutas para mostrar y gestionar la empresa
         Route::get('/', [App\Http\Controllers\Admin\EmpresaAdminController::class, 'index'])->name('index');
         Route::get('/previsualizar-registro', \App\Http\Controllers\Admin\EmpresaRegistrationPreviewController::class)->name('previsualizar-registro');

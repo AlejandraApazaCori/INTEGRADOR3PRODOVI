@@ -24,7 +24,7 @@ class ResumenAdminController extends Controller
     public function edit($id)
     {
         // 1. Verificar si el usuario es administrador
-        if (! auth()->check() || ! auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+        if (! auth()->check() || (! auth()->user()->hasRole('Super Administrador') && ! auth()->user()->hasPermission('gestionar-empresas'))) {
             abort(403, 'No tienes permisos para acceder a esta página.');
         }
 
@@ -56,7 +56,7 @@ class ResumenAdminController extends Controller
     public function update(Request $request, $id)
     {
         // 1. Verificar si el usuario es administrador
-        if (! auth()->check() || ! auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+        if (! auth()->check() || (! auth()->user()->hasRole('Super Administrador') && ! auth()->user()->hasPermission('gestionar-empresas'))) {
             abort(403, 'No tienes permisos para realizar esta acción.');
         }
 
@@ -104,8 +104,7 @@ class ResumenAdminController extends Controller
 
     public function regenerate(Empresa $empresa)
     {
-        if (! auth()->check() || ! auth()->user()->roles()
-            ->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+        if (! auth()->check() || (! auth()->user()->hasRole('Super Administrador') && ! auth()->user()->hasPermission('gestionar-empresas'))) {
             abort(403, 'No tienes permisos para realizar esta acción.');
         }
 
@@ -138,7 +137,7 @@ class ResumenAdminController extends Controller
     public function destroy($id)
     {
         // 1. Verificar si el usuario es administrador
-        if (! auth()->check() || ! auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+        if (! auth()->check() || (! auth()->user()->hasRole('Super Administrador') && ! auth()->user()->hasPermission('gestionar-empresas'))) {
             abort(403, 'No tienes permisos para realizar esta acción.');
         }
 

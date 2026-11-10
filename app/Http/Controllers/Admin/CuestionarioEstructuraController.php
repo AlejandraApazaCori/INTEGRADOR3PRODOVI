@@ -15,7 +15,7 @@ class CuestionarioEstructuraController extends Controller
     {
         $this->middleware('auth');
         $this->middleware(function ($request, $next) {
-            if (!auth()->user()->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+            if (! auth()->user()->hasRole('Super Administrador') && ! auth()->user()->hasPermission('gestionar-cuestionarios')) {
                 abort(403, 'No tienes permisos para acceder a esta página.');
             }
             return $next($request);

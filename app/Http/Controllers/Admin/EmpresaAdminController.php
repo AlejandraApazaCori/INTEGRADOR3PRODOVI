@@ -30,7 +30,7 @@ class EmpresaAdminController extends Controller
         $user = Auth::user();
 
         // 3. Verificar si el usuario tiene el rol de "Administrador"
-        if (! $user->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+        if (! $user->hasRole('Super Administrador') && ! $user->hasPermission('gestionar-empresas')) {
             abort(403, 'No tienes permisos para acceder a esta página.');
         }
 
@@ -105,7 +105,7 @@ class EmpresaAdminController extends Controller
         $user = Auth::user();
 
         // 3. Verificar si el usuario tiene el rol de "Administrador"
-        if (! $user->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+        if (! $user->hasRole('Super Administrador') && ! $user->hasPermission('gestionar-empresas')) {
             abort(403, 'No tienes permisos para acceder a esta página.');
         }
 
@@ -244,7 +244,7 @@ class EmpresaAdminController extends Controller
 
         $user = Auth::user();
 
-        if (! $user->roles()->whereIn('nombre_rol', ['Super Administrador', 'Administrador'])->exists()) {
+        if (! $user->hasRole('Super Administrador') && ! $user->hasPermission('gestionar-empresas')) {
             abort(403, 'No tienes permisos para realizar esta acción.');
         }
 
