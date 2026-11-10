@@ -220,6 +220,10 @@
                                     Generar Copy con IA
                                 </button>
                             </div>
+                            <div class="publication-copy-toolbar">
+                                <button type="button" id="copy-bold-btn" title="Selecciona texto para ponerlo o quitarlo en negrita" aria-label="Poner o quitar en negrita el texto seleccionado"><i class="fas fa-bold"></i> Negrita</button>
+                                <small>Selecciona una frase y pulsa Negrita.</small>
+                            </div>
                             <textarea id="content" name="message" rows="4" oninput="updatePreview()"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white resize-none"
                                 placeholder="Escribe el mensaje que acompañará a tu publicación...">{{ old('message') }}</textarea>
@@ -349,11 +353,11 @@
                         
                         <!-- Vista previa de la publicación - visible por defecto -->
                         @php
-                            $approvedImageFiles = $tarea->archivos->filter(function ($archivo) {
-                                return in_array(strtolower($archivo->extension), ['jpg', 'jpeg', 'png', 'gif']);
+                            $approvedMediaFiles = $tarea->archivos->filter(function ($archivo) {
+                                return in_array(strtolower($archivo->extension), ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'webm', 'mov', 'avi']);
                             })->values();
-                            $previewImage = $approvedImageFiles->first();
-                            $hasCarouselPreview = $approvedImageFiles->count() > 1;
+                            $previewMedia = $approvedMediaFiles->first();
+                            $hasCarouselPreview = $approvedMediaFiles->count() > 1;
                         @endphp
                         <div class="publication-preview-column mb-6" id="publication-preview">
                             <label class="block text-sm font-semibold text-gray-700 mb-3">
@@ -381,12 +385,16 @@
                                         <div class="mt-3 text-[14px] text-[#1c1e21] leading-5" id="preview-content-facebook">Escribe tu mensaje aquí...</div>
                                     </div>
                                     <div class="w-full bg-[#f0f2f5]" id="preview-media-facebook" style="min-height: 420px;">
-                                        @if($previewImage && $hasCarouselPreview)
+                                        @if($previewMedia && $hasCarouselPreview)
                                             <div class="rp-preview-carousel" data-carousel>
                                                 <div class="rp-preview-carousel__track" data-carousel-track>
-                                                    @foreach($approvedImageFiles as $imageFile)
+                                                    @foreach($approvedMediaFiles as $mediaFile)
                                                         <div class="rp-preview-carousel__slide">
-                                                            <img src="{{ $imageFile->mediaUrl() }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
+                                                            @if(str_starts_with((string) $mediaFile->mime_type, 'video/') || in_array(strtolower($mediaFile->extension), ['mp4', 'webm', 'mov', 'avi']))
+                                                                <video src="{{ $mediaFile->mediaUrl() }}" controls playsinline preload="metadata">Tu navegador no puede reproducir este video.</video>
+                                                            @else
+                                                                <img src="{{ $mediaFile->mediaUrl() }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
+                                                            @endif
                                                         </div>
                                                     @endforeach
                                                 </div>
@@ -397,13 +405,17 @@
                                                     <i class="fas fa-chevron-right"></i>
                                                 </button>
                                                 <div class="rp-preview-carousel__dots">
-                                                    @foreach($approvedImageFiles as $imageIndex => $imageFile)
-                                                        <button type="button" class="rp-preview-carousel__dot {{ $imageIndex === 0 ? 'is-active' : '' }}" data-carousel-dot="{{ $imageIndex }}"></button>
+                                                    @foreach($approvedMediaFiles as $mediaIndex => $mediaFile)
+                                                        <button type="button" class="rp-preview-carousel__dot {{ $mediaIndex === 0 ? 'is-active' : '' }}" data-carousel-dot="{{ $mediaIndex }}"></button>
                                                     @endforeach
                                                 </div>
                                             </div>
-                                        @elseif($previewImage)
-                                            <img src="{{ $previewImage->mediaUrl() }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
+                                        @elseif($previewMedia)
+                                            @if(str_starts_with((string) $previewMedia->mime_type, 'video/') || in_array(strtolower($previewMedia->extension), ['mp4', 'webm', 'mov', 'avi']))
+                                                <video src="{{ $previewMedia->mediaUrl() }}" controls playsinline preload="metadata">Tu navegador no puede reproducir este video.</video>
+                                            @else
+                                                <img src="{{ $previewMedia->mediaUrl() }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
+                                            @endif
                                         @else
                                             <div class="w-full h-[420px] flex items-center justify-center text-gray-400">
                                                 <i class="fas fa-image text-3xl mr-2"></i>
@@ -443,12 +455,16 @@
                                         <div class="mt-3 text-[14px] text-[#1c1e21] leading-5" id="preview-content-instagram">Escribe tu mensaje aquí...</div>
                                     </div>
                                     <div class="w-full bg-[#f0f2f5]" id="preview-media-instagram" style="min-height: 420px;">
-                                        @if($previewImage && $hasCarouselPreview)
+                                        @if($previewMedia && $hasCarouselPreview)
                                             <div class="rp-preview-carousel" data-carousel>
                                                 <div class="rp-preview-carousel__track" data-carousel-track>
-                                                    @foreach($approvedImageFiles as $imageFile)
+                                                    @foreach($approvedMediaFiles as $mediaFile)
                                                         <div class="rp-preview-carousel__slide">
-                                                            <img src="{{ $imageFile->mediaUrl() }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
+                                                            @if(str_starts_with((string) $mediaFile->mime_type, 'video/') || in_array(strtolower($mediaFile->extension), ['mp4', 'webm', 'mov', 'avi']))
+                                                                <video src="{{ $mediaFile->mediaUrl() }}" controls playsinline preload="metadata">Tu navegador no puede reproducir este video.</video>
+                                                            @else
+                                                                <img src="{{ $mediaFile->mediaUrl() }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
+                                                            @endif
                                                         </div>
                                                     @endforeach
                                                 </div>
@@ -459,13 +475,17 @@
                                                     <i class="fas fa-chevron-right"></i>
                                                 </button>
                                                 <div class="rp-preview-carousel__dots">
-                                                    @foreach($approvedImageFiles as $imageIndex => $imageFile)
-                                                        <button type="button" class="rp-preview-carousel__dot {{ $imageIndex === 0 ? 'is-active' : '' }}" data-carousel-dot="{{ $imageIndex }}"></button>
+                                                    @foreach($approvedMediaFiles as $mediaIndex => $mediaFile)
+                                                        <button type="button" class="rp-preview-carousel__dot {{ $mediaIndex === 0 ? 'is-active' : '' }}" data-carousel-dot="{{ $mediaIndex }}"></button>
                                                     @endforeach
                                                 </div>
                                             </div>
-                                        @elseif($previewImage)
-                                            <img src="{{ $previewImage->mediaUrl() }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
+                                        @elseif($previewMedia)
+                                            @if(str_starts_with((string) $previewMedia->mime_type, 'video/') || in_array(strtolower($previewMedia->extension), ['mp4', 'webm', 'mov', 'avi']))
+                                                <video src="{{ $previewMedia->mediaUrl() }}" controls playsinline preload="metadata">Tu navegador no puede reproducir este video.</video>
+                                            @else
+                                                <img src="{{ $previewMedia->mediaUrl() }}" alt="Vista previa multimedia" class="w-full h-full object-cover block">
+                                            @endif
                                         @else
                                             <div class="w-full h-[420px] flex items-center justify-center text-gray-400">
                                                 <i class="fas fa-image text-3xl mr-2"></i>
@@ -916,6 +936,10 @@
             align-items: flex-start;
         }
     }
+    .publication-copy-toolbar{display:flex;align-items:center;gap:10px;margin:0 0 9px}.publication-copy-toolbar button{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border:1px solid #b9dfe3;border-radius:8px;background:#eef8f9;color:#117e8c;font-size:.68rem;font-weight:800;cursor:pointer}.publication-copy-toolbar button:hover{border-color:#117e8c;background:#e1f2f4}.publication-copy-toolbar small{color:#788178;font-size:.61rem}
+    #preview-content-facebook,#preview-content-instagram{white-space:pre-wrap;overflow-wrap:anywhere}
+    #preview-media-facebook video,#preview-media-instagram video{display:block;width:100%;height:420px;max-height:70vh;object-fit:contain;background:#111}
+    @media(max-width:640px){#preview-media-facebook video,#preview-media-instagram video{height:300px}.publication-copy-toolbar{flex-wrap:wrap}}
 </style>
 
 <style>
@@ -974,6 +998,42 @@
 <script>
     // Estado de la vista previa
     let previewVisible = true;
+
+    document.getElementById('copy-bold-btn')?.addEventListener('click', function () {
+        const textarea = document.getElementById('content');
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        if (start === end) {
+            textarea.focus();
+            return;
+        }
+
+        const selected = textarea.value.slice(start, end);
+        const characters = Array.from(selected.normalize('NFD'));
+        const isStyled = character => {
+            const code = character.codePointAt(0);
+            return (code >= 0x1D400 && code <= 0x1D433) || (code >= 0x1D7CE && code <= 0x1D7D7);
+        };
+        const eligible = characters.filter(character => isStyled(character) || /[A-Za-z0-9]/.test(character));
+        const removeBold = eligible.length > 0 && eligible.every(isStyled);
+        const converted = characters.map(character => {
+            const code = character.codePointAt(0);
+            if (removeBold) {
+                if (code >= 0x1D400 && code <= 0x1D419) return String.fromCodePoint(code - 0x1D400 + 65);
+                if (code >= 0x1D41A && code <= 0x1D433) return String.fromCodePoint(code - 0x1D41A + 97);
+                if (code >= 0x1D7CE && code <= 0x1D7D7) return String.fromCodePoint(code - 0x1D7CE + 48);
+            } else {
+                if (code >= 65 && code <= 90) return String.fromCodePoint(code - 65 + 0x1D400);
+                if (code >= 97 && code <= 122) return String.fromCodePoint(code - 97 + 0x1D41A);
+                if (code >= 48 && code <= 57) return String.fromCodePoint(code - 48 + 0x1D7CE);
+            }
+            return character;
+        }).join('');
+
+        textarea.setRangeText(converted, start, end, 'select');
+        textarea.focus();
+        updatePreview();
+    });
 
     // Función para actualizar la visualización de cuentas
     function updateAccountDisplay() {
