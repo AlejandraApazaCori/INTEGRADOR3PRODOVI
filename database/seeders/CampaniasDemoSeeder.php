@@ -307,10 +307,15 @@ class CampaniasDemoSeeder extends Seeder
         int $number,
         array $team
     ): Campania {
-        $campaign = Campania::withTrashed()->firstOrNew([
-            'nombre' => sprintf('DEMO %02d · %s', $number, $definition['campaign']),
-        ]);
+        $campaign = Campania::withTrashed()
+            ->where('suscripcion_id', $subscription->id)
+            ->whereIn('nombre', [
+                $definition['campaign'],
+                sprintf('DEMO %02d · %s', $number, $definition['campaign']),
+            ])
+            ->first() ?? new Campania;
         $campaign->fill([
+            'nombre' => $definition['campaign'],
             'descripcion' => $definition['description'],
             'objetivo_general' => $definition['objective'],
             'publico_objetivo' => app(CampaignAudienceService::class)->serialize(array_values(array_filter([

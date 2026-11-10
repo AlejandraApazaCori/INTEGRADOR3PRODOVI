@@ -25,14 +25,23 @@ class CampaniasDemoSeederTest extends TestCase
         Carbon::setTestNow('2026-09-03 12:00:00');
 
         $this->seed(CampaniasDemoSeeder::class);
+        $originalIds = Campania::query()->orderBy('id')->pluck('id')->all();
+        Campania::query()->orderBy('id')->get()->each(function (Campania $campaign, int $index) {
+            $campaign->nombre = sprintf('DEMO %02d · %s', $index + 1, $campaign->nombre);
+            $campaign->save();
+        });
+
+        // Simulate campaigns created by the previous version of this seeder.
+        $this->seed(CampaniasDemoSeeder::class);
         $this->seed(CampaniasDemoSeeder::class);
 
         $campaigns = Campania::query()
-            ->where('nombre', 'like', 'DEMO %')
             ->with(['suscripcion.empresa.planesMarketing', 'tareas.archivos', 'reuniones', 'mensajes'])
             ->get();
 
         $this->assertCount(12, $campaigns);
+        $this->assertSame($originalIds, $campaigns->sortBy('id')->pluck('id')->all());
+        $this->assertTrue($campaigns->every(fn (Campania $campaign) => ! str_contains($campaign->nombre, 'DEMO')));
         $this->assertCount(2, $campaigns->where('estado', 'activa'));
         $this->assertCount(10, $campaigns->where('estado', 'finalizada'));
         $this->assertTrue($campaigns->where('estado', 'activa')->every(
