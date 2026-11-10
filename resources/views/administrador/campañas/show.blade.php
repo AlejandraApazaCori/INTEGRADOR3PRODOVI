@@ -102,6 +102,28 @@
             <div class="campaign-detail-alert is-error"><i class="fas fa-circle-exclamation"></i>{{ session('error') }}</div>
         @endif
 
+        @if($publicationSuccess = session('publication_success'))
+            <div class="campaign-publication-popup" id="campaign-publication-popup" role="dialog" aria-modal="true" aria-labelledby="campaign-publication-title">
+                <button type="button" class="campaign-publication-backdrop" data-close-publication-popup aria-label="Cerrar confirmación"></button>
+                <div class="campaign-publication-card">
+                    <button type="button" class="campaign-publication-close" data-close-publication-popup aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+                    <div class="campaign-publication-icon"><i class="fas fa-circle-check"></i></div>
+                    <span class="campaign-publication-eyebrow">Publicación completada</span>
+                    <h2 id="campaign-publication-title">{{ $publicationSuccess['error'] ? 'Publicado parcialmente' : '¡Contenido publicado!' }}</h2>
+                    <p>La tarea <strong>{{ $publicationSuccess['task'] }}</strong> se publicó correctamente en:</p>
+                    <div class="campaign-publication-platforms">
+                        @foreach($publicationSuccess['platforms'] as $platform)
+                            <span class="is-{{ $platform }}"><i class="fab fa-{{ $platform === 'facebook' ? 'facebook-f' : 'instagram' }}"></i>{{ ucfirst($platform) }}</span>
+                        @endforeach
+                    </div>
+                    @if($publicationSuccess['error'])
+                        <div class="campaign-publication-warning"><i class="fas fa-circle-exclamation"></i><span>{{ $publicationSuccess['error'] }}</span></div>
+                    @endif
+                    <button type="button" class="campaign-publication-done" data-close-publication-popup>Ver tareas <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+        @endif
+
         <div class="campaign-documents campaign-tab-panel" id="campaign-panel-documents" data-campaign-panel="documents" role="tabpanel" aria-labelledby="campaign-tab-documents" hidden>
             @include('administrador.campañas.partials.documentos', ['empresa' => $empresa])
         </div>
@@ -550,6 +572,8 @@
     html.admin-dark-nav .campaign-detail-page .admin-social-status:not(.is-connected),
     html.admin-dark-nav .campaign-detail-page :is(.admin-social-notice.is-error,.admin-social-missing){background:#422b25;color:#f5b9a8}
     html.admin-dark-nav .campaign-detail-page .meta-heatmap .cell{background:rgba(165,108,191,calc(.16 + var(--heat,.05)))}
+    .campaign-publication-popup{position:fixed;z-index:12000;inset:0;display:grid;place-items:center;padding:20px}.campaign-publication-popup[hidden]{display:none}.campaign-publication-backdrop{position:absolute;inset:0;border:0;background:rgba(18,28,18,.7);backdrop-filter:blur(5px);cursor:pointer}.campaign-publication-card{position:relative;width:min(470px,100%);padding:32px;border:1px solid #dce9d5;border-radius:20px;background:#fff;box-shadow:0 28px 85px rgba(18,28,18,.28);text-align:center;animation:campaignPublicationIn .24s ease both}@keyframes campaignPublicationIn{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}.campaign-publication-close{position:absolute;top:14px;right:14px;width:34px;height:34px;border:0;border-radius:8px;background:#f2f5ef;color:#697565;cursor:pointer}.campaign-publication-close:hover{background:#e6eee0;color:#3e6734}.campaign-publication-icon{width:68px;height:68px;display:grid;place-items:center;margin:0 auto 18px;border-radius:19px;background:linear-gradient(135deg,#7da533,#4e8a58);color:#fff;font-size:1.8rem;box-shadow:0 12px 25px rgba(95,145,52,.25)}.campaign-publication-eyebrow{display:block;color:#638522;font-size:.61rem;font-weight:900;letter-spacing:.13em;text-transform:uppercase}.campaign-publication-card h2{margin:7px 0 0;color:#253524;font-size:1.45rem;font-weight:900}.campaign-publication-card>p{margin:13px 0 0;color:#697565;font-size:.76rem;line-height:1.6}.campaign-publication-card>p strong{color:#303d2d}.campaign-publication-platforms{display:flex;justify-content:center;flex-wrap:wrap;gap:9px;margin:22px 0}.campaign-publication-platforms span{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid;border-radius:10px;font-size:.72rem;font-weight:900}.campaign-publication-platforms .is-facebook{border-color:#cbdcf9;background:#eff5ff;color:#1877f2}.campaign-publication-platforms .is-instagram{border-color:#efcce2;background:#fff0f8;color:#c13584}.campaign-publication-platforms i{font-size:1rem}.campaign-publication-warning{display:flex;gap:9px;margin:0 0 19px;padding:12px;border:1px solid #f1d6b3;border-radius:10px;background:#fff8ef;color:#9a571b;text-align:left;font-size:.68rem;line-height:1.5}.campaign-publication-warning i{margin-top:2px}.campaign-publication-done{width:100%;min-height:44px;display:flex;align-items:center;justify-content:center;gap:9px;border:0;border-radius:10px;background:#638522;color:#fff;font-size:.74rem;font-weight:900;cursor:pointer}.campaign-publication-done:hover{background:#52721b}
+    html.admin-dark-nav .campaign-publication-card{border-color:#42503f;background:#222822}html.admin-dark-nav .campaign-publication-card h2,html.admin-dark-nav .campaign-publication-card>p strong{color:#f2f6ef}html.admin-dark-nav .campaign-publication-card>p{color:#bfcbbb}html.admin-dark-nav .campaign-publication-close{background:#364034;color:#e5efdf}
 </style>
 @endpush
 
@@ -588,6 +612,21 @@
         const fallbackTab = @json(($errors->any() && (old('_meeting_form') || $errors->has('reuniones_cliente_por_mes'))) ? 'meetings' : 'summary');
         activateCampaignTab(initialTabs[window.location.hash] || 'summary', false);
         if (!initialTabs[window.location.hash] && fallbackTab !== 'summary') activateCampaignTab(fallbackTab, false);
+
+        const publicationPopup = document.getElementById('campaign-publication-popup');
+        if (publicationPopup) {
+            const previousOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+            const closePublicationPopup = () => {
+                publicationPopup.hidden = true;
+                document.body.style.overflow = previousOverflow;
+            };
+            publicationPopup.querySelectorAll('[data-close-publication-popup]').forEach(button => button.addEventListener('click', closePublicationPopup));
+            document.addEventListener('keydown', event => {
+                if (event.key === 'Escape' && !publicationPopup.hidden) closePublicationPopup();
+            });
+            publicationPopup.querySelector('.campaign-publication-done')?.focus();
+        }
     });
 </script>
 @endsection

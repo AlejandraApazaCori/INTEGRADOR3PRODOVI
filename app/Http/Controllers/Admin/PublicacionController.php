@@ -135,15 +135,16 @@ class PublicacionController extends Controller
             'publication_platforms' => $validated['platforms'],
         ])->save();
 
-        if (! $result['success']) {
-            $prefix = $result['partial'] ? 'La publicacion fue parcial. ' : 'No se pudo publicar. ';
-
-            return back()->withInput()->with('error', $prefix.($result['error'] ?? 'Error desconocido de Meta.'));
+        if (! $published) {
+            return back()->withInput()->with('error', 'No se pudo publicar. '.($result['error'] ?? 'Error desconocido de Meta.'));
         }
 
-        $platformNames = collect($result['successful_platforms'])->map(fn ($platform) => ucfirst($platform))->implode(' e ');
-
-        return back()->with('success', 'Publicacion realizada correctamente en '.$platformNames.'.');
+        return redirect()->to(route('administrador.campañas.show', $tarea->campania_id).'#tareas')
+            ->with('publication_success', [
+                'task' => $tarea->titulo,
+                'platforms' => $result['successful_platforms'],
+                'error' => $result['partial'] ? ($result['error'] ?? 'Una de las redes no pudo publicar el contenido.') : null,
+            ]);
     }
 
     public function generateCopy(Request $request)
