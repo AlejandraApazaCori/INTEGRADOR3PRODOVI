@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Database\Seeders\CampaniasDemoSeeder;
+use Database\Seeders\ClientesCampaniasNuevasSeeder;
 use Database\Seeders\SolicitudesContactoSeeder;
 use Database\Seeders\StaffUsersSeeder;
 use Illuminate\Support\Facades\Artisan;
@@ -20,7 +21,8 @@ class MantenimientoWebTest extends TestCase
             ->assertSee('php artisan migrate')
             ->assertSee('php artisan storage:link')
             ->assertSee('Ejecutar seeder del equipo')
-            ->assertSee('Ejecutar seeder de campañas')
+            ->assertSee('Ejecutar seeder anterior de campañas')
+            ->assertSee('Ejecutar seeder de clientes y campañas nuevas')
             ->assertSee('Ejecutar seeder de solicitudes');
     }
 
@@ -119,5 +121,21 @@ class MantenimientoWebTest extends TestCase
         $response
             ->assertRedirect(route('mantenimiento.web.index'))
             ->assertSessionHas('demo_contact_requests_result', fn (array $result): bool => $result['success'] === true);
+    }
+
+    public function test_the_new_batch_uses_only_its_own_seeder(): void
+    {
+        Artisan::shouldReceive('call')
+            ->once()
+            ->with('db:seed', [
+                '--class' => ClientesCampaniasNuevasSeeder::class,
+                '--force' => true,
+            ])
+            ->andReturn(0);
+        Artisan::shouldReceive('output')->once()->andReturn('Lote nuevo cargado.');
+
+        $this->post(route('mantenimiento.web.seed-new-clients-campaigns'))
+            ->assertRedirect(route('mantenimiento.web.index'))
+            ->assertSessionHas('new_clients_result', fn (array $result): bool => $result['success'] === true);
     }
 }

@@ -32,6 +32,15 @@ class CampaignAudienceService
 
     public function parse(string $audience): array
     {
+        $lines = preg_split('/\R/u', trim($audience)) ?: [];
+        if (count($lines) > 1 && collect($lines)->every(fn (string $line) => str_contains($line, ':'))) {
+            return $this->normalize(array_map(function (string $line): array {
+                [$title, $description] = explode(':', $line, 2);
+
+                return ['tipo_edades' => $title, 'descripcion' => $description];
+            }, $lines));
+        }
+
         $audience = $this->clean(preg_replace(
             '/\bSegmento\s+Necesidad principal\s+Motivaci[oó]n\s+Objeci[oó]n probable\s+Contenido\s*\/\s*Canal recomendado\b/ui',
             '',
@@ -40,6 +49,16 @@ class CampaignAudienceService
 
         if ($audience === '') {
             return [];
+        }
+
+        // Los primeros seeders guardaron este campo como JSON. Leerlo aquí
+        // permite mostrar correctamente las campañas existentes sin resembrarlas.
+        $decoded = json_decode($audience, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded) && array_is_list($decoded)) {
+            $segments = $this->normalize($decoded);
+            if ($segments !== []) {
+                return $segments;
+            }
         }
 
         $typographicAgeRange = '\(\s*\d{1,2}\s*[\-\x{2010}\x{2011}\x{2012}\x{2013}\x{2014}]\s*\d{1,2}\s*(?:a|años?)?\s*\)';

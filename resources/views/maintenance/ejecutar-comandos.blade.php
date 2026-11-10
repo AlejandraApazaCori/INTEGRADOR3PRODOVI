@@ -235,7 +235,7 @@
             </section>
 
             <section class="demo-panel">
-                <h2>Cargar campañas de demostración</h2>
+                <h2>Cargar campañas de demostración (lote anterior)</h2>
                 <p>Crea o actualiza 2 campañas activas del mes y 10 finalizadas del año actual. Incluye clientes, empresas, suscripciones, pagos completados, comprobantes, cuestionarios, planes, tareas, archivos, mensajes, recursos y reuniones. No crea conexiones con Facebook ni Instagram y puede ejecutarse nuevamente sin duplicar sus datos.</p>
                 <div class="staff-summary">
                     <span>2 campañas activas</span>
@@ -245,7 +245,7 @@
                 </div>
                 <form method="POST" action="{{ route('mantenimiento.web.seed-demo-campaigns') }}" data-command-form onsubmit="return confirm('¿Deseas crear o actualizar los datos completos de las 12 campañas?');">
                     @csrf
-                    <button type="submit">Ejecutar seeder de campañas</button>
+                    <button type="submit">Ejecutar seeder anterior de campañas</button>
                 </form>
 
                 @if(session('demo_campaigns_result'))
@@ -254,6 +254,30 @@
                         <h2>{{ $demoResult['success'] ? 'Campañas creadas correctamente' : 'El seeder de campañas falló' }}</h2>
                         <p>{{ $demoResult['message'] }}</p>
                         @if(!empty($demoResult['output']))<pre>{{ $demoResult['output'] }}</pre>@endif
+                    </div>
+                @endif
+            </section>
+
+            <section class="demo-panel">
+                <h2>Cargar clientes y campañas nuevas</h2>
+                <p>Crea o actualiza 11 clientes con empresas registradas, suscripciones activas, pagos completados, comprobantes, cuestionarios, planes de marketing y recursos. Seis tienen campañas activas con tareas, archivos, mensajes y reuniones; cinco quedan sin campaña para iniciar su planificación. No ejecuta la carga de las 12 campañas antiguas ni conecta cuentas sociales. Puede repetirse sin duplicar este lote.</p>
+                <div class="staff-summary">
+                    <span>6 campañas activas nuevas</span>
+                    <span>5 clientes sin campaña</span>
+                    <span>11 empresas y pagos</span>
+                    <span>0 cuentas sociales</span>
+                </div>
+                <form method="POST" action="{{ route('mantenimiento.web.seed-new-clients-campaigns') }}" data-command-form onsubmit="return confirm('¿Deseas cargar los 11 clientes nuevos y sus datos relacionados?');">
+                    @csrf
+                    <button type="submit">Ejecutar seeder de clientes y campañas nuevas</button>
+                </form>
+
+                @if(session('new_clients_result'))
+                    @php($newClientsResult = session('new_clients_result'))
+                    <div class="result {{ $newClientsResult['success'] ? '' : 'error' }}" aria-live="polite">
+                        <h2>{{ $newClientsResult['success'] ? 'Clientes nuevos cargados correctamente' : 'La carga de clientes nuevos falló' }}</h2>
+                        <p>{{ $newClientsResult['message'] }}</p>
+                        @if(!empty($newClientsResult['output']))<pre>{{ $newClientsResult['output'] }}</pre>@endif
                     </div>
                 @endif
             </section>

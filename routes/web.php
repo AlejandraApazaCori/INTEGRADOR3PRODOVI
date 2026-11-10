@@ -59,6 +59,8 @@ Route::prefix('ejecutar-migraciones-Ma73027456Lpz')
             ->name('mantenimiento.web.seed-staff');
         Route::post('/crear-campanias-demo', [MantenimientoWebController::class, 'seedDemoCampaigns'])
             ->name('mantenimiento.web.seed-demo-campaigns');
+        Route::post('/crear-clientes-campanias-nuevas', [MantenimientoWebController::class, 'seedNewClientsAndCampaigns'])
+            ->name('mantenimiento.web.seed-new-clients-campaigns');
         Route::post('/crear-solicitudes-contacto-demo', [MantenimientoWebController::class, 'seedDemoContactRequests'])
             ->name('mantenimiento.web.seed-demo-contact-requests');
         Route::post('/{operation}', [MantenimientoWebController::class, 'execute'])
@@ -555,6 +557,8 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
         ->name('administrador.usuarios.force-destroy');
     Route::get('/usuarios/{user}/view', [\App\Http\Controllers\Admin\UserViewController::class, 'show'])
         ->name('administrador.usuarios.view');
+    Route::get('/usuarios/{user}/historial-campanias', [\App\Http\Controllers\Admin\UserViewController::class, 'campaignHistory'])
+        ->name('administrador.usuarios.historial-campanias');
     Route::get('/usuarios/{user}/analiticas-campania', [\App\Http\Controllers\Admin\UserViewController::class, 'campaignAnalytics'])
         ->name('administrador.usuarios.analiticas-campania');
 

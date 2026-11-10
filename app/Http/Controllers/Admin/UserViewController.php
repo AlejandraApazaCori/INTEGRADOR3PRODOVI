@@ -74,6 +74,18 @@ class UserViewController extends Controller
         return view('administrador.campanias.analiticasusuario', compact('user', 'campaniaActual', 'data'));
     }
 
+    public function campaignHistory(User $user)
+    {
+        $campaigns = $user->campaniasCliente()
+            ->withTrashed()
+            ->with(['suscripcion.plan', 'suscripcion.empresa', 'empresas'])
+            ->orderByDesc('fecha_inicio')
+            ->orderByDesc('id')
+            ->paginate(12);
+
+        return view('administrador.usuarios.historial-campanias', compact('user', 'campaigns'));
+    }
+
     private function loadAnalyticsData(string $periodKey, int $userId): array
     {
         $campaignJsonPath = resource_path('data/analiticas_por_campania.json');

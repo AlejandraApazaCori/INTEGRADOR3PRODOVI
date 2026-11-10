@@ -528,6 +528,10 @@
                                                 </svg>
                                                 Ver
                                             </a>
+                                            <a href="{{ route('administrador.usuarios.historial-campanias', $user->id) }}" class="user-action inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg transition-colors duration-200" style="color: #6355a5; background: #f0edfa;" title="Ver historial de campañas de {{ $user->name }}" aria-label="Historial de campañas de {{ $user->name }}">
+                                                <i class="fas fa-clock-rotate-left mr-1" aria-hidden="true"></i>
+                                                Historial de campañas
+                                            </a>
                                             <a href="{{ route('administrador.usuarios.edit', $user->id) }}" class="user-action user-action-edit inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg transition-colors duration-200" style="color: #0d6975; background: #e6f4f5;">
                                                 <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
