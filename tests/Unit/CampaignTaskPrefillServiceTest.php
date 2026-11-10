@@ -29,7 +29,7 @@ MARKDOWN,
         $tasks = app(CampaignTaskPrefillService::class)->build($plan, '2026-08-24', '2026-09-24');
 
         $this->assertCount(3, $tasks);
-        $this->assertSame('Post · Semana 1 · Lunes', $tasks[0]['titulo']);
+        $this->assertSame('Post - Semana 1 - Infografía sobre el servicio', $tasks[0]['titulo']);
         $this->assertSame('Diseñador', $tasks[0]['rol_sugerido']);
         $this->assertTrue($tasks[0]['requiere_aprobacion']);
         $this->assertSame(['Diseñador', 'Community Manager'], $tasks[0]['roles_sugeridos']);

@@ -20,7 +20,7 @@ class CampaignTaskPrefillService
         $end = Carbon::parse($endsAt)->startOfDay();
         $tableTasks = $this->tableTasks($calendar, $start, $end);
         if ($tableTasks !== []) {
-            return array_slice($tableTasks, 0, 20);
+            return array_slice($tableTasks, 0, 60);
         }
 
         $weeks = $this->weeks($calendar);
@@ -33,8 +33,40 @@ class CampaignTaskPrefillService
             }
 
             $weekEnd = $weekStart->copy()->addDays(6)->min($end);
+            $label = 'Semana '.($index + 1);
+            if (preg_match('/semana\s*(\d+)/iu', $week['title'], $weekNumber)) {
+                $label = 'Semana '.(int) $weekNumber[1];
+            }
+
+            $pieces = $this->weeklyPieces($week['content']);
+            foreach ($pieces as $piece) {
+                if (count($tasks) >= 60) {
+                    break 2;
+                }
+
+                $idea = $this->plain($piece);
+                $type = $this->contentType($idea);
+                $subject = $this->pieceSubject($idea);
+                $tasks[] = [
+                    'titulo' => $this->limit(Str::ucfirst($type).' - '.$label.' - '.$subject, 100),
+                    'descripcion' => $this->limit($this->sentence($idea), 700),
+                    'entregable' => $this->limit(Str::ucfirst($type).' de "'.$subject.'" listo para revisión y publicación.', 1500),
+                    'fecha_inicio' => $weekStart->toDateString(),
+                    'fecha_limite' => $weekEnd->toDateString(),
+                    'prioridad' => 'media',
+                    'rol_sugerido' => 'Diseñador',
+                    'roles_sugeridos' => ['Diseñador', 'Community Manager'],
+                    'tipo_contenido' => $type,
+                    'tipo_contenido_otro' => $type === 'otro' ? 'GIF' : null,
+                    'requiere_aprobacion' => true,
+                    'visible_cliente' => true,
+                ];
+            }
+            if ($pieces !== []) {
+                continue;
+            }
+
             $content = $this->limit($this->plain($week['content']), 520);
-            $label = $week['title'] ?: 'Semana '.($index + 1);
 
             $tasks[] = [
                 'titulo' => $this->limit('Contenido - '.$label, 100),
@@ -51,7 +83,38 @@ class CampaignTaskPrefillService
             ];
         }
 
-        return array_slice($tasks, 0, 10);
+        return array_slice($tasks, 0, 60);
+    }
+
+    private function weeklyPieces(string $content): array
+    {
+        $content = preg_replace('/<br\s*\/?\s*>/iu', "\n", $content) ?? $content;
+        $content = preg_replace('/\*\*/u', '', $content) ?? $content;
+        $pattern = '/(?<![\p{L}\p{N}])(?:Post|Reel|Historia|Carrusel|Video|Vídeo|Guión|Guion|GIF|Pieza)\s*\d+\s*[\x{2013}\x{2014}:.-]/iu';
+        preg_match_all($pattern, $content, $matches, PREG_OFFSET_CAPTURE);
+        $positions = array_column($matches[0], 1);
+        $pieces = [];
+
+        foreach ($positions as $index => $position) {
+            $next = $positions[$index + 1] ?? strlen($content);
+            $piece = trim(substr($content, $position, $next - $position), " \t\r\n-*•");
+            if ($piece !== '') {
+                $pieces[] = $piece;
+            }
+        }
+
+        return $pieces;
+    }
+
+    private function pieceSubject(string $idea): string
+    {
+        $subject = preg_replace('/^(?:Post|Reel|Historia|Carrusel|Video|Vídeo|Guión|Guion|GIF|Pieza)\s*\d+\s*[\x{2013}\x{2014}:.-]\s*/iu', '', $idea) ?? $idea;
+        $subject = preg_replace('/^(?:Instagram|Facebook|TikTok|WhatsApp)(?:\s*\/\s*(?:Instagram|Facebook|TikTok|WhatsApp))*\s*:\s*/iu', '', $subject) ?? $subject;
+        $subject = preg_replace('/^(?:foto|imagen|video|vídeo|carrusel|reel|historia)\s+(?:\d+\s*s\s*)?(?:(?:de|del|sobre)\s+)?/iu', '', $subject) ?? $subject;
+        $subject = preg_split('/[.!?](?:\s|$)/u', $subject, 2)[0] ?? $subject;
+        $subject = trim(preg_replace('/\s*\([^)]*\)/u', '', $subject) ?? $subject, " \t\r\n\"“”'.");
+
+        return $this->limit($subject !== '' ? $subject : 'Pieza de contenido', 62);
     }
 
     private function tableTasks(string $calendar, Carbon $start, Carbon $end): array
@@ -92,7 +155,7 @@ class CampaignTaskPrefillService
                 }
 
                 $tasks[] = [
-                    'titulo' => $this->limit(Str::ucfirst($type).' · Semana '.$week.' · '.$day, 100),
+                    'titulo' => $this->limit(Str::ucfirst($type).' - Semana '.$week.' - '.$this->pieceSubject($idea), 100),
                     'descripcion' => $this->limit(
                         $this->sentence($idea).' '.$this->sentence('Tema: '.$theme).' '.$this->sentence('Objetivo: '.$objective).' '.$this->sentence('CTA: '.$cta),
                         700
@@ -104,6 +167,7 @@ class CampaignTaskPrefillService
                     'rol_sugerido' => 'Diseñador',
                     'roles_sugeridos' => ['Diseñador', 'Community Manager'],
                     'tipo_contenido' => $type,
+                    'tipo_contenido_otro' => $type === 'otro' ? 'GIF' : null,
                     'requiere_aprobacion' => true,
                     'visible_cliente' => true,
                 ];
@@ -118,6 +182,7 @@ class CampaignTaskPrefillService
         $idea = $this->normalize($idea);
 
         return match (true) {
+            str_contains($idea, 'gif') => 'otro',
             str_contains($idea, 'carrusel'), str_contains($idea, 'carousel') => 'carrusel',
             str_contains($idea, 'reel'), str_contains($idea, 'video') => 'reel',
             str_contains($idea, 'historia'), str_contains($idea, 'story') => 'historia',

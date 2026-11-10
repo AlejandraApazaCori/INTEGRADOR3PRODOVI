@@ -96,7 +96,10 @@ REGLAS:
 - Respeta estrictamente cantidades, frecuencias, canales y recursos contratados.
 - Crea una campaña lista para ejecutar, no una propuesta genérica.
 - Usa el calendario operativo del plan como fuente exacta para publicaciones: no cambies cantidades, ideas, formatos ni frecuencia.
-- Crea como máximo 20 tareas concretas y breves. Cada descripción debe tener hasta 700 caracteres.
+- Cada pieza del calendario debe ser una tarea separada. Si una semana incluye tres posts o formatos distintos, crea tres tareas; nunca agrupes varias piezas en "Contenido - Semana 1".
+- En el título identifica la semana, el formato y la idea concreta (por ejemplo, "Post - Semana 1 - Bouquet primaveral"). En la descripción pide solo esa pieza y especifica canal, enfoque, texto y CTA cuando estén definidos.
+- Asigna tipo_contenido según la pieza real: post, carrusel, reel/video, historia o guion. El entregable debe describir únicamente esa pieza.
+- Crea hasta 60 tareas concretas si el calendario lo requiere. Cada descripción debe tener hasta 700 caracteres.
 - El nombre no debe superar 100 caracteres, el tono 120 y cada indicador 100.
 - Divide el público en segmentos. Para cada uno devuelve solamente tipo o perfil, rango de edades y una descripción esencial de hasta 300 caracteres.
 - No copies encabezados de tablas ni juntes todos los públicos en un solo texto.
@@ -341,7 +344,7 @@ PROMPT;
         $blueprint['tareas'] = $tasks
             ->filter(fn (array $task) => filled($task['titulo']) && filled($task['descripcion']))
             ->unique(fn (array $task) => Str::lower(Str::ascii($task['titulo'])).'|'.$task['fecha_limite'])
-            ->take(20)->values()->all();
+            ->take(60)->values()->all();
 
         if ($blueprint['tareas'] === []) {
             throw new RuntimeException('La IA no generó tareas operativas válidas para esta campaña.');
