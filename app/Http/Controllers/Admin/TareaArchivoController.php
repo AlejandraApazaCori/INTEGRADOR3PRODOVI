@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class TareaArchivoController extends Controller
 {
@@ -234,6 +235,39 @@ class TareaArchivoController extends Controller
         ]);
 
         return view('administrador.tareas.show', compact('tarea'));
+    }
+
+    public function destroy(Request $request, TareaArchivo $archivo)
+    {
+        $user = $request->user();
+        $isAdmin = $user?->hasAnyRole(['Super Administrador', 'Administrador']);
+        $isCampaignManager = $user?->hasRole('Community Manager')
+            && (int) $archivo->tarea->campania?->community_manager_id === (int) $user->id;
+        abort_unless($isAdmin || $isCampaignManager, 403);
+
+        try {
+            if ($archivo->isOnDrive()) {
+                app(GoogleDriveReportService::class)->deleteTaskFile($archivo->driveFileId());
+            } else {
+                if (! Storage::disk('public')->delete($archivo->ruta_archivo)) {
+                    throw new \RuntimeException('No se pudo eliminar el archivo local.');
+                }
+            }
+        } catch (\Throwable $exception) {
+            Log::error('No se pudo eliminar el entregable.', [
+                'archivo_id' => $archivo->id,
+                'error' => $exception->getMessage(),
+            ]);
+            return back()->with('error', 'No se pudo eliminar el archivo. Inténtalo de nuevo.');
+        }
+
+        $tarea = $archivo->tarea;
+        $archivo->delete();
+        if (! $tarea->archivos()->exists() && in_array($tarea->estado, ['entregado', 'aprobado', 'reformular'], true)) {
+            $tarea->update(['estado' => 'en_curso']);
+        }
+
+        return back()->with('success', 'Archivo eliminado de la tarea y del almacenamiento.');
     }
 
     public function updateEstado(Request $request, TareaArchivo $archivo, TaskReviewWorkflow $review)

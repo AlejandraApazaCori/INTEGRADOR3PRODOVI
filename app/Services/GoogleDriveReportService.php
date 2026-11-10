@@ -495,6 +495,11 @@ class GoogleDriveReportService
         return $this->drive->files->get($fileId, ['alt' => 'media'])->getBody();
     }
 
+    public function deleteTaskFile(string $fileId): void
+    {
+        $this->drive->files->delete($fileId);
+    }
+
     private function findOrCreateFolder(string $folderName, string $parentId = 'root'): string
     {
         $escapedName = str_replace(["\\", "'"], ["\\\\", "\\'"], $folderName);

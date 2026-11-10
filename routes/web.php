@@ -515,6 +515,8 @@ Route::prefix('administrador')->middleware('auth')->group(function () {
     });
     Route::put('/tareas/archivos/{archivo}/estado', [\App\Http\Controllers\Admin\TareaArchivoController::class, 'updateEstado'])
         ->name('administrador.tareas.archivos.update-estado');
+    Route::delete('/tareas/archivos/{archivo}', [\App\Http\Controllers\Admin\TareaArchivoController::class, 'destroy'])
+        ->name('administrador.tareas.archivos.destroy');
     Route::patch('/tareas/{tarea}/revision-cliente', [\App\Http\Controllers\Admin\TareaArchivoController::class, 'updateClientReview'])
         ->name('administrador.tareas.revision-cliente');
     Route::get('/tareas/{tarea}/ver-subidas', [\App\Http\Controllers\Admin\TareaArchivoController::class, 'verSubidas'])
