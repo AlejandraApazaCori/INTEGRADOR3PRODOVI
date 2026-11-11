@@ -90,7 +90,7 @@ class CampaignTaskPrefillService
     {
         $content = preg_replace('/<br\s*\/?\s*>/iu', "\n", $content) ?? $content;
         $content = preg_replace('/\*\*/u', '', $content) ?? $content;
-        $pattern = '/(?<![\p{L}\p{N}])(?:Post|Reel|Historia|Carrusel|Video|Vídeo|Guión|Guion|GIF|Pieza)\s*\d+\s*[\x{2013}\x{2014}:.-]/iu';
+        $pattern = '/(?<![\p{L}\p{N}])(?:Post|Reel|Historia|Carrusel|V[ií]deo|Gu[ií]on|GIF|Diseño(?:\s+gráfico(?:\s+profesional)?)?|Pieza(?:\s+gráfica)?)\s*(?:#?\d+)?\s*(?:\([^)]{1,70}\)\s*)?[\x{2013}\x{2014}:.-]\s*/iu';
         preg_match_all($pattern, $content, $matches, PREG_OFFSET_CAPTURE);
         $positions = array_column($matches[0], 1);
         $pieces = [];
@@ -106,9 +106,44 @@ class CampaignTaskPrefillService
         return $pieces;
     }
 
+    public function expandBundledTask(array $task): array
+    {
+        $description = (string) ($task['descripcion'] ?? '');
+        $pieces = $this->weeklyPieces($description);
+        if (count($pieces) < 2) {
+            return [$task];
+        }
+
+        $weekLabel = preg_match('/semana\s*\d+/iu', (string) ($task['titulo'] ?? ''), $weekMatch)
+            ? Str::ucfirst($weekMatch[0])
+            : 'Campaña';
+        if (preg_match('/\bPiezas?(?:\s*\(\d+\))?\s*:/iu', $description, $pieceHeading, PREG_OFFSET_CAPTURE)) {
+            $context = substr($description, 0, $pieceHeading[0][1]);
+        } else {
+            $firstPiece = strpos($description, $pieces[0]);
+            $context = $firstPiece === false ? '' : substr($description, 0, $firstPiece);
+        }
+        $context = $this->limit($this->plain($context), 250);
+
+        return array_map(function (string $piece) use ($task, $weekLabel, $context): array {
+            $idea = $this->plain($piece);
+            $type = $this->contentType($idea);
+            $subject = $this->pieceSubject($idea);
+
+            return [
+                ...$task,
+                'titulo' => $this->limit(Str::ucfirst($type).' - '.$weekLabel.' - '.$subject, 100),
+                'descripcion' => $this->limit($this->sentence($idea).($context !== '' ? ' '.$this->sentence($context) : ''), 700),
+                'entregable' => $this->limit(Str::ucfirst($type).' de "'.$subject.'" listo para revisión y publicación.', 1500),
+                'tipo_contenido' => $type,
+                'tipo_contenido_otro' => $type === 'otro' ? 'GIF' : null,
+            ];
+        }, $pieces);
+    }
+
     private function pieceSubject(string $idea): string
     {
-        $subject = preg_replace('/^(?:Post|Reel|Historia|Carrusel|Video|Vídeo|Guión|Guion|GIF|Pieza)\s*\d+\s*[\x{2013}\x{2014}:.-]\s*/iu', '', $idea) ?? $idea;
+        $subject = preg_replace('/^(?:Post|Reel|Historia|Carrusel|V[ií]deo|Gu[ií]on|GIF|Diseño(?:\s+gráfico(?:\s+profesional)?)?|Pieza(?:\s+gráfica)?)\s*(?:#?\d+)?\s*(?:\([^)]{1,70}\)\s*)?[\x{2013}\x{2014}:.-]\s*/iu', '', $idea) ?? $idea;
         $subject = preg_replace('/^(?:Instagram|Facebook|TikTok|WhatsApp)(?:\s*\/\s*(?:Instagram|Facebook|TikTok|WhatsApp))*\s*:\s*/iu', '', $subject) ?? $subject;
         $subject = preg_replace('/^(?:foto|imagen|video|vídeo|carrusel|reel|historia)\s+(?:\d+\s*s\s*)?(?:(?:de|del|sobre)\s+)?/iu', '', $subject) ?? $subject;
         $subject = preg_split('/[.!?](?:\s|$)/u', $subject, 2)[0] ?? $subject;

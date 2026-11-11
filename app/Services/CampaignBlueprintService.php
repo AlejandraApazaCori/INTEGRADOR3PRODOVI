@@ -332,6 +332,9 @@ PROMPT;
 
         $aiTasks = collect($blueprint['tareas'] ?? [])
             ->filter(fn ($task) => is_array($task))
+            ->flatMap(fn (array $task) => $calendarTasks === []
+                ? $this->taskPrefillService->expandBundledTask($task)
+                : [$task])
             ->map(fn (array $task) => $this->normalizeTask($task, $startsAt, $endsAt));
         $exactCalendarTasks = collect($calendarTasks)
             ->map(fn (array $task) => $this->normalizeTask($task, $startsAt, $endsAt));
@@ -415,6 +418,11 @@ PROMPT;
 
     private function isOperationalTask(array $task): bool
     {
+        if (preg_match('/\bPiezas?(?:\s*\(\d+\))?\s*:/iu', $task['descripcion'])
+            || preg_match('/^Contenido\s*[-–—]\s*Semana\s*\d+/iu', $task['titulo'])) {
+            return false;
+        }
+
         $text = Str::lower(Str::ascii($task['titulo'].' '.$task['descripcion']));
 
         return collect([

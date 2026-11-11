@@ -2,12 +2,15 @@
     $inicioCalendario = \Carbon\Carbon::parse($campania->fecha_inicio);
     $finCalendario = \Carbon\Carbon::parse($campania->fecha_fin);
     $eventosTareas = $campania->tareas->map(function ($tarea) {
-        $color = match($tarea->prioridad) {
-            'urgente' => '#c94f0c',
-            'alta' => '#ef6c22',
-            'media' => '#5b2b76',
-            'baja' => '#7da533',
-            default => '#117e8c',
+        $color = match($tarea->estado) {
+            'no_iniciado' => '#64748b',
+            'pendiente' => '#a16207',
+            'en_curso' => '#2563eb',
+            'entregado' => '#0e7490',
+            'reformular' => '#c2410c',
+            'aprobado' => '#15803d',
+            'publicado' => '#6b4ea0',
+            default => '#64748b',
         };
 
         return [
@@ -79,10 +82,13 @@
 <section class="embedded-planning-legend" aria-label="Leyenda de actividades">
     <strong>Leyenda</strong>
     <span><i class="is-meeting"></i> Reunión</span>
-    <span><i class="is-urgent"></i> Urgente</span>
-    <span><i class="is-high"></i> Alta</span>
-    <span><i class="is-medium"></i> Media</span>
-    <span><i class="is-low"></i> Baja</span>
+    <span><i class="is-not-started"></i> No iniciado</span>
+    <span><i class="is-pending"></i> Pendiente</span>
+    <span><i class="is-progress"></i> En curso</span>
+    <span><i class="is-delivered"></i> Entregado</span>
+    <span><i class="is-rework"></i> Reformular</span>
+    <span><i class="is-approved"></i> Aprobado</span>
+    <span><i class="is-published"></i> Publicado</span>
 </section>
 
 <style>
@@ -94,6 +100,7 @@
     .embedded-gantt-toolbar h3{margin-bottom:3px}.embedded-gantt-toolbar p,.embedded-gantt-toolbar>span{margin:0;color:#7e867b;font-size:.57rem}.embedded-gantt-scroll{overflow:auto;max-height:620px}.embedded-gantt-board{min-width:100%;width:max-content;background:#fff}.embedded-gantt-row{position:relative;min-height:54px;display:grid;border-bottom:1px solid #e8ebe5}.embedded-gantt-row:last-child{border-bottom:0}.embedded-gantt-row.is-header{position:sticky;z-index:6;top:0;min-height:48px;background:#f5f7f3}.embedded-gantt-label,.embedded-gantt-corner{position:sticky;z-index:4;left:0;display:flex;align-items:center;border-right:1px solid #dfe3dc;background:#fff}.embedded-gantt-corner{z-index:8;padding:0 15px;background:#f5f7f3;color:#697067;font-size:.57rem;font-weight:900;text-transform:uppercase}.embedded-gantt-label{min-width:0;padding:8px 12px}.embedded-gantt-label strong,.embedded-gantt-label span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.embedded-gantt-label strong{color:#343a32;font-size:.62rem;font-weight:900}.embedded-gantt-label span{margin-top:3px;color:#899087;font-size:.52rem}.embedded-gantt-day,.embedded-gantt-cell{border-right:1px solid #eceeea}.embedded-gantt-day{display:grid;place-items:center;background:#f5f7f3;color:#777f74;font-size:.5rem;font-weight:800;line-height:1.2;text-align:center}.embedded-gantt-day b{font-size:.58rem}.embedded-gantt-cell{background:#fff}.embedded-gantt-cell.is-weekend{background:#fafbf9}.embedded-gantt-cell.is-today{background:#fff2e9}.embedded-gantt-bar{z-index:3;align-self:center;height:27px;display:flex;align-items:center;overflow:hidden;padding:0 8px;border-radius:6px;background:var(--bar-color);color:#fff;font-size:.54rem;font-weight:900;text-decoration:none;text-overflow:ellipsis;white-space:nowrap;box-shadow:0 4px 9px color-mix(in srgb,var(--bar-color) 25%,transparent)}.embedded-gantt-empty{padding:45px 24px;color:#7c8479;font-size:.68rem;text-align:center}
     .embedded-gantt-label{width:250px;max-width:250px}.embedded-gantt-label>div{min-width:0;width:100%}.embedded-gantt-label strong,.embedded-gantt-label span{overflow:visible;text-overflow:clip;white-space:normal;overflow-wrap:anywhere;line-height:1.35}.embedded-gantt-bar{min-width:0}
     .embedded-planning-legend{display:flex;align-items:center;flex-wrap:wrap;gap:18px;margin-top:14px;padding:12px 15px;border:1px solid #e2e5df;border-radius:10px;background:#fafbf9}.embedded-planning-legend strong{color:#485046;font-size:.61rem}.embedded-planning-legend span{display:flex;align-items:center;gap:6px;color:#747c70;font-size:.58rem;font-weight:750}.embedded-planning-legend i{width:9px;height:9px;border-radius:3px}.embedded-planning-legend i.is-meeting{background:#117e8c}.embedded-planning-legend i.is-urgent{background:#c94f0c}.embedded-planning-legend i.is-high{background:#ef6c22}.embedded-planning-legend i.is-medium{background:#5b2b76}.embedded-planning-legend i.is-low{background:#7da533}
+    .embedded-planning-legend i.is-not-started{background:#64748b}.embedded-planning-legend i.is-pending{background:#a16207}.embedded-planning-legend i.is-progress{background:#2563eb}.embedded-planning-legend i.is-delivered{background:#0e7490}.embedded-planning-legend i.is-rework{background:#c2410c}.embedded-planning-legend i.is-approved{background:#15803d}.embedded-planning-legend i.is-published{background:#6b4ea0}
     @media(max-width:640px){.embedded-planning-header{align-items:stretch;flex-direction:column}.embedded-planning-switch{display:grid;grid-template-columns:1fr 1fr}.embedded-calendar-toolbar,.embedded-gantt-toolbar{align-items:flex-start;flex-direction:column}.embedded-gantt-toolbar>span{display:none}}
 </style>
 
@@ -104,6 +111,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
     const weekdays = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
     const shortWeekdays = ['D','L','M','M','J','V','S'];
+    const statusLabels = { no_iniciado: 'No iniciado', pendiente: 'Pendiente', en_curso: 'En curso', entregado: 'Entregado', reformular: 'Reformular', aprobado: 'Aprobado', publicado: 'Publicado' };
+    const statusLabel = event => statusLabels[event.extendedProps?.estado] || event.extendedProps?.estado || 'Sin estado';
     let currentMonth;
     let ganttRendered = false;
 
@@ -134,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (dateISO === today) cell.classList.add('is-today');
             const number = document.createElement('div'); number.className = 'embedded-calendar-day-number'; number.textContent = date.getDate(); cell.appendChild(number);
             const dayEvents = events.filter(event => dateISO >= event.start && dateISO <= (event.end || event.start));
-            dayEvents.slice(0, 3).forEach(event => { const item = document.createElement('div'); item.className = 'embedded-calendar-event'; item.style.setProperty('--event-color', event.color); item.textContent = `${event.extendedProps?.tipo === 'reunión' ? '📹 ' : ''}${event.title}`; item.title = tooltip(event); item.addEventListener('click', () => { if (!event.url) return; event.external ? window.open(event.url, '_blank', 'noopener') : (window.location.href = event.url); }); cell.appendChild(item); });
+            dayEvents.slice(0, 3).forEach(event => { const item = document.createElement('div'); item.className = 'embedded-calendar-event'; item.style.setProperty('--event-color', event.color); item.textContent = `${event.extendedProps?.tipo === 'reunión' ? '📹 ' : ''}${statusLabel(event)} · ${event.title}`; item.title = tooltip(event); item.addEventListener('click', () => { if (!event.url) return; event.external ? window.open(event.url, '_blank', 'noopener') : (window.location.href = event.url); }); cell.appendChild(item); });
             if (dayEvents.length > 3) { const more = document.createElement('div'); more.className = 'embedded-calendar-more'; more.textContent = `+${dayEvents.length - 3} eventos más`; cell.appendChild(more); }
             grid.appendChild(cell);
         }
@@ -163,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const label = document.createElement('div'); label.className = 'embedded-gantt-label'; label.style.gridColumn = '1'; label.innerHTML = '<div><strong></strong><span></span></div>'; label.querySelector('strong').textContent = event.title; label.querySelector('span').textContent = `${event.extendedProps?.asignado || 'Sin asignar'} · ${(event.extendedProps?.estado || '').replace('_', ' ')}`; row.appendChild(label);
             for (let day = 0; day < totalDays; day++) { const date = addDays(start, day); const cell = document.createElement('div'); cell.className = 'embedded-gantt-cell'; if ([0, 6].includes(date.getDay())) cell.classList.add('is-weekend'); if (isoDate(date) === today) cell.classList.add('is-today'); cell.style.gridColumn = String(day + 2); cell.style.gridRow = '1'; row.appendChild(cell); }
             const taskStart = Math.max(0, daysBetween(start, parseDate(event.start))); const taskEnd = Math.min(totalDays - 1, daysBetween(start, parseDate(event.end || event.start)));
-            const bar = document.createElement(event.url ? 'a' : 'div'); bar.className = 'embedded-gantt-bar'; bar.style.setProperty('--bar-color', event.color); bar.style.gridColumn = `${taskStart + 2} / ${taskEnd + 3}`; bar.style.gridRow = '1'; bar.setAttribute('aria-label', tooltip(event)); bar.title = tooltip(event); if (event.url) { bar.href = event.url; if (event.external) { bar.target = '_blank'; bar.rel = 'noopener noreferrer'; } } row.appendChild(bar); board.appendChild(row);
+            const bar = document.createElement(event.url ? 'a' : 'div'); bar.className = 'embedded-gantt-bar'; bar.style.setProperty('--bar-color', event.color); bar.style.gridColumn = `${taskStart + 2} / ${taskEnd + 3}`; bar.style.gridRow = '1'; bar.textContent = statusLabel(event); bar.setAttribute('aria-label', tooltip(event)); bar.title = tooltip(event); if (event.url) { bar.href = event.url; if (event.external) { bar.target = '_blank'; bar.rel = 'noopener noreferrer'; } } row.appendChild(bar); board.appendChild(row);
         });
     }
 
