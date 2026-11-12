@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Solicitudes web')
+@section('title', 'Buzón de preguntas')
 
 @section('content')
 <div id="contact-requests-index">
@@ -9,7 +9,7 @@
         <div class="requests-banner-content">
             <div>
                 <a href="{{ route('administrador.dashboard') }}" class="requests-back"><i class="fas fa-arrow-left"></i> Volver al dashboard</a>
-                <h1>Solicitudes de <span>contacto</span></h1>
+                <h1>Buzón de <span>preguntas</span></h1>
             </div>
             <a href="{{ url('/#contact') }}" target="_blank" rel="noopener noreferrer" class="requests-public-link"><i class="fas fa-arrow-up-right-from-square"></i> Ver formulario público</a>
         </div>
@@ -18,19 +18,19 @@
     <main class="requests-content">
         <section class="requests-overview">
             <div>
-                <h2>Solicitudes recibidas</h2>
+                <h2>Preguntas recibidas</h2>
             </div>
         </section>
 
-        <section class="requests-kpis" aria-label="Resumen de solicitudes">
-            <article class="requests-kpi-total"><div><span>Total recibidas</span><strong>{{ $stats['total'] }}</strong><small>Solicitudes registradas</small></div><i class="fas fa-inbox"></i></article>
+        <section class="requests-kpis" aria-label="Resumen de preguntas">
+            <article class="requests-kpi-total"><div><span>Total recibidas</span><strong>{{ $stats['total'] }}</strong><small>Preguntas registradas</small></div><i class="fas fa-inbox"></i></article>
             <article class="requests-kpi-month"><div><span>Este mes</span><strong>{{ $stats['este_mes'] }}</strong><small>Nuevos proyectos</small></div><i class="fas fa-calendar-days"></i></article>
             <article class="requests-kpi-sent"><div><span>Confirmadas</span><strong>{{ $stats['correo_enviado'] }}</strong><small>Correo enviado</small></div><i class="fas fa-circle-check"></i></article>
             <article class="requests-kpi-pending"><div><span>Sin confirmación</span><strong>{{ $stats['correo_pendiente'] }}</strong><small>Requieren revisión</small></div><i class="fas fa-envelope-open-text"></i></article>
         </section>
 
         <section class="requests-filter-panel">
-            <div class="requests-filter-title"><span><i class="fas fa-filter"></i> Filtrar solicitudes</span><small>{{ $solicitudes->total() }} resultado(s)</small></div>
+            <div class="requests-filter-title"><span><i class="fas fa-filter"></i> Filtrar preguntas</span><small>{{ $solicitudes->total() }} resultado(s)</small></div>
             <form method="GET" action="{{ route('administrador.solicitudes-contacto.index') }}" class="requests-filter-form">
                 <label class="requests-search"><span>Buscar</span><div><i class="fas fa-magnifying-glass"></i><input name="buscar" type="search" value="{{ request('buscar') }}" placeholder="Nombre, correo, teléfono o mensaje"></div></label>
                 <div class="requests-filter-field"><label for="request-service-trigger">Servicio</label><select name="servicio" aria-label="Servicio" data-request-select data-icon="fa-layer-group" data-trigger-id="request-service-trigger"><option value="">Todos los servicios</option>@foreach ($servicios as $valor => $etiqueta)<option value="{{ $valor }}" @selected(request('servicio') === $valor)>{{ $etiqueta }}</option>@endforeach</select></div>
@@ -42,7 +42,7 @@
             </form>
         </section>
 
-        <section class="requests-list" aria-label="Listado de solicitudes">
+        <section class="requests-list" aria-label="Listado de preguntas">
             @forelse ($solicitudes as $index => $solicitud)
                 @php
                     $telefonoWhatsApp = ltrim((string) $solicitud->telefono, '0');
@@ -67,12 +67,12 @@
                         </div>
                     </div>
                     <aside class="request-actions">
-                        <a href="mailto:{{ $solicitud->correo }}?subject={{ rawurlencode('Respuesta a tu solicitud en PRODOVI') }}" class="request-action-email"><i class="fas fa-reply"></i><span>Responder</span></a>
+                        <a href="mailto:{{ $solicitud->correo }}?subject={{ rawurlencode('Respuesta a tu pregunta en PRODOVI') }}" class="request-action-email"><i class="fas fa-reply"></i><span>Responder</span></a>
                         @if ($solicitud->telefono)<a href="https://wa.me/{{ $telefonoWhatsApp }}" target="_blank" rel="noopener noreferrer" class="request-action-whatsapp"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></a>@endif
                     </aside>
                 </article>
             @empty
-                <div class="requests-empty"><i class="fas fa-inbox"></i><h2>No hay solicitudes para mostrar</h2><p>Cuando alguien complete “Hablemos de tu Proyecto”, aparecerá aquí.</p></div>
+                <div class="requests-empty"><i class="fas fa-inbox"></i><h2>No hay preguntas para mostrar</h2><p>Cuando alguien complete “Hablemos de tu Proyecto”, aparecerá aquí.</p></div>
             @endforelse
         </section>
 

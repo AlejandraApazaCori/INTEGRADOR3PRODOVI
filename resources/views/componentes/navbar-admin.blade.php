@@ -91,55 +91,22 @@
             </div>
             @endif
 
-            <!-- Solicitudes enviadas desde "Hablemos de tu Proyecto" -->
-            @if (auth()->user()->hasAnyRole(['Super Administrador', 'Administrador']))
-                <div class="menu-item menu-teal">
-                    <a href="{{ route('administrador.solicitudes-contacto.index') }}" class="menu-link {{ request()->routeIs('administrador.solicitudes-contacto.*') ? 'active' : '' }}">
-                        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
-                            <path d="M8 9h8"></path>
-                            <path d="M8 13h5"></path>
-                        </svg>
-                        <span class="menu-text">Solicitudes web</span>
-                    </a>
-                </div>
-            @endif
-
-            <!-- Pagos -->
-            @php
-                $pagosMenuOpen = request()->routeIs('administrador.pagos.*') || request()->routeIs('admin.analiticas.*');
-            @endphp
-            @if($canManagePayments)
-            <div class="menu-item menu-orange">
-                <a href="#" class="menu-link {{ $pagosMenuOpen ? 'active' : '' }}" onclick="toggleSubmenu(this); return false;">
+            <!-- Empresas -->
+            @if($canManageCompanies)
+            <div class="menu-item menu-purple">
+                <a href="{{ route('administrador.empresas.index') }}" class="menu-link {{ request()->routeIs('administrador.empresas.*') ? 'active' : '' }}">
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                        <line x1="1" y1="10" x2="23" y2="10"></line>
+                        <path d="M3 21h18"></path>
+                        <path d="M5 21V7l8-4v18"></path>
+                        <path d="M19 21V11l-6-3"></path>
+                        <rect x="9" y="9" width="4" height="4"></rect>
+                        <rect x="9" y="14" width="4" height="4"></rect>
                     </svg>
-                    <span class="menu-text">Pagos</span>
-                    <svg class="menu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="{{ $pagosMenuOpen ? 'transform: rotate(180deg);' : '' }}">
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
+                    <span class="menu-text">Empresas</span>
                 </a>
-                <div class="submenu {{ $pagosMenuOpen ? 'open' : '' }}">
-                    <div class="submenu-title">Pagos</div>
-                    
-                    <div class="submenu-item">
-                        <a href="{{ route('administrador.pagos.index') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.index') ? 'active' : '' }}">General</a>
-                    </div>
-                    <div class="submenu-item">
-                        <a href="{{ route('administrador.pagos.analiticas') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.analiticas') ? 'active' : '' }}">Analíticas</a>
-                    </div>
-                    <div class="submenu-item">
-                        <a href="{{ route('administrador.pagos.pendientes-fisicos') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.pendientes-fisicos*') ? 'active' : '' }}">Pendientes físicos</a>
-                    </div>
-                    <div class="submenu-item">
-                        <a href="{{ route('administrador.pagos.manual.crear') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.manual.*') ? 'active' : '' }}">Registrar pago</a>
-                    </div>
-                </div>
             </div>
             @endif
-            <!-- Campañas -->
+
             <!-- Planes -->
             @if($canManagePayments)
             <div class="menu-item menu-green">
@@ -166,22 +133,6 @@
                         <polyline points="10 9 9 9 8 9"></polyline>
                     </svg>
                     <span class="menu-text">Cuestionario Briefing</span>
-                </a>
-            </div>
-            @endif
-
-            <!-- Empresas -->
-            @if($canManageCompanies)
-            <div class="menu-item menu-purple">
-                <a href="{{ route('administrador.empresas.index') }}" class="menu-link {{ request()->routeIs('administrador.empresas.*') ? 'active' : '' }}">
-                    <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 21h18"></path>
-                        <path d="M5 21V7l8-4v18"></path>
-                        <path d="M19 21V11l-6-3"></path>
-                        <rect x="9" y="9" width="4" height="4"></rect>
-                        <rect x="9" y="14" width="4" height="4"></rect>
-                    </svg>
-                    <span class="menu-text">Empresas</span>
                 </a>
             </div>
             @endif
@@ -215,6 +166,55 @@
                     </div>
                 </div>
             </div>
+            @endif
+
+            <!-- Pagos -->
+            @php
+                $pagosMenuOpen = request()->routeIs('administrador.pagos.*') || request()->routeIs('admin.analiticas.*');
+            @endphp
+            @if($canManagePayments)
+            <div class="menu-item menu-orange">
+                <a href="#" class="menu-link {{ $pagosMenuOpen ? 'active' : '' }}" onclick="toggleSubmenu(this); return false;">
+                    <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                        <line x1="1" y1="10" x2="23" y2="10"></line>
+                    </svg>
+                    <span class="menu-text">Pagos</span>
+                    <svg class="menu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="{{ $pagosMenuOpen ? 'transform: rotate(180deg);' : '' }}">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </a>
+                <div class="submenu {{ $pagosMenuOpen ? 'open' : '' }}">
+                    <div class="submenu-title">Pagos</div>
+
+                    <div class="submenu-item">
+                        <a href="{{ route('administrador.pagos.index') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.index') ? 'active' : '' }}">General</a>
+                    </div>
+                    <div class="submenu-item">
+                        <a href="{{ route('administrador.pagos.analiticas') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.analiticas') ? 'active' : '' }}">Analíticas</a>
+                    </div>
+                    <div class="submenu-item">
+                        <a href="{{ route('administrador.pagos.pendientes-fisicos') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.pendientes-fisicos*') ? 'active' : '' }}">Pendientes físicos</a>
+                    </div>
+                    <div class="submenu-item">
+                        <a href="{{ route('administrador.pagos.manual.crear') }}" class="submenu-link {{ request()->routeIs('administrador.pagos.manual.*') ? 'active' : '' }}">Registrar pago</a>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Solicitudes enviadas desde "Hablemos de tu Proyecto" -->
+            @if (auth()->user()->hasAnyRole(['Super Administrador', 'Administrador']))
+                <div class="menu-item menu-teal">
+                    <a href="{{ route('administrador.solicitudes-contacto.index') }}" class="menu-link {{ request()->routeIs('administrador.solicitudes-contacto.*') ? 'active' : '' }}">
+                        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
+                            <path d="M8 9h8"></path>
+                            <path d="M8 13h5"></path>
+                        </svg>
+                        <span class="menu-text">Buzón de preguntas</span>
+                    </a>
+                </div>
             @endif
 
             <!-- Logs -->
